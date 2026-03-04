@@ -160,7 +160,44 @@ Each color comes in multiple lengths. The ratio between successive sizes is alwa
 
 Physical Zometool is limited to 3 direction families because the connector ball only has 3 hole shapes. But the golden field Q(phi) contains infinitely many other **geometrically distinct directions** — vectors pointing at entirely different angles through 3D space, not just different lengths of the existing 3. vZome, being virtual, can use any of them.
 
-Each extra color represents a different **orbit** — a family of directions related by the 60 icosahedral rotations. The standard blue/yellow/red orbits have fewer than 60 axes each (30/20/12) because they align with symmetry axes, so some rotations map an axis to itself. The extra orbits don't align with any symmetry axis, so each has the full **60 axes** (one per rotation).
+Each extra color represents a different **orbit** — a family of directions related by the 60 icosahedral rotations.
+
+#### Why Every Orbit Closes: The Orbit-Stabilizer Theorem
+
+A natural question: if you pick a "random" direction like green and apply all 60 rotations, do you get a finite or infinite set of directions? The answer is **always finite**, for two independent reasons:
+
+**Reason 1 — The group is finite.** The icosahedral rotation group has exactly 60 elements. Applying all 60 to any direction produces *at most* 60 distinct directions. The exact count is determined by the **orbit-stabilizer theorem**: if *k* of the 60 rotations map a direction back to itself (the *stabilizer*), then the orbit has exactly 60/*k* distinct directions. The orbit size is always a divisor of 60.
+
+| Direction type | Stabilizer (rotations that preserve it) | *k* | Orbit = 60/*k* |
+|---------------|----------------------------------------|-----|---------------|
+| 5-fold axis (red) | {id, 72°, 144°, 216°, 288°} | 5 | **12** |
+| 3-fold axis (yellow) | {id, 120°, 240°} | 3 | **20** |
+| 2-fold axis (blue) | {id, 180°} | 2 | **30** |
+| Generic direction (green, etc.) | {id} only | 1 | **60** |
+
+The standard blue/yellow/red orbits have fewer than 60 axes because they align with symmetry axes, so multiple rotations map each axis to itself. The extra orbits don't align with any symmetry axis, so only the identity preserves them — giving the full 60.
+
+**Reason 2 — The algebraic field is closed.** Every rotation matrix in the icosahedral group has entries in Q(phi), and every prototype vector has coordinates in Q(phi). Since Q(phi) is closed under addition and multiplication, every rotated vector also lands in Q(phi). This means green struts, orange struts, and all other colors produce **exact algebraic coordinates** — no rounding, no drift. Intersections, midpoints, and symmetry operations on structures built with *any* strut color remain perfectly exact.
+
+This is fundamentally different from a generic rotation by an irrational angle, which *would* generate infinitely many distinct directions. The icosahedral group's finiteness guarantees that every orbit closes.
+
+#### Directions Close, but Positions Don't
+
+An important subtlety: orbital closure is about **directions**, not **positions**. If you keep placing blue struts end-to-end in the same direction (zero rotation), you reach points at distances 1, 2, 3, ... along that line — infinitely many positions. The set of *directions* is finite (30 for blue), but the set of *reachable points* along any direction is infinite.
+
+It gets richer: since strut lengths come in powers of phi (short = phi^0, medium = phi^1, long = phi^2, ...), the reachable distances along a single axis include all values of the form `a + b*phi` where a, b are non-negative integers. By subtracting (building in the opposite direction), you can reach any `a + b*phi` with integer a, b. This set **Z[phi] = {a + b*phi : a, b in Z}** is infinite and, remarkably, **dense** in the real number line — you can get arbitrarily close to any distance, though any finite construction uses finitely many points.
+
+The full set of all points reachable from the origin by any sequence of Zometool struts is a module over Z[phi] in 3D, known as the **Z-lattice**. It is:
+
+| Property | Value |
+|----------|-------|
+| **Infinite?** | Yes — unbounded in every direction |
+| **Dense?** | Yes — points get arbitrarily close together |
+| **Periodic?** | No — it has no translational symmetry (unlike a crystal lattice) |
+| **Exact?** | Yes — every point has coordinates in Q(phi), zero error |
+| **Any finite construction** | Uses finitely many points from this infinite set |
+
+This is precisely the mathematical structure underlying **icosahedral quasicrystals** — the aperiodic materials discovered by Dan Shechtman (Nobel Prize 2011). The Z-lattice is infinite and aperiodic, yet has perfect icosahedral symmetry and long-range order. See [Connections to Quasicrystals](#9-connections-to-quasicrystals) for more.
 
 | Color | Prototype Direction (phi notation) | Axes | Notes |
 |-------|-----------------------------------|------|-------|
