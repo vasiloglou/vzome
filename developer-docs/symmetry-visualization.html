@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Icosahedral Symmetry - vZome Geometry Tutorial</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: #eee; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
+  #container { display: flex; height: 100vh; }
+  #canvas-wrap { flex: 1; position: relative; }
+  canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+  canvas:active { cursor: grabbing; }
+
+  #sidebar {
+    width: 340px; padding: 24px; overflow-y: auto;
+    background: #16213e; border-left: 1px solid #0f3460;
+  }
+  h1 { font-size: 18px; margin-bottom: 16px; color: #e94560; }
+  h2 { font-size: 14px; margin: 16px 0 8px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+
+  .axis-toggle {
+    display: flex; align-items: center; padding: 10px 12px; margin: 6px 0;
+    border-radius: 8px; cursor: pointer; transition: background 0.2s;
+    border: 1px solid transparent; user-select: none;
+  }
+  .axis-toggle:hover { background: rgba(255,255,255,0.05); }
+  .axis-toggle.active { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); }
+
+  .dot { width: 14px; height: 14px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; }
+  .axis-info { flex: 1; }
+  .axis-name { font-weight: 600; font-size: 14px; }
+  .axis-desc { font-size: 11px; color: #999; margin-top: 2px; }
+  .axis-count { font-size: 12px; color: #ccc; margin-top: 4px; font-family: monospace; }
+
+  .legend-box {
+    background: #0f3460; border-radius: 8px; padding: 14px; margin: 12px 0;
+    font-size: 12px; line-height: 1.6;
+  }
+  .legend-box b { color: #e94560; }
+
+  #info-bar {
+    position: absolute; bottom: 16px; left: 16px; right: 16px;
+    background: rgba(22,33,62,0.9); border-radius: 8px; padding: 12px 16px;
+    font-size: 13px; text-align: center; color: #aaa;
+    backdrop-filter: blur(8px);
+  }
+  .view-btn {
+    display: inline-block; padding: 6px 14px; margin: 3px;
+    background: #0f3460; border: 1px solid #1a4a8a; border-radius: 6px;
+    color: #ccc; font-size: 12px; cursor: pointer; transition: all 0.2s;
+  }
+  .view-btn:hover { background: #1a4a8a; color: #fff; }
+  .view-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
+
+  #hint {
+    position: absolute; top: 16px; left: 16px;
+    background: rgba(22,33,62,0.9); border-radius: 8px; padding: 10px 14px;
+    font-size: 12px; color: #aaa; backdrop-filter: blur(8px);
+  }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <div id="canvas-wrap">
+    <canvas id="c"></canvas>
+    <div id="hint">Click &amp; drag to rotate. Scroll to zoom.</div>
+    <div id="info-bar">
+      <div style="margin-bottom:8px"><b style="color:#e94560">Views:</b></div>
+      <span class="view-btn active" onclick="setView('all')">All Axes</span>
+      <span class="view-btn" onclick="setView('2fold')">2-Fold Only</span>
+      <span class="view-btn" onclick="setView('3fold')">3-Fold Only</span>
+      <span class="view-btn" onclick="setView('5fold')">5-Fold Only</span>
+      <span class="view-btn" onclick="toggleBall()" id="ball-btn">Show Ball</span>
+    </div>
+  </div>
+
+  <div id="sidebar">
+    <h1>Icosahedral Symmetry Axes</h1>
+
+    <div class="legend-box">
+      The icosahedron has <b>3 types</b> of rotational symmetry axes, each passing through
+      a different geometric feature. The holes on a Zometool ball sit exactly where these
+      axes pierce the surface.
+    </div>
+
+    <h2>Axis Types (click to toggle)</h2>
+
+    <div class="axis-toggle active" id="tog-5" onclick="toggle('5fold')">
+      <div class="dot" style="background:#e94560;"></div>
+      <div class="axis-info">
+        <div class="axis-name">5-Fold Axes (Pentagonal Holes)</div>
+        <div class="axis-desc">Through opposite vertices of the icosahedron</div>
+        <div class="axis-count">12 vertices &divide; 2 = 6 axes &rarr; 12 holes</div>
+      </div>
+    </div>
+
+    <div class="axis-toggle active" id="tog-3" onclick="toggle('3fold')">
+      <div class="dot" style="background:#f0c040;"></div>
+      <div class="axis-info">
+        <div class="axis-name">3-Fold Axes (Triangular Holes)</div>
+        <div class="axis-desc">Through opposite face centers of the icosahedron</div>
+        <div class="axis-count">20 faces &divide; 2 = 10 axes &rarr; 20 holes</div>
+      </div>
+    </div>
+
+    <div class="axis-toggle active" id="tog-2" onclick="toggle('2fold')">
+      <div class="dot" style="background:#4090ff;"></div>
+      <div class="axis-info">
+        <div class="axis-name">2-Fold Axes (Rectangular Holes)</div>
+        <div class="axis-desc">Through opposite edge midpoints of the icosahedron</div>
+        <div class="axis-count">30 edges &divide; 2 = 15 axes &rarr; 30 holes</div>
+      </div>
+    </div>
+
+    <h2>Understanding Rotation Order</h2>
+
+    <div class="legend-box">
+      The <b>rotation order</b> tells you how many times you can rotate around an axis
+      before returning to the start:<br><br>
+      <b>5-fold</b>: 360&deg; / 5 = 72&deg; per step (5 rotations to complete)<br>
+      <b>3-fold</b>: 360&deg; / 3 = 120&deg; per step (3 rotations)<br>
+      <b>2-fold</b>: 360&deg; / 2 = 180&deg; per step (2 rotations)<br><br>
+      The hole shape on the Zometool ball matches this order &mdash;
+      a pentagonal hole has 5-fold symmetry, triangular has 3-fold, rectangular has 2-fold.
+    </div>
+
+    <h2>Group Theory</h2>
+
+    <div class="legend-box">
+      The full <b>icosahedral rotation group</b> has <b>60 elements</b>:<br><br>
+      1 identity<br>
+      + 6&times;4 = 24 rotations around 5-fold axes<br>
+      + 10&times;2 = 20 rotations around 3-fold axes<br>
+      + 15&times;1 = 15 rotations around 2-fold axes<br>
+      = <b>60 total</b><br><br>
+      This is the group <b>I</b> (or A<sub>5</sub>), the largest finite
+      rotation group in 3D.
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Canvas 2D renderer for icosahedral symmetry visualization
+// ============================================================
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const phi = (1 + Math.sqrt(5)) / 2;
+
+// --- Icosahedron geometry ---
+const verts = [
+  [0, 1, phi],    [0, -1, phi],   [0, 1, -phi],  [0, -1, -phi],
+  [1, phi, 0],    [-1, phi, 0],   [1, -phi, 0],   [-1, -phi, 0],
+  [phi, 0, 1],    [-phi, 0, 1],   [phi, 0, -1],   [-phi, 0, -1],
+];
+
+const edges = [
+  [0,1],[0,4],[0,5],[0,8],[0,9],
+  [1,6],[1,7],[1,8],[1,9],
+  [2,3],[2,4],[2,5],[2,10],[2,11],
+  [3,6],[3,7],[3,10],[3,11],
+  [4,5],[4,8],[4,10],
+  [5,9],[5,11],
+  [6,7],[6,8],[6,10],
+  [7,9],[7,11],
+  [8,10],[9,11]
+];
+
+const faces = [
+  [0,1,8],[0,1,9],[0,4,5],[0,4,8],[0,5,9],
+  [1,6,7],[1,6,8],[1,7,9],
+  [2,3,10],[2,3,11],[2,4,5],[2,4,10],[2,5,11],
+  [3,6,7],[3,6,10],[3,7,11],
+  [4,8,10],[5,9,11],[6,8,10],[7,9,11]
+];
+
+// Compute derived geometry
+const faceCenters = faces.map(([i,j,k]) => [
+  (verts[i][0]+verts[j][0]+verts[k][0])/3,
+  (verts[i][1]+verts[j][1]+verts[k][1])/3,
+  (verts[i][2]+verts[j][2]+verts[k][2])/3,
+]);
+
+const edgeMids = edges.map(([i,j]) => [
+  (verts[i][0]+verts[j][0])/2,
+  (verts[i][1]+verts[j][1])/2,
+  (verts[i][2]+verts[j][2])/2,
+]);
+
+// Find antipodal pairs
+function findPairs(points) {
+  const pairs = [];
+  const used = new Set();
+  for (let i = 0; i < points.length; i++) {
+    if (used.has(i)) continue;
+    for (let j = i + 1; j < points.length; j++) {
+      if (used.has(j)) continue;
+      const dx = points[i][0] + points[j][0];
+      const dy = points[i][1] + points[j][1];
+      const dz = points[i][2] + points[j][2];
+      if (Math.sqrt(dx*dx + dy*dy + dz*dz) < 0.1) {
+        pairs.push([i, j]);
+        used.add(i); used.add(j);
+        break;
+      }
+    }
+  }
+  return pairs;
+}
+
+const vertexPairs = findPairs(verts);
+const facePairs = findPairs(faceCenters);
+const edgePairs = findPairs(edgeMids);
+
+// --- 3D rotation and projection ---
+let rotX = 0.35, rotY = 0.6, zoom = 1.0;
+let dragging = false, lastMX, lastMY;
+
+function rotatePoint(p, rx, ry) {
+  // Rotate around Y axis
+  let x = p[0] * Math.cos(ry) + p[2] * Math.sin(ry);
+  let y = p[1];
+  let z = -p[0] * Math.sin(ry) + p[2] * Math.cos(ry);
+  // Rotate around X axis
+  const y2 = y * Math.cos(rx) - z * Math.sin(rx);
+  const z2 = y * Math.sin(rx) + z * Math.cos(rx);
+  return [x, y2, z2];
+}
+
+function project(p3d) {
+  const r = rotatePoint(p3d, rotX, rotY);
+  const perspective = 6 / (6 + r[2]); // simple perspective
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const scale = Math.min(canvas.width, canvas.height) * 0.2 * zoom;
+  return {
+    x: cx + r[0] * scale * perspective,
+    y: cy - r[1] * scale * perspective,  // flip Y
+    z: r[2],
+    scale: perspective,
+  };
+}
+
+// --- Drawing helpers ---
+function drawLine(p1_3d, p2_3d, color, width, dash) {
+  const a = project(p1_3d);
+  const b = project(p2_3d);
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  if (dash) ctx.setLineDash(dash);
+  else ctx.setLineDash([]);
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawDot(p3d, color, radius) {
+  const p = project(p3d);
+  const r = radius * p.scale;
+  // Glow
+  ctx.beginPath();
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.15;
+  ctx.arc(p.x, p.y, r * 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  // Solid dot
+  ctx.beginPath();
+  ctx.globalAlpha = 0.4 + 0.6 * ((p.z + 2.5) / 5); // depth fade
+  ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  return p;
+}
+
+// --- Icosidodecahedron geometry (vertices at icosahedron edge midpoints) ---
+const idVerts = edges.map(([i, j]) => [
+  (verts[i][0] + verts[j][0]) / 2,
+  (verts[i][1] + verts[j][1]) / 2,
+  (verts[i][2] + verts[j][2]) / 2,
+]);
+
+// Find icosidodecahedron edges: midpoints at distance 1
+const idEdges = [];
+for (let i = 0; i < idVerts.length; i++) {
+  for (let j = i + 1; j < idVerts.length; j++) {
+    const dx = idVerts[i][0]-idVerts[j][0], dy = idVerts[i][1]-idVerts[j][1], dz = idVerts[i][2]-idVerts[j][2];
+    if (Math.abs(Math.sqrt(dx*dx+dy*dy+dz*dz) - 1.0) < 0.01) {
+      idEdges.push([i, j]);
+    }
+  }
+}
+
+// --- View state ---
+let show5 = true, show3 = true, show2 = true;
+let showBall = false;
+
+function toggle(type) {
+  if (type === '5fold') show5 = !show5;
+  if (type === '3fold') show3 = !show3;
+  if (type === '2fold') show2 = !show2;
+  document.getElementById('tog-5').classList.toggle('active', show5);
+  document.getElementById('tog-3').classList.toggle('active', show3);
+  document.getElementById('tog-2').classList.toggle('active', show2);
+  updateViewButtons();
+}
+
+function toggleBall() {
+  showBall = !showBall;
+  document.getElementById('ball-btn').classList.toggle('active', showBall);
+}
+
+function setView(view) {
+  if (view === 'all') { show5 = show3 = show2 = true; }
+  else if (view === '2fold') { show5 = false; show3 = false; show2 = true; }
+  else if (view === '3fold') { show5 = false; show3 = true; show2 = false; }
+  else if (view === '5fold') { show5 = true; show3 = false; show2 = false; }
+  document.getElementById('tog-5').classList.toggle('active', show5);
+  document.getElementById('tog-3').classList.toggle('active', show3);
+  document.getElementById('tog-2').classList.toggle('active', show2);
+  updateViewButtons();
+}
+
+function updateViewButtons() {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  const btns = document.querySelectorAll('.view-btn');
+  if (show5 && show3 && show2) btns[0].classList.add('active');
+  else if (!show5 && !show3 && show2) btns[1].classList.add('active');
+  else if (!show5 && show3 && !show2) btns[2].classList.add('active');
+  else if (show5 && !show3 && !show2) btns[3].classList.add('active');
+}
+
+// --- Interaction ---
+canvas.addEventListener('mousedown', e => {
+  dragging = true; lastMX = e.clientX; lastMY = e.clientY;
+});
+canvas.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  rotY += (e.clientX - lastMX) * 0.008;
+  rotX += (e.clientY - lastMY) * 0.008;
+  rotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, rotX));
+  lastMX = e.clientX; lastMY = e.clientY;
+});
+canvas.addEventListener('mouseup', () => dragging = false);
+canvas.addEventListener('mouseleave', () => dragging = false);
+canvas.addEventListener('wheel', e => {
+  zoom *= e.deltaY > 0 ? 0.95 : 1.05;
+  zoom = Math.max(0.3, Math.min(3, zoom));
+  e.preventDefault();
+}, { passive: false });
+
+// Touch support
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    dragging = true;
+    lastMX = e.touches[0].clientX;
+    lastMY = e.touches[0].clientY;
+  }
+});
+canvas.addEventListener('touchmove', e => {
+  if (!dragging || e.touches.length !== 1) return;
+  rotY += (e.touches[0].clientX - lastMX) * 0.008;
+  rotX += (e.touches[0].clientY - lastMY) * 0.008;
+  rotX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, rotX));
+  lastMX = e.touches[0].clientX;
+  lastMY = e.touches[0].clientY;
+  e.preventDefault();
+}, { passive: false });
+canvas.addEventListener('touchend', () => dragging = false);
+
+// --- Render ---
+function render() {
+  requestAnimationFrame(render);
+
+  // Resize canvas
+  const wrap = document.getElementById('canvas-wrap');
+  canvas.width = wrap.clientWidth * devicePixelRatio;
+  canvas.height = wrap.clientHeight * devicePixelRatio;
+
+  // Auto-rotate when not dragging
+  if (!dragging) rotY += 0.004;
+
+  // Clear
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Sort edges by depth for painter's algorithm
+  const sortedEdges = edges.map(([i, j]) => {
+    const zi = rotatePoint(verts[i], rotX, rotY)[2];
+    const zj = rotatePoint(verts[j], rotX, rotY)[2];
+    return { i, j, z: (zi + zj) / 2 };
+  }).sort((a, b) => a.z - b.z);
+
+  // Draw icosahedron edges
+  for (const { i, j, z } of sortedEdges) {
+    const alpha = 0.12 + 0.18 * ((z + 2.5) / 5);
+    ctx.globalAlpha = alpha;
+    drawLine(verts[i], verts[j], '#8899aa', 1.5 * devicePixelRatio);
+  }
+  ctx.globalAlpha = 1;
+
+  // Collect all drawable items with depth for sorting
+  const items = [];
+
+  // Icosahedron vertices (small gray dots)
+  for (let i = 0; i < 12; i++) {
+    const z = rotatePoint(verts[i], rotX, rotY)[2];
+    items.push({ type: 'vertSmall', idx: i, z });
+  }
+
+  // 5-fold: axis lines + vertex dots
+  if (show5) {
+    for (const [i, j] of vertexPairs) {
+      const zi = rotatePoint(verts[i], rotX, rotY)[2];
+      const zj = rotatePoint(verts[j], rotX, rotY)[2];
+      items.push({ type: 'axisLine5', a: i, b: j, z: Math.min(zi, zj) - 10 }); // draw behind
+    }
+    for (let i = 0; i < 12; i++) {
+      const z = rotatePoint(verts[i], rotX, rotY)[2];
+      items.push({ type: 'vert5', idx: i, z });
+    }
+  }
+
+  // 3-fold: axis lines + face center dots
+  if (show3) {
+    for (const [i, j] of facePairs) {
+      const zi = rotatePoint(faceCenters[i], rotX, rotY)[2];
+      const zj = rotatePoint(faceCenters[j], rotX, rotY)[2];
+      items.push({ type: 'axisLine3', a: i, b: j, z: Math.min(zi, zj) - 10 });
+    }
+    for (let i = 0; i < 20; i++) {
+      const z = rotatePoint(faceCenters[i], rotX, rotY)[2];
+      items.push({ type: 'face3', idx: i, z });
+    }
+  }
+
+  // 2-fold: axis lines + edge midpoint dots
+  if (show2) {
+    for (const [i, j] of edgePairs) {
+      const zi = rotatePoint(edgeMids[i], rotX, rotY)[2];
+      const zj = rotatePoint(edgeMids[j], rotX, rotY)[2];
+      items.push({ type: 'axisLine2', a: i, b: j, z: Math.min(zi, zj) - 10 });
+    }
+    for (let i = 0; i < 30; i++) {
+      const z = rotatePoint(edgeMids[i], rotX, rotY)[2];
+      items.push({ type: 'edge2', idx: i, z });
+    }
+  }
+
+  // Sort by depth (farthest first)
+  items.sort((a, b) => a.z - b.z);
+
+  // Draw items
+  const dp = devicePixelRatio;
+  for (const item of items) {
+    switch (item.type) {
+      case 'vertSmall': {
+        const p = project(verts[item.idx]);
+        ctx.beginPath();
+        ctx.fillStyle = '#8899aa';
+        ctx.globalAlpha = 0.15 + 0.25 * ((item.z + 2.5) / 5);
+        ctx.arc(p.x, p.y, 3 * dp * p.scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        break;
+      }
+      case 'axisLine5': {
+        // Extend axes beyond icosahedron
+        const a = verts[item.a], b = verts[item.b];
+        const ext = 1.5;
+        const ea = [a[0]*ext, a[1]*ext, a[2]*ext];
+        const eb = [b[0]*ext, b[1]*ext, b[2]*ext];
+        drawLine(ea, eb, '#e94560', 1 * dp, [6 * dp, 4 * dp]);
+        break;
+      }
+      case 'axisLine3': {
+        const a = faceCenters[item.a], b = faceCenters[item.b];
+        const ext = 2.2;
+        const ea = [a[0]*ext, a[1]*ext, a[2]*ext];
+        const eb = [b[0]*ext, b[1]*ext, b[2]*ext];
+        drawLine(ea, eb, '#f0c040', 1 * dp, [6 * dp, 4 * dp]);
+        break;
+      }
+      case 'axisLine2': {
+        const a = edgeMids[item.a], b = edgeMids[item.b];
+        const ext = 2.5;
+        const ea = [a[0]*ext, a[1]*ext, a[2]*ext];
+        const eb = [b[0]*ext, b[1]*ext, b[2]*ext];
+        drawLine(ea, eb, '#4090ff', 1 * dp, [6 * dp, 4 * dp]);
+        break;
+      }
+      case 'vert5':
+        drawDot(verts[item.idx], '#e94560', 8 * dp);
+        break;
+      case 'face3':
+        drawDot(faceCenters[item.idx], '#f0c040', 6 * dp);
+        break;
+      case 'edge2':
+        drawDot(edgeMids[item.idx], '#4090ff', 5 * dp);
+        break;
+    }
+  }
+
+  // --- Draw connector ball overlay ---
+  if (showBall) {
+    // Semi-transparent sphere outline
+    const sphereR = Math.min(canvas.width, canvas.height) * 0.2 * zoom * phi * 0.55;
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, sphereR, 0, Math.PI * 2);
+    ctx.strokeStyle = '#556';
+    ctx.lineWidth = 1.5 * dp;
+    ctx.setLineDash([4 * dp, 3 * dp]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw icosidodecahedron wireframe (faintly)
+    for (const [i, j] of idEdges) {
+      const a = project(idVerts[i]);
+      const b = project(idVerts[j]);
+      ctx.beginPath();
+      ctx.strokeStyle = '#5ab';
+      ctx.lineWidth = 1 * dp;
+      ctx.globalAlpha = 0.15;
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // Draw hole-shaped markers on the sphere surface
+    function normalizeToSphere(p) {
+      const l = Math.sqrt(p[0]**2 + p[1]**2 + p[2]**2);
+      const r = phi * 1.08;
+      return [p[0]/l * r, p[1]/l * r, p[2]/l * r];
+    }
+
+    function drawShapeMarker(center3d, sides, color, size) {
+      const p = project(center3d);
+      const depthAlpha = 0.2 + 0.8 * ((p.z + 3) / 6);
+      const r = size * dp * p.scale;
+
+      if (sides === 4) {
+        // Rectangle
+        ctx.fillStyle = color;
+        ctx.globalAlpha = depthAlpha * 0.7;
+        ctx.fillRect(p.x - r * 1.3, p.y - r * 0.8, r * 2.6, r * 1.6);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1 * dp;
+        ctx.globalAlpha = depthAlpha;
+        ctx.strokeRect(p.x - r * 1.3, p.y - r * 0.8, r * 2.6, r * 1.6);
+      } else {
+        ctx.beginPath();
+        for (let k = 0; k <= sides; k++) {
+          const a = -Math.PI / 2 + k * 2 * Math.PI / sides;
+          const sx = p.x + r * Math.cos(a);
+          const sy = p.y + r * Math.sin(a);
+          if (k === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.globalAlpha = depthAlpha * 0.5;
+        ctx.fill();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5 * dp;
+        ctx.globalAlpha = depthAlpha;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // 5-fold: pentagonal holes at vertices
+    for (const v of verts) drawShapeMarker(normalizeToSphere(v), 5, '#e94560', 8);
+    // 3-fold: triangular holes at face centers
+    for (const fc of faceCenters) drawShapeMarker(normalizeToSphere(fc), 3, '#f0c040', 7);
+    // 2-fold: rectangular holes at edge midpoints
+    for (const em of edgeMids) drawShapeMarker(normalizeToSphere(em), 4, '#4090ff', 5);
+  }
+
+  // Draw count labels
+  ctx.globalAlpha = 1;
+  ctx.font = `${14 * dp}px 'Segoe UI', system-ui, sans-serif`;
+  ctx.textAlign = 'left';
+  const lx = 20 * dp, ly = canvas.height - 30 * dp;
+  const counts = [];
+  if (show5) counts.push({ text: '6 axes (12 pentagonal holes)', color: '#e94560' });
+  if (show3) counts.push({ text: '10 axes (20 triangular holes)', color: '#f0c040' });
+  if (show2) counts.push({ text: '15 axes (30 rectangular holes)', color: '#4090ff' });
+
+  for (let i = 0; i < counts.length; i++) {
+    const y = ly - (counts.length - 1 - i) * 22 * dp;
+    ctx.fillStyle = counts[i].color;
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.arc(lx + 6 * dp, y - 4 * dp, 5 * dp, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#ccc';
+    ctx.fillText(counts[i].text, lx + 18 * dp, y);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
