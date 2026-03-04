@@ -199,6 +199,32 @@ The full set of all points reachable from the origin by any sequence of Zometool
 
 This is precisely the mathematical structure underlying **icosahedral quasicrystals** — the aperiodic materials discovered by Dan Shechtman (Nobel Prize 2011). The Z-lattice is infinite and aperiodic, yet has perfect icosahedral symmetry and long-range order. See [Connections to Quasicrystals](#9-connections-to-quasicrystals) for more.
 
+#### Closed Paths and Exact Closure
+
+Although positions extend to infinity, you can always build **closed paths** (loops) that return exactly to the origin. A path closes when the sum of all strut vectors equals zero. For example, an icosahedron built from 30 blue struts is a closed structure — the 30 offset vectors sum to exactly (0, 0, 0) in Q(phi).
+
+A natural computational question: **given N struts of various colors and lengths, what is the longest closed path you can form using a subset of them?** This is the *Maximum Zero-Sum Subset* problem — find the largest subset of N vectors in Q(phi)^3 whose sum is zero.
+
+This problem is **NP-hard**. To see why, note that each strut vector has coordinates in Q(phi), meaning each coordinate is `a + b*phi` with integer a, b. For the path to close, both the rational parts and the phi-parts must independently sum to zero in all 3 dimensions — giving 6 integer equations:
+
+```
+Sum of a_x = 0,  Sum of b_x = 0    (x-coordinates)
+Sum of a_y = 0,  Sum of b_y = 0    (y-coordinates)
+Sum of a_z = 0,  Sum of b_z = 0    (z-coordinates)
+```
+
+This is a 6-dimensional subset sum problem. Even the 1-dimensional case (standard subset sum) is NP-complete, so the Zometool version is at least as hard.
+
+| Aspect | Details |
+|--------|---------|
+| **Problem** | Find the largest subset of N strut vectors that sums to zero |
+| **Complexity** | NP-hard (reduces to multi-dimensional subset sum) |
+| **Best exact algorithm** | O(2^(N/2)) via meet-in-the-middle |
+| **Exactness guarantee** | Yes — Q(phi) arithmetic means a path either closes *exactly* or doesn't close at all. No "almost closed" ambiguity. |
+| **Zometool structure helps?** | The finite number of directions (at most 60 per orbit) constrains the problem, but choosing which directions and lengths to include remains combinatorial. |
+
+Note the silver lining of exact arithmetic: unlike floating-point geometry where you'd need an epsilon tolerance to decide if a path "almost" closes, in Q(phi) the answer is always exact — the vector sum is either precisely zero or precisely nonzero. The *decision* is trivial once you've chosen the subset; it's *finding* the optimal subset that's hard.
+
 | Color | Prototype Direction (phi notation) | Axes | Notes |
 |-------|-----------------------------------|------|-------|
 | **Blue** | (1, 1+phi, -1+phi) | 30 | Standard: 2-fold axis, rectangular holes |
