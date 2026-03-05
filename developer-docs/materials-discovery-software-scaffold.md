@@ -1,0 +1,217 @@
+# Materials Discovery Software Scaffold
+
+Companion to Chapter 10.8 in [vZome Geometry Tutorial](vzome-geometry-tutorial.md).
+
+This document turns the chapter into an executable software blueprint for quasicrystal/approximant discovery using Z[phi]-aware geometry plus modern materials workflows.
+
+---
+
+## 1. Scope
+
+### Primary Goal
+
+Build a reproducible pipeline that can:
+
+1. generate candidate quasicrystal-compatible structures,
+2. screen them with fast surrogate models,
+3. refine top candidates with DFT,
+4. rank candidates for experimental follow-up.
+
+### Non-Goals (v0.1)
+
+- Full autonomous lab integration.
+- Guaranteed true aperiodic bulk proof in first release.
+- Universal potential quality across all chemistries on day one.
+
+---
+
+## 2. Suggested Repo Layout
+
+Create a new top-level workspace in the repo:
+
+```text
+materials-discovery/
+  README.md
+  pyproject.toml
+  configs/
+    systems/
+      al_cu_fe.yaml
+      al_pd_mn.yaml
+      sc_zn.yaml
+  data/
+    raw/
+    external/
+    processed/
+    candidates/
+    reports/
+  src/
+    materials_discovery/
+      __init__.py
+      common/
+        io.py
+        schema.py
+        logging.py
+      data/
+        ingest_hypodx.py
+        ingest_reference_phases.py
+        normalize.py
+      generator/
+        approximant_templates.py
+        decorate_sites.py
+        candidate_factory.py
+      screen/
+        relax_fast.py
+        filter_thresholds.py
+        rank_shortlist.py
+      dft/
+        submit_workflows.py
+        parse_results.py
+        hull_analysis.py
+        phonon_checks.py
+      active_learning/
+        train_surrogate.py
+        select_next_batch.py
+      diffraction/
+        simulate_powder_xrd.py
+        compare_patterns.py
+      cli.py
+  workflows/
+    jobflow/
+    aiida/
+  notebooks/
+  tests/
+    test_schema.py
+    test_generator.py
+    test_screen_filters.py
+```
+
+If you do not want a new top-level directory, mirror this structure under `developer-docs/examples/materials-discovery/` first, then promote to production paths later.
+
+---
+
+## 3. Data Contract (Candidate Record)
+
+Use one canonical candidate schema from day one:
+
+```json
+{
+  "candidate_id": "md_000001",
+  "system": "Al-Cu-Fe",
+  "template_family": "icosahedral_approximant_1_1",
+  "cell": {"a": 14.2, "b": 14.2, "c": 14.2, "alpha": 90, "beta": 90, "gamma": 90},
+  "sites": [
+    {"label": "S1", "qphi": [[1,0],[0,1],[-1,1]], "species": "Al", "occ": 1.0}
+  ],
+  "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+  "screen": {"model": "MACE", "energy_per_atom_ev": -3.12},
+  "dft": {"status": "pending"},
+  "provenance": {"generator_version": "0.1.0", "config_hash": "sha256:..."}
+}
+```
+
+Notes:
+
+- `qphi` stores `(a,b)` integer pairs for each Cartesian component `a + b*phi`.
+- store both generated and relaxed Cartesian coordinates when available.
+- never drop provenance fields; they are required for reproducibility.
+
+---
+
+## 4. Module Responsibilities
+
+### `data/`
+
+- Ingest HYPOD-X and reference phase data.
+- Normalize composition labels, phase names, and units.
+- Produce one deduplicated table for training/screening.
+
+### `generator/`
+
+- Generate periodic approximants or bounded templates.
+- Apply decoration rules (species assignments and occupancy constraints).
+- Emit validated structure objects plus metadata.
+
+### `screen/`
+
+- Run fast relaxations (MACE/CHGNet/NequIP-based).
+- Apply hard filters: minimum distance, charge sanity, composition bounds.
+- Rank shortlist for DFT.
+
+### `dft/`
+
+- Submit production relax/static/hull jobs.
+- Parse total energies and convergence diagnostics.
+- Compute `DeltaE_hull` and optional phonon checks.
+
+### `active_learning/`
+
+- Train/update surrogate from accumulated DFT labels.
+- Select next candidate batch using uncertainty-aware criteria.
+
+### `diffraction/`
+
+- Simulate powder XRD for top candidates.
+- Compare to known signatures; flag experimental distinctness.
+
+---
+
+## 5. Milestones and Definition of Done
+
+| Milestone | Duration | Definition of Done |
+|----------|----------|--------------------|
+| M1 Data foundation | 2 weeks | HYPOD-X + reference phases ingested; schema validated |
+| M2 Candidate generation | 3 weeks | >=10k unique candidates generated for one ternary system |
+| M3 Fast screening | 3 weeks | Top 1-5% shortlisted with reproducible ranking reports |
+| M4 DFT refinement | 5 weeks | >=200 candidates converged; hull values computed |
+| M5 Active learning loop | 3 weeks | Surrogate retrained and improves top-k hit rate |
+| M6 Experiment report | 2 weeks | Ranked list with XRD signatures and provenance bundles |
+
+---
+
+## 6. Metrics to Track
+
+- `screen_to_dft_yield`: fraction of screened structures that remain competitive after DFT.
+- `top_k_precision`: fraction of top-k surrogate predictions validated by DFT.
+- `DeltaE_hull_distribution`: stability profile of generated families.
+- `dedupe_rate`: duplicate generation rate (should decline over time).
+- `reproducibility_rate`: jobs reproducing same result under rerun.
+
+---
+
+## 7. Initial Command Surface
+
+Expose one CLI entry point:
+
+```bash
+mdisc ingest --config configs/systems/al_cu_fe.yaml
+mdisc generate --config configs/systems/al_cu_fe.yaml --count 20000
+mdisc screen --config configs/systems/al_cu_fe.yaml
+mdisc dft-submit --config configs/systems/al_cu_fe.yaml --batch top500
+mdisc dft-parse --config configs/systems/al_cu_fe.yaml
+mdisc active-learn --config configs/systems/al_cu_fe.yaml
+mdisc report --config configs/systems/al_cu_fe.yaml
+```
+
+---
+
+## 8. Recommended External Resources
+
+- HYPOD-X datasets and metadata: https://www.nature.com/articles/s41597-024-04043-z
+- Quasicrystal ML discovery paper: https://doi.org/10.1103/PhysRevMaterials.7.093805
+- First-principles QC nanoparticle stability: https://www.nature.com/articles/s41567-025-02925-6
+- Quasicrystal structure prediction review: https://euler.phys.cmu.edu/widom/pubs/PDF/IJCR2023.pdf
+- Deep-learning XRD for QC identification: https://pubmed.ncbi.nlm.nih.gov/37964402/
+
+---
+
+## 9. First Implementation Ticket List
+
+1. Add `materials-discovery/` skeleton and package metadata.
+2. Implement `schema.py` and round-trip JSON validation tests.
+3. Implement HYPOD-X ingestion and normalization.
+4. Implement one template generator for a single target system.
+5. Implement one fast-screen backend and one ranking report.
+6. Wire DFT submission for one backend (jobflow or AiiDA).
+7. Add CI test suite for schema, generator determinism, and ranking reproducibility.
+
+This list is intentionally narrow so the first push produces a runnable vertical slice instead of a large unfinished framework.

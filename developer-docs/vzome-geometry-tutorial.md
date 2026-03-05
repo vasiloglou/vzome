@@ -24,6 +24,17 @@ A comprehensive guide to the mathematical foundations, architecture, and geometr
 
 Zometool is a precision mathematical construction toy designed to build 3D geometric structures using two components:
 
+### Euclidean Bridge: Same Geometry, Different Allowed Coordinates
+
+If you already know Euclidean geometry, the fastest way to understand zome geometry is:
+
+- Same ambient space: all points, lines, planes, angles, and rigid motions are still in ordinary 3D Euclidean space.
+- Different coordinate language: instead of arbitrary real coordinates, constructions are built from vectors whose components lie in `Q(phi)` (numbers of the form `a + b*phi`).
+- Direction constraint: strut directions come from finite icosahedral orbits (blue/yellow/red plus additional vZome orbits).
+- Length constraint: strut lengths are powers of `phi`, so reachable positions are integer combinations in a `Z[phi]` module.
+
+So zome geometry is best viewed as **Euclidean geometry with a structured ruler and compass**: fewer allowed moves, but exact algebraic closure and strong symmetry.
+
 ### The Connector Ball
 
 The Zometool connector ball is approximately spherical, with 62 precisely positioned holes in three shapes. These hole positions correspond to the symmetry axes of the icosahedron (see [From Icosahedron to Connector Ball](#from-icosahedron-to-connector-ball) below):
@@ -810,7 +821,7 @@ The connection to Zometool is direct and deep:
 | Coordinates in Q(φ) | Same algebraic field |
 | Z[φ] lattice in 3D | Exact same module |
 | Aperiodic, non-repeating | Same — no translational symmetry |
-| Dense but discrete locally | Same — infinite but any finite model is finite |
+| Non-periodic but ordered | Same — long-range orientational order without translational periodicity |
 
 #### The Cut-and-Project Method
 
@@ -829,7 +840,7 @@ In the icosahedral case, this generalizes from 2D→1D to **6D→3D**: a 6-dimen
 
 #### Why It Matters for Zometool
 
-Every Zometool model is a **finite patch of a quasicrystal**. The connector ball positions are points in the Z[φ] lattice — the same infinite, aperiodic, dense-yet-exact point set that describes icosahedral quasicrystal atomic positions. Building a Zometool model is literally building a fragment of quasicrystalline matter.
+Many Zometool models can be interpreted as **finite patches sampled from quasicrystal-compatible point sets**. The connector ball positions are points in the Z[φ] module used in icosahedral quasicrystal models, but physical stability still depends on chemistry, occupancy, and energetics.
 
 ### 10.2 Viral Capsids — Biology's Icosahedra
 
@@ -967,80 +978,113 @@ Across all these domains, the pattern is the same:
 
 Whenever a physical system exhibits icosahedral symmetry — whether it's a quasicrystal, a virus, a carbon molecule, or a projection from higher-dimensional physics — its mathematical description naturally lives in the golden field Q(φ), and its geometric structure is exactly representable in Zometool/vZome. The toy, the software, and the physics all share the same deep mathematical foundation.
 
-### 10.8 Materials Discovery: Optimization over Z[φ]³
+### 10.8 Materials Discovery: From Z[φ] Geometry to an Executable Pipeline
 
-The physics connections above suggest a provocative idea: **can we use the Zometool coordinate space as a constrained search space for discovering new materials?** Rather than searching all of R³ for optimal atomic configurations, restrict to the Z[φ]³ lattice — which is already known to contain quasicrystals, fullerenes, and other stable structures.
+The core idea is still powerful: use icosahedral/golden-ratio structure to constrain search. But for software and physics, the search space must be defined in a way that is both computable and chemically meaningful.
 
 ![Materials Discovery via Zome-Constrained Optimization](images/materials-optimization.svg)
 
-#### The Optimization Problem
+#### 10.8.1 Two Corrections Before Optimization
 
-**Decision variables**: A finite subset S ⊂ Z[φ]³ of N atom positions. Each atom has coordinates (a_i + b_i·φ, c_i + d_i·φ, e_i + f_i·φ) where a_i through f_i are integers — so the entire structure is specified by **6N integers**.
+**Correction A — exact coordinates, not exact total energies.**  
+Coordinates and symmetry operations can be represented exactly in `Q(φ)`, which is excellent for duplicate detection, symmetry checks, and deterministic geometry transforms. But practical energies (EAM, machine-learned potentials, DFT) are still numerical approximations.
 
-**Objective**: Minimize total energy E(S) under some interatomic potential:
+**Correction B — use bounded or periodic families, not raw dense `Z[φ]^3`.**  
+`Z[φ]^3` is countable but dense in `R^3`; naive nearest-neighbor moves are not well-defined. In practice, optimize over:
+
+- **Periodic approximants** generated from 6D cut-and-project data
+- **Bounded coefficient windows** in integer coordinate space
+- **Template families** (e.g., known approximant topologies) with variable decoration
+
+These choices create a finite candidate set per iteration.
+
+#### 10.8.2 Practical Decision Variables
+
+A realistic candidate is not just geometry. It includes chemistry and periodicity:
+
+- `T`: approximant/template type (or tiling family)
+- `A`: lattice/cell parameters and phason/window parameters
+- `R`: site coordinates (stored as integer pairs for each `Q(φ)` component)
+- `Sigma`: species assignment / site occupancy variables
+
+So optimization is over `(T, A, R, Sigma)` rather than only a set of points `S`.
+
+#### 10.8.3 Objective Functions and Constraints
+
+A practical multi-objective target:
 
 ```
-E(S) = Σᵢ<ⱼ V(|rᵢ - rⱼ|)    (pairwise potential)
+minimize   [ DeltaE_hull(x), P_phonon(x), P_target(x) ]
+subject to stoichiometry, minimum-distance, and synthesis constraints
 ```
 
-where V can be Lennard-Jones, embedded atom method (EAM), or a DFT-derived potential. Since all distances |rᵢ - rⱼ| are algebraic numbers in Q(φ), the energy function is exact.
+where:
 
-**Constraints**:
-- All positions in Z[φ]³ (the "zome constraint")
-- Minimum interatomic distance ≥ d_min
-- Optional: enforce icosahedral symmetry (S = G · S₀ for fundamental domain S₀), reducing variables by factor of 60
-- Optional: target density, composition, or stoichiometry
+- `DeltaE_hull`: energy above convex hull vs competing phases
+- `P_phonon`: penalty for dynamical instability (imaginary modes)
+- `P_target`: property-specific penalty (e.g., catalytic descriptor or thermal target)
 
-#### Why This Formulation Is Natural
+This keeps the pipeline tied to measurable stability and application goals.
 
-| Advantage | Explanation |
-|-----------|-------------|
-| **Reduced search space** | Z[φ]³ is countable (vs uncountable R³), making enumeration feasible for small clusters |
-| **Discretization for free** | Continuous optimization in R³ requires discretization that introduces artifacts; Z[φ]³ is already discrete yet dense enough to approximate any target geometry |
-| **Built-in symmetry** | Icosahedral configurations are representable natively — no need to impose symmetry as a separate constraint |
-| **Exact arithmetic** | Energy differences are exact in Q(φ), avoiding numerical noise near phase boundaries |
-| **Known stable structures** | Quasicrystals, Mackay icosahedra, fullerenes — nature already validated that solutions exist in this space |
-| **Hierarchical structure** | Powers of φ give natural multi-scale shells (radii φⁿ), built into the lattice |
-| **Integer encoding** | 6N integers fully specify any configuration — ideal for genetic algorithms, integer programming, and combinatorial search |
+#### 10.8.4 Optimization Moves That Actually Work
 
-#### Optimization Methods
+Instead of "nearest lattice neighbors," use moves in bounded discrete parameter space:
 
-**Exhaustive enumeration** (small clusters, N ≤ 15-20): Enumerate all subsets of Z[φ]³ within a bounding radius. The icosahedral symmetry reduces the search by a factor of 60 — only enumerate configurations in the fundamental domain and let the 60 rotations generate the rest. This is how the Mackay icosahedron (N=13) and other stable clusters were originally identified.
+- Increment/decrement bounded integer coefficients in `R`
+- Tile substitution / inflation-deflation moves in template space
+- Species swaps and occupancy toggles in `Sigma`
+- Cell and window parameter perturbations in `A`
 
-**Simulated annealing on the lattice**: Define moves as shifting an atom to a neighboring Z[φ]³ site (the 6 nearest neighbors along each coordinate axis). The Metropolis criterion accepts or rejects each move based on energy change. Because moves stay on the lattice, the constraint is maintained automatically. Scales to N ~ 1000 atoms.
+These moves preserve representability while remaining algorithmically well-defined.
 
-**Genetic / evolutionary algorithms**: Encode each configuration as a genome of 6N integers (the a_i, b_i coefficients). Crossover and mutation operations naturally preserve the Z[φ]³ constraint because any combination of integer coefficients is still a valid Z[φ]³ point. This is a key advantage over continuous representations where crossover can produce invalid geometries.
+#### 10.8.5 Actionable Software Plan (Suggested 20-Week v0.1)
 
-**Machine learning surrogates**: Train a graph neural network (GNN) on DFT-computed energies of Z[φ]³ configurations. The GNN can exploit **icosahedral equivariance** — a stronger symmetry than the generic E(3) equivariance used in standard materials GNNs. The finite symmetry group (order 60) makes equivariant layers simpler and more efficient than continuous rotation equivariance.
+| Phase | Weeks | Build | Deliverable |
+|------|------|-------|-------------|
+| **1. Data + scope** | 1-3 | Ingest quasicrystal/approximant corpora and competing phases | Unified candidate + reference dataset |
+| **2. Candidate generator** | 3-6 | Implement approximant/template + decoration generator | Reproducible structure generation API |
+| **3. Fast screening** | 6-10 | Relax with ML potentials, filter by geometry and energy proxies | Top-k shortlist for DFT |
+| **4. DFT refinement** | 10-15 | Relaxation, static energies, hull analysis, selected phonons | Physically ranked candidates |
+| **5. Active learning loop** | 15-18 | Retrain surrogate and resample uncertain low-energy regions | Improved model + new candidates |
+| **6. Experiment-facing outputs** | 18-20 | Simulated diffraction and synthesis-ready reports | Prioritized list for validation |
 
-#### Computational Complexity
+#### 10.8.6 Recommended Tooling Stack
 
-The fundamental problem — "given N atoms in Z[φ]³, find the configuration minimizing E(S)" — is NP-hard in general (it reduces to the lattice optimization problems known to be hard). However, the icosahedral symmetry and algebraic structure provide significant practical speedups:
+- **Geometry/materials plumbing**: `pymatgen`, `ASE`, `spglib`
+- **Workflow/provenance**: `atomate2 + jobflow` or `AiiDA`
+- **Fast force fields**: `MACE`, `CHGNet`, `NequIP` (fine-tuned where needed)
+- **DFT backends**: VASP / Quantum ESPRESSO / DFT-FE (depending on access and scale)
+- **Benchmark sanity checks**: Cambridge Cluster Database-style cluster tests for optimizer behavior
 
-| Aspect | Unconstrained (R³) | Zome-constrained (Z[φ]³) |
-|--------|-------------------|--------------------------|
-| Variables per atom | 3 real numbers (∞ precision) | 6 integers (exact) |
-| Symmetry reduction | Must detect, then enforce | Built-in (factor of 60) |
-| Duplicate detection | Requires tolerance ε | Exact (compare integers) |
-| Energy evaluation | Floating-point, approximate | Exact in Q(φ) |
-| Search space | Uncountably infinite | Countably infinite |
-| Natural for | Gradient descent | Combinatorial optimization |
+#### 10.8.7 Minimum Success Criteria
 
-#### What Could Be Discovered?
+Before claiming discovery, require all of the following:
 
-The most promising targets for zome-constrained materials design are structures where icosahedral symmetry is already known to be favorable:
+1. Reproduce at least one known quasicrystal/approximant family as a calibration check.
+2. Achieve stable ranking convergence under surrogate retraining.
+3. Produce candidates with low `DeltaE_hull` and no major dynamical instabilities in checked cells.
+4. Generate distinguishing simulated diffraction signatures for experimental follow-up.
 
-1. **New quasicrystal compositions**: Search for ternary and quaternary alloy compositions where the Z[φ]³ lattice minimizes formation energy. Known Al-Cu-Fe, Al-Pd-Mn quasicrystals were found experimentally; systematic computational search could find others.
+#### 10.8.8 Data and Literature Starting Points
 
-2. **Icosahedral nanoparticle catalysts**: Mackay icosahedral clusters of transition metals have unusual catalytic properties (high surface area, strained bonds). Optimize shell occupancy for specific reactions.
+- HYPOD-X quasicrystal datasets and metadata  
+  https://www.nature.com/articles/s41597-024-04043-z
+- Machine-learning discovery of quasicrystals (ternary systems)  
+  https://doi.org/10.1103/PhysRevMaterials.7.093805
+- First-principles stability/kinetics for quasicrystal nanoparticles  
+  https://www.nature.com/articles/s41567-025-02925-6
+- Quasicrystal structure prediction review (approximants, methods, limitations)  
+  https://euler.phys.cmu.edu/widom/pubs/PDF/IJCR2023.pdf
+- Deep-learning XRD-assisted quasicrystal identification  
+  https://pubmed.ncbi.nlm.nih.gov/37964402/
 
-3. **Designer fullerenes and cages**: Beyond C₆₀, search for optimal cage structures (boron fullerenes, metal-organic polyhedra) with icosahedral topology and specific electronic properties.
+#### 10.8.9 Companion Build Blueprint
 
-4. **Phonon engineering**: Quasicrystalline materials have unusual phonon spectra (no Brillouin zone, fractal density of states). Design structures with targeted thermal conductivity by optimizing atomic positions on Z[φ]³.
+For a concrete repository scaffold, module boundaries, milestones, and acceptance criteria aligned to this chapter, see:
 
-5. **Metamaterials**: Macroscopic structures with aperiodic icosahedral order (3D-printed or self-assembled) for photonic, acoustic, or mechanical metamaterial applications.
+- [Materials Discovery Software Scaffold](materials-discovery-software-scaffold.md)
 
-The key insight is that **Z[φ]³ is not an arbitrary restriction** — it is the natural coordinate space for an entire class of materials that nature has already shown to be physically realizable and practically useful.
+This reframing keeps the original vision intact while making it implementable as a real materials-discovery software program.
 
 ---
 
@@ -1051,6 +1095,7 @@ The key insight is that **Z[φ]³ is not an arbitrary restriction** — it is th
 - [Quick Start Guide](../website/docs/quick-start.md) — Interactive tutorial for building your first dodecahedron
 - [Zometool Introduction](../website/docs/zometool-intro.md) — Web-based introduction to Zometool geometry
 - [Zomic Language Reference](../core/docs/ZomicReference.md) — Complete Zomic scripting reference
+- [Materials Discovery Software Scaffold](materials-discovery-software-scaffold.md) — Practical implementation blueprint for Chapter 10.8
 - [Copilot Instructions](../.github/copilot-instructions.md) — Detailed architecture and codebase guide
 - [Zomod History](../website/docs/history/zomod/index.md) — History of vZome's predecessor
 
