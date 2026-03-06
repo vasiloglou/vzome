@@ -67,6 +67,7 @@ def test_real_mode_end_to_end_pipeline_artifacts() -> None:
     assert report.exit_code == 0
     report_summary = json.loads(report.stdout)
     assert Path(report_summary["manifest_path"]).exists()
+    assert Path(report_summary["calibration_path"]).exists()
 
     pipeline_manifest_path = Path(report_summary["pipeline_manifest_path"])
     assert pipeline_manifest_path.exists()

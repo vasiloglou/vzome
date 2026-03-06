@@ -17,6 +17,7 @@ This document turns the chapter into an executable software blueprint for quasic
 - `M5 active-learn`: implemented in `materials-discovery/src/materials_discovery/active_learning/` and wired through `materials_discovery.cli`.
 - `RM5 hardening`: started; surrogate training now uses descriptor/screen features and acquisition is risk-aware instead of centroid-only.
 - `M6 hifi-rank + report`: implemented in `materials-discovery/src/materials_discovery/hifi_digital/rank_candidates.py` and `materials-discovery/src/materials_discovery/diffraction/`.
+- `RM6 hardening`: started; report outputs now include chemistry-driven XRD proxy fingerprints, recommendation tiers, risk flags, and release-gate calibration.
 
 ### Local Quickstart
 

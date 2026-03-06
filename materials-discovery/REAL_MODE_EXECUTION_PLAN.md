@@ -25,6 +25,10 @@ This document defines the execution plan to move `materials-discovery/` from sca
   - active-learning surrogate now trains on descriptor + screening features,
   - acquisition now balances predicted success, uncertainty, novelty, and OOD risk,
   - model registry rows now capture surrogate threshold, radius, and top-k precision diagnostics.
+- RM6 hardening (started March 6, 2026):
+  - report-stage XRD proxies are now descriptor-driven instead of hash-seeded,
+  - experiment reports now carry recommendation tiers, evidence blocks, and risk flags,
+  - report calibration now emits release-gate and reproducibility diagnostics.
 
 Note: these are production-oriented software pathways; domain-model fidelity can be raised iteratively by swapping adapters and calibrations without changing CLI/schema contracts.
 

@@ -59,16 +59,22 @@ def test_report_runs_pipeline() -> None:
 
     report_path = Path(summary["report_path"])
     xrd_path = Path(summary["xrd_patterns_path"])
+    calibration_path = Path(summary["calibration_path"])
     assert report_path.exists()
     assert xrd_path.exists()
+    assert calibration_path.exists()
 
     report = json.loads(report_path.read_text(encoding="utf-8"))
     patterns = _read_jsonl(xrd_path)
+    calibration = json.loads(calibration_path.read_text(encoding="utf-8"))
 
     assert report["ranked_count"] == summary["ranked_count"]
     assert report["reported_count"] == summary["reported_count"]
+    assert report["report_fingerprint"] == summary["report_fingerprint"]
     assert isinstance(report["entries"], list)
     assert len(report["entries"]) == summary["reported_count"]
+    assert isinstance(report["summary"], dict)
+    assert isinstance(report["release_gate"], dict)
 
     candidate_ids = {entry["candidate_id"] for entry in report["entries"]}
     pattern_ids = {row["candidate_id"] for row in patterns}
@@ -76,9 +82,22 @@ def test_report_runs_pipeline() -> None:
 
     first_entry = report["entries"][0]
     assert isinstance(first_entry["hifi_score"], float)
+    assert isinstance(first_entry["stability_probability"], float)
+    assert isinstance(first_entry["ood_score"], float)
+    assert isinstance(first_entry["novelty_score"], float)
     assert isinstance(first_entry["xrd_confidence"], float)
     assert isinstance(first_entry["xrd_distinctiveness"], float)
     assert first_entry["priority"] in {"high", "medium", "watch"}
+    assert first_entry["recommendation"] in {"synthesize", "secondary", "hold"}
+    assert isinstance(first_entry["risk_flags"], list)
+    assert isinstance(first_entry["composition"], dict)
+    assert isinstance(first_entry["evidence"], dict)
+    assert isinstance(first_entry["pattern_fingerprint"], str)
+
+    assert calibration["reported_count"] == summary["reported_count"]
+    assert calibration["report_fingerprint"] == summary["report_fingerprint"]
+    assert isinstance(calibration["release_gate_ready"], bool)
+    assert isinstance(calibration["report_digest"], str)
 
 
 def test_report_is_deterministic() -> None:
@@ -93,11 +112,19 @@ def test_report_is_deterministic() -> None:
     first_summary = json.loads(first.stdout)
 
     report_path = Path(first_summary["report_path"])
+    calibration_path = Path(first_summary["calibration_path"])
+    pipeline_manifest_path = Path(first_summary["pipeline_manifest_path"])
     content_a = report_path.read_text(encoding="utf-8")
+    calibration_a = calibration_path.read_text(encoding="utf-8")
+    pipeline_manifest_a = json.loads(pipeline_manifest_path.read_text(encoding="utf-8"))
 
     second = runner.invoke(app, ["report", "--config", str(config_path)])
     assert second.exit_code == 0
     assert first.stdout == second.stdout
 
     content_b = report_path.read_text(encoding="utf-8")
+    calibration_b = calibration_path.read_text(encoding="utf-8")
+    pipeline_manifest_b = json.loads(pipeline_manifest_path.read_text(encoding="utf-8"))
     assert content_a == content_b
+    assert calibration_a == calibration_b
+    assert pipeline_manifest_a["output_hashes"] == pipeline_manifest_b["output_hashes"]

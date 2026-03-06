@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from statistics import mean
 from typing import Any
 
@@ -173,25 +175,76 @@ def ranking_calibration(candidates: list[CandidateRecord]) -> dict[str, float | 
     }
 
 
-def report_calibration(report: dict[str, Any]) -> dict[str, float | int]:
+def report_calibration(report: dict[str, Any]) -> dict[str, Any]:
     entries = report.get("entries", [])
     if not isinstance(entries, list):
         raise ValueError("report entries must be a list")
 
     high_priority = 0
+    medium_priority = 0
     watch_priority = 0
+    synthesize_count = 0
+    secondary_count = 0
+    hold_count = 0
+    xrd_confidences: list[float] = []
+    distinctiveness_values: list[float] = []
+    stability_probabilities: list[float] = []
+    ood_scores: list[float] = []
+    top_three_passes = 0
     for entry in entries:
         if not isinstance(entry, dict):
             continue
         priority = entry.get("priority")
         if priority == "high":
             high_priority += 1
+        if priority == "medium":
+            medium_priority += 1
         if priority == "watch":
             watch_priority += 1
+        recommendation = entry.get("recommendation")
+        if recommendation == "synthesize":
+            synthesize_count += 1
+        if recommendation == "secondary":
+            secondary_count += 1
+        if recommendation == "hold":
+            hold_count += 1
+        xrd_confidences.append(float(entry.get("xrd_confidence", 0.0)))
+        distinctiveness_values.append(float(entry.get("xrd_distinctiveness", 0.0)))
+        stability_probabilities.append(float(entry.get("stability_probability", 0.0)))
+        ood_scores.append(float(entry.get("ood_score", 0.0)))
+
+    top_three = [entry for entry in entries[:3] if isinstance(entry, dict)]
+    if top_three:
+        top_three_passes = sum(bool(entry.get("passed_checks")) for entry in top_three)
+
+    release_gate = report.get("release_gate", {})
+    if not isinstance(release_gate, dict):
+        release_gate = {}
+    release_gate_pass_count = sum(bool(value) for value in release_gate.values())
+    payload = json.dumps(report, sort_keys=True).encode()
+    report_digest = hashlib.sha256(payload).hexdigest()[:16]
 
     return {
         "ranked_count": int(report.get("ranked_count", 0)),
         "reported_count": int(report.get("reported_count", 0)),
         "high_priority_count": high_priority,
+        "medium_priority_count": medium_priority,
         "watch_priority_count": watch_priority,
+        "synthesize_count": synthesize_count,
+        "secondary_count": secondary_count,
+        "hold_count": hold_count,
+        "xrd_confidence_mean": round(mean(xrd_confidences), 6) if xrd_confidences else 0.0,
+        "xrd_distinctiveness_mean": (
+            round(mean(distinctiveness_values), 6) if distinctiveness_values else 0.0
+        ),
+        "xrd_distinctiveness_min": min(distinctiveness_values) if distinctiveness_values else 0.0,
+        "stability_probability_mean": (
+            round(mean(stability_probabilities), 6) if stability_probabilities else 0.0
+        ),
+        "max_ood_score": max(ood_scores) if ood_scores else 0.0,
+        "top_3_pass_rate": round(top_three_passes / len(top_three), 6) if top_three else 0.0,
+        "release_gate_ready": bool(release_gate.get("ready_for_experimental_pack", False)),
+        "release_gate_pass_count": release_gate_pass_count,
+        "report_fingerprint": str(report.get("report_fingerprint", "")),
+        "report_digest": report_digest,
     }

@@ -206,6 +206,8 @@ class ReportSummary(BaseModel):
     reported_count: int
     report_path: str
     xrd_patterns_path: str
+    calibration_path: str | None = None
+    report_fingerprint: str | None = None
     manifest_path: str | None = None
     pipeline_manifest_path: str | None = None
 

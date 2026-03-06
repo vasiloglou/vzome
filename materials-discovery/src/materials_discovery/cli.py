@@ -813,6 +813,8 @@ def report_command(
             reported_count=int(report["reported_count"]),
             report_path=str(report_path),
             xrd_patterns_path=str(xrd_path),
+            calibration_path=str(calibration_path),
+            report_fingerprint=str(report.get("report_fingerprint", "")),
             manifest_path=str(manifest_path),
             pipeline_manifest_path=str(pipeline_manifest_path),
         )

@@ -29,6 +29,7 @@ This workspace implements a full M1-M6 runnable slice of the no-DFT materials di
 - Real mode now computes `DeltaE_proxy_hull` against ingested competing phases using exact-reference or convex-mixture baselines instead of batch-relative best-candidate scoring.
 - `mdisc hifi-rank` now emits calibrated `stability_probability`, `ood_score`, `novelty_score`, and `decision_score` components in candidate provenance.
 - `mdisc active-learn` now trains on descriptor/screen features and selects candidates by predicted success, boundary uncertainty, novelty, and OOD risk.
+- `mdisc report` now emits chemistry-driven XRD proxy fingerprints, recommendation tiers, risk flags, and release-gate calibration artifacts.
 - Real-mode XRD validation now requires ingested reference phases in `data/processed/*_reference_phases.jsonl` (run `mdisc ingest` first).
 - Mock mode remains deterministic for CI reproducibility and fast local checks.
 
