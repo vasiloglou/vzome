@@ -93,6 +93,16 @@ def _backend_versions_for_stage(config: SystemConfig, stage: str) -> dict[str, s
             config.backend.ingest_adapter,
             "builtin",
         )
+    for adapter_name in (
+        config.backend.committee_adapter,
+        config.backend.phonon_adapter,
+        config.backend.md_adapter,
+        config.backend.xrd_adapter,
+    ):
+        if adapter_name is not None:
+            versions[adapter_name] = versions.get(adapter_name, "builtin")
+    if config.backend.benchmark_corpus is not None:
+        versions["benchmark_corpus"] = versions.get("benchmark_corpus", "pinned")
     return versions
 
 

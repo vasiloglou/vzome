@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from copy import deepcopy
 
-from materials_discovery.common.chemistry import describe_candidate, validate_supported_species
+from materials_discovery.backends.registry import resolve_committee_adapter
 from materials_discovery.common.schema import CandidateRecord, SystemConfig
 
 MODEL_COMMITTEE: tuple[str, str, str] = ("MACE", "CHGNet", "MatterSim")
@@ -66,52 +66,12 @@ def _run_committee_relaxation_real(
     candidates: list[CandidateRecord],
     batch: str,
 ) -> list[CandidateRecord]:
-    """Descriptor-driven committee energy estimates for no-DFT real mode."""
-    validate_supported_species(config.species, strict_pairs=True)
-    template_shift = len(config.template_family) * 0.0002
-
+    """Fixture-backed committee energy estimates for no-DFT real mode."""
+    adapter = resolve_committee_adapter(config.backend.mode, config.backend.committee_adapter)
     relaxed: list[CandidateRecord] = []
     for candidate in candidates:
         copied = deepcopy(candidate)
-        descriptor = describe_candidate(copied, strict_pairs=True)
-        base_energy = _base_energy(copied)
-
-        vec_penalty = abs(descriptor.vec - 6.0) / 6.0
-        complexity_term = descriptor.qphi_complexity / 6.0
-        composition_term = descriptor.dominant_fraction - (1.0 / max(1, len(copied.composition)))
-
-        committee_energies = {
-            "MACE": round(
-                base_energy
-                + template_shift
-                - 0.008
-                + 0.032 * descriptor.radius_mismatch
-                + 0.018 * complexity_term
-                + 0.009 * vec_penalty
-                + 0.006 * composition_term,
-                6,
-            ),
-            "CHGNet": round(
-                base_energy
-                + template_shift
-                - 0.004
-                + 0.026 * descriptor.electronegativity_spread
-                + 0.021 * complexity_term
-                + 0.011 * vec_penalty
-                + 0.004 * composition_term,
-                6,
-            ),
-            "MatterSim": round(
-                base_energy
-                + template_shift
-                - 0.006
-                + 0.028 * descriptor.radius_mismatch
-                + 0.024 * descriptor.electronegativity_spread
-                + 0.015 * complexity_term
-                + 0.004 * composition_term,
-                6,
-            ),
-        }
+        committee_energies = adapter.evaluate_candidate(config, copied).energies
 
         validation = copied.digital_validation.model_copy(deep=True)
         validation.status = "committee_relaxed"

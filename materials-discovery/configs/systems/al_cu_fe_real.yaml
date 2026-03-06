@@ -22,6 +22,14 @@ default_count: 100
 backend:
   mode: real
   ingest_adapter: hypodx_pinned_v2026_03_09
+  committee_adapter: committee_fixture_fallback_v2026_03_09
+  phonon_adapter: phonon_fixture_fallback_v2026_03_09
+  md_adapter: md_fixture_fallback_v2026_03_09
+  xrd_adapter: xrd_fixture_fallback_v2026_03_09
   pinned_snapshot: data/external/pinned/hypodx_pinned_2026_03_09.json
+  validation_snapshot: data/external/pinned/al_cu_fe_validation_snapshot_2026_03_09.json
+  benchmark_corpus: data/benchmarks/al_cu_fe_benchmark.json
   versions:
     hypodx_snapshot: "2026-03-09"
+    validation_snapshot: "2026-03-09"
+    benchmark_corpus: "2026-03-06"

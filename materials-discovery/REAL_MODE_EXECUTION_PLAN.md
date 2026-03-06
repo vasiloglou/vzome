@@ -29,6 +29,10 @@ This document defines the execution plan to move `materials-discovery/` from sca
   - report-stage XRD proxies are now descriptor-driven instead of hash-seeded,
   - experiment reports now carry recommendation tiers, evidence blocks, and risk flags,
   - report calibration now emits release-gate and reproducibility diagnostics.
+- Phase-3 scientific hardening (started March 6, 2026):
+  - validation now resolves fixture-backed committee/phonon/MD/XRD adapters in real mode,
+  - ranking, active learning, and report thresholds now load from pinned benchmark corpora,
+  - candidate generation now applies Z[phi] geometry transforms instead of pairwise coefficient jitter.
 
 Note: these are production-oriented software pathways; domain-model fidelity can be raised iteratively by swapping adapters and calibrations without changing CLI/schema contracts.
 

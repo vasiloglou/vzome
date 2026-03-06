@@ -1,0 +1,76 @@
+{
+  "system": "Al-Cu-Fe",
+  "version": "2026-03-09",
+  "candidates": [
+    {
+      "candidate_id": "md_000001",
+      "committee_energy_ev_per_atom": {"MACE": -2.941, "CHGNet": -2.936, "MatterSim": -2.933},
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.63,
+      "xrd_confidence": 0.66
+    },
+    {
+      "candidate_id": "md_000002",
+      "committee_energy_ev_per_atom": {"MACE": -2.988, "CHGNet": -2.982, "MatterSim": -2.979},
+      "phonon_imaginary_modes": 0,
+      "md_stability_score": 0.74,
+      "xrd_confidence": 0.78
+    },
+    {
+      "candidate_id": "md_000003",
+      "committee_energy_ev_per_atom": {"MACE": -2.964, "CHGNet": -2.959, "MatterSim": -2.955},
+      "phonon_imaginary_modes": 0,
+      "md_stability_score": 0.71,
+      "xrd_confidence": 0.73
+    },
+    {
+      "candidate_id": "md_000004",
+      "committee_energy_ev_per_atom": {"MACE": -2.917, "CHGNet": -2.913, "MatterSim": -2.908},
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.49,
+      "xrd_confidence": 0.54
+    },
+    {
+      "candidate_id": "md_000005",
+      "committee_energy_ev_per_atom": {"MACE": -2.996, "CHGNet": -2.992, "MatterSim": -2.989},
+      "phonon_imaginary_modes": 0,
+      "md_stability_score": 0.79,
+      "xrd_confidence": 0.81
+    },
+    {
+      "candidate_id": "md_000006",
+      "committee_energy_ev_per_atom": {"MACE": -2.952, "CHGNet": -2.946, "MatterSim": -2.944},
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.62,
+      "xrd_confidence": 0.64
+    },
+    {
+      "candidate_id": "md_000007",
+      "committee_energy_ev_per_atom": {"MACE": -2.981, "CHGNet": -2.975, "MatterSim": -2.970},
+      "phonon_imaginary_modes": 0,
+      "md_stability_score": 0.76,
+      "xrd_confidence": 0.77
+    },
+    {
+      "candidate_id": "md_000008",
+      "committee_energy_ev_per_atom": {"MACE": -2.926, "CHGNet": -2.921, "MatterSim": -2.918},
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.46,
+      "xrd_confidence": 0.52
+    },
+    {
+      "candidate_id": "md_000009",
+      "committee_energy_ev_per_atom": {"MACE": -2.973, "CHGNet": -2.968, "MatterSim": -2.965},
+      "phonon_imaginary_modes": 0,
+      "md_stability_score": 0.73,
+      "xrd_confidence": 0.75
+    },
+    {
+      "candidate_id": "md_000010",
+      "committee_energy_ev_per_atom": {"MACE": -2.905, "CHGNet": -2.899, "MatterSim": -2.895},
+      "phonon_imaginary_modes": 3,
+      "md_stability_score": 0.41,
+      "xrd_confidence": 0.47
+    }
+  ]
+}

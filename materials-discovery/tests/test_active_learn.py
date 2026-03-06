@@ -76,6 +76,7 @@ def test_active_learn_command_runs_m5_pipeline() -> None:
     assert surrogate["system"] == config.system_name
     assert surrogate["training_rows"] == summary["validated_count"]
     assert isinstance(surrogate["decision_threshold"], float)
+    assert isinstance(surrogate["benchmark_decision_threshold"], float)
     assert isinstance(surrogate["separation_margin"], float)
     assert isinstance(surrogate["top_k_precision"], float)
 
@@ -219,9 +220,34 @@ def test_active_learn_selection_penalizes_ood_candidates() -> None:
             "packing_preference": 0.45,
             "shortlist_signal": 0.1,
         },
+        benchmark_positive_feature_centroid={
+            "frac_Al": 0.69,
+            "frac_Cu": 0.19,
+            "frac_Fe": 0.12,
+            "qphi_complexity_norm": 0.33,
+            "radius_mismatch_norm": 0.25,
+            "en_spread_norm": 0.23,
+            "pair_mixing_preference": 0.77,
+            "energy_preference": 0.82,
+            "packing_preference": 0.8,
+            "shortlist_signal": 0.45,
+        },
+        benchmark_negative_feature_centroid={
+            "frac_Al": 0.81,
+            "frac_Cu": 0.09,
+            "frac_Fe": 0.10,
+            "qphi_complexity_norm": 0.74,
+            "radius_mismatch_norm": 0.57,
+            "en_spread_norm": 0.58,
+            "pair_mixing_preference": 0.29,
+            "energy_preference": 0.35,
+            "packing_preference": 0.42,
+            "shortlist_signal": 0.14,
+        },
         uncertainty_mean=0.01,
         delta_hull_mean=0.03,
         decision_threshold=0.52,
+        benchmark_decision_threshold=0.56,
         separation_margin=0.28,
         training_radius=0.12,
         top_k_precision=0.8,

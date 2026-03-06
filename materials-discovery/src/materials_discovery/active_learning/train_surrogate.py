@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from math import exp
 from statistics import mean
 
+from materials_discovery.common.benchmarking import load_calibration_profile
 from materials_discovery.common.chemistry import composition_l1_distance, describe_candidate
 from materials_discovery.common.schema import CandidateRecord, SystemConfig
 
@@ -115,15 +116,31 @@ def predict_success_from_features(
     *,
     positive_feature_centroid: dict[str, float],
     negative_feature_centroid: dict[str, float],
+    benchmark_positive_feature_centroid: dict[str, float] | None = None,
+    benchmark_negative_feature_centroid: dict[str, float] | None = None,
     names: list[str],
     pass_rate: float,
 ) -> float:
     pos_dist = feature_distance(feature_row, positive_feature_centroid, names)
     neg_dist = feature_distance(feature_row, negative_feature_centroid, names)
     separation = neg_dist - pos_dist
+    benchmark_separation = 0.0
+    if benchmark_positive_feature_centroid and benchmark_negative_feature_centroid:
+        benchmark_pos_dist = feature_distance(
+            feature_row,
+            benchmark_positive_feature_centroid,
+            names,
+        )
+        benchmark_neg_dist = feature_distance(
+            feature_row,
+            benchmark_negative_feature_centroid,
+            names,
+        )
+        benchmark_separation = benchmark_neg_dist - benchmark_pos_dist
 
     logit = (
         2.8 * separation
+        + 1.2 * benchmark_separation
         + 0.90 * feature_row["energy_preference"]
         + 0.55 * feature_row["packing_preference"]
         + 0.35 * feature_row["pair_mixing_preference"]
@@ -146,9 +163,12 @@ class SurrogateModelSnapshot:
     feature_names: list[str]
     positive_feature_centroid: dict[str, float]
     negative_feature_centroid: dict[str, float]
+    benchmark_positive_feature_centroid: dict[str, float]
+    benchmark_negative_feature_centroid: dict[str, float]
     uncertainty_mean: float
     delta_hull_mean: float
     decision_threshold: float
+    benchmark_decision_threshold: float
     separation_margin: float
     training_radius: float
     top_k_precision: float
@@ -167,9 +187,12 @@ class SurrogateModelSnapshot:
             "feature_names": self.feature_names,
             "positive_feature_centroid": self.positive_feature_centroid,
             "negative_feature_centroid": self.negative_feature_centroid,
+            "benchmark_positive_feature_centroid": self.benchmark_positive_feature_centroid,
+            "benchmark_negative_feature_centroid": self.benchmark_negative_feature_centroid,
             "uncertainty_mean": self.uncertainty_mean,
             "delta_hull_mean": self.delta_hull_mean,
             "decision_threshold": self.decision_threshold,
+            "benchmark_decision_threshold": self.benchmark_decision_threshold,
             "separation_margin": self.separation_margin,
             "training_radius": self.training_radius,
             "top_k_precision": self.top_k_precision,
@@ -208,6 +231,7 @@ def train_surrogate_model(
     ]
 
     names = feature_names(config)
+    calibration = load_calibration_profile(config, feature_names=names)
     feature_rows = {
         candidate.candidate_id: candidate_feature_map(config, candidate)
         for candidate in validated_candidates
@@ -228,6 +252,8 @@ def train_surrogate_model(
             feature_rows[candidate.candidate_id],
             positive_feature_centroid=positive_feature_centroid,
             negative_feature_centroid=negative_feature_centroid,
+            benchmark_positive_feature_centroid=calibration.stable_feature_centroid,
+            benchmark_negative_feature_centroid=calibration.unstable_feature_centroid,
             names=names,
             pass_rate=len(positives) / len(validated_candidates),
         )
@@ -246,7 +272,12 @@ def train_surrogate_model(
     positive_prediction_mean = _mean(positive_predictions, fallback=0.65)
     negative_prediction_mean = _mean(negative_predictions, fallback=0.35)
     decision_threshold = round(
-        _clamp((positive_prediction_mean + negative_prediction_mean) / 2.0, 0.35, 0.75),
+        _clamp(
+            0.5 * ((positive_prediction_mean + negative_prediction_mean) / 2.0)
+            + 0.5 * calibration.active_learning_threshold,
+            0.35,
+            0.75,
+        ),
         6,
     )
 
@@ -288,9 +319,12 @@ def train_surrogate_model(
         feature_names=names,
         positive_feature_centroid=positive_feature_centroid,
         negative_feature_centroid=negative_feature_centroid,
+        benchmark_positive_feature_centroid=calibration.stable_feature_centroid,
+        benchmark_negative_feature_centroid=calibration.unstable_feature_centroid,
         uncertainty_mean=round(_mean(uncertainty_values, fallback=0.05), 6),
         delta_hull_mean=round(_mean(delta_hull_values, fallback=0.1), 6),
         decision_threshold=decision_threshold,
+        benchmark_decision_threshold=calibration.active_learning_threshold,
         separation_margin=round(positive_prediction_mean - negative_prediction_mean, 6),
         training_radius=training_radius,
         top_k_precision=top_k_precision,

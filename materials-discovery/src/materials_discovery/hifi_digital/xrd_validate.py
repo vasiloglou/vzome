@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from copy import deepcopy
 
-from materials_discovery.common.chemistry import composition_l1_distance
+from materials_discovery.backends.registry import resolve_xrd_adapter
 from materials_discovery.common.io import load_jsonl, workspace_root
 from materials_discovery.common.schema import CandidateRecord, SystemConfig
 
@@ -84,30 +84,13 @@ def _validate_xrd_signatures_real(
     candidates: list[CandidateRecord],
     min_confidence: float,
 ) -> list[CandidateRecord]:
-    """Composition-matching XRD confidence model for no-DFT real mode."""
-    references = _load_reference_compositions(config)
+    """Fixture-backed XRD confidence adapter for no-DFT real mode."""
+    adapter = resolve_xrd_adapter(config.backend.mode, config.backend.xrd_adapter)
     scored: list[CandidateRecord] = []
 
     for candidate in candidates:
         copied = deepcopy(candidate)
-
-        nearest_distance = min(
-            composition_l1_distance(copied.composition, reference) for reference in references
-        )
-        composition_match = 1.0 - min(1.0, nearest_distance / 0.8)
-
-        uncertainty = copied.digital_validation.uncertainty_ev_per_atom or 0.05
-        md_score = copied.digital_validation.md_stability_score or 0.0
-        phonon_modes = copied.digital_validation.phonon_imaginary_modes or 0
-
-        confidence = (
-            0.45
-            + 0.38 * composition_match
-            + 0.18 * md_score
-            - 0.06 * phonon_modes
-            - 0.90 * uncertainty
-        )
-        confidence = round(_clamp(confidence, 0.0, 1.0), 6)
+        confidence = adapter.evaluate_candidate(config, copied).confidence
 
         validation = copied.digital_validation.model_copy(deep=True)
         validation.status = "xrd_checked"

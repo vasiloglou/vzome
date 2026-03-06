@@ -1,0 +1,214 @@
+{
+  "system": "Al-Cu-Fe",
+  "version": "2026-03-06",
+  "cases": [
+    {
+      "label": "i_phase_reference_a",
+      "outcome": "stable",
+      "composition": {"Al": 0.69, "Cu": 0.19, "Fe": 0.12},
+      "features": {
+        "frac_Al": 0.69,
+        "frac_Cu": 0.19,
+        "frac_Fe": 0.12,
+        "qphi_complexity_norm": 0.31,
+        "radius_mismatch_norm": 0.24,
+        "en_spread_norm": 0.22,
+        "pair_mixing_preference": 0.79,
+        "energy_preference": 0.84,
+        "packing_preference": 0.81,
+        "shortlist_signal": 0.50
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.014,
+        "uncertainty_ev_per_atom": 0.011,
+        "md_stability_score": 0.84,
+        "xrd_confidence": 0.83,
+        "reference_distance": 0.000,
+        "ood_score": 0.11,
+        "xrd_distinctiveness": 0.18
+      }
+    },
+    {
+      "label": "i_phase_reference_b",
+      "outcome": "stable",
+      "composition": {"Al": 0.67, "Cu": 0.21, "Fe": 0.12},
+      "features": {
+        "frac_Al": 0.67,
+        "frac_Cu": 0.21,
+        "frac_Fe": 0.12,
+        "qphi_complexity_norm": 0.35,
+        "radius_mismatch_norm": 0.27,
+        "en_spread_norm": 0.24,
+        "pair_mixing_preference": 0.76,
+        "energy_preference": 0.80,
+        "packing_preference": 0.78,
+        "shortlist_signal": 0.45
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.020,
+        "uncertainty_ev_per_atom": 0.015,
+        "md_stability_score": 0.80,
+        "xrd_confidence": 0.79,
+        "reference_distance": 0.020,
+        "ood_score": 0.16,
+        "xrd_distinctiveness": 0.15
+      }
+    },
+    {
+      "label": "approximant_reference_c",
+      "outcome": "stable",
+      "composition": {"Al": 0.71, "Cu": 0.17, "Fe": 0.12},
+      "features": {
+        "frac_Al": 0.71,
+        "frac_Cu": 0.17,
+        "frac_Fe": 0.12,
+        "qphi_complexity_norm": 0.38,
+        "radius_mismatch_norm": 0.26,
+        "en_spread_norm": 0.23,
+        "pair_mixing_preference": 0.74,
+        "energy_preference": 0.77,
+        "packing_preference": 0.76,
+        "shortlist_signal": 0.33
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.026,
+        "uncertainty_ev_per_atom": 0.017,
+        "md_stability_score": 0.76,
+        "xrd_confidence": 0.76,
+        "reference_distance": 0.038,
+        "ood_score": 0.22,
+        "xrd_distinctiveness": 0.14
+      }
+    },
+    {
+      "label": "near_reference_novel_d",
+      "outcome": "stable",
+      "composition": {"Al": 0.66, "Cu": 0.22, "Fe": 0.12},
+      "features": {
+        "frac_Al": 0.66,
+        "frac_Cu": 0.22,
+        "frac_Fe": 0.12,
+        "qphi_complexity_norm": 0.43,
+        "radius_mismatch_norm": 0.29,
+        "en_spread_norm": 0.25,
+        "pair_mixing_preference": 0.72,
+        "energy_preference": 0.74,
+        "packing_preference": 0.74,
+        "shortlist_signal": 0.28
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.031,
+        "uncertainty_ev_per_atom": 0.019,
+        "md_stability_score": 0.73,
+        "xrd_confidence": 0.72,
+        "reference_distance": 0.055,
+        "ood_score": 0.25,
+        "xrd_distinctiveness": 0.17
+      }
+    },
+    {
+      "label": "off_stoichiometry_decoy_a",
+      "outcome": "unstable",
+      "composition": {"Al": 0.83, "Cu": 0.09, "Fe": 0.08},
+      "features": {
+        "frac_Al": 0.83,
+        "frac_Cu": 0.09,
+        "frac_Fe": 0.08,
+        "qphi_complexity_norm": 0.66,
+        "radius_mismatch_norm": 0.55,
+        "en_spread_norm": 0.56,
+        "pair_mixing_preference": 0.31,
+        "energy_preference": 0.37,
+        "packing_preference": 0.46,
+        "shortlist_signal": 0.14
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.094,
+        "uncertainty_ev_per_atom": 0.043,
+        "md_stability_score": 0.42,
+        "xrd_confidence": 0.48,
+        "reference_distance": 0.19,
+        "ood_score": 0.61,
+        "xrd_distinctiveness": 0.07
+      }
+    },
+    {
+      "label": "high_complexity_decoy_b",
+      "outcome": "unstable",
+      "composition": {"Al": 0.78, "Cu": 0.12, "Fe": 0.10},
+      "features": {
+        "frac_Al": 0.78,
+        "frac_Cu": 0.12,
+        "frac_Fe": 0.10,
+        "qphi_complexity_norm": 0.82,
+        "radius_mismatch_norm": 0.62,
+        "en_spread_norm": 0.59,
+        "pair_mixing_preference": 0.24,
+        "energy_preference": 0.29,
+        "packing_preference": 0.38,
+        "shortlist_signal": 0.10
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.112,
+        "uncertainty_ev_per_atom": 0.051,
+        "md_stability_score": 0.35,
+        "xrd_confidence": 0.44,
+        "reference_distance": 0.24,
+        "ood_score": 0.69,
+        "xrd_distinctiveness": 0.05
+      }
+    },
+    {
+      "label": "packing_limited_decoy_c",
+      "outcome": "unstable",
+      "composition": {"Al": 0.76, "Cu": 0.15, "Fe": 0.09},
+      "features": {
+        "frac_Al": 0.76,
+        "frac_Cu": 0.15,
+        "frac_Fe": 0.09,
+        "qphi_complexity_norm": 0.59,
+        "radius_mismatch_norm": 0.51,
+        "en_spread_norm": 0.53,
+        "pair_mixing_preference": 0.36,
+        "energy_preference": 0.41,
+        "packing_preference": 0.31,
+        "shortlist_signal": 0.18
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.086,
+        "uncertainty_ev_per_atom": 0.038,
+        "md_stability_score": 0.47,
+        "xrd_confidence": 0.51,
+        "reference_distance": 0.16,
+        "ood_score": 0.56,
+        "xrd_distinctiveness": 0.09
+      }
+    },
+    {
+      "label": "xrd_weak_decoy_d",
+      "outcome": "unstable",
+      "composition": {"Al": 0.74, "Cu": 0.18, "Fe": 0.08},
+      "features": {
+        "frac_Al": 0.74,
+        "frac_Cu": 0.18,
+        "frac_Fe": 0.08,
+        "qphi_complexity_norm": 0.54,
+        "radius_mismatch_norm": 0.46,
+        "en_spread_norm": 0.49,
+        "pair_mixing_preference": 0.40,
+        "energy_preference": 0.46,
+        "packing_preference": 0.49,
+        "shortlist_signal": 0.21
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.073,
+        "uncertainty_ev_per_atom": 0.033,
+        "md_stability_score": 0.50,
+        "xrd_confidence": 0.47,
+        "reference_distance": 0.14,
+        "ood_score": 0.52,
+        "xrd_distinctiveness": 0.08
+      }
+    }
+  ]
+}

@@ -3,7 +3,8 @@ from __future__ import annotations
 import hashlib
 from copy import deepcopy
 
-from materials_discovery.common.chemistry import describe_candidate, qphi_complexity
+from materials_discovery.backends.registry import resolve_phonon_adapter
+from materials_discovery.common.chemistry import qphi_complexity
 from materials_discovery.common.schema import CandidateRecord, SystemConfig
 
 
@@ -39,27 +40,14 @@ def _run_mlip_phonon_checks_mock(
 def _run_mlip_phonon_checks_real(
     candidates: list[CandidateRecord],
     max_imaginary_modes: int,
+    config: SystemConfig,
 ) -> list[CandidateRecord]:
-    """Descriptor-driven phonon stability proxy for no-DFT real mode."""
+    """Fixture-backed phonon stability adapter for no-DFT real mode."""
+    adapter = resolve_phonon_adapter(config.backend.mode, config.backend.phonon_adapter)
     scored: list[CandidateRecord] = []
     for candidate in candidates:
         copied = deepcopy(candidate)
-        descriptor = describe_candidate(copied, strict_pairs=True)
-
-        delta_hull = copied.digital_validation.delta_e_proxy_hull_ev_per_atom or 0.0
-        uncertainty = copied.digital_validation.uncertainty_ev_per_atom or 0.05
-
-        instability_index = (
-            2.7 * descriptor.radius_mismatch
-            + 1.8 * descriptor.electronegativity_spread
-            + 0.30 * min(1.0, descriptor.qphi_complexity / 3.0)
-            + 4.0 * delta_hull
-            + 3.0 * uncertainty
-        )
-        imaginary_modes = max(0, int(round(instability_index * 2.0)))
-
-        if descriptor.pair_mixing_enthalpy_ev_per_atom <= -0.12 and imaginary_modes > 0:
-            imaginary_modes -= 1
+        imaginary_modes = adapter.evaluate_candidate(config, copied).imaginary_modes
 
         validation = copied.digital_validation.model_copy(deep=True)
         validation.status = "phonon_checked"
@@ -77,5 +65,9 @@ def run_mlip_phonon_checks(
 ) -> list[CandidateRecord]:
     """Attach MLIP phonon checks for staged no-DFT filtering."""
     if config is not None and config.backend.mode == "real":
-        return _run_mlip_phonon_checks_real(candidates, max_imaginary_modes=max_imaginary_modes)
+        return _run_mlip_phonon_checks_real(
+            candidates,
+            max_imaginary_modes=max_imaginary_modes,
+            config=config,
+        )
     return _run_mlip_phonon_checks_mock(candidates, max_imaginary_modes=max_imaginary_modes)

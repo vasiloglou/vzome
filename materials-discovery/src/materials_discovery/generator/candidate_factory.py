@@ -9,23 +9,16 @@ from materials_discovery.common.schema import (
     CandidateRecord,
     DigitalValidationRecord,
     GenerateSummary,
-    QPhiPair,
     SiteRecord,
     SystemConfig,
     validate_unique_candidate_ids,
 )
 from materials_discovery.generator.approximant_templates import get_template
 from materials_discovery.generator.decorate_sites import assign_species
-
-
-def _clamp(value: int, min_value: int, max_value: int) -> int:
-    return min(max(value, min_value), max_value)
-
-
-def _perturb_pair(base: QPhiPair, min_coeff: int, max_coeff: int, rng: random.Random) -> QPhiPair:
-    a = _clamp(base[0] + rng.randint(-2, 2), min_coeff, max_coeff)
-    b = _clamp(base[1] + rng.randint(-2, 2), min_coeff, max_coeff)
-    return (a, b)
+from materials_discovery.generator.zphi_geometry import (
+    cell_scale_multiplier,
+    construct_site_qphi,
+)
 
 
 def _make_candidate(
@@ -44,10 +37,14 @@ def _make_candidate(
 
     sites: list[SiteRecord] = []
     for i, template_site in enumerate(template.sites):
-        qphi = (
-            _perturb_pair(template_site.base_qphi[0], min_coeff, max_coeff, rng),
-            _perturb_pair(template_site.base_qphi[1], min_coeff, max_coeff, rng),
-            _perturb_pair(template_site.base_qphi[2], min_coeff, max_coeff, rng),
+        qphi = construct_site_qphi(
+            template_site.base_qphi,
+            template_family=config.template_family,
+            candidate_index=idx,
+            site_index=i,
+            seed=seed,
+            min_coeff=min_coeff,
+            max_coeff=max_coeff,
         )
         sites.append(
             SiteRecord(
@@ -58,8 +55,7 @@ def _make_candidate(
             )
         )
 
-    cell_jitter = rng.uniform(-0.25, 0.25)
-    a_value = round(template.cell_scale + cell_jitter, 6)
+    a_value = round(template.cell_scale * cell_scale_multiplier(seed, idx), 6)
 
     digest = hashlib.sha256(f"{seed}:{idx}".encode()).hexdigest()
 

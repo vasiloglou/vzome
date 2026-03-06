@@ -91,7 +91,13 @@ class CandidateRecord(BaseModel):
 class BackendConfig(BaseModel):
     mode: Literal["mock", "real"] = "mock"
     ingest_adapter: str | None = None
+    committee_adapter: str | None = None
+    phonon_adapter: str | None = None
+    md_adapter: str | None = None
+    xrd_adapter: str | None = None
     pinned_snapshot: str | None = None
+    validation_snapshot: str | None = None
+    benchmark_corpus: str | None = None
     versions: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -100,6 +106,15 @@ class BackendConfig(BaseModel):
             self.ingest_adapter = (
                 "hypodx_fixture" if self.mode == "mock" else "hypodx_pinned_v2026_03_09"
             )
+        if self.mode == "real":
+            if self.committee_adapter is None:
+                self.committee_adapter = "committee_fixture_fallback_v2026_03_09"
+            if self.phonon_adapter is None:
+                self.phonon_adapter = "phonon_fixture_fallback_v2026_03_09"
+            if self.md_adapter is None:
+                self.md_adapter = "md_fixture_fallback_v2026_03_09"
+            if self.xrd_adapter is None:
+                self.xrd_adapter = "xrd_fixture_fallback_v2026_03_09"
         return self
 
 

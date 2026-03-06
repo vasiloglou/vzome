@@ -10,6 +10,10 @@ modes:
     ingest_adapter: hypodx_pinned_v2026_03_09
     screen_adapter: mlip_screen_adapter_v1
     validate_adapter: committee_validate_adapter_v1
+    committee_adapter: committee_fixture_fallback_v2026_03_09
+    phonon_adapter: phonon_fixture_fallback_v2026_03_09
+    md_adapter: md_fixture_fallback_v2026_03_09
+    xrd_adapter: xrd_fixture_fallback_v2026_03_09
     rank_adapter: uncertainty_rank_adapter_v1
     report_adapter: xrd_report_adapter_v1
 notes:

@@ -89,6 +89,7 @@ def test_hifi_rank_runs_pipeline() -> None:
         assert isinstance(hifi_rank["stability_probability"], float)
         assert isinstance(hifi_rank["ood_score"], float)
         assert isinstance(hifi_rank["novelty_score"], float)
+        assert isinstance(hifi_rank["benchmark_alignment"], float)
 
         ranks.append(rank)
         scores.append(score)

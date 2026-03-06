@@ -18,6 +18,7 @@ This document turns the chapter into an executable software blueprint for quasic
 - `RM5 hardening`: started; surrogate training now uses descriptor/screen features and acquisition is risk-aware instead of centroid-only.
 - `M6 hifi-rank + report`: implemented in `materials-discovery/src/materials_discovery/hifi_digital/rank_candidates.py` and `materials-discovery/src/materials_discovery/diffraction/`.
 - `RM6 hardening`: started; report outputs now include chemistry-driven XRD proxy fingerprints, recommendation tiers, risk flags, and release-gate calibration.
+- `Phase 3 adapter/calibration hardening`: implemented for `Al-Cu-Fe` real mode; validation now uses fixture-backed adapters, benchmark corpora calibrate `hifi-rank`/`active-learn`/`report`, and generation uses Z[phi] transforms instead of pair jitter.
 
 ### Local Quickstart
 

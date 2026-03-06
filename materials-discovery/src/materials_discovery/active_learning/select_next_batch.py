@@ -76,6 +76,8 @@ def _acquisition_metrics(
         feature_row,
         positive_feature_centroid=surrogate.positive_feature_centroid,
         negative_feature_centroid=surrogate.negative_feature_centroid,
+        benchmark_positive_feature_centroid=surrogate.benchmark_positive_feature_centroid,
+        benchmark_negative_feature_centroid=surrogate.benchmark_negative_feature_centroid,
         names=surrogate.feature_names,
         pass_rate=surrogate.pass_rate,
     )

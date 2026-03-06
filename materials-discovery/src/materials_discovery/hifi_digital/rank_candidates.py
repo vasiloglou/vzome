@@ -3,6 +3,12 @@ from __future__ import annotations
 from copy import deepcopy
 from math import exp
 
+from materials_discovery.active_learning.train_surrogate import (
+    candidate_feature_map,
+    feature_distance,
+    feature_names,
+)
+from materials_discovery.common.benchmarking import CalibrationProfile, load_calibration_profile
 from materials_discovery.common.chemistry import describe_candidate
 from materials_discovery.common.schema import CandidateRecord, SystemConfig
 
@@ -23,7 +29,12 @@ def _sigmoid(value: float) -> float:
     return 1.0 / (1.0 + exp(-value))
 
 
-def _rank_metrics(candidate: CandidateRecord, config: SystemConfig) -> dict[str, float]:
+def _rank_metrics(
+    candidate: CandidateRecord,
+    config: SystemConfig,
+    calibration: CalibrationProfile,
+    names: list[str],
+) -> dict[str, float]:
     validation = candidate.digital_validation
     uncertainty = _required_metric(
         validation.uncertainty_ev_per_atom,
@@ -51,10 +62,18 @@ def _rank_metrics(candidate: CandidateRecord, config: SystemConfig) -> dict[str,
         strict_pairs=config.backend.mode == "real",
     )
     reference_distance = float(validation.proxy_hull_reference_distance or 0.0)
+    feature_row = candidate_feature_map(config, candidate)
+    stable_distance = feature_distance(feature_row, calibration.stable_feature_centroid, names)
+    unstable_distance = feature_distance(feature_row, calibration.unstable_feature_centroid, names)
+    benchmark_alignment = unstable_distance - stable_distance
 
-    uncertainty_penalty = _clamp(uncertainty / 0.05, 0.0, 1.0)
-    hull_penalty = _clamp(delta_hull / 0.10, 0.0, 1.0)
-    reference_penalty = _clamp(reference_distance / 0.18, 0.0, 1.0)
+    uncertainty_penalty = _clamp(uncertainty / calibration.uncertainty_soft_cap, 0.0, 1.0)
+    hull_penalty = _clamp(delta_hull / calibration.delta_hull_soft_cap, 0.0, 1.0)
+    reference_penalty = _clamp(
+        reference_distance / calibration.reference_distance_soft_cap,
+        0.0,
+        1.0,
+    )
     radius_penalty = _clamp(descriptor.radius_mismatch / 0.12, 0.0, 1.0)
     en_penalty = _clamp(descriptor.electronegativity_spread / 0.18, 0.0, 1.0)
     vec_penalty = _clamp(abs(descriptor.vec - 6.0) / 4.0, 0.0, 1.0)
@@ -66,6 +85,7 @@ def _rank_metrics(candidate: CandidateRecord, config: SystemConfig) -> dict[str,
         + 0.15 * en_penalty
         + 0.10 * vec_penalty
         + 0.10 * complexity_penalty
+        + 0.10 * _clamp(max(0.0, stable_distance - unstable_distance), 0.0, 1.0)
     )
     ood_score = round(_clamp(ood_score, 0.0, 1.0), 6)
 
@@ -81,8 +101,16 @@ def _rank_metrics(candidate: CandidateRecord, config: SystemConfig) -> dict[str,
         - 3.4 * hull_penalty
         - 2.4 * uncertainty_penalty
         - 1.8 * ood_score
-        + 2.6 * (md_score - 0.5)
-        + 2.2 * (xrd_confidence - 0.5)
+        + 2.6
+        * (
+            (md_score - calibration.md_stability_floor)
+            / max(0.05, 1.0 - calibration.md_stability_floor)
+        )
+        + 2.2 * (
+            (xrd_confidence - calibration.xrd_confidence_floor)
+            / max(0.05, 1.0 - calibration.xrd_confidence_floor)
+        )
+        + 1.2 * benchmark_alignment
     )
     if validation.phonon_pass is True:
         logit += 0.35
@@ -110,6 +138,7 @@ def _rank_metrics(candidate: CandidateRecord, config: SystemConfig) -> dict[str,
         "ood_score": ood_score,
         "novelty_score": novelty_score,
         "reference_distance": round(reference_distance, 6),
+        "benchmark_alignment": round(benchmark_alignment, 6),
         "uncertainty_penalty": round(uncertainty_penalty, 6),
         "hull_penalty": round(hull_penalty, 6),
     }
@@ -123,7 +152,12 @@ def rank_validated_candidates(
     if not candidates:
         raise ValueError("no validated candidates found for hifi ranking")
 
-    scored = [(_rank_metrics(candidate, config), candidate) for candidate in candidates]
+    names = feature_names(config)
+    calibration = load_calibration_profile(config, feature_names=names)
+    scored = [
+        (_rank_metrics(candidate, config, calibration, names), candidate)
+        for candidate in candidates
+    ]
     scored_sorted = sorted(
         scored,
         key=lambda item: (
@@ -149,6 +183,7 @@ def rank_validated_candidates(
             "ood_score": metrics["ood_score"],
             "novelty_score": metrics["novelty_score"],
             "reference_distance": metrics["reference_distance"],
+            "benchmark_alignment": metrics["benchmark_alignment"],
             "uncertainty_penalty": metrics["uncertainty_penalty"],
             "hull_penalty": metrics["hull_penalty"],
         }

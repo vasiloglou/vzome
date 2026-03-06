@@ -4,6 +4,7 @@ import hashlib
 import json
 from typing import Any
 
+from materials_discovery.common.benchmarking import CalibrationProfile, load_calibration_profile
 from materials_discovery.common.schema import CandidateRecord, SystemConfig
 
 
@@ -81,6 +82,7 @@ def _risk_flags(candidate: CandidateRecord, distinctiveness: float) -> list[str]
 def _priority_and_recommendation(
     candidate: CandidateRecord,
     *,
+    calibration: CalibrationProfile,
     distinctiveness: float,
     xrd_confidence: float,
 ) -> tuple[str, str]:
@@ -92,15 +94,15 @@ def _priority_and_recommendation(
     if (
         passed_checks
         and stability_probability >= 0.65
-        and ood_score <= 0.35
-        and xrd_confidence >= 0.60
-        and distinctiveness >= 0.12
+        and ood_score <= calibration.ood_ceiling
+        and xrd_confidence >= calibration.xrd_confidence_floor
+        and distinctiveness >= calibration.report_distinctiveness_floor
     ):
         return "high", "synthesize"
     if (
         (passed_checks or decision_score >= 0.45)
-        and ood_score <= 0.55
-        and xrd_confidence >= 0.50
+        and ood_score <= calibration.ood_ceiling + 0.08
+        and xrd_confidence >= max(0.45, calibration.xrd_confidence_floor - 0.08)
     ):
         return "medium", "secondary"
     return "watch", "hold"
@@ -137,6 +139,7 @@ def compile_experiment_report(
         key=lambda candidate: (_rank_from_provenance(candidate), candidate.candidate_id),
     )
     selected = ranked[: min(top_n, len(ranked))]
+    calibration = load_calibration_profile(config)
 
     report_entries: list[dict[str, Any]] = []
     for candidate in selected:
@@ -156,6 +159,7 @@ def compile_experiment_report(
         xrd_confidence = float(candidate.digital_validation.xrd_confidence or 0.0)
         priority, recommendation = _priority_and_recommendation(
             candidate,
+            calibration=calibration,
             distinctiveness=distinctiveness,
             xrd_confidence=xrd_confidence,
         )
@@ -223,10 +227,12 @@ def compile_experiment_report(
     top_max_ood = max((float(entry["ood_score"]) for entry in top_slice), default=0.0)
     release_gate = {
         "enough_synthesis_candidates": synthesize_count >= 1,
-        "top_xrd_confidence_gate": top_xrd_confidence_mean >= 0.60,
-        "top_distinctiveness_gate": top_distinctiveness_mean >= 0.12,
+        "top_xrd_confidence_gate": top_xrd_confidence_mean >= calibration.xrd_confidence_floor,
+        "top_distinctiveness_gate": (
+            top_distinctiveness_mean >= calibration.report_distinctiveness_floor
+        ),
         "top_stability_gate": top_stability_mean >= 0.55,
-        "top_ood_gate": top_max_ood <= 0.55,
+        "top_ood_gate": top_max_ood <= calibration.ood_ceiling,
     }
     release_gate["ready_for_experimental_pack"] = all(release_gate.values())
 
