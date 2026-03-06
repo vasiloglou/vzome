@@ -13,6 +13,7 @@ This document turns the chapter into an executable software blueprint for quasic
 - `M3 screen`: implemented in `materials-discovery/src/materials_discovery/screen/`.
 - `M4 hifi-validate`: implemented in `materials-discovery/src/materials_discovery/hifi_digital/` and wired through `materials_discovery.cli`.
 - `Phase 2 hull hardening`: started; `DeltaE_proxy_hull` now uses ingested competing phases plus convex-mixture baselines in real mode.
+- `Phase 2 ranking hardening`: started; `hifi-rank` now emits calibrated stability/OOD/novelty components and richer ranking calibration artifacts.
 - `M5 active-learn`: implemented in `materials-discovery/src/materials_discovery/active_learning/` and wired through `materials_discovery.cli`.
 - `M6 hifi-rank + report`: implemented in `materials-discovery/src/materials_discovery/hifi_digital/rank_candidates.py` and `materials-discovery/src/materials_discovery/diffraction/`.
 

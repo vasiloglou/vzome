@@ -6,6 +6,13 @@ from typing import Any
 from materials_discovery.common.schema import CandidateRecord
 
 
+def _rank_metric(candidate: CandidateRecord, key: str, default: float = 0.0) -> float:
+    value = (candidate.provenance.get("hifi_rank") or {}).get(key, default)
+    if isinstance(value, int | float):
+        return float(value)
+    return default
+
+
 def generation_metrics(
     requested_count: int,
     generated_count: int,
@@ -106,26 +113,63 @@ def ranking_calibration(candidates: list[CandidateRecord]) -> dict[str, float | 
             "score_mean": 0.0,
             "score_max": 0.0,
             "score_min": 0.0,
+            "score_range": 0.0,
             "passed_count": 0,
+            "passed_score_mean": 0.0,
+            "failed_score_mean": 0.0,
+            "stability_probability_mean": 0.0,
+            "ood_score_mean": 0.0,
+            "novelty_score_mean": 0.0,
+            "top_10_pass_rate": 0.0,
+            "top_25_pass_rate": 0.0,
+            "ood_fraction": 0.0,
         }
 
-    scores: list[float] = []
-    for candidate in candidates:
-        score_value = (candidate.provenance.get("hifi_rank") or {}).get("score", 0.0)
-        if isinstance(score_value, int | float):
-            scores.append(float(score_value))
-        else:
-            scores.append(0.0)
+    scores = [_rank_metric(candidate, "score") for candidate in candidates]
+    stability_probabilities = [
+        _rank_metric(candidate, "stability_probability") for candidate in candidates
+    ]
+    ood_scores = [_rank_metric(candidate, "ood_score") for candidate in candidates]
+    novelty_scores = [_rank_metric(candidate, "novelty_score") for candidate in candidates]
 
     passed_count = sum(
         candidate.digital_validation.passed_checks is True for candidate in candidates
     )
+    passed_scores = [
+        _rank_metric(candidate, "score")
+        for candidate in candidates
+        if candidate.digital_validation.passed_checks is True
+    ]
+    failed_scores = [
+        _rank_metric(candidate, "score")
+        for candidate in candidates
+        if candidate.digital_validation.passed_checks is not True
+    ]
+    top_10 = candidates[: min(10, len(candidates))]
+    top_25 = candidates[: min(25, len(candidates))]
     return {
         "ranked_count": len(candidates),
         "score_mean": round(mean(scores), 6),
         "score_max": round(max(scores), 6),
         "score_min": round(min(scores), 6),
+        "score_range": round(max(scores) - min(scores), 6),
         "passed_count": passed_count,
+        "passed_score_mean": round(mean(passed_scores), 6) if passed_scores else 0.0,
+        "failed_score_mean": round(mean(failed_scores), 6) if failed_scores else 0.0,
+        "stability_probability_mean": round(mean(stability_probabilities), 6),
+        "ood_score_mean": round(mean(ood_scores), 6),
+        "novelty_score_mean": round(mean(novelty_scores), 6),
+        "top_10_pass_rate": round(
+            sum(candidate.digital_validation.passed_checks is True for candidate in top_10)
+            / len(top_10),
+            6,
+        ),
+        "top_25_pass_rate": round(
+            sum(candidate.digital_validation.passed_checks is True for candidate in top_25)
+            / len(top_25),
+            6,
+        ),
+        "ood_fraction": round(sum(score >= 0.5 for score in ood_scores) / len(ood_scores), 6),
     }
 
 

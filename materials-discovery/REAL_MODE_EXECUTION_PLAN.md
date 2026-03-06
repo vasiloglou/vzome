@@ -19,7 +19,8 @@ This document defines the execution plan to move `materials-discovery/` from sca
 - Phase-2 scientific hardening (started March 6, 2026):
   - reference-aware proxy hull using ingested competing phases,
   - convex-mixture baseline selection for ternary compositions,
-  - validation calibration now tracking reference-match distance.
+  - validation calibration now tracking reference-match distance,
+  - ranking now emits calibrated stability/OOD/novelty decision components.
 
 Note: these are production-oriented software pathways; domain-model fidelity can be raised iteratively by swapping adapters and calibrations without changing CLI/schema contracts.
 

@@ -27,6 +27,7 @@ This workspace implements a full M1-M6 runnable slice of the no-DFT materials di
 - Real mode now uses composition/descriptor-based no-DFT scoring for `screen` and `hifi-validate` stages (not hash-jitter scoring).
 - Real mode enforces element/property and pair-mixing prior coverage for configured systems.
 - Real mode now computes `DeltaE_proxy_hull` against ingested competing phases using exact-reference or convex-mixture baselines instead of batch-relative best-candidate scoring.
+- `mdisc hifi-rank` now emits calibrated `stability_probability`, `ood_score`, `novelty_score`, and `decision_score` components in candidate provenance.
 - Real-mode XRD validation now requires ingested reference phases in `data/processed/*_reference_phases.jsonl` (run `mdisc ingest` first).
 - Mock mode remains deterministic for CI reproducibility and fast local checks.
 
