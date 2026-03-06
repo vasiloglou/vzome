@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -85,6 +85,21 @@ class CandidateRecord(BaseModel):
         return self
 
 
+class BackendConfig(BaseModel):
+    mode: Literal["mock", "real"] = "mock"
+    ingest_adapter: str | None = None
+    pinned_snapshot: str | None = None
+    versions: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def default_adapter(self) -> BackendConfig:
+        if self.ingest_adapter is None:
+            self.ingest_adapter = (
+                "hypodx_fixture" if self.mode == "mock" else "hypodx_pinned_v2026_03_09"
+            )
+        return self
+
+
 class SystemConfig(BaseModel):
     system_name: str
     template_family: str
@@ -93,6 +108,7 @@ class SystemConfig(BaseModel):
     coeff_bounds: CoeffBounds
     seed: int
     default_count: int
+    backend: BackendConfig = Field(default_factory=BackendConfig)
 
     @model_validator(mode="after")
     def validate_species(self) -> SystemConfig:
@@ -124,6 +140,11 @@ class IngestSummary(BaseModel):
     matched_count: int
     deduped_count: int
     output_path: str
+    invalid_count: int = 0
+    backend_mode: Literal["mock", "real"] = "mock"
+    backend_adapter: str = "hypodx_fixture"
+    qa_metrics: dict[str, float | int | bool] = Field(default_factory=dict)
+    manifest_path: str | None = None
 
 
 class GenerateSummary(BaseModel):
@@ -169,6 +190,17 @@ class ReportSummary(BaseModel):
     reported_count: int
     report_path: str
     xrd_patterns_path: str
+
+
+class ArtifactManifest(BaseModel):
+    run_id: str
+    stage: str
+    system: str
+    config_hash: str
+    backend_mode: Literal["mock", "real"]
+    backend_versions: dict[str, str]
+    output_hashes: dict[str, str]
+    created_at_utc: str
 
 
 def validate_unique_candidate_ids(candidates: Sequence[CandidateRecord]) -> None:

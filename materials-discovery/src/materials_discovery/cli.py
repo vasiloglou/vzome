@@ -9,6 +9,7 @@ from pydantic import ValidationError
 
 from materials_discovery.active_learning.select_next_batch import select_next_candidate_batch
 from materials_discovery.active_learning.train_surrogate import train_surrogate_model
+from materials_discovery.backends.registry import resolve_ingest_backend
 from materials_discovery.common.io import (
     ensure_parent,
     load_jsonl,
@@ -16,6 +17,7 @@ from materials_discovery.common.io import (
     workspace_root,
     write_jsonl,
 )
+from materials_discovery.common.manifest import build_manifest, write_manifest
 from materials_discovery.common.schema import (
     ActiveLearnSummary,
     CandidateRecord,
@@ -25,7 +27,7 @@ from materials_discovery.common.schema import (
     ScreenSummary,
     SystemConfig,
 )
-from materials_discovery.data.ingest_hypodx import ingest_fixture
+from materials_discovery.data.ingest_hypodx import ingest_rows
 from materials_discovery.diffraction.compare_patterns import compile_experiment_report
 from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_xrd_patterns
 from materials_discovery.generator.candidate_factory import generate_candidates
@@ -173,10 +175,12 @@ def ingest_command(
     """Ingest and normalize fixture metadata into processed JSONL."""
     try:
         system_config = _load_system_config(config)
-        default_fixture = workspace_root() / "data" / "external" / "fixtures" / "hypodx_sample.json"
-        fixture_path = fixture or default_fixture
-        if not fixture_path.exists():
-            raise FileNotFoundError(f"Fixture file not found: {fixture_path}")
+        backend = resolve_ingest_backend(
+            system_config.backend.mode,
+            system_config.backend.ingest_adapter,
+        )
+        backend_info = backend.info()
+        raw_rows = backend.load_rows(system_config, fixture)
 
         default_out = (
             workspace_root()
@@ -186,7 +190,30 @@ def ingest_command(
         )
         out_path = out or default_out
 
-        summary = ingest_fixture(system_config, fixture_path, out_path)
+        summary = ingest_rows(
+            system_config,
+            raw_rows,
+            out_path,
+            backend_mode=system_config.backend.mode,
+            backend_adapter=backend_info.name,
+        )
+
+        system_slug = _system_slug(system_config.system_name)
+        manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_ingest_manifest.json"
+        )
+        backend_versions = dict(system_config.backend.versions)
+        backend_versions[backend_info.name] = backend_info.version
+        manifest = build_manifest(
+            stage="ingest",
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=backend_versions,
+            output_paths={"processed_jsonl": out_path},
+        )
+        write_manifest(manifest, manifest_path)
+        summary.manifest_path = str(manifest_path)
+
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"ingest failed: {exc}")

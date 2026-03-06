@@ -14,3 +14,4 @@ data/active_learning/*.jsonl
 data/ranked/*.jsonl
 data/reports/*.json
 data/reports/*.jsonl
+data/manifests/*.json

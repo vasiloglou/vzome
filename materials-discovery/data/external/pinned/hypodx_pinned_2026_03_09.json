@@ -1,0 +1,37 @@
+[
+  {
+    "system": "Al-Cu-Fe",
+    "phase": "i-phase",
+    "composition": {"Al": 0.70, "Cu": 0.20, "Fe": 0.10},
+    "source": "hypodx_pinned_2026_03_09"
+  },
+  {
+    "alloy_system": "Al-Cu-Fe",
+    "phase_name": "i-phase",
+    "composition": {"Fe": 0.10, "Cu": 0.20, "Al": 0.70},
+    "source": "hypodx_pinned_2026_03_09"
+  },
+  {
+    "system": "Al-Cu-Fe",
+    "phase_name": "beta",
+    "composition": {"Al": 0.60, "Cu": 0.30, "Fe": 0.10},
+    "source": "hypodx_pinned_2026_03_09"
+  },
+  {
+    "system": "Al-Cu-Fe",
+    "phase_name": "lambda",
+    "composition": {"Al": 0.65, "Cu": 0.20, "Fe": 0.15},
+    "source": "hypodx_pinned_2026_03_09"
+  },
+  {
+    "system": "Al-Pd-Mn",
+    "phase_name": "i-phase",
+    "composition": {"Al": 0.70, "Pd": 0.20, "Mn": 0.10},
+    "source": "hypodx_pinned_2026_03_09"
+  },
+  {
+    "system": "Al-Cu-Fe",
+    "phase_name": "broken-row",
+    "source": "hypodx_pinned_2026_03_09"
+  }
+]

@@ -1,0 +1,27 @@
+system_name: Al-Cu-Fe
+template_family: icosahedral_approximant_1_1
+species:
+  - Al
+  - Cu
+  - Fe
+composition_bounds:
+  Al:
+    min: 0.60
+    max: 0.80
+  Cu:
+    min: 0.10
+    max: 0.25
+  Fe:
+    min: 0.05
+    max: 0.20
+coeff_bounds:
+  min: -3
+  max: 3
+seed: 17
+default_count: 100
+backend:
+  mode: real
+  ingest_adapter: hypodx_pinned_v2026_03_09
+  pinned_snapshot: data/external/pinned/hypodx_pinned_2026_03_09.json
+  versions:
+    hypodx_snapshot: "2026-03-09"

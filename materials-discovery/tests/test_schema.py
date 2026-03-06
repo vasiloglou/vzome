@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from materials_discovery.common.schema import CandidateRecord
+from materials_discovery.common.schema import CandidateRecord, SystemConfig
 
 
 def valid_candidate_payload() -> dict[str, object]:
@@ -58,3 +58,23 @@ def test_composition_sum_validation() -> None:
 
     with pytest.raises(ValidationError):
         CandidateRecord.model_validate(payload)
+
+
+def test_system_config_backend_mode_validation() -> None:
+    payload = {
+        "system_name": "Al-Cu-Fe",
+        "template_family": "icosahedral_approximant_1_1",
+        "species": ["Al", "Cu", "Fe"],
+        "composition_bounds": {
+            "Al": {"min": 0.6, "max": 0.8},
+            "Cu": {"min": 0.1, "max": 0.25},
+            "Fe": {"min": 0.05, "max": 0.2},
+        },
+        "coeff_bounds": {"min": -3, "max": 3},
+        "seed": 17,
+        "default_count": 100,
+        "backend": {"mode": "invalid"},
+    }
+
+    with pytest.raises(ValidationError):
+        SystemConfig.model_validate(payload)

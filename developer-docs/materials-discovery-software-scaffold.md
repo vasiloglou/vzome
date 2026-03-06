@@ -303,3 +303,13 @@ All of the following must pass to claim real-mode completion:
 5. **Operational readiness**
    - CI split into fast unit path and heavy integration path.
    - End-to-end smoke run from `ingest` to `report` executes from clean checkout with documented dependencies.
+
+### 10.4 Execution Status (as of March 6, 2026)
+
+Started execution of RM0/RM1 packet:
+
+1. Added `backend.mode` config (`mock`/`real`) and ingest backend registry.
+2. Added ingest artifact manifest generation (`data/manifests/*_ingest_manifest.json`).
+3. Added pinned snapshot connector and real ingest adapter (`hypodx_pinned_v2026_03_09`).
+4. Added ingest QA checks (invalid-rate, duplicate-rate, minimum deduped rows).
+5. Added RM1 snapshot-backed integration test target (`pytest -m integration`).
