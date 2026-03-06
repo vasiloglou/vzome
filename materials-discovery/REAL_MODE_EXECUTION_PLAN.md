@@ -21,6 +21,10 @@ This document defines the execution plan to move `materials-discovery/` from sca
   - convex-mixture baseline selection for ternary compositions,
   - validation calibration now tracking reference-match distance,
   - ranking now emits calibrated stability/OOD/novelty decision components.
+- RM5 hardening (started March 6, 2026):
+  - active-learning surrogate now trains on descriptor + screening features,
+  - acquisition now balances predicted success, uncertainty, novelty, and OOD risk,
+  - model registry rows now capture surrogate threshold, radius, and top-k precision diagnostics.
 
 Note: these are production-oriented software pathways; domain-model fidelity can be raised iteratively by swapping adapters and calibrations without changing CLI/schema contracts.
 

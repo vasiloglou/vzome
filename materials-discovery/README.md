@@ -14,7 +14,7 @@ This workspace implements a full M1-M6 runnable slice of the no-DFT materials di
 - `mdisc generate`: deterministic candidate generation with schema validation and JSONL output.
 - `mdisc screen`: proxy relax, thresholding, and shortlist ranking.
 - `mdisc hifi-validate`: no-DFT digital validation (committee, uncertainty, proxy hull, phonon, short MD, XRD checks).
-- `mdisc active-learn`: deterministic surrogate fitting + next-batch acquisition from validated candidates.
+- `mdisc active-learn`: risk-aware surrogate fitting + next-batch acquisition from validated candidates.
 - `mdisc hifi-rank`: deterministic uncertainty-aware ranking of validated candidates.
 - `mdisc report`: experiment-facing report generation with synthetic powder-XRD signatures.
 - Stage manifests are emitted for every command under `data/manifests/`.
@@ -28,6 +28,7 @@ This workspace implements a full M1-M6 runnable slice of the no-DFT materials di
 - Real mode enforces element/property and pair-mixing prior coverage for configured systems.
 - Real mode now computes `DeltaE_proxy_hull` against ingested competing phases using exact-reference or convex-mixture baselines instead of batch-relative best-candidate scoring.
 - `mdisc hifi-rank` now emits calibrated `stability_probability`, `ood_score`, `novelty_score`, and `decision_score` components in candidate provenance.
+- `mdisc active-learn` now trains on descriptor/screen features and selects candidates by predicted success, boundary uncertainty, novelty, and OOD risk.
 - Real-mode XRD validation now requires ingested reference phases in `data/processed/*_reference_phases.jsonl` (run `mdisc ingest` first).
 - Mock mode remains deterministic for CI reproducibility and fast local checks.
 

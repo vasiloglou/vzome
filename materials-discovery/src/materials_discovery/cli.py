@@ -11,7 +11,10 @@ import typer
 from pydantic import ValidationError
 
 from materials_discovery.active_learning.select_next_batch import select_next_candidate_batch
-from materials_discovery.active_learning.train_surrogate import train_surrogate_model
+from materials_discovery.active_learning.train_surrogate import (
+    candidate_feature_map,
+    train_surrogate_model,
+)
 from materials_discovery.backends.capabilities import load_capabilities_matrix
 from materials_discovery.backends.registry import resolve_ingest_backend
 from materials_discovery.common.io import (
@@ -219,6 +222,38 @@ def _load_ranked_candidates(system_slug: str) -> list[CandidateRecord]:
     if not ranked:
         raise ValueError("ranked candidate file was found but contained no records")
     return ranked
+
+
+def _enrich_validated_with_ranked(
+    system_slug: str,
+    validated: list[CandidateRecord],
+) -> list[CandidateRecord]:
+    ranked_path = workspace_root() / "data" / "ranked" / f"{system_slug}_ranked.jsonl"
+    if not ranked_path.exists():
+        return validated
+
+    ranked = {
+        candidate.candidate_id: candidate
+        for candidate in _load_ranked_candidates(system_slug)
+    }
+    enriched: list[CandidateRecord] = []
+    for candidate in validated:
+        enriched.append(ranked.get(candidate.candidate_id, candidate))
+    return enriched
+
+
+def _load_active_learning_pool(
+    system_slug: str,
+    validated_ids: set[str],
+) -> list[CandidateRecord]:
+    screened_path = workspace_root() / "data" / "screened" / f"{system_slug}_screened.jsonl"
+    if screened_path.exists():
+        screened_pool = [CandidateRecord.model_validate(row) for row in load_jsonl(screened_path)]
+        if any(candidate.candidate_id not in validated_ids for candidate in screened_pool):
+            return screened_pool
+
+    candidates_path = workspace_root() / "data" / "candidates" / f"{system_slug}_candidates.jsonl"
+    return [CandidateRecord.model_validate(row) for row in load_jsonl(candidates_path)]
 
 
 @app.command("ingest")
@@ -572,13 +607,12 @@ def active_learn_command(
                 f"{candidates_path}"
             )
 
-        candidate_pool = [
-            CandidateRecord.model_validate(row) for row in load_jsonl(candidates_path)
-        ]
         validated = _load_validated_candidates(system_slug)
+        validated = _enrich_validated_with_ranked(system_slug, validated)
         validated_ids = {candidate.candidate_id for candidate in validated}
+        candidate_pool = _load_active_learning_pool(system_slug, validated_ids)
 
-        remaining = len(candidate_pool) - len(validated_ids)
+        remaining = sum(candidate.candidate_id not in validated_ids for candidate in candidate_pool)
         if remaining <= 0:
             raise ValueError(
                 "no unvalidated candidates remain in the pool; generate additional candidates first"
@@ -619,15 +653,24 @@ def active_learn_command(
         write_jsonl([candidate.model_dump() for candidate in selected], batch_path)
         feature_rows = []
         for candidate in validated:
+            rank_info = candidate.provenance.get("hifi_rank") or {}
+            features = candidate_feature_map(system_config, candidate)
             feature_rows.append(
                 {
                     "candidate_id": candidate.candidate_id,
                     "system": system_config.system_name,
                     "composition": candidate.composition,
+                    "features": features,
                     "uncertainty_ev_per_atom": candidate.digital_validation.uncertainty_ev_per_atom,
                     "delta_e_proxy_hull_ev_per_atom": (
                         candidate.digital_validation.delta_e_proxy_hull_ev_per_atom
                     ),
+                    "proxy_hull_reference_distance": (
+                        candidate.digital_validation.proxy_hull_reference_distance
+                    ),
+                    "hifi_rank_score": rank_info.get("score"),
+                    "stability_probability": rank_info.get("stability_probability"),
+                    "ood_score": rank_info.get("ood_score"),
                     "passed_checks": candidate.digital_validation.passed_checks,
                 }
             )
@@ -646,6 +689,11 @@ def active_learn_command(
                 "positive_count": surrogate.positive_count,
                 "negative_count": surrogate.negative_count,
                 "pass_rate": surrogate.pass_rate,
+                "decision_threshold": surrogate.decision_threshold,
+                "separation_margin": surrogate.separation_margin,
+                "training_radius": surrogate.training_radius,
+                "top_k_precision": surrogate.top_k_precision,
+                "mean_predicted_success": surrogate.mean_predicted_success,
                 "surrogate_path": str(surrogate_path),
             },
             model_registry_path,
