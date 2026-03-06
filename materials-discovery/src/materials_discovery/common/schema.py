@@ -157,6 +157,20 @@ class ActiveLearnSummary(BaseModel):
     batch_path: str
 
 
+class HifiRankSummary(BaseModel):
+    input_count: int
+    ranked_count: int
+    passed_count: int
+    output_path: str
+
+
+class ReportSummary(BaseModel):
+    ranked_count: int
+    reported_count: int
+    report_path: str
+    xrd_patterns_path: str
+
+
 def validate_unique_candidate_ids(candidates: Sequence[CandidateRecord]) -> None:
     ids = [candidate.candidate_id for candidate in candidates]
     if len(ids) != len(set(ids)):

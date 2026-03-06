@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Any
 
 import typer
 from pydantic import ValidationError
@@ -20,12 +19,15 @@ from materials_discovery.common.io import (
 from materials_discovery.common.schema import (
     ActiveLearnSummary,
     CandidateRecord,
+    HifiRankSummary,
     HifiValidateSummary,
+    ReportSummary,
     ScreenSummary,
     SystemConfig,
 )
 from materials_discovery.data.ingest_hypodx import ingest_fixture
 from materials_discovery.diffraction.compare_patterns import compile_experiment_report
+from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_xrd_patterns
 from materials_discovery.generator.candidate_factory import generate_candidates
 from materials_discovery.hifi_digital.committee_relax import run_committee_relaxation
 from materials_discovery.hifi_digital.hull_proxy import compute_proxy_hull
@@ -50,17 +52,6 @@ def _load_system_config(path: Path) -> SystemConfig:
         raise FileNotFoundError(f"Config file not found: {path}")
     data = load_yaml(path)
     return SystemConfig.model_validate(data)
-
-
-def _not_implemented(stage: str, target: str, err: NotImplementedError) -> None:
-    payload: dict[str, Any] = {
-        "stage": stage,
-        "status": "not_implemented",
-        "target": target,
-        "message": str(err),
-    }
-    typer.echo(json.dumps(payload, sort_keys=True))
-    raise typer.Exit(code=3)
 
 
 def _system_slug(system_name: str) -> str:
@@ -157,6 +148,20 @@ def _load_validated_candidates(system_slug: str) -> list[CandidateRecord]:
         raise ValueError("validated candidate files were found but contained no records")
 
     return [deduped[candidate_id] for candidate_id in sorted(deduped)]
+
+
+def _load_ranked_candidates(system_slug: str) -> list[CandidateRecord]:
+    ranked_path = workspace_root() / "data" / "ranked" / f"{system_slug}_ranked.jsonl"
+    if not ranked_path.exists():
+        raise FileNotFoundError(
+            "report input ranked file not found; run 'mdisc hifi-rank' first: "
+            f"{ranked_path}"
+        )
+
+    ranked = [CandidateRecord.model_validate(row) for row in load_jsonl(ranked_path)]
+    if not ranked:
+        raise ValueError("ranked candidate file was found but contained no records")
+    return ranked
 
 
 @app.command("ingest")
@@ -307,16 +312,26 @@ def hifi_validate_command(
 def hifi_rank_command(
     config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
 ) -> None:
-    """Hifi ranking placeholder command with explicit not-implemented contract."""
+    """Run M6 ranking over validated candidates with deterministic uncertainty-aware scoring."""
     try:
         system_config = _load_system_config(config)
-        rank_validated_candidates(system_config)
-    except NotImplementedError as exc:
-        _not_implemented(
-            "hifi-rank",
-            "materials_discovery.hifi_digital.rank_candidates.rank_validated_candidates",
-            exc,
+        system_slug = _system_slug(system_config.system_name)
+
+        validated = _load_validated_candidates(system_slug)
+        ranked = rank_validated_candidates(system_config, validated)
+
+        output_path = workspace_root() / "data" / "ranked" / f"{system_slug}_ranked.jsonl"
+        write_jsonl([candidate.model_dump() for candidate in ranked], output_path)
+
+        summary = HifiRankSummary(
+            input_count=len(validated),
+            ranked_count=len(ranked),
+            passed_count=sum(
+                candidate.digital_validation.passed_checks is True for candidate in ranked
+            ),
+            output_path=str(output_path),
         )
+        typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"hifi-rank failed: {exc}")
         raise typer.Exit(code=2)
@@ -393,16 +408,30 @@ def active_learn_command(
 def report_command(
     config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
 ) -> None:
-    """Report placeholder command with explicit not-implemented contract."""
+    """Build an experiment-facing report with ranked candidates and synthetic XRD signatures."""
     try:
         system_config = _load_system_config(config)
-        compile_experiment_report(system_config)
-    except NotImplementedError as exc:
-        _not_implemented(
-            "report",
-            "materials_discovery.diffraction.compare_patterns.compile_experiment_report",
-            exc,
+        system_slug = _system_slug(system_config.system_name)
+
+        ranked = _load_ranked_candidates(system_slug)
+        xrd_patterns = simulate_powder_xrd_patterns(ranked)
+        report = compile_experiment_report(system_config, ranked, xrd_patterns)
+
+        report_dir = workspace_root() / "data" / "reports"
+        xrd_path = report_dir / f"{system_slug}_xrd_patterns.jsonl"
+        report_path = report_dir / f"{system_slug}_report.json"
+
+        write_jsonl(xrd_patterns, xrd_path)
+        ensure_parent(report_path)
+        report_path.write_text(json.dumps(report, sort_keys=True), encoding="utf-8")
+
+        summary = ReportSummary(
+            ranked_count=len(ranked),
+            reported_count=int(report["reported_count"]),
+            report_path=str(report_path),
+            xrd_patterns_path=str(xrd_path),
         )
+        typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"report failed: {exc}")
         raise typer.Exit(code=2)

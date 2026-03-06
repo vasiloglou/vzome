@@ -11,3 +11,6 @@ data/screened/*.jsonl
 data/hifi_validated/*.jsonl
 data/active_learning/*.json
 data/active_learning/*.jsonl
+data/ranked/*.jsonl
+data/reports/*.json
+data/reports/*.jsonl

@@ -1105,7 +1105,7 @@ Current status in this repository:
 - `M3 screen`: implemented.
 - `M4 hifi-validate`: implemented.
 - `M5 active-learn`: implemented.
-- `hifi-rank`, `report`: interface-complete stubs pending stage logic.
+- `M6 hifi-rank + report`: implemented.
 
 Quickstart (local fixture mode):
 
@@ -1116,7 +1116,9 @@ uv run mdisc ingest --config configs/systems/al_cu_fe.yaml
 uv run mdisc generate --config configs/systems/al_cu_fe.yaml --count 50
 uv run mdisc screen --config configs/systems/al_cu_fe.yaml
 uv run mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch all
+uv run mdisc hifi-rank --config configs/systems/al_cu_fe.yaml
 uv run mdisc active-learn --config configs/systems/al_cu_fe.yaml
+uv run mdisc report --config configs/systems/al_cu_fe.yaml
 uv run pytest
 uv run ruff check .
 uv run mypy src
