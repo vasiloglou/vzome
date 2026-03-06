@@ -19,4 +19,5 @@ modes:
 notes:
   - Real mode remains no-DFT and expects pinned snapshots + MLIP-family adapters.
   - Real mode also supports executable validation adapters (`*_exec_cache_v1`) with on-disk cache reuse under `data/execution_cache/`.
+  - Native provider path is exposed through `al_cu_fe_native.yaml` and expects `uv sync --extra dev --extra mlip`.
   - Unsupported adapter combinations are rejected at config/dispatch time.

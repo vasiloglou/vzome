@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from materials_discovery.backends.native_providers import evaluate_phonon_provider
 from materials_discovery.backends.runner_common import (
     build_parser,
     load_runner_inputs,
@@ -13,15 +14,23 @@ def main() -> None:
     args = parser.parse_args()
     config, candidate = load_runner_inputs(args.input)
 
-    adapter = FixtureBackedPhononAdapter()
-    info = adapter.info()
-    result = adapter.evaluate_candidate(config, candidate)
+    provider = config.backend.phonon_provider or "pinned"
+    if provider == "pinned":
+        adapter = FixtureBackedPhononAdapter()
+        info = adapter.info()
+        result = adapter.evaluate_candidate(config, candidate)
+        backend_name = info.name
+        backend_version = info.version
+    else:
+        result = evaluate_phonon_provider(config, candidate)
+        backend_name = provider
+        backend_version = "native"
     write_runner_output(
         args.output,
         {
             "imaginary_modes": result.imaginary_modes,
-            "backend_name": info.name,
-            "backend_version": info.version,
+            "backend_name": backend_name,
+            "backend_version": backend_version,
             "candidate_id": candidate.candidate_id,
         },
     )

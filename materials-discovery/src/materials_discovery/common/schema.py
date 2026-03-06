@@ -95,6 +95,10 @@ class BackendConfig(BaseModel):
     phonon_adapter: str | None = None
     md_adapter: str | None = None
     xrd_adapter: str | None = None
+    committee_provider: str | None = None
+    phonon_provider: str | None = None
+    md_provider: str | None = None
+    xrd_provider: str | None = None
     pinned_snapshot: str | None = None
     validation_snapshot: str | None = None
     validation_cache_dir: str | None = None
@@ -102,6 +106,11 @@ class BackendConfig(BaseModel):
     phonon_command: list[str] | None = None
     md_command: list[str] | None = None
     xrd_command: list[str] | None = None
+    committee_device: str | None = None
+    md_temperature_k: float = 600.0
+    md_timestep_fs: float = 0.5
+    md_steps: int = 50
+    xrd_wavelength: str = "CuKa"
     benchmark_corpus: str | None = None
     versions: dict[str, str] = Field(default_factory=dict)
 
@@ -120,6 +129,14 @@ class BackendConfig(BaseModel):
                 self.md_adapter = "md_fixture_fallback_v2026_03_09"
             if self.xrd_adapter is None:
                 self.xrd_adapter = "xrd_fixture_fallback_v2026_03_09"
+            if self.committee_provider is None:
+                self.committee_provider = "pinned"
+            if self.phonon_provider is None:
+                self.phonon_provider = "pinned"
+            if self.md_provider is None:
+                self.md_provider = "pinned"
+            if self.xrd_provider is None:
+                self.xrd_provider = "pinned"
         return self
 
     @field_validator(
@@ -135,6 +152,16 @@ class BackendConfig(BaseModel):
         if not value:
             raise ValueError("backend command lists must be non-empty when configured")
         return value
+
+    @model_validator(mode="after")
+    def validate_runtime_settings(self) -> BackendConfig:
+        if self.md_temperature_k <= 0.0:
+            raise ValueError("backend.md_temperature_k must be > 0")
+        if self.md_timestep_fs <= 0.0:
+            raise ValueError("backend.md_timestep_fs must be > 0")
+        if self.md_steps <= 0:
+            raise ValueError("backend.md_steps must be > 0")
+        return self
 
 
 class SystemConfig(BaseModel):

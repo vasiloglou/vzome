@@ -66,7 +66,7 @@ def _run_committee_relaxation_real(
     candidates: list[CandidateRecord],
     batch: str,
 ) -> list[CandidateRecord]:
-    """Fixture-backed committee energy estimates for no-DFT real mode."""
+    """Adapter-backed committee energy estimates for no-DFT real mode."""
     adapter = resolve_committee_adapter(config.backend.mode, config.backend.committee_adapter)
     relaxed: list[CandidateRecord] = []
     for candidate in candidates:
@@ -75,7 +75,7 @@ def _run_committee_relaxation_real(
 
         validation = copied.digital_validation.model_copy(deep=True)
         validation.status = "committee_relaxed"
-        validation.committee = list(MODEL_COMMITTEE)
+        validation.committee = sorted(committee_energies)
         validation.committee_energy_ev_per_atom = committee_energies
         validation.batch = batch
         copied.digital_validation = validation

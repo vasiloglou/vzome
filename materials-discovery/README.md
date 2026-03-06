@@ -40,6 +40,11 @@ This workspace implements a full M1-M6 runnable slice of the no-DFT materials di
   - `materials_discovery.backends.run_phonon_backend`
   - `materials_discovery.backends.run_md_backend`
   - `materials_discovery.backends.run_xrd_backend`
+- Native provider mode is available through `configs/systems/al_cu_fe_native.yaml` with:
+  - `ase_committee_v1`
+  - `mace_hessian_v1`
+  - `ase_langevin_v1`
+  - `pymatgen_xrd_v1`
 - Real-mode XRD validation now requires ingested reference phases in `data/processed/*_reference_phases.jsonl` (run `mdisc ingest` first).
 - Mock mode remains deterministic for CI reproducibility and fast local checks.
 
@@ -94,6 +99,25 @@ Output contract:
 
 If a cache entry exists for the same candidate/stage/config digest, the command is skipped and the cached result is reused. If no cache entry exists and the configured command is missing, the stage fails explicitly.
 
+## Native Provider Path
+
+`configs/systems/al_cu_fe_native.yaml` preserves the same exec command/cache contract but switches the runner internals to optional provider-specific backends.
+
+- `committee_provider: ase_committee_v1`
+- `phonon_provider: mace_hessian_v1`
+- `md_provider: ase_langevin_v1`
+- `xrd_provider: pymatgen_xrd_v1`
+
+This path requires the MLIP extra:
+
+```bash
+cd materials-discovery
+uv sync --extra dev --extra mlip
+./scripts/run_native_pipeline.sh
+```
+
+Current limitation: the native path is import-safe and unit-tested for missing dependencies, but it is not exercised in CI because the MLIP stack is optional.
+
 ## Quickstart
 
 ```bash
@@ -102,6 +126,7 @@ uv sync --extra dev
 uv run mdisc ingest --config configs/systems/al_cu_fe.yaml
 uv run mdisc ingest --config configs/systems/al_cu_fe_real.yaml
 uv run mdisc ingest --config configs/systems/al_cu_fe_exec.yaml
+uv sync --extra dev --extra mlip
 uv run mdisc generate --config configs/systems/al_cu_fe.yaml --count 50
 uv run mdisc screen --config configs/systems/al_cu_fe.yaml
 uv run mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch all
@@ -110,6 +135,7 @@ uv run mdisc active-learn --config configs/systems/al_cu_fe.yaml
 uv run mdisc report --config configs/systems/al_cu_fe.yaml
 ./scripts/run_real_pipeline.sh
 ./scripts/run_exec_pipeline.sh
+./scripts/run_native_pipeline.sh
 uv run pytest
 uv run pytest -m integration
 uv run ruff check .

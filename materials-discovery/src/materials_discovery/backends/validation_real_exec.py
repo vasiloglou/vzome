@@ -23,8 +23,6 @@ from materials_discovery.backends.types import (
 from materials_discovery.common.io import workspace_root
 from materials_discovery.common.schema import CandidateRecord, SystemConfig
 
-MODEL_COMMITTEE: tuple[str, str, str] = ("MACE", "CHGNet", "MatterSim")
-
 
 @dataclass(frozen=True)
 class ExecAdapterSpec:
@@ -173,11 +171,14 @@ def _parse_committee_result(payload: dict[str, Any]) -> CommitteeEvaluation:
         raise ValueError("committee adapter output must define 'energies'")
 
     energies: dict[str, float] = {}
-    for model in MODEL_COMMITTEE:
-        value = energies_raw.get(model)
-        if not isinstance(value, int | float):
-            raise ValueError(f"committee adapter output missing numeric energy for {model}")
+    for model, value in energies_raw.items():
+        if not isinstance(model, str) or not isinstance(value, int | float):
+            raise ValueError(
+                "committee adapter output must use string model names and numeric values"
+            )
         energies[model] = round(float(value), 6)
+    if len(energies) < 2:
+        raise ValueError("committee adapter output must contain at least two model energies")
     return CommitteeEvaluation(energies=energies)
 
 

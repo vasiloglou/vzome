@@ -37,7 +37,8 @@ This document defines the execution plan to move `materials-discovery/` from sca
   - real-mode validation now supports executable command adapters for committee/phonon/MD/XRD,
   - validation results can be replayed from cache under `data/execution_cache/`,
   - exec adapters fail closed when neither a cache hit nor a configured command is available,
-  - `configs/systems/al_cu_fe_exec.yaml` now exercises concrete runner modules through the exec adapter path.
+  - `configs/systems/al_cu_fe_exec.yaml` now exercises concrete runner modules through the exec adapter path,
+  - `configs/systems/al_cu_fe_native.yaml` now exposes import-safe native provider backends behind the same command/cache contract.
 
 Note: these are production-oriented software pathways; domain-model fidelity can be raised iteratively by swapping adapters and calibrations without changing CLI/schema contracts.
 
