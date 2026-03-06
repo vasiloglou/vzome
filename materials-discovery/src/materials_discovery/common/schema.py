@@ -122,6 +122,14 @@ class GenerateSummary(BaseModel):
     output_path: str
 
 
+class ScreenSummary(BaseModel):
+    input_count: int
+    relaxed_count: int
+    passed_count: int
+    shortlisted_count: int
+    output_path: str
+
+
 def validate_unique_candidate_ids(candidates: Sequence[CandidateRecord]) -> None:
     ids = [candidate.candidate_id for candidate in candidates]
     if len(ids) != len(set(ids)):

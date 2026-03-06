@@ -1102,7 +1102,8 @@ Current status in this repository:
 
 - `M1 ingest`: implemented.
 - `M2 generate`: implemented.
-- `screen`, `hifi-validate`, `hifi-rank`, `active-learn`, `report`: interface-complete stubs pending stage logic.
+- `M3 screen`: implemented.
+- `hifi-validate`, `hifi-rank`, `active-learn`, `report`: interface-complete stubs pending stage logic.
 
 Quickstart (local fixture mode):
 
@@ -1111,6 +1112,7 @@ cd materials-discovery
 uv sync --extra dev
 uv run mdisc ingest --config configs/systems/al_cu_fe.yaml
 uv run mdisc generate --config configs/systems/al_cu_fe.yaml --count 50
+uv run mdisc screen --config configs/systems/al_cu_fe.yaml
 uv run pytest
 uv run ruff check .
 uv run mypy src

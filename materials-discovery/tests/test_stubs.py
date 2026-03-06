@@ -12,11 +12,6 @@ from materials_discovery.cli import app
     ("args", "stage", "target"),
     [
         (
-            ["screen", "--config"],
-            "screen",
-            "materials_discovery.screen.relax_fast.run_fast_relaxation",
-        ),
-        (
             ["hifi-validate", "--config", "--batch", "top500"],
             "hifi-validate",
             "materials_discovery.hifi_digital.committee_relax.run_committee_relaxation",

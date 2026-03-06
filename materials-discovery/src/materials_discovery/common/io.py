@@ -32,6 +32,20 @@ def load_json_array(path: Path) -> list[dict[str, Any]]:
     return out
 
 
+def load_jsonl(path: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for idx, line in enumerate(handle, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            parsed = json.loads(line)
+            if not isinstance(parsed, dict):
+                raise ValueError(f"Expected JSON object on line {idx} in {path}")
+            rows.append(parsed)
+    return rows
+
+
 def ensure_parent(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 

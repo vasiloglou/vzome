@@ -8,13 +8,15 @@ import typer
 from pydantic import ValidationError
 
 from materials_discovery.active_learning.train_surrogate import train_surrogate_model
-from materials_discovery.common.io import load_yaml, workspace_root
-from materials_discovery.common.schema import SystemConfig
+from materials_discovery.common.io import load_jsonl, load_yaml, workspace_root, write_jsonl
+from materials_discovery.common.schema import CandidateRecord, ScreenSummary, SystemConfig
 from materials_discovery.data.ingest_hypodx import ingest_fixture
 from materials_discovery.diffraction.compare_patterns import compile_experiment_report
 from materials_discovery.generator.candidate_factory import generate_candidates
 from materials_discovery.hifi_digital.committee_relax import run_committee_relaxation
 from materials_discovery.hifi_digital.rank_candidates import rank_validated_candidates
+from materials_discovery.screen.filter_thresholds import apply_screen_thresholds
+from materials_discovery.screen.rank_shortlist import rank_screen_shortlist
 from materials_discovery.screen.relax_fast import run_fast_relaxation
 
 app = typer.Typer(add_completion=False, help="No-DFT materials discovery CLI scaffold")
@@ -101,16 +103,44 @@ def generate_command(
 def screen_command(
     config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
 ) -> None:
-    """Screen-stage placeholder command with explicit not-implemented contract."""
+    """Run M3 fast-screening: proxy relax, threshold filter, and shortlist ranking."""
     try:
         system_config = _load_system_config(config)
-        run_fast_relaxation(system_config)
-    except NotImplementedError as exc:
-        _not_implemented(
-            "screen",
-            "materials_discovery.screen.relax_fast.run_fast_relaxation",
-            exc,
+
+        input_path = (
+            workspace_root()
+            / "data"
+            / "candidates"
+            / f"{system_config.system_name.lower().replace('-', '_')}_candidates.jsonl"
         )
+        if not input_path.exists():
+            raise FileNotFoundError(
+                "screen input candidates file not found; run 'mdisc generate' first: "
+                f"{input_path}"
+            )
+
+        output_path = (
+            workspace_root()
+            / "data"
+            / "screened"
+            / f"{system_config.system_name.lower().replace('-', '_')}_screened.jsonl"
+        )
+
+        raw_candidates = load_jsonl(input_path)
+        candidates = [CandidateRecord.model_validate(row) for row in raw_candidates]
+        relaxed = run_fast_relaxation(system_config, candidates)
+        passing, _ = apply_screen_thresholds(relaxed)
+        shortlisted = rank_screen_shortlist(passing)
+        write_jsonl([candidate.model_dump() for candidate in shortlisted], output_path)
+
+        summary = ScreenSummary(
+            input_count=len(candidates),
+            relaxed_count=len(relaxed),
+            passed_count=len(passing),
+            shortlisted_count=len(shortlisted),
+            output_path=str(output_path),
+        )
+        typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"screen failed: {exc}")
         raise typer.Exit(code=2)
