@@ -30,6 +30,21 @@ def _iter_qphi_pairs(candidate: dict[str, object]) -> list[list[int]]:
     return pairs
 
 
+def _iter_positions(
+    candidate: dict[str, object],
+    field: str,
+) -> list[list[float]]:
+    positions: list[list[float]] = []
+    sites = candidate["sites"]
+    assert isinstance(sites, list)
+    for site in sites:
+        assert isinstance(site, dict)
+        coords = site[field]
+        assert isinstance(coords, list)
+        positions.append(coords)
+    return positions
+
+
 def test_generate_count_unique_ids_and_bounds(tmp_path: Path) -> None:
     workspace = Path(__file__).resolve().parents[1]
     config_path = workspace / "configs" / "systems" / "al_cu_fe.yaml"
@@ -51,6 +66,13 @@ def test_generate_count_unique_ids_and_bounds(tmp_path: Path) -> None:
         for pair in _iter_qphi_pairs(row):
             assert config.coeff_bounds.min <= pair[0] <= config.coeff_bounds.max
             assert config.coeff_bounds.min <= pair[1] <= config.coeff_bounds.max
+        fractional_positions = _iter_positions(row, "fractional_position")
+        cartesian_positions = _iter_positions(row, "cartesian_position")
+        assert len(fractional_positions) == len(cartesian_positions)
+        for fractional in fractional_positions:
+            assert all(0.0 <= value < 1.0 for value in fractional)
+        for cartesian in cartesian_positions:
+            assert len(cartesian) == 3
 
 
 def test_generate_is_deterministic_for_fixed_seed(tmp_path: Path) -> None:

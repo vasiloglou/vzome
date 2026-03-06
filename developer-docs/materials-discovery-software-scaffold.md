@@ -22,6 +22,7 @@ This document turns the chapter into an executable software blueprint for quasic
 - `Phase 4 execution hardening`: started; real-mode validation now supports command-driven committee/phonon/MD/XRD adapters with reusable cache artifacts under `data/execution_cache/`.
 - `Exec integration path`: implemented for `Al-Cu-Fe`; `configs/systems/al_cu_fe_exec.yaml` routes validation through concrete runner modules and is covered by integration tests.
 - `Native provider path`: implemented behind optional dependencies; `configs/systems/al_cu_fe_native.yaml` preserves the same exec contract while switching runner internals to structure-based committee/phonon/MD/XRD providers.
+- `Explicit site coordinates`: implemented; generated candidates now emit `fractional_position` and `cartesian_position`, and the native provider path consumes those stored coordinates instead of reconstructing positions on the fly.
 
 ### Local Quickstart
 
@@ -143,7 +144,14 @@ Use one canonical candidate schema from day one:
   "template_family": "icosahedral_approximant_1_1",
   "cell": {"a": 14.2, "b": 14.2, "c": 14.2, "alpha": 90, "beta": 90, "gamma": 90},
   "sites": [
-    {"label": "S1", "qphi": [[1,0],[0,1],[-1,1]], "species": "Al", "occ": 1.0}
+    {
+      "label": "S1",
+      "qphi": [[1,0],[0,1],[-1,1]],
+      "species": "Al",
+      "occ": 1.0,
+      "fractional_position": [0.156, 0.242, 0.318],
+      "cartesian_position": [2.2152, 3.4364, 4.5156]
+    }
   ],
   "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
   "screen": {"model": "MACE", "energy_per_atom_ev": -3.12},
@@ -159,7 +167,8 @@ Use one canonical candidate schema from day one:
 Notes:
 
 - `qphi` stores `(a,b)` integer pairs for each Cartesian component `a + b*phi`.
-- store both generated and relaxed Cartesian coordinates when available.
+- generated candidates should store both `fractional_position` and `cartesian_position` for each site.
+- native validation backends should use stored coordinates first and only fall back to `qphi`-based reconstruction for older artifacts.
 - never drop provenance fields; they are required for reproducibility.
 
 ---

@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 QPhiPair = tuple[int, int]
 QPhiCoord = tuple[QPhiPair, QPhiPair, QPhiPair]
+Position3D = tuple[float, float, float]
 
 
 class CompositionBound(BaseModel):
@@ -38,12 +39,27 @@ class SiteRecord(BaseModel):
     qphi: QPhiCoord
     species: str
     occ: float
+    fractional_position: Position3D | None = None
+    cartesian_position: Position3D | None = None
 
     @field_validator("occ")
     @classmethod
     def validate_occupancy(cls, value: float) -> float:
         if value < 0.0 or value > 1.0:
             raise ValueError("site occupancy must be in [0, 1]")
+        return value
+
+    @field_validator("fractional_position")
+    @classmethod
+    def validate_fractional_position(
+        cls,
+        value: Position3D | None,
+    ) -> Position3D | None:
+        if value is None:
+            return value
+        for coord in value:
+            if coord < 0.0 or coord >= 1.0:
+                raise ValueError("fractional positions must be in [0, 1)")
         return value
 
 

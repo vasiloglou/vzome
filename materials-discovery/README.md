@@ -34,6 +34,7 @@ This workspace implements a full M1-M6 runnable slice of the no-DFT materials di
 - Real-mode validation stages now run through fixture-backed adapters for committee, phonon, MD, and XRD, with analytic fallback when a pinned result is absent.
 - Real-mode ranking, active learning, and report release gates now load thresholds from pinned benchmark corpora instead of fixed constants.
 - Candidate geometry generation now applies Z[phi] scaling, permutation, and translation rules rather than pairwise random jitter.
+- Generated candidates now store explicit `fractional_position` and `cartesian_position` site coordinates in addition to symbolic `qphi`.
 - Real-mode validation now also supports executable adapters (`*_exec_cache_v1`) that run external commands against a JSON input/output contract and reuse results from `data/execution_cache/`.
 - Concrete pinned runner modules are available for command-backed validation:
   - `materials_discovery.backends.run_committee_backend`
@@ -116,7 +117,7 @@ uv sync --extra dev --extra mlip
 ./scripts/run_native_pipeline.sh
 ```
 
-Current limitation: the native path is import-safe and unit-tested for missing dependencies, but it is not exercised in CI because the MLIP stack is optional.
+Current limitation: the native path now consumes stored site coordinates directly, but those coordinates are still generated heuristically from the current Z[phi] template realization rather than from a full crystallographic construction.
 
 ## Quickstart
 

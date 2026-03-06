@@ -15,6 +15,7 @@ from materials_discovery.common.schema import (
 )
 from materials_discovery.generator.approximant_templates import get_template
 from materials_discovery.generator.decorate_sites import assign_species
+from materials_discovery.generator.site_positions import site_positions_from_qphi
 from materials_discovery.generator.zphi_geometry import (
     cell_scale_multiplier,
     construct_site_qphi,
@@ -35,7 +36,7 @@ def _make_candidate(
     min_coeff = config.coeff_bounds.min
     max_coeff = config.coeff_bounds.max
 
-    sites: list[SiteRecord] = []
+    qphi_coords: list[tuple[tuple[int, int], tuple[int, int], tuple[int, int]]] = []
     for i, template_site in enumerate(template.sites):
         qphi = construct_site_qphi(
             template_site.base_qphi,
@@ -46,16 +47,25 @@ def _make_candidate(
             min_coeff=min_coeff,
             max_coeff=max_coeff,
         )
+        qphi_coords.append(qphi)
+
+    a_value = round(template.cell_scale * cell_scale_multiplier(seed, idx), 6)
+    cell = {"a": a_value, "b": a_value, "c": a_value, "alpha": 90.0, "beta": 90.0, "gamma": 90.0}
+
+    fractional_positions, cartesian_positions = site_positions_from_qphi(qphi_coords, cell)
+
+    sites: list[SiteRecord] = []
+    for i, template_site in enumerate(template.sites):
         sites.append(
             SiteRecord(
                 label=template_site.label,
-                qphi=qphi,
+                qphi=qphi_coords[i],
                 species=species_assignments[i],
                 occ=1.0,
+                fractional_position=fractional_positions[i],
+                cartesian_position=cartesian_positions[i],
             )
         )
-
-    a_value = round(template.cell_scale * cell_scale_multiplier(seed, idx), 6)
 
     digest = hashlib.sha256(f"{seed}:{idx}".encode()).hexdigest()
 
@@ -63,7 +73,7 @@ def _make_candidate(
         candidate_id=f"md_{idx:06d}",
         system=config.system_name,
         template_family=config.template_family,
-        cell={"a": a_value, "b": a_value, "c": a_value, "alpha": 90.0, "beta": 90.0, "gamma": 90.0},
+        cell=cell,
         sites=sites,
         composition=composition,
         screen={"model": "MACE", "energy_per_atom_ev": -3.0},

@@ -18,6 +18,8 @@ def valid_candidate_payload() -> dict[str, object]:
                 "qphi": [[1, 0], [0, 1], [-1, 1]],
                 "species": "Al",
                 "occ": 1.0,
+                "fractional_position": [0.2, 0.3, 0.4],
+                "cartesian_position": [2.84, 4.26, 5.68],
             }
         ],
         "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
@@ -47,6 +49,14 @@ def test_invalid_occupancy_rejected() -> None:
 def test_invalid_qphi_shape_rejected() -> None:
     payload = valid_candidate_payload()
     payload["sites"][0]["qphi"] = [[1, 0], [0, 1]]  # type: ignore[index]
+
+    with pytest.raises(ValidationError):
+        CandidateRecord.model_validate(payload)
+
+
+def test_invalid_fractional_position_rejected() -> None:
+    payload = valid_candidate_payload()
+    payload["sites"][0]["fractional_position"] = [1.0, 0.2, 0.3]  # type: ignore[index]
 
     with pytest.raises(ValidationError):
         CandidateRecord.model_validate(payload)
