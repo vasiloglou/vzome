@@ -33,6 +33,11 @@ This document defines the execution plan to move `materials-discovery/` from sca
   - validation now resolves fixture-backed committee/phonon/MD/XRD adapters in real mode,
   - ranking, active learning, and report thresholds now load from pinned benchmark corpora,
   - candidate generation now applies Z[phi] geometry transforms instead of pairwise coefficient jitter.
+- Phase-4 execution hardening (started March 6, 2026):
+  - real-mode validation now supports executable command adapters for committee/phonon/MD/XRD,
+  - validation results can be replayed from cache under `data/execution_cache/`,
+  - exec adapters fail closed when neither a cache hit nor a configured command is available,
+  - `configs/systems/al_cu_fe_exec.yaml` now exercises concrete runner modules through the exec adapter path.
 
 Note: these are production-oriented software pathways; domain-model fidelity can be raised iteratively by swapping adapters and calibrations without changing CLI/schema contracts.
 

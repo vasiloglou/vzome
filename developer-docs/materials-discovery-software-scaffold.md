@@ -19,6 +19,8 @@ This document turns the chapter into an executable software blueprint for quasic
 - `M6 hifi-rank + report`: implemented in `materials-discovery/src/materials_discovery/hifi_digital/rank_candidates.py` and `materials-discovery/src/materials_discovery/diffraction/`.
 - `RM6 hardening`: started; report outputs now include chemistry-driven XRD proxy fingerprints, recommendation tiers, risk flags, and release-gate calibration.
 - `Phase 3 adapter/calibration hardening`: implemented for `Al-Cu-Fe` real mode; validation now uses fixture-backed adapters, benchmark corpora calibrate `hifi-rank`/`active-learn`/`report`, and generation uses Z[phi] transforms instead of pair jitter.
+- `Phase 4 execution hardening`: started; real-mode validation now supports command-driven committee/phonon/MD/XRD adapters with reusable cache artifacts under `data/execution_cache/`.
+- `Exec integration path`: implemented for `Al-Cu-Fe`; `configs/systems/al_cu_fe_exec.yaml` routes validation through concrete runner modules and is covered by integration tests.
 
 ### Local Quickstart
 
@@ -26,12 +28,14 @@ This document turns the chapter into an executable software blueprint for quasic
 cd materials-discovery
 uv sync --extra dev
 uv run mdisc ingest --config configs/systems/al_cu_fe.yaml
+uv run mdisc ingest --config configs/systems/al_cu_fe_exec.yaml
 uv run mdisc generate --config configs/systems/al_cu_fe.yaml --count 50
 uv run mdisc screen --config configs/systems/al_cu_fe.yaml
 uv run mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch all
 uv run mdisc hifi-rank --config configs/systems/al_cu_fe.yaml
 uv run mdisc active-learn --config configs/systems/al_cu_fe.yaml
 uv run mdisc report --config configs/systems/al_cu_fe.yaml
+./scripts/run_exec_pipeline.sh
 uv run pytest
 uv run ruff check .
 uv run mypy src

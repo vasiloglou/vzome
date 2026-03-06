@@ -97,6 +97,11 @@ class BackendConfig(BaseModel):
     xrd_adapter: str | None = None
     pinned_snapshot: str | None = None
     validation_snapshot: str | None = None
+    validation_cache_dir: str | None = None
+    committee_command: list[str] | None = None
+    phonon_command: list[str] | None = None
+    md_command: list[str] | None = None
+    xrd_command: list[str] | None = None
     benchmark_corpus: str | None = None
     versions: dict[str, str] = Field(default_factory=dict)
 
@@ -116,6 +121,20 @@ class BackendConfig(BaseModel):
             if self.xrd_adapter is None:
                 self.xrd_adapter = "xrd_fixture_fallback_v2026_03_09"
         return self
+
+    @field_validator(
+        "committee_command",
+        "phonon_command",
+        "md_command",
+        "xrd_command",
+    )
+    @classmethod
+    def validate_command_list(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return value
+        if not value:
+            raise ValueError("backend command lists must be non-empty when configured")
+        return value
 
 
 class SystemConfig(BaseModel):

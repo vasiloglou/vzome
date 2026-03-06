@@ -10,10 +10,20 @@ from materials_discovery.cli import app
 
 
 @pytest.mark.integration
-def test_real_mode_end_to_end_pipeline_artifacts() -> None:
+@pytest.mark.parametrize(
+    ("config_name", "expect_exec_cache"),
+    [
+        ("al_cu_fe_real.yaml", False),
+        ("al_cu_fe_exec.yaml", True),
+    ],
+)
+def test_real_mode_end_to_end_pipeline_artifacts(
+    config_name: str,
+    expect_exec_cache: bool,
+) -> None:
     runner = CliRunner()
     workspace = Path(__file__).resolve().parents[1]
-    config_path = workspace / "configs" / "systems" / "al_cu_fe_real.yaml"
+    config_path = workspace / "configs" / "systems" / config_name
 
     ingest = runner.invoke(app, ["ingest", "--config", str(config_path)])
     assert ingest.exit_code == 0
@@ -74,3 +84,10 @@ def test_real_mode_end_to_end_pipeline_artifacts() -> None:
     pipeline_manifest = json.loads(pipeline_manifest_path.read_text(encoding="utf-8"))
     assert pipeline_manifest["stage"] == "pipeline"
     assert "report_json" in pipeline_manifest["output_hashes"]
+
+    if expect_exec_cache:
+        cache_root = workspace / "data" / "execution_cache" / "al_cu_fe_exec"
+        assert (cache_root / "committee").exists()
+        assert (cache_root / "phonon").exists()
+        assert (cache_root / "md").exists()
+        assert (cache_root / "xrd").exists()

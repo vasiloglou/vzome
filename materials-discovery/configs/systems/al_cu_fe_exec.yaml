@@ -1,0 +1,69 @@
+system_name: Al-Cu-Fe
+template_family: icosahedral_approximant_1_1
+species:
+  - Al
+  - Cu
+  - Fe
+composition_bounds:
+  Al:
+    min: 0.60
+    max: 0.80
+  Cu:
+    min: 0.10
+    max: 0.25
+  Fe:
+    min: 0.05
+    max: 0.20
+coeff_bounds:
+  min: -3
+  max: 3
+seed: 17
+default_count: 100
+backend:
+  mode: real
+  ingest_adapter: hypodx_pinned_v2026_03_09
+  committee_adapter: committee_exec_cache_v1
+  phonon_adapter: phonon_exec_cache_v1
+  md_adapter: md_exec_cache_v1
+  xrd_adapter: xrd_exec_cache_v1
+  pinned_snapshot: data/external/pinned/hypodx_pinned_2026_03_09.json
+  validation_snapshot: data/external/pinned/al_cu_fe_validation_snapshot_2026_03_09.json
+  validation_cache_dir: data/execution_cache/al_cu_fe_exec
+  committee_command:
+    - "{python}"
+    - -m
+    - materials_discovery.backends.run_committee_backend
+    - --input
+    - "{input}"
+    - --output
+    - "{output}"
+  phonon_command:
+    - "{python}"
+    - -m
+    - materials_discovery.backends.run_phonon_backend
+    - --input
+    - "{input}"
+    - --output
+    - "{output}"
+  md_command:
+    - "{python}"
+    - -m
+    - materials_discovery.backends.run_md_backend
+    - --input
+    - "{input}"
+    - --output
+    - "{output}"
+  xrd_command:
+    - "{python}"
+    - -m
+    - materials_discovery.backends.run_xrd_backend
+    - --input
+    - "{input}"
+    - --output
+    - "{output}"
+  benchmark_corpus: data/benchmarks/al_cu_fe_benchmark.json
+  versions:
+    hypodx_snapshot: "2026-03-09"
+    validation_snapshot: "2026-03-09"
+    benchmark_corpus: "2026-03-06"
+    validation_backend: "pinned-runner-v1"

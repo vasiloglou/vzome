@@ -18,4 +18,5 @@ modes:
     report_adapter: xrd_report_adapter_v1
 notes:
   - Real mode remains no-DFT and expects pinned snapshots + MLIP-family adapters.
+  - Real mode also supports executable validation adapters (`*_exec_cache_v1`) with on-disk cache reuse under `data/execution_cache/`.
   - Unsupported adapter combinations are rejected at config/dispatch time.

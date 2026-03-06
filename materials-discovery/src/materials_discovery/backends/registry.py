@@ -11,6 +11,12 @@ from materials_discovery.backends.types import (
     PhononAdapter,
     XrdAdapter,
 )
+from materials_discovery.backends.validation_real_exec import (
+    ExecCommitteeAdapter,
+    ExecMdAdapter,
+    ExecPhononAdapter,
+    ExecXrdAdapter,
+)
 from materials_discovery.backends.validation_real_fixtures import (
     FixtureBackedCommitteeAdapter,
     FixtureBackedMdAdapter,
@@ -30,18 +36,22 @@ _DEFAULT_ADAPTERS: dict[str, str] = {
 
 _COMMITTEE_ADAPTERS: dict[tuple[str, str], CommitteeAdapter] = {
     ("real", "committee_fixture_fallback_v2026_03_09"): FixtureBackedCommitteeAdapter(),
+    ("real", "committee_exec_cache_v1"): ExecCommitteeAdapter(),
 }
 
 _PHONON_ADAPTERS: dict[tuple[str, str], PhononAdapter] = {
     ("real", "phonon_fixture_fallback_v2026_03_09"): FixtureBackedPhononAdapter(),
+    ("real", "phonon_exec_cache_v1"): ExecPhononAdapter(),
 }
 
 _MD_ADAPTERS: dict[tuple[str, str], MdAdapter] = {
     ("real", "md_fixture_fallback_v2026_03_09"): FixtureBackedMdAdapter(),
+    ("real", "md_exec_cache_v1"): ExecMdAdapter(),
 }
 
 _XRD_ADAPTERS: dict[tuple[str, str], XrdAdapter] = {
     ("real", "xrd_fixture_fallback_v2026_03_09"): FixtureBackedXrdAdapter(),
+    ("real", "xrd_exec_cache_v1"): ExecXrdAdapter(),
 }
 
 _DEFAULT_COMMITTEE_ADAPTERS: dict[str, str] = {
