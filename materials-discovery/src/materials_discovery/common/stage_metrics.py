@@ -55,6 +55,8 @@ def validation_calibration(candidates: list[CandidateRecord]) -> dict[str, float
             "pass_rate": 0.0,
             "uncertainty_mean": 0.0,
             "delta_hull_mean": 0.0,
+            "proxy_hull_reference_distance_mean": 0.0,
+            "proxy_hull_exact_match_rate": 0.0,
         }
 
     passed_count = sum(
@@ -70,6 +72,11 @@ def validation_calibration(candidates: list[CandidateRecord]) -> dict[str, float
         for candidate in candidates
         if candidate.digital_validation.delta_e_proxy_hull_ev_per_atom is not None
     ]
+    reference_distances = [
+        float(candidate.digital_validation.proxy_hull_reference_distance)
+        for candidate in candidates
+        if candidate.digital_validation.proxy_hull_reference_distance is not None
+    ]
 
     return {
         "validated_count": len(candidates),
@@ -77,6 +84,18 @@ def validation_calibration(candidates: list[CandidateRecord]) -> dict[str, float
         "pass_rate": round(passed_count / len(candidates), 6),
         "uncertainty_mean": round(mean(uncertainties), 6) if uncertainties else 0.0,
         "delta_hull_mean": round(mean(hulls), 6) if hulls else 0.0,
+        "proxy_hull_reference_distance_mean": (
+            round(mean(reference_distances), 6) if reference_distances else 0.0
+        ),
+        "proxy_hull_exact_match_rate": (
+            round(
+                sum(distance <= 1e-6 for distance in reference_distances)
+                / len(reference_distances),
+                6,
+            )
+            if reference_distances
+            else 0.0
+        ),
     }
 
 

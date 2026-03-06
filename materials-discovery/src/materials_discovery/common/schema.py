@@ -54,6 +54,9 @@ class DigitalValidationRecord(BaseModel):
     committee_energy_ev_per_atom: dict[str, float] | None = None
     committee_std_ev_per_atom: float | None = None
     delta_e_proxy_hull_ev_per_atom: float | None = None
+    proxy_hull_baseline_ev_per_atom: float | None = None
+    proxy_hull_reference_distance: float | None = None
+    proxy_hull_reference_phases: list[str] | None = None
     phonon_imaginary_modes: int | None = None
     phonon_pass: bool | None = None
     md_stability_score: float | None = None

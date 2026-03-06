@@ -12,8 +12,8 @@ This workspace implements a full M1-M6 runnable slice of the no-DFT materials di
 - Ingest artifact manifests: `data/manifests/*_ingest_manifest.json` with config/backend/output hashes.
 - Snapshot-backed RM1 integration test target: `uv run pytest -m integration`.
 - `mdisc generate`: deterministic candidate generation with schema validation and JSONL output.
-- `mdisc screen`: deterministic fast-screen pipeline (proxy relax, thresholding, shortlist ranking).
-- `mdisc hifi-validate`: deterministic no-DFT digital validation (committee, uncertainty, proxy hull, phonon, short MD, XRD checks).
+- `mdisc screen`: proxy relax, thresholding, and shortlist ranking.
+- `mdisc hifi-validate`: no-DFT digital validation (committee, uncertainty, proxy hull, phonon, short MD, XRD checks).
 - `mdisc active-learn`: deterministic surrogate fitting + next-batch acquisition from validated candidates.
 - `mdisc hifi-rank`: deterministic uncertainty-aware ranking of validated candidates.
 - `mdisc report`: experiment-facing report generation with synthetic powder-XRD signatures.
@@ -21,6 +21,14 @@ This workspace implements a full M1-M6 runnable slice of the no-DFT materials di
 - Calibration artifacts are emitted under `data/calibration/`.
 - Model/feature registry artifacts are emitted under `data/registry/models` and `data/registry/features`.
 - Backend capability matrix is tracked in `data/registry/backend_capabilities.yaml`.
+
+## Real-mode scientific gates
+
+- Real mode now uses composition/descriptor-based no-DFT scoring for `screen` and `hifi-validate` stages (not hash-jitter scoring).
+- Real mode enforces element/property and pair-mixing prior coverage for configured systems.
+- Real mode now computes `DeltaE_proxy_hull` against ingested competing phases using exact-reference or convex-mixture baselines instead of batch-relative best-candidate scoring.
+- Real-mode XRD validation now requires ingested reference phases in `data/processed/*_reference_phases.jsonl` (run `mdisc ingest` first).
+- Mock mode remains deterministic for CI reproducibility and fast local checks.
 
 ## Quickstart
 

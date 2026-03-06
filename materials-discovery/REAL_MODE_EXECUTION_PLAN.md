@@ -12,6 +12,14 @@ This document defines the execution plan to move `materials-discovery/` from sca
   - model/feature registry outputs (`data/registry/models`, `data/registry/features`),
   - pipeline manifest emission from report stage,
   - split fast/integration CI and real-mode run script.
+- Phase-1 scientific hardening (started March 6, 2026):
+  - descriptor-based real-mode screening and validation scoring (replacing hash-jitter logic),
+  - strict real-mode element/pair prior gating for supported systems,
+  - real-mode XRD confidence tied to ingested reference-phase compositions.
+- Phase-2 scientific hardening (started March 6, 2026):
+  - reference-aware proxy hull using ingested competing phases,
+  - convex-mixture baseline selection for ternary compositions,
+  - validation calibration now tracking reference-match distance.
 
 Note: these are production-oriented software pathways; domain-model fidelity can be raised iteratively by swapping adapters and calibrations without changing CLI/schema contracts.
 

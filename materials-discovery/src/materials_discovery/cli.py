@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from datetime import UTC, datetime
 from pathlib import Path
@@ -108,6 +109,24 @@ def _shortlist_rank(candidate: CandidateRecord) -> int:
     if isinstance(rank, float) and rank.is_integer():
         return int(rank)
     return 10**9
+
+
+def _quantile(values: list[float], q: float) -> float:
+    if not values:
+        raise ValueError("cannot compute quantile for empty values")
+    if q <= 0.0:
+        return min(values)
+    if q >= 1.0:
+        return max(values)
+
+    ordered = sorted(values)
+    location = (len(ordered) - 1) * q
+    lower = math.floor(location)
+    upper = math.ceil(location)
+    if lower == upper:
+        return ordered[lower]
+    fraction = location - lower
+    return ordered[lower] * (1.0 - fraction) + ordered[upper] * fraction
 
 
 def _select_hifi_batch(candidates: list[CandidateRecord], batch: str) -> list[CandidateRecord]:
@@ -340,8 +359,14 @@ def screen_command(
         min_distance = DEFAULT_MIN_DISTANCE_PROXY
         max_energy = DEFAULT_MAX_ENERGY_PROXY
         if system_config.backend.mode == "real":
-            min_distance += 0.03
-            max_energy -= 0.03
+            energy_values = [
+                float((candidate.screen or {})["energy_proxy_ev_per_atom"]) for candidate in relaxed
+            ]
+            distance_values = [
+                float((candidate.screen or {})["min_distance_proxy"]) for candidate in relaxed
+            ]
+            max_energy = round(_quantile(energy_values, 0.65), 6)
+            min_distance = round(_quantile(distance_values, 0.30), 6)
 
         passing, _ = apply_screen_thresholds(
             relaxed,
@@ -425,9 +450,9 @@ def hifi_validate_command(
 
         validated = run_committee_relaxation(system_config, selected, batch)
         validated = compute_committee_uncertainty(validated)
-        validated = compute_proxy_hull(validated)
-        validated = run_mlip_phonon_checks(validated)
-        validated = run_short_md_stability(validated)
+        validated = compute_proxy_hull(validated, config=system_config)
+        validated = run_mlip_phonon_checks(validated, config=system_config)
+        validated = run_short_md_stability(validated, config=system_config)
         validated = validate_xrd_signatures(system_config, validated)
         validated, passed_count = _finalize_validation(validated)
 
