@@ -1096,6 +1096,26 @@ For a concrete repository scaffold, module boundaries, milestones, and acceptanc
 
 - [Materials Discovery Software Scaffold](materials-discovery-software-scaffold.md)
 
+#### 10.8.10 Implementation Status and Quickstart
+
+Current status in this repository:
+
+- `M1 ingest`: implemented.
+- `M2 generate`: implemented.
+- `screen`, `hifi-validate`, `hifi-rank`, `active-learn`, `report`: interface-complete stubs pending stage logic.
+
+Quickstart (local fixture mode):
+
+```bash
+cd materials-discovery
+uv sync --extra dev
+uv run mdisc ingest --config configs/systems/al_cu_fe.yaml
+uv run mdisc generate --config configs/systems/al_cu_fe.yaml --count 50
+uv run pytest
+uv run ruff check .
+uv run mypy src
+```
+
 This reframing keeps the original vision intact while making it implementable as a real materials-discovery software program.
 
 ---

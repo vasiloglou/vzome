@@ -1,0 +1,21 @@
+system_name: Al-Pd-Mn
+template_family: icosahedral_approximant_1_1
+species:
+  - Al
+  - Pd
+  - Mn
+composition_bounds:
+  Al:
+    min: 0.60
+    max: 0.80
+  Pd:
+    min: 0.10
+    max: 0.30
+  Mn:
+    min: 0.05
+    max: 0.20
+coeff_bounds:
+  min: -3
+  max: 3
+seed: 23
+default_count: 100

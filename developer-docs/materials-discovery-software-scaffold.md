@@ -6,6 +6,26 @@ This document turns the chapter into an executable software blueprint for quasic
 
 ---
 
+## 0. Implementation Status (Current)
+
+- `M1 ingest`: implemented in `materials-discovery/src/materials_discovery/data/ingest_hypodx.py`.
+- `M2 generate`: implemented in `materials-discovery/src/materials_discovery/generator/candidate_factory.py`.
+- Remaining commands (`screen`, `hifi-validate`, `hifi-rank`, `active-learn`, `report`): interface-complete stubs with explicit exit code `3`.
+
+### Local Quickstart
+
+```bash
+cd materials-discovery
+uv sync --extra dev
+uv run mdisc ingest --config configs/systems/al_cu_fe.yaml
+uv run mdisc generate --config configs/systems/al_cu_fe.yaml --count 50
+uv run pytest
+uv run ruff check .
+uv run mypy src
+```
+
+---
+
 ## 1. Scope
 
 ### Primary Goal

@@ -1,0 +1,32 @@
+[
+  {
+    "system": "Al-Cu-Fe",
+    "phase": "i-phase",
+    "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+    "source": "hypodx_fixture"
+  },
+  {
+    "alloy_system": "Al-Cu-Fe",
+    "phase_name": "i-phase",
+    "composition": {"Fe": 0.1, "Cu": 0.2, "Al": 0.7},
+    "source": "hypodx_fixture"
+  },
+  {
+    "system": "Al-Cu-Fe",
+    "phase_name": "beta",
+    "composition": {"Al": 0.6, "Cu": 0.3, "Fe": 0.1},
+    "source": "hypodx_fixture"
+  },
+  {
+    "system": "Al-Pd-Mn",
+    "phase": "i-phase",
+    "composition": {"Al": 0.7, "Pd": 0.2, "Mn": 0.1},
+    "source": "hypodx_fixture"
+  },
+  {
+    "system": "Sc-Zn",
+    "phase": "approximant",
+    "composition": {"Sc": 0.3, "Zn": 0.7},
+    "source": "hypodx_fixture"
+  }
+]
