@@ -987,7 +987,7 @@ The core idea is still powerful: use icosahedral/golden-ratio structure to const
 #### 10.8.1 Two Corrections Before Optimization
 
 **Correction A — exact coordinates, not exact total energies.**  
-Coordinates and symmetry operations can be represented exactly in `Q(φ)`, which is excellent for duplicate detection, symmetry checks, and deterministic geometry transforms. But practical energies (EAM, machine-learned potentials, DFT) are still numerical approximations.
+Coordinates and symmetry operations can be represented exactly in `Q(φ)`, which is excellent for duplicate detection, symmetry checks, and deterministic geometry transforms. But practical energies from empirical or machine-learned potentials are still numerical approximations.
 
 **Correction B — use bounded or periodic families, not raw dense `Z[φ]^3`.**  
 `Z[φ]^3` is countable but dense in `R^3`; naive nearest-neighbor moves are not well-defined. In practice, optimize over:
@@ -1011,17 +1011,18 @@ So optimization is over `(T, A, R, Sigma)` rather than only a set of points `S`.
 
 #### 10.8.3 Objective Functions and Constraints
 
-A practical multi-objective target:
+A practical no-DFT multi-objective target:
 
 ```
-minimize   [ DeltaE_hull(x), P_phonon(x), P_target(x) ]
+minimize   [ DeltaE_proxy_hull(x), U_committee(x), P_phonon_mlip(x), P_target(x) ]
 subject to stoichiometry, minimum-distance, and synthesis constraints
 ```
 
 where:
 
-- `DeltaE_hull`: energy above convex hull vs competing phases
-- `P_phonon`: penalty for dynamical instability (imaginary modes)
+- `DeltaE_proxy_hull`: model-based estimate of energy above hull vs competing phases
+- `U_committee`: disagreement across model committee predictions (uncertainty)
+- `P_phonon_mlip`: penalty for dynamical instability from MLIP-based phonon checks
 - `P_target`: property-specific penalty (e.g., catalytic descriptor or thermal target)
 
 This keeps the pipeline tied to measurable stability and application goals.
@@ -1043,17 +1044,18 @@ These moves preserve representability while remaining algorithmically well-defin
 |------|------|-------|-------------|
 | **1. Data + scope** | 1-3 | Ingest quasicrystal/approximant corpora and competing phases | Unified candidate + reference dataset |
 | **2. Candidate generator** | 3-6 | Implement approximant/template + decoration generator | Reproducible structure generation API |
-| **3. Fast screening** | 6-10 | Relax with ML potentials, filter by geometry and energy proxies | Top-k shortlist for DFT |
-| **4. DFT refinement** | 10-15 | Relaxation, static energies, hull analysis, selected phonons | Physically ranked candidates |
-| **5. Active learning loop** | 15-18 | Retrain surrogate and resample uncertain low-energy regions | Improved model + new candidates |
+| **3. Fast screening** | 6-10 | Relax with ML potentials, filter by geometry and coarse energy proxies | Top-k shortlist for high-fidelity digital validation |
+| **4. High-fidelity digital validation** | 10-15 | Committee relaxations, uncertainty scoring, proxy hull analysis, selected phonon/MD checks | Ranked candidates with uncertainty bands |
+| **5. Active learning loop** | 15-18 | Retrain surrogate and resample uncertain low-energy regions using digital labels | Improved model + new candidates |
 | **6. Experiment-facing outputs** | 18-20 | Simulated diffraction and synthesis-ready reports | Prioritized list for validation |
 
 #### 10.8.6 Recommended Tooling Stack
 
 - **Geometry/materials plumbing**: `pymatgen`, `ASE`, `spglib`
-- **Workflow/provenance**: `atomate2 + jobflow` or `AiiDA`
-- **Fast force fields**: `MACE`, `CHGNet`, `NequIP` (fine-tuned where needed)
-- **DFT backends**: VASP / Quantum ESPRESSO / DFT-FE (depending on access and scale)
+- **Pipeline orchestration/provenance**: `Prefect` or `Snakemake`, plus run-tracking (`MLflow`/`DVC`)
+- **Model committee**: `MACE`, `CHGNet`, `MatterSim` (optionally `NequIP`)
+- **Thermodynamic proxy layer**: `pycalphad` plus known competing-phase datasets
+- **Dynamics/vibrations (no DFT)**: MLIP-driven MD (`ASE`/`LAMMPS`) and `phonopy` with ML forces
 - **Benchmark sanity checks**: Cambridge Cluster Database-style cluster tests for optimizer behavior
 
 #### 10.8.7 Minimum Success Criteria
@@ -1062,17 +1064,27 @@ Before claiming discovery, require all of the following:
 
 1. Reproduce at least one known quasicrystal/approximant family as a calibration check.
 2. Achieve stable ranking convergence under surrogate retraining.
-3. Produce candidates with low `DeltaE_hull` and no major dynamical instabilities in checked cells.
-4. Generate distinguishing simulated diffraction signatures for experimental follow-up.
+3. Produce candidates with low `DeltaE_proxy_hull` and low committee disagreement.
+4. Show no major dynamical instabilities in selected MLIP phonon/MD checks.
+5. Generate distinguishing simulated diffraction signatures for experimental follow-up.
+6. Mark outputs clearly as **digitally prioritized candidates** pending optional first-principles or experimental confirmation.
 
 #### 10.8.8 Data and Literature Starting Points
 
 - HYPOD-X quasicrystal datasets and metadata  
   https://www.nature.com/articles/s41597-024-04043-z
+- Matbench Discovery benchmark (for model quality tracking)  
+  https://www.nature.com/articles/s42256-025-01055-1
+- Matbench Discovery project repository  
+  https://github.com/janosh/matbench-discovery
+- CHGNet (universal interatomic potential)  
+  https://github.com/CederGroupHub/chgnet
+- MACE (foundation MLIP framework)  
+  https://github.com/ACEsuit/mace
+- MatterSim (foundation model for atomistic simulation)  
+  https://github.com/microsoft/mattersim
 - Machine-learning discovery of quasicrystals (ternary systems)  
   https://doi.org/10.1103/PhysRevMaterials.7.093805
-- First-principles stability/kinetics for quasicrystal nanoparticles  
-  https://www.nature.com/articles/s41567-025-02925-6
 - Quasicrystal structure prediction review (approximants, methods, limitations)  
   https://euler.phys.cmu.edu/widom/pubs/PDF/IJCR2023.pdf
 - Deep-learning XRD-assisted quasicrystal identification  

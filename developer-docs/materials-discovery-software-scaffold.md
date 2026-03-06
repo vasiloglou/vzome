@@ -14,7 +14,7 @@ Build a reproducible pipeline that can:
 
 1. generate candidate quasicrystal-compatible structures,
 2. screen them with fast surrogate models,
-3. refine top candidates with DFT,
+3. refine top candidates with high-fidelity digital validation (no DFT required),
 4. rank candidates for experimental follow-up.
 
 ### Non-Goals (v0.1)
@@ -63,11 +63,14 @@ materials-discovery/
         relax_fast.py
         filter_thresholds.py
         rank_shortlist.py
-      dft/
-        submit_workflows.py
-        parse_results.py
-        hull_analysis.py
-        phonon_checks.py
+      hifi_digital/
+        committee_relax.py
+        uncertainty.py
+        hull_proxy.py
+        phonon_mlip.py
+        md_stability.py
+        xrd_validate.py
+        rank_candidates.py
       active_learning/
         train_surrogate.py
         select_next_batch.py
@@ -75,9 +78,9 @@ materials-discovery/
         simulate_powder_xrd.py
         compare_patterns.py
       cli.py
-  workflows/
-    jobflow/
-    aiida/
+  orchestration/
+    prefect/
+    snakemake/
   notebooks/
   tests/
     test_schema.py
@@ -104,7 +107,11 @@ Use one canonical candidate schema from day one:
   ],
   "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
   "screen": {"model": "MACE", "energy_per_atom_ev": -3.12},
-  "dft": {"status": "pending"},
+  "digital_validation": {
+    "status": "pending",
+    "committee": ["MACE", "CHGNet", "MatterSim"],
+    "uncertainty_ev_per_atom": null
+  },
   "provenance": {"generator_version": "0.1.0", "config_hash": "sha256:..."}
 }
 ```
@@ -135,17 +142,19 @@ Notes:
 
 - Run fast relaxations (MACE/CHGNet/NequIP-based).
 - Apply hard filters: minimum distance, charge sanity, composition bounds.
-- Rank shortlist for DFT.
+- Rank shortlist for high-fidelity digital validation.
 
-### `dft/`
+### `hifi_digital/`
 
-- Submit production relax/static/hull jobs.
-- Parse total energies and convergence diagnostics.
-- Compute `DeltaE_hull` and optional phonon checks.
+- Run committee relaxations across multiple MLIPs.
+- Quantify uncertainty via disagreement in energies/forces/stresses.
+- Compute proxy hull metrics against known competing phases.
+- Run selected MLIP phonon and short MD stability checks.
+- Produce uncertainty-aware candidate rankings.
 
 ### `active_learning/`
 
-- Train/update surrogate from accumulated DFT labels.
+- Train/update surrogate from accumulated digital validation labels.
 - Select next candidate batch using uncertainty-aware criteria.
 
 ### `diffraction/`
@@ -162,7 +171,7 @@ Notes:
 | M1 Data foundation | 2 weeks | HYPOD-X + reference phases ingested; schema validated |
 | M2 Candidate generation | 3 weeks | >=10k unique candidates generated for one ternary system |
 | M3 Fast screening | 3 weeks | Top 1-5% shortlisted with reproducible ranking reports |
-| M4 DFT refinement | 5 weeks | >=200 candidates converged; hull values computed |
+| M4 High-fidelity digital validation | 5 weeks | >=200 candidates validated with committee uncertainty and proxy hull values |
 | M5 Active learning loop | 3 weeks | Surrogate retrained and improves top-k hit rate |
 | M6 Experiment report | 2 weeks | Ranked list with XRD signatures and provenance bundles |
 
@@ -170,9 +179,10 @@ Notes:
 
 ## 6. Metrics to Track
 
-- `screen_to_dft_yield`: fraction of screened structures that remain competitive after DFT.
-- `top_k_precision`: fraction of top-k surrogate predictions validated by DFT.
-- `DeltaE_hull_distribution`: stability profile of generated families.
+- `screen_to_hifi_yield`: fraction of screened structures that remain competitive after digital validation.
+- `top_k_precision`: fraction of top-k surrogate predictions confirmed by committee ranking.
+- `DeltaE_proxy_hull_distribution`: stability profile under proxy hull model.
+- `committee_disagreement_mean`: average uncertainty for shortlisted candidates.
 - `dedupe_rate`: duplicate generation rate (should decline over time).
 - `reproducibility_rate`: jobs reproducing same result under rerun.
 
@@ -186,8 +196,8 @@ Expose one CLI entry point:
 mdisc ingest --config configs/systems/al_cu_fe.yaml
 mdisc generate --config configs/systems/al_cu_fe.yaml --count 20000
 mdisc screen --config configs/systems/al_cu_fe.yaml
-mdisc dft-submit --config configs/systems/al_cu_fe.yaml --batch top500
-mdisc dft-parse --config configs/systems/al_cu_fe.yaml
+mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch top500
+mdisc hifi-rank --config configs/systems/al_cu_fe.yaml
 mdisc active-learn --config configs/systems/al_cu_fe.yaml
 mdisc report --config configs/systems/al_cu_fe.yaml
 ```
@@ -197,8 +207,13 @@ mdisc report --config configs/systems/al_cu_fe.yaml
 ## 8. Recommended External Resources
 
 - HYPOD-X datasets and metadata: https://www.nature.com/articles/s41597-024-04043-z
+- Matbench Discovery benchmark paper: https://www.nature.com/articles/s42256-025-01055-1
+- Matbench Discovery project: https://github.com/janosh/matbench-discovery
+- CHGNet repository: https://github.com/CederGroupHub/chgnet
+- MACE repository: https://github.com/ACEsuit/mace
+- MatterSim repository: https://github.com/microsoft/mattersim
 - Quasicrystal ML discovery paper: https://doi.org/10.1103/PhysRevMaterials.7.093805
-- First-principles QC nanoparticle stability: https://www.nature.com/articles/s41567-025-02925-6
+- Optional future first-principles verification reference: https://www.nature.com/articles/s41567-025-02925-6
 - Quasicrystal structure prediction review: https://euler.phys.cmu.edu/widom/pubs/PDF/IJCR2023.pdf
 - Deep-learning XRD for QC identification: https://pubmed.ncbi.nlm.nih.gov/37964402/
 
@@ -211,7 +226,8 @@ mdisc report --config configs/systems/al_cu_fe.yaml
 3. Implement HYPOD-X ingestion and normalization.
 4. Implement one template generator for a single target system.
 5. Implement one fast-screen backend and one ranking report.
-6. Wire DFT submission for one backend (jobflow or AiiDA).
+6. Implement one `hifi_digital` committee workflow (relax + uncertainty + proxy hull).
 7. Add CI test suite for schema, generator determinism, and ranking reproducibility.
+8. Add an optional "future verification" interface to plug in first-principles checks later.
 
 This list is intentionally narrow so the first push produces a runnable vertical slice instead of a large unfinished framework.
