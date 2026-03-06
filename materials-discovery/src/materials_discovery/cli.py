@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import re
+from datetime import UTC, datetime
 from pathlib import Path
 
 import typer
@@ -9,8 +11,10 @@ from pydantic import ValidationError
 
 from materials_discovery.active_learning.select_next_batch import select_next_candidate_batch
 from materials_discovery.active_learning.train_surrogate import train_surrogate_model
+from materials_discovery.backends.capabilities import load_capabilities_matrix
 from materials_discovery.backends.registry import resolve_ingest_backend
 from materials_discovery.common.io import (
+    append_jsonl,
     ensure_parent,
     load_jsonl,
     load_yaml,
@@ -18,6 +22,10 @@ from materials_discovery.common.io import (
     write_jsonl,
 )
 from materials_discovery.common.manifest import build_manifest, write_manifest
+from materials_discovery.common.pipeline_manifest import (
+    build_pipeline_manifest,
+    write_pipeline_manifest,
+)
 from materials_discovery.common.schema import (
     ActiveLearnSummary,
     CandidateRecord,
@@ -26,6 +34,13 @@ from materials_discovery.common.schema import (
     ReportSummary,
     ScreenSummary,
     SystemConfig,
+)
+from materials_discovery.common.stage_metrics import (
+    generation_metrics,
+    ranking_calibration,
+    report_calibration,
+    screening_calibration,
+    validation_calibration,
 )
 from materials_discovery.data.ingest_hypodx import ingest_rows
 from materials_discovery.diffraction.compare_patterns import compile_experiment_report
@@ -38,7 +53,11 @@ from materials_discovery.hifi_digital.phonon_mlip import run_mlip_phonon_checks
 from materials_discovery.hifi_digital.rank_candidates import rank_validated_candidates
 from materials_discovery.hifi_digital.uncertainty import compute_committee_uncertainty
 from materials_discovery.hifi_digital.xrd_validate import validate_xrd_signatures
-from materials_discovery.screen.filter_thresholds import apply_screen_thresholds
+from materials_discovery.screen.filter_thresholds import (
+    DEFAULT_MAX_ENERGY_PROXY,
+    DEFAULT_MIN_DISTANCE_PROXY,
+    apply_screen_thresholds,
+)
 from materials_discovery.screen.rank_shortlist import rank_screen_shortlist
 from materials_discovery.screen.relax_fast import run_fast_relaxation
 
@@ -54,6 +73,23 @@ def _load_system_config(path: Path) -> SystemConfig:
         raise FileNotFoundError(f"Config file not found: {path}")
     data = load_yaml(path)
     return SystemConfig.model_validate(data)
+
+
+def _backend_versions_for_stage(config: SystemConfig, stage: str) -> dict[str, str]:
+    versions = dict(config.backend.versions)
+    capabilities = load_capabilities_matrix()
+    mode_map = capabilities.get("modes", {}).get(config.backend.mode, {})
+    if isinstance(mode_map, dict):
+        adapter_key = f"{stage}_adapter"
+        adapter = mode_map.get(adapter_key)
+        if isinstance(adapter, str):
+            versions[adapter] = versions.get(adapter, "builtin")
+    if config.backend.ingest_adapter is not None:
+        versions[config.backend.ingest_adapter] = versions.get(
+            config.backend.ingest_adapter,
+            "builtin",
+        )
+    return versions
 
 
 def _system_slug(system_name: str) -> str:
@@ -202,7 +238,7 @@ def ingest_command(
         manifest_path = (
             workspace_root() / "data" / "manifests" / f"{system_slug}_ingest_manifest.json"
         )
-        backend_versions = dict(system_config.backend.versions)
+        backend_versions = _backend_versions_for_stage(system_config, "ingest")
         backend_versions[backend_info.name] = backend_info.version
         manifest = build_manifest(
             stage="ingest",
@@ -230,16 +266,49 @@ def generate_command(
     """Generate deterministic candidate structures into JSONL."""
     try:
         system_config = _load_system_config(config)
+        system_slug = _system_slug(system_config.system_name)
 
         default_out = (
             workspace_root()
             / "data"
             / "candidates"
-            / f"{_system_slug(system_config.system_name)}_candidates.jsonl"
+            / f"{system_slug}_candidates.jsonl"
         )
         out_path = out or default_out
 
         summary = generate_candidates(system_config, out_path, count=count, seed=seed)
+        generated_rows = load_jsonl(out_path)
+        unique_count = len({row["candidate_id"] for row in generated_rows})
+        metrics = generation_metrics(
+            requested_count=summary.requested_count,
+            generated_count=summary.generated_count,
+            invalid_filtered_count=summary.invalid_filtered_count,
+            unique_count=unique_count,
+        )
+        summary.qa_metrics = metrics
+
+        calibration_path = (
+            workspace_root() / "data" / "calibration" / f"{system_slug}_generation_metrics.json"
+        )
+        ensure_parent(calibration_path)
+        calibration_path.write_text(json.dumps(metrics, sort_keys=True), encoding="utf-8")
+        summary.calibration_path = str(calibration_path)
+
+        manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_generate_manifest.json"
+        )
+        manifest = build_manifest(
+            stage="generate",
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(system_config, "generate"),
+            output_paths={
+                "candidates_jsonl": out_path,
+                "generation_metrics_json": calibration_path,
+            },
+        )
+        write_manifest(manifest, manifest_path)
+        summary.manifest_path = str(manifest_path)
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"generate failed: {exc}")
@@ -267,9 +336,49 @@ def screen_command(
         raw_candidates = load_jsonl(input_path)
         candidates = [CandidateRecord.model_validate(row) for row in raw_candidates]
         relaxed = run_fast_relaxation(system_config, candidates)
-        passing, _ = apply_screen_thresholds(relaxed)
+
+        min_distance = DEFAULT_MIN_DISTANCE_PROXY
+        max_energy = DEFAULT_MAX_ENERGY_PROXY
+        if system_config.backend.mode == "real":
+            min_distance += 0.03
+            max_energy -= 0.03
+
+        passing, _ = apply_screen_thresholds(
+            relaxed,
+            min_distance_proxy=min_distance,
+            max_energy_proxy=max_energy,
+        )
         shortlisted = rank_screen_shortlist(passing)
         write_jsonl([candidate.model_dump() for candidate in shortlisted], output_path)
+
+        calibration = screening_calibration(
+            input_count=len(candidates),
+            relaxed_count=len(relaxed),
+            passed_count=len(passing),
+            shortlisted_count=len(shortlisted),
+            min_distance_proxy=min_distance,
+            max_energy_proxy=max_energy,
+        )
+        calibration_path = (
+            workspace_root() / "data" / "calibration" / f"{system_slug}_screen_calibration.json"
+        )
+        ensure_parent(calibration_path)
+        calibration_path.write_text(json.dumps(calibration, sort_keys=True), encoding="utf-8")
+
+        manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_screen_manifest.json"
+        )
+        manifest = build_manifest(
+            stage="screen",
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(system_config, "screen"),
+            output_paths={
+                "screened_jsonl": output_path,
+                "screen_calibration_json": calibration_path,
+            },
+        )
+        write_manifest(manifest, manifest_path)
 
         summary = ScreenSummary(
             input_count=len(candidates),
@@ -277,6 +386,8 @@ def screen_command(
             passed_count=len(passing),
             shortlisted_count=len(shortlisted),
             output_path=str(output_path),
+            calibration_path=str(calibration_path),
+            manifest_path=str(manifest_path),
         )
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
@@ -322,12 +433,42 @@ def hifi_validate_command(
 
         write_jsonl([candidate.model_dump() for candidate in validated], output_path)
 
+        calibration = validation_calibration(validated)
+        calibration_path = (
+            workspace_root()
+            / "data"
+            / "calibration"
+            / f"{system_slug}_{_batch_slug(batch)}_validation_calibration.json"
+        )
+        ensure_parent(calibration_path)
+        calibration_path.write_text(json.dumps(calibration, sort_keys=True), encoding="utf-8")
+
+        manifest_path = (
+            workspace_root()
+            / "data"
+            / "manifests"
+            / f"{system_slug}_{_batch_slug(batch)}_hifi_validate_manifest.json"
+        )
+        manifest = build_manifest(
+            stage="hifi_validate",
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(system_config, "validate"),
+            output_paths={
+                "hifi_validated_jsonl": output_path,
+                "validation_calibration_json": calibration_path,
+            },
+        )
+        write_manifest(manifest, manifest_path)
+
         summary = HifiValidateSummary(
             batch=batch,
             input_count=len(candidates),
             validated_count=len(validated),
             passed_count=passed_count,
             output_path=str(output_path),
+            calibration_path=str(calibration_path),
+            manifest_path=str(manifest_path),
         )
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
@@ -350,6 +491,28 @@ def hifi_rank_command(
         output_path = workspace_root() / "data" / "ranked" / f"{system_slug}_ranked.jsonl"
         write_jsonl([candidate.model_dump() for candidate in ranked], output_path)
 
+        calibration = ranking_calibration(ranked)
+        calibration_path = (
+            workspace_root() / "data" / "calibration" / f"{system_slug}_ranking_calibration.json"
+        )
+        ensure_parent(calibration_path)
+        calibration_path.write_text(json.dumps(calibration, sort_keys=True), encoding="utf-8")
+
+        manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_hifi_rank_manifest.json"
+        )
+        manifest = build_manifest(
+            stage="hifi_rank",
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(system_config, "rank"),
+            output_paths={
+                "ranked_jsonl": output_path,
+                "ranking_calibration_json": calibration_path,
+            },
+        )
+        write_manifest(manifest, manifest_path)
+
         summary = HifiRankSummary(
             input_count=len(validated),
             ranked_count=len(ranked),
@@ -357,6 +520,8 @@ def hifi_rank_command(
                 candidate.digital_validation.passed_checks is True for candidate in ranked
             ),
             output_path=str(output_path),
+            calibration_path=str(calibration_path),
+            manifest_path=str(manifest_path),
         )
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
@@ -410,6 +575,16 @@ def active_learn_command(
         batch_path = (
             workspace_root() / "data" / "active_learning" / f"{system_slug}_next_batch.jsonl"
         )
+        feature_store_path = (
+            workspace_root()
+            / "data"
+            / "registry"
+            / "features"
+            / f"{system_slug}_validated_features.jsonl"
+        )
+        model_registry_path = (
+            workspace_root() / "data" / "registry" / "models" / f"{system_slug}_models.jsonl"
+        )
 
         ensure_parent(surrogate_path)
         surrogate_path.write_text(
@@ -417,6 +592,56 @@ def active_learn_command(
             encoding="utf-8",
         )
         write_jsonl([candidate.model_dump() for candidate in selected], batch_path)
+        feature_rows = []
+        for candidate in validated:
+            feature_rows.append(
+                {
+                    "candidate_id": candidate.candidate_id,
+                    "system": system_config.system_name,
+                    "composition": candidate.composition,
+                    "uncertainty_ev_per_atom": candidate.digital_validation.uncertainty_ev_per_atom,
+                    "delta_e_proxy_hull_ev_per_atom": (
+                        candidate.digital_validation.delta_e_proxy_hull_ev_per_atom
+                    ),
+                    "passed_checks": candidate.digital_validation.passed_checks,
+                }
+            )
+        write_jsonl(feature_rows, feature_store_path)
+
+        digest = hashlib.sha256(
+            json.dumps(surrogate.model_dump(), sort_keys=True).encode()
+        ).hexdigest()
+        model_id = f"surrogate_{digest[:12]}"
+        append_jsonl(
+            {
+                "model_id": model_id,
+                "system": system_config.system_name,
+                "created_at_utc": datetime.now(UTC).isoformat(),
+                "training_rows": surrogate.training_rows,
+                "positive_count": surrogate.positive_count,
+                "negative_count": surrogate.negative_count,
+                "pass_rate": surrogate.pass_rate,
+                "surrogate_path": str(surrogate_path),
+            },
+            model_registry_path,
+        )
+
+        manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_active_learn_manifest.json"
+        )
+        manifest = build_manifest(
+            stage="active_learn",
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(system_config, "active_learning"),
+            output_paths={
+                "surrogate_json": surrogate_path,
+                "next_batch_jsonl": batch_path,
+                "feature_store_jsonl": feature_store_path,
+                "model_registry_jsonl": model_registry_path,
+            },
+        )
+        write_manifest(manifest, manifest_path)
 
         summary = ActiveLearnSummary(
             validated_count=len(validated),
@@ -424,6 +649,10 @@ def active_learn_command(
             pass_rate=surrogate.pass_rate,
             surrogate_path=str(surrogate_path),
             batch_path=str(batch_path),
+            feature_store_path=str(feature_store_path),
+            model_registry_path=str(model_registry_path),
+            model_id=model_id,
+            manifest_path=str(manifest_path),
         )
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
@@ -452,11 +681,67 @@ def report_command(
         ensure_parent(report_path)
         report_path.write_text(json.dumps(report, sort_keys=True), encoding="utf-8")
 
+        calibration = report_calibration(report)
+        calibration_path = (
+            workspace_root() / "data" / "calibration" / f"{system_slug}_report_calibration.json"
+        )
+        ensure_parent(calibration_path)
+        calibration_path.write_text(json.dumps(calibration, sort_keys=True), encoding="utf-8")
+
+        manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_report_manifest.json"
+        )
+        report_manifest = build_manifest(
+            stage="report",
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(system_config, "report"),
+            output_paths={
+                "report_json": report_path,
+                "xrd_patterns_jsonl": xrd_path,
+                "report_calibration_json": calibration_path,
+            },
+        )
+        write_manifest(report_manifest, manifest_path)
+
+        pipeline_manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_pipeline_manifest.json"
+        )
+        stage_paths: dict[str, Path] = {
+            "report_json": report_path,
+            "xrd_patterns_jsonl": xrd_path,
+            "ranked_jsonl": workspace_root() / "data" / "ranked" / f"{system_slug}_ranked.jsonl",
+            "candidates_jsonl": workspace_root()
+            / "data"
+            / "candidates"
+            / f"{system_slug}_candidates.jsonl",
+            "screened_jsonl": workspace_root()
+            / "data"
+            / "screened"
+            / f"{system_slug}_screened.jsonl",
+        }
+        validated_paths = sorted(
+            (workspace_root() / "data" / "hifi_validated").glob(f"{system_slug}_*_validated.jsonl")
+        )
+        if validated_paths:
+            stage_paths["hifi_validated_jsonl"] = validated_paths[0]
+
+        existing_stage_paths = {name: path for name, path in stage_paths.items() if path.exists()}
+        pipeline_manifest = build_pipeline_manifest(
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(system_config, "pipeline"),
+            stage_paths=existing_stage_paths,
+        )
+        write_pipeline_manifest(pipeline_manifest, pipeline_manifest_path)
+
         summary = ReportSummary(
             ranked_count=len(ranked),
             reported_count=int(report["reported_count"]),
             report_path=str(report_path),
             xrd_patterns_path=str(xrd_path),
+            manifest_path=str(manifest_path),
+            pipeline_manifest_path=str(pipeline_manifest_path),
         )
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:

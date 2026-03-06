@@ -152,6 +152,9 @@ class GenerateSummary(BaseModel):
     generated_count: int
     invalid_filtered_count: int
     output_path: str
+    qa_metrics: dict[str, float | int | bool] = Field(default_factory=dict)
+    calibration_path: str | None = None
+    manifest_path: str | None = None
 
 
 class ScreenSummary(BaseModel):
@@ -160,6 +163,8 @@ class ScreenSummary(BaseModel):
     passed_count: int
     shortlisted_count: int
     output_path: str
+    calibration_path: str | None = None
+    manifest_path: str | None = None
 
 
 class HifiValidateSummary(BaseModel):
@@ -168,6 +173,8 @@ class HifiValidateSummary(BaseModel):
     validated_count: int
     passed_count: int
     output_path: str
+    calibration_path: str | None = None
+    manifest_path: str | None = None
 
 
 class ActiveLearnSummary(BaseModel):
@@ -176,6 +183,10 @@ class ActiveLearnSummary(BaseModel):
     pass_rate: float
     surrogate_path: str
     batch_path: str
+    feature_store_path: str | None = None
+    model_registry_path: str | None = None
+    model_id: str | None = None
+    manifest_path: str | None = None
 
 
 class HifiRankSummary(BaseModel):
@@ -183,6 +194,8 @@ class HifiRankSummary(BaseModel):
     ranked_count: int
     passed_count: int
     output_path: str
+    calibration_path: str | None = None
+    manifest_path: str | None = None
 
 
 class ReportSummary(BaseModel):
@@ -190,6 +203,8 @@ class ReportSummary(BaseModel):
     reported_count: int
     report_path: str
     xrd_patterns_path: str
+    manifest_path: str | None = None
+    pipeline_manifest_path: str | None = None
 
 
 class ArtifactManifest(BaseModel):

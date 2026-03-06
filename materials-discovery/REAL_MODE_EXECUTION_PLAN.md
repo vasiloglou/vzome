@@ -2,6 +2,19 @@
 
 This document defines the execution plan to move `materials-discovery/` from scaffold-grade deterministic internals to production-grade no-DFT implementations.
 
+## 0. Current Execution Status (March 6, 2026)
+
+- RM0: completed in code (backend switch + interface freeze guardrails).
+- RM1: completed in code (pinned ingest adapter, QA, ingest manifest, integration test).
+- RM2-RM6: implemented as runnable no-DFT real-mode software pathways with:
+  - stage manifests (`data/manifests/`),
+  - calibration artifacts (`data/calibration/`),
+  - model/feature registry outputs (`data/registry/models`, `data/registry/features`),
+  - pipeline manifest emission from report stage,
+  - split fast/integration CI and real-mode run script.
+
+Note: these are production-oriented software pathways; domain-model fidelity can be raised iteratively by swapping adapters and calibrations without changing CLI/schema contracts.
+
 ## 1. Program Guardrails
 
 - Preserve existing CLI contract (`mdisc ingest|generate|screen|hifi-validate|hifi-rank|active-learn|report`).

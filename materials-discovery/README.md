@@ -17,6 +17,10 @@ This workspace implements a full M1-M6 runnable slice of the no-DFT materials di
 - `mdisc active-learn`: deterministic surrogate fitting + next-batch acquisition from validated candidates.
 - `mdisc hifi-rank`: deterministic uncertainty-aware ranking of validated candidates.
 - `mdisc report`: experiment-facing report generation with synthetic powder-XRD signatures.
+- Stage manifests are emitted for every command under `data/manifests/`.
+- Calibration artifacts are emitted under `data/calibration/`.
+- Model/feature registry artifacts are emitted under `data/registry/models` and `data/registry/features`.
+- Backend capability matrix is tracked in `data/registry/backend_capabilities.yaml`.
 
 ## Quickstart
 
@@ -31,6 +35,7 @@ uv run mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch all
 uv run mdisc hifi-rank --config configs/systems/al_cu_fe.yaml
 uv run mdisc active-learn --config configs/systems/al_cu_fe.yaml
 uv run mdisc report --config configs/systems/al_cu_fe.yaml
+./scripts/run_real_pipeline.sh
 uv run pytest
 uv run pytest -m integration
 uv run ruff check .

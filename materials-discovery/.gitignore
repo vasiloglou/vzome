@@ -15,3 +15,6 @@ data/ranked/*.jsonl
 data/reports/*.json
 data/reports/*.jsonl
 data/manifests/*.json
+data/calibration/*.json
+data/registry/models/*.jsonl
+data/registry/features/*.jsonl

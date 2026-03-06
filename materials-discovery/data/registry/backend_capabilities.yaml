@@ -1,0 +1,17 @@
+version: 2026-03-06
+modes:
+  mock:
+    ingest_adapter: hypodx_fixture
+    screen_adapter: proxy_screen_v1
+    validate_adapter: proxy_validate_v1
+    rank_adapter: proxy_rank_v1
+    report_adapter: synthetic_xrd_v1
+  real:
+    ingest_adapter: hypodx_pinned_v2026_03_09
+    screen_adapter: mlip_screen_adapter_v1
+    validate_adapter: committee_validate_adapter_v1
+    rank_adapter: uncertainty_rank_adapter_v1
+    report_adapter: xrd_report_adapter_v1
+notes:
+  - Real mode remains no-DFT and expects pinned snapshots + MLIP-family adapters.
+  - Unsupported adapter combinations are rejected at config/dispatch time.

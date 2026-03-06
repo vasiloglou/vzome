@@ -56,3 +56,10 @@ def write_jsonl(records: list[dict[str, Any]], path: Path) -> None:
         for rec in records:
             handle.write(json.dumps(rec, sort_keys=True))
             handle.write("\n")
+
+
+def append_jsonl(record: dict[str, Any], path: Path) -> None:
+    ensure_parent(path)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, sort_keys=True))
+        handle.write("\n")

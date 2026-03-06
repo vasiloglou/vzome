@@ -306,10 +306,15 @@ All of the following must pass to claim real-mode completion:
 
 ### 10.4 Execution Status (as of March 6, 2026)
 
-Started execution of RM0/RM1 packet:
+Execution completed for RM0-RM6 software deliverables in this repository (no-DFT path):
 
-1. Added `backend.mode` config (`mock`/`real`) and ingest backend registry.
-2. Added ingest artifact manifest generation (`data/manifests/*_ingest_manifest.json`).
-3. Added pinned snapshot connector and real ingest adapter (`hypodx_pinned_v2026_03_09`).
-4. Added ingest QA checks (invalid-rate, duplicate-rate, minimum deduped rows).
-5. Added RM1 snapshot-backed integration test target (`pytest -m integration`).
+1. Added `backend.mode` config (`mock`/`real`) and backend capability matrix.
+2. Added stage manifests for all commands under `data/manifests/`.
+3. Added pinned-snapshot real ingest adapter plus ingest QA checks.
+4. Added stage calibration artifacts under `data/calibration/` for generate/screen/validate/rank/report.
+5. Added active-learning feature/model registry outputs under `data/registry/features` and `data/registry/models`.
+6. Added pipeline-level manifest emission in `report` stage (`*_pipeline_manifest.json`).
+7. Added real-mode integration coverage (`pytest -m integration`) including full end-to-end artifact assertions.
+8. Added operational split CI:
+   - fast path (`pytest -m "not integration"`, lint, mypy) on push/PR
+   - integration-real path (`pytest -m integration` + real pipeline run script) on schedule/manual dispatch.
