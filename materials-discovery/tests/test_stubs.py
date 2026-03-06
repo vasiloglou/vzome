@@ -17,11 +17,6 @@ from materials_discovery.cli import app
             "materials_discovery.hifi_digital.rank_candidates.rank_validated_candidates",
         ),
         (
-            ["active-learn", "--config"],
-            "active-learn",
-            "materials_discovery.active_learning.train_surrogate.train_surrogate_model",
-        ),
-        (
             ["report", "--config"],
             "report",
             "materials_discovery.diffraction.compare_patterns.compile_experiment_report",

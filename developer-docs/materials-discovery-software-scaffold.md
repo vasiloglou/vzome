@@ -12,7 +12,8 @@ This document turns the chapter into an executable software blueprint for quasic
 - `M2 generate`: implemented in `materials-discovery/src/materials_discovery/generator/candidate_factory.py`.
 - `M3 screen`: implemented in `materials-discovery/src/materials_discovery/screen/`.
 - `M4 hifi-validate`: implemented in `materials-discovery/src/materials_discovery/hifi_digital/` and wired through `materials_discovery.cli`.
-- Remaining commands (`hifi-rank`, `active-learn`, `report`): interface-complete stubs with explicit exit code `3`.
+- `M5 active-learn`: implemented in `materials-discovery/src/materials_discovery/active_learning/` and wired through `materials_discovery.cli`.
+- Remaining commands (`hifi-rank`, `report`): interface-complete stubs with explicit exit code `3`.
 
 ### Local Quickstart
 
@@ -23,6 +24,7 @@ uv run mdisc ingest --config configs/systems/al_cu_fe.yaml
 uv run mdisc generate --config configs/systems/al_cu_fe.yaml --count 50
 uv run mdisc screen --config configs/systems/al_cu_fe.yaml
 uv run mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch all
+uv run mdisc active-learn --config configs/systems/al_cu_fe.yaml
 uv run pytest
 uv run ruff check .
 uv run mypy src

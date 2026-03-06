@@ -1,6 +1,6 @@
 # Materials Discovery Workspace
 
-This workspace implements an M1-M4 runnable slice of the no-DFT materials discovery pipeline documented in:
+This workspace implements an M1-M5 runnable slice of the no-DFT materials discovery pipeline documented in:
 
 - `developer-docs/materials-discovery-software-scaffold.md`
 - `developer-docs/vzome-geometry-tutorial.md` (Section 10.8)
@@ -11,7 +11,8 @@ This workspace implements an M1-M4 runnable slice of the no-DFT materials discov
 - `mdisc generate`: deterministic candidate generation with schema validation and JSONL output.
 - `mdisc screen`: deterministic fast-screen pipeline (proxy relax, thresholding, shortlist ranking).
 - `mdisc hifi-validate`: deterministic no-DFT digital validation (committee, uncertainty, proxy hull, phonon, short MD, XRD checks).
-- `mdisc hifi-rank`, `mdisc active-learn`, `mdisc report`: interface-complete stage stubs.
+- `mdisc active-learn`: deterministic surrogate fitting + next-batch acquisition from validated candidates.
+- `mdisc hifi-rank`, `mdisc report`: interface-complete stage stubs.
 
 ## Quickstart
 
@@ -22,6 +23,7 @@ uv run mdisc ingest --config configs/systems/al_cu_fe.yaml
 uv run mdisc generate --config configs/systems/al_cu_fe.yaml --count 50
 uv run mdisc screen --config configs/systems/al_cu_fe.yaml
 uv run mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch all
+uv run mdisc active-learn --config configs/systems/al_cu_fe.yaml
 uv run pytest
 uv run ruff check .
 uv run mypy src

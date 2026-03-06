@@ -9,3 +9,5 @@ data/candidates/*.jsonl
 data/processed/*.jsonl
 data/screened/*.jsonl
 data/hifi_validated/*.jsonl
+data/active_learning/*.json
+data/active_learning/*.jsonl

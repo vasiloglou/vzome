@@ -149,6 +149,14 @@ class HifiValidateSummary(BaseModel):
     output_path: str
 
 
+class ActiveLearnSummary(BaseModel):
+    validated_count: int
+    selected_count: int
+    pass_rate: float
+    surrogate_path: str
+    batch_path: str
+
+
 def validate_unique_candidate_ids(candidates: Sequence[CandidateRecord]) -> None:
     ids = [candidate.candidate_id for candidate in candidates]
     if len(ids) != len(set(ids)):

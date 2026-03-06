@@ -8,9 +8,17 @@ from typing import Any
 import typer
 from pydantic import ValidationError
 
+from materials_discovery.active_learning.select_next_batch import select_next_candidate_batch
 from materials_discovery.active_learning.train_surrogate import train_surrogate_model
-from materials_discovery.common.io import load_jsonl, load_yaml, workspace_root, write_jsonl
+from materials_discovery.common.io import (
+    ensure_parent,
+    load_jsonl,
+    load_yaml,
+    workspace_root,
+    write_jsonl,
+)
 from materials_discovery.common.schema import (
+    ActiveLearnSummary,
     CandidateRecord,
     HifiValidateSummary,
     ScreenSummary,
@@ -127,6 +135,28 @@ def _finalize_validation(candidates: list[CandidateRecord]) -> tuple[list[Candid
         finalized.append(copied)
 
     return finalized, passed_count
+
+
+def _load_validated_candidates(system_slug: str) -> list[CandidateRecord]:
+    validated_dir = workspace_root() / "data" / "hifi_validated"
+    validated_paths = sorted(validated_dir.glob(f"{system_slug}_*_validated.jsonl"))
+    if not validated_paths:
+        raise FileNotFoundError(
+            "active-learn validated inputs not found; run 'mdisc hifi-validate' first: "
+            f"{validated_dir / (system_slug + '_*_validated.jsonl')}"
+        )
+
+    deduped: dict[str, CandidateRecord] = {}
+    for path in validated_paths:
+        for row in load_jsonl(path):
+            candidate = CandidateRecord.model_validate(row)
+            if candidate.candidate_id not in deduped:
+                deduped[candidate.candidate_id] = candidate
+
+    if not deduped:
+        raise ValueError("validated candidate files were found but contained no records")
+
+    return [deduped[candidate_id] for candidate_id in sorted(deduped)]
 
 
 @app.command("ingest")
@@ -296,16 +326,64 @@ def hifi_rank_command(
 def active_learn_command(
     config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
 ) -> None:
-    """Active-learning placeholder command with explicit not-implemented contract."""
+    """Run M5 active learning over validated candidates and propose next candidate batch."""
     try:
         system_config = _load_system_config(config)
-        train_surrogate_model(system_config)
-    except NotImplementedError as exc:
-        _not_implemented(
-            "active-learn",
-            "materials_discovery.active_learning.train_surrogate.train_surrogate_model",
-            exc,
+        system_slug = _system_slug(system_config.system_name)
+
+        candidates_path = (
+            workspace_root() / "data" / "candidates" / f"{system_slug}_candidates.jsonl"
         )
+        if not candidates_path.exists():
+            raise FileNotFoundError(
+                "active-learn candidate pool not found; run 'mdisc generate' first: "
+                f"{candidates_path}"
+            )
+
+        candidate_pool = [
+            CandidateRecord.model_validate(row) for row in load_jsonl(candidates_path)
+        ]
+        validated = _load_validated_candidates(system_slug)
+        validated_ids = {candidate.candidate_id for candidate in validated}
+
+        remaining = len(candidate_pool) - len(validated_ids)
+        if remaining <= 0:
+            raise ValueError(
+                "no unvalidated candidates remain in the pool; generate additional candidates first"
+            )
+
+        surrogate = train_surrogate_model(system_config, validated)
+        batch_size = min(system_config.default_count, remaining)
+        selected = select_next_candidate_batch(
+            system_config,
+            candidate_pool,
+            validated_ids,
+            surrogate,
+            batch_size=batch_size,
+        )
+
+        surrogate_path = (
+            workspace_root() / "data" / "active_learning" / f"{system_slug}_surrogate.json"
+        )
+        batch_path = (
+            workspace_root() / "data" / "active_learning" / f"{system_slug}_next_batch.jsonl"
+        )
+
+        ensure_parent(surrogate_path)
+        surrogate_path.write_text(
+            json.dumps(surrogate.model_dump(), sort_keys=True),
+            encoding="utf-8",
+        )
+        write_jsonl([candidate.model_dump() for candidate in selected], batch_path)
+
+        summary = ActiveLearnSummary(
+            validated_count=len(validated),
+            selected_count=len(selected),
+            pass_rate=surrogate.pass_rate,
+            surrogate_path=str(surrogate_path),
+            batch_path=str(batch_path),
+        )
+        typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"active-learn failed: {exc}")
         raise typer.Exit(code=2)
