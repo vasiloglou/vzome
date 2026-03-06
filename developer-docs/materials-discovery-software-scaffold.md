@@ -259,3 +259,47 @@ mdisc report --config configs/systems/al_cu_fe.yaml
 8. Add an optional "future verification" interface to plug in first-principles checks later.
 
 This list is intentionally narrow so the first push produces a runnable vertical slice instead of a large unfinished framework.
+
+---
+
+## 10. Real-Mode Execution Spec (March-August 2026)
+
+The scaffold is complete. The next step is replacing deterministic proxy internals with production backends while preserving CLI/schema contracts.
+
+Detailed plan document:
+
+- `materials-discovery/REAL_MODE_EXECUTION_PLAN.md`
+
+### 10.1 Program Dates
+
+Program start date: **March 9, 2026**  
+Target real-mode release date: **August 7, 2026**
+
+### 10.2 Dated Milestones
+
+| Milestone | Dates | Real Objective | Exit Criteria |
+|----------|-------|----------------|---------------|
+| RM0 Program Baseline | 2026-03-09 to 2026-03-13 | Freeze interfaces, add backend switch (`mock` vs `real`) and artifact versioning contract | Existing tests pass unchanged under `mock`; real backend interface tests added |
+| RM1 Real Data Ingestion | 2026-03-16 to 2026-03-27 | Wire real dataset connectors, normalization maps, and provenance | Ingest reproducible on pinned snapshots; data QA report generated |
+| RM2 Real Candidate Generation | 2026-03-30 to 2026-04-17 | Replace placeholder generator internals with real template/approximant parameterization | >=10k candidates generated for one ternary system with dedupe and geometry validity checks |
+| RM3 Real Screening | 2026-04-20 to 2026-05-15 | Integrate real MLIP relax adapters and calibrated shortlist scoring | Top 1-5% shortlist reproducible; screening calibration report produced |
+| RM4 Real High-Fidelity Validation | 2026-05-18 to 2026-06-19 | Production committee, uncertainty calibration, proxy hull + phonon/MD checks | >=200 validated candidates with uncertainty stats and pass/fail audit trail |
+| RM5 Real Active Learning | 2026-06-22 to 2026-07-10 | Retrain/update surrogate and select next batch with registry-backed artifacts | New model version improves at least one top-k metric on held-out validation set |
+| RM6 Real Ranking + Reporting + Hardening | 2026-07-13 to 2026-08-07 | Calibrated ranking, experiment reports, orchestration hardening | End-to-end runbook complete; release gate metrics met; reproducibility checks pass |
+
+### 10.3 Program-Level Acceptance Tests
+
+All of the following must pass to claim real-mode completion:
+
+1. **Contract stability**
+   - CLI command surface unchanged.
+   - Candidate/summary schemas backward-compatible.
+2. **Determinism**
+   - Re-running same config/data/model versions yields bitwise-identical ranking/report outputs.
+3. **Data quality**
+   - Composition normalization, dedupe fingerprinting, and provenance coverage tests pass.
+4. **Model quality checks**
+   - Committee uncertainty metrics and shortlist quality tracked and non-regressing over baseline.
+5. **Operational readiness**
+   - CI split into fast unit path and heavy integration path.
+   - End-to-end smoke run from `ingest` to `report` executes from clean checkout with documented dependencies.
