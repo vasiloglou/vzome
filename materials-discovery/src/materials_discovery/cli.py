@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -9,12 +10,22 @@ from pydantic import ValidationError
 
 from materials_discovery.active_learning.train_surrogate import train_surrogate_model
 from materials_discovery.common.io import load_jsonl, load_yaml, workspace_root, write_jsonl
-from materials_discovery.common.schema import CandidateRecord, ScreenSummary, SystemConfig
+from materials_discovery.common.schema import (
+    CandidateRecord,
+    HifiValidateSummary,
+    ScreenSummary,
+    SystemConfig,
+)
 from materials_discovery.data.ingest_hypodx import ingest_fixture
 from materials_discovery.diffraction.compare_patterns import compile_experiment_report
 from materials_discovery.generator.candidate_factory import generate_candidates
 from materials_discovery.hifi_digital.committee_relax import run_committee_relaxation
+from materials_discovery.hifi_digital.hull_proxy import compute_proxy_hull
+from materials_discovery.hifi_digital.md_stability import run_short_md_stability
+from materials_discovery.hifi_digital.phonon_mlip import run_mlip_phonon_checks
 from materials_discovery.hifi_digital.rank_candidates import rank_validated_candidates
+from materials_discovery.hifi_digital.uncertainty import compute_committee_uncertainty
+from materials_discovery.hifi_digital.xrd_validate import validate_xrd_signatures
 from materials_discovery.screen.filter_thresholds import apply_screen_thresholds
 from materials_discovery.screen.rank_shortlist import rank_screen_shortlist
 from materials_discovery.screen.relax_fast import run_fast_relaxation
@@ -44,6 +55,80 @@ def _not_implemented(stage: str, target: str, err: NotImplementedError) -> None:
     raise typer.Exit(code=3)
 
 
+def _system_slug(system_name: str) -> str:
+    return system_name.lower().replace("-", "_")
+
+
+def _batch_slug(batch: str) -> str:
+    slug = re.sub(r"[^a-zA-Z0-9]+", "_", batch.strip().lower()).strip("_")
+    return slug or "batch"
+
+
+def _shortlist_rank(candidate: CandidateRecord) -> int:
+    rank = (candidate.screen or {}).get("shortlist_rank")
+    if isinstance(rank, int):
+        return rank
+    if isinstance(rank, float) and rank.is_integer():
+        return int(rank)
+    return 10**9
+
+
+def _select_hifi_batch(candidates: list[CandidateRecord], batch: str) -> list[CandidateRecord]:
+    ordered = sorted(
+        candidates,
+        key=lambda candidate: (_shortlist_rank(candidate), candidate.candidate_id),
+    )
+    token = batch.strip().lower()
+
+    if token == "all":
+        selected = ordered
+    elif token.startswith("top"):
+        suffix = token[3:]
+        if not suffix or not suffix.isdigit() or int(suffix) < 1:
+            raise ValueError("batch must be 'all' or 'top<N>' with N >= 1, e.g. top500")
+        selected = ordered[: int(suffix)]
+    else:
+        raise ValueError("batch must be 'all' or 'top<N>' with N >= 1, e.g. top500")
+
+    if not selected:
+        raise ValueError(
+            "no screened candidates available; run 'mdisc screen' with more candidates"
+        )
+
+    return selected
+
+
+def _finalize_validation(candidates: list[CandidateRecord]) -> tuple[list[CandidateRecord], int]:
+    finalized: list[CandidateRecord] = []
+    passed_count = 0
+
+    for candidate in candidates:
+        copied = candidate.model_copy(deep=True)
+        validation = copied.digital_validation.model_copy(deep=True)
+
+        uncertainty = validation.uncertainty_ev_per_atom
+        delta_hull = validation.delta_e_proxy_hull_ev_per_atom
+        passed_checks = (
+            uncertainty is not None
+            and uncertainty <= 0.04
+            and delta_hull is not None
+            and delta_hull <= 0.08
+            and validation.phonon_pass is True
+            and validation.md_pass is True
+            and validation.xrd_pass is True
+        )
+
+        validation.passed_checks = passed_checks
+        validation.status = "passed" if passed_checks else "failed"
+        copied.digital_validation = validation
+
+        if passed_checks:
+            passed_count += 1
+        finalized.append(copied)
+
+    return finalized, passed_count
+
+
 @app.command("ingest")
 def ingest_command(
     config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
@@ -62,7 +147,7 @@ def ingest_command(
             workspace_root()
             / "data"
             / "processed"
-            / f"{system_config.system_name.lower().replace('-', '_')}_reference_phases.jsonl"
+            / f"{_system_slug(system_config.system_name)}_reference_phases.jsonl"
         )
         out_path = out or default_out
 
@@ -88,7 +173,7 @@ def generate_command(
             workspace_root()
             / "data"
             / "candidates"
-            / f"{system_config.system_name.lower().replace('-', '_')}_candidates.jsonl"
+            / f"{_system_slug(system_config.system_name)}_candidates.jsonl"
         )
         out_path = out or default_out
 
@@ -106,25 +191,16 @@ def screen_command(
     """Run M3 fast-screening: proxy relax, threshold filter, and shortlist ranking."""
     try:
         system_config = _load_system_config(config)
+        system_slug = _system_slug(system_config.system_name)
 
-        input_path = (
-            workspace_root()
-            / "data"
-            / "candidates"
-            / f"{system_config.system_name.lower().replace('-', '_')}_candidates.jsonl"
-        )
+        input_path = workspace_root() / "data" / "candidates" / f"{system_slug}_candidates.jsonl"
         if not input_path.exists():
             raise FileNotFoundError(
                 "screen input candidates file not found; run 'mdisc generate' first: "
                 f"{input_path}"
             )
 
-        output_path = (
-            workspace_root()
-            / "data"
-            / "screened"
-            / f"{system_config.system_name.lower().replace('-', '_')}_screened.jsonl"
-        )
+        output_path = workspace_root() / "data" / "screened" / f"{system_slug}_screened.jsonl"
 
         raw_candidates = load_jsonl(input_path)
         candidates = [CandidateRecord.model_validate(row) for row in raw_candidates]
@@ -151,16 +227,47 @@ def hifi_validate_command(
     config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
     batch: str = typer.Option(..., "--batch"),
 ) -> None:
-    """Hifi validation placeholder command with explicit not-implemented contract."""
+    """Run M4 no-DFT high-fidelity digital validation on shortlisted candidates."""
     try:
         system_config = _load_system_config(config)
-        run_committee_relaxation(system_config, batch)
-    except NotImplementedError as exc:
-        _not_implemented(
-            "hifi-validate",
-            "materials_discovery.hifi_digital.committee_relax.run_committee_relaxation",
-            exc,
+        system_slug = _system_slug(system_config.system_name)
+
+        input_path = workspace_root() / "data" / "screened" / f"{system_slug}_screened.jsonl"
+        if not input_path.exists():
+            raise FileNotFoundError(
+                "hifi-validate input screened file not found; run 'mdisc screen' first: "
+                f"{input_path}"
+            )
+
+        output_path = (
+            workspace_root()
+            / "data"
+            / "hifi_validated"
+            / f"{system_slug}_{_batch_slug(batch)}_validated.jsonl"
         )
+
+        raw_candidates = load_jsonl(input_path)
+        candidates = [CandidateRecord.model_validate(row) for row in raw_candidates]
+        selected = _select_hifi_batch(candidates, batch)
+
+        validated = run_committee_relaxation(system_config, selected, batch)
+        validated = compute_committee_uncertainty(validated)
+        validated = compute_proxy_hull(validated)
+        validated = run_mlip_phonon_checks(validated)
+        validated = run_short_md_stability(validated)
+        validated = validate_xrd_signatures(system_config, validated)
+        validated, passed_count = _finalize_validation(validated)
+
+        write_jsonl([candidate.model_dump() for candidate in validated], output_path)
+
+        summary = HifiValidateSummary(
+            batch=batch,
+            input_count=len(candidates),
+            validated_count=len(validated),
+            passed_count=passed_count,
+            output_path=str(output_path),
+        )
+        typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"hifi-validate failed: {exc}")
         raise typer.Exit(code=2)

@@ -12,11 +12,6 @@ from materials_discovery.cli import app
     ("args", "stage", "target"),
     [
         (
-            ["hifi-validate", "--config", "--batch", "top500"],
-            "hifi-validate",
-            "materials_discovery.hifi_digital.committee_relax.run_committee_relaxation",
-        ),
-        (
             ["hifi-rank", "--config"],
             "hifi-rank",
             "materials_discovery.hifi_digital.rank_candidates.rank_validated_candidates",
@@ -38,7 +33,7 @@ def test_stub_commands_return_3(args: list[str], stage: str, target: str) -> Non
     workspace = Path(__file__).resolve().parents[1]
     config = workspace / "configs" / "systems" / "al_cu_fe.yaml"
 
-    full_args = [a if a != "--config" else a for a in args]
+    full_args = args.copy()
     if full_args.count("--config") == 1:
         idx = full_args.index("--config")
         full_args.insert(idx + 1, str(config))

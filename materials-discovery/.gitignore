@@ -8,3 +8,4 @@ __pycache__/
 data/candidates/*.jsonl
 data/processed/*.jsonl
 data/screened/*.jsonl
+data/hifi_validated/*.jsonl

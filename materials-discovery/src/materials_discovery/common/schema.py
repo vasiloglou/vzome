@@ -51,6 +51,17 @@ class DigitalValidationRecord(BaseModel):
     status: str = "pending"
     committee: list[str] = Field(default_factory=lambda: ["MACE", "CHGNet", "MatterSim"])
     uncertainty_ev_per_atom: float | None = None
+    committee_energy_ev_per_atom: dict[str, float] | None = None
+    committee_std_ev_per_atom: float | None = None
+    delta_e_proxy_hull_ev_per_atom: float | None = None
+    phonon_imaginary_modes: int | None = None
+    phonon_pass: bool | None = None
+    md_stability_score: float | None = None
+    md_pass: bool | None = None
+    xrd_confidence: float | None = None
+    xrd_pass: bool | None = None
+    passed_checks: bool | None = None
+    batch: str | None = None
 
 
 class CandidateRecord(BaseModel):
@@ -127,6 +138,14 @@ class ScreenSummary(BaseModel):
     relaxed_count: int
     passed_count: int
     shortlisted_count: int
+    output_path: str
+
+
+class HifiValidateSummary(BaseModel):
+    batch: str
+    input_count: int
+    validated_count: int
+    passed_count: int
     output_path: str
 
 
