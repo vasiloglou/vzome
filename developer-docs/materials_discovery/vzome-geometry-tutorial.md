@@ -47,7 +47,7 @@ The Zometool connector ball is approximately spherical, with 62 precisely positi
 
 Each hole shape accepts only struts with a matching cross-section, physically enforcing geometric constraints.
 
-![Hole Shapes and Strut Colors](materials_discovery/images/hole-shapes.svg)
+![Hole Shapes and Strut Colors](images/hole-shapes.svg)
 
 #### Why These Counts?
 
@@ -65,31 +65,31 @@ Total: 62 holes — matching the relevant faces of the truncated icosidodecahedr
 
 The following diagrams show each axis type on the icosahedron. The colored dots mark the geometric features (vertices, face centers, or edge midpoints), and the dashed lines show how opposite features pair up to form rotation axes:
 
-![5-Fold Axes: Through Vertices](materials_discovery/images/5fold-axes.svg)
+![5-Fold Axes: Through Vertices](images/5fold-axes.svg)
 
-![3-Fold Axes: Through Face Centers](materials_discovery/images/3fold-axes.svg)
+![3-Fold Axes: Through Face Centers](images/3fold-axes.svg)
 
-![2-Fold Axes: Through Edge Midpoints](materials_discovery/images/2fold-axes.svg)
+![2-Fold Axes: Through Edge Midpoints](images/2fold-axes.svg)
 
 Here is a combined summary of how all 62 holes are derived:
 
-![Combined Axes Summary](materials_discovery/images/axes-summary.svg)
+![Combined Axes Summary](images/axes-summary.svg)
 
 And a visual explanation of what "rotation order" means for each axis type:
 
-![Rotation Orders](materials_discovery/images/rotation-orders.svg)
+![Rotation Orders](images/rotation-orders.svg)
 
 ### From Icosahedron to Connector Ball
 
 The connector ball's geometry is derived from the **icosahedron** through a sequence of geometric operations. Understanding this requires knowing three intermediate shapes.
 
-![From Icosahedron to Connector Ball — 4 Steps](materials_discovery/images/icosahedron-to-ball.svg)
+![From Icosahedron to Connector Ball — 4 Steps](images/icosahedron-to-ball.svg)
 
 #### Step 1: The Icosahedron — Defining the Symmetry
 
 **Icosahedron** — The fundamental shape that defines all the symmetry. It is a *Platonic solid* (all faces identical) with 20 equilateral triangular faces, 12 vertices, and 30 edges. Its rotation group has 60 elements. These three types of features (vertices, faces, edges) correspond to the three types of symmetry axes (5-fold, 3-fold, 2-fold).
 
-![Feature Mapping: How icosahedron features become holes](materials_discovery/images/feature-mapping.svg)
+![Feature Mapping: How icosahedron features become holes](images/feature-mapping.svg)
 
 #### Step 2: Rectification — The Icosidodecahedron
 
@@ -97,7 +97,7 @@ The connector ball's geometry is derived from the **icosahedron** through a sequ
 
 The result is the **icosidodecahedron** — an *Archimedean solid* with 32 faces: 12 pentagons (one per original vertex) + 20 triangles (one per original face). It has 30 vertices (one at each original edge midpoint) and 60 edges. Every vertex sits at the junction of 2 pentagons and 2 triangles, alternating.
 
-![The Icosidodecahedron](materials_discovery/images/icosidodecahedron.svg)
+![The Icosidodecahedron](images/icosidodecahedron.svg)
 
 The icosidodecahedron has the right *topology* — its 32 face centers + 30 vertices = 62 positions, one for each symmetry axis. But the 30 vertices are *points*, not flat surfaces. You can't punch a hole through a point. This is where the next step comes in.
 
@@ -117,7 +117,7 @@ It also has 60 vertices and 120 edges. At every vertex, the faces cycle: triangl
 
 Now every one of the 62 symmetry positions has its own **flat face** — a surface through which a hole can be punched.
 
-![Rectangles at Edge Midpoints](materials_discovery/images/rectangles-at-midpoints.svg)
+![Rectangles at Edge Midpoints](images/rectangles-at-midpoints.svg)
 
 #### Step 4: Sphericalize — The Connector Ball
 
@@ -129,7 +129,7 @@ The final step transforms the rhombicosidodecahedron into the physical connector
 
 The result is the Zometool connector ball — 62 precisely positioned holes, each shaped to accept only struts with a matching cross-section.
 
-![The Connector Ball — All 62 Holes](materials_discovery/images/connector-ball-3d.svg)
+![The Connector Ball — All 62 Holes](images/connector-ball-3d.svg)
 
 #### The Complete Chain
 
@@ -152,7 +152,7 @@ The shape of each hole on the connector ball isn't arbitrary — it's dictated b
 
 This is why the connector ball uses rectangles rather than squares — a square hole would imply 4-fold symmetry (90° rotation), which doesn't exist at an icosahedral edge midpoint.
 
-![How Rectangular Holes Appear at Edge Midpoints](materials_discovery/images/rectangle-at-edge.svg)
+![How Rectangular Holes Appear at Edge Midpoints](images/rectangle-at-edge.svg)
 
 > **Try the interactive visualization**: Open [symmetry-visualization.html](symmetry-visualization.html) in a browser and click **"Show Ball"** to see the connector ball's hole markers overlaid on the icosahedron, with the icosidodecahedron wireframe visible underneath.
 
@@ -281,7 +281,7 @@ The golden ratio phi = (1 + sqrt(5)) / 2 ~ 1.618... is not an arbitrary choice. 
 
 ### Where Phi Appears
 
-![The Golden Ratio](materials_discovery/images/golden-ratio.svg)
+![The Golden Ratio](images/golden-ratio.svg)
 
 - **Regular pentagon**: The diagonal-to-side ratio is exactly phi.
 - **Icosahedron vertices**: Three mutually perpendicular golden rectangles (aspect ratio phi:1) define all 12 vertices.
@@ -315,7 +315,7 @@ phi^n = F(n) + F(n+1)*phi
 
 This is not a coincidence — the Fibonacci recurrence `F(n+2) = F(n+1) + F(n)` is a direct consequence of `phi^2 = phi + 1`.
 
-![Powers of Phi and Fibonacci Numbers](materials_discovery/images/fibonacci-powers.svg)
+![Powers of Phi and Fibonacci Numbers](images/fibonacci-powers.svg)
 
 ---
 
@@ -323,7 +323,7 @@ This is not a coincidence — the Fibonacci recurrence `F(n+2) = F(n+1) + F(n)` 
 
 The mathematical heart of vZome is its exact arithmetic system. Every coordinate is a linear combination of algebraic basis values with rational coefficients — **never floating-point**.
 
-![Algebraic Number Representation](materials_discovery/images/algebraic-numbers.svg)
+![Algebraic Number Representation](images/algebraic-numbers.svg)
 
 ### The Layered Architecture
 
@@ -582,7 +582,7 @@ The bridge between mathematical constructions and visual rendering:
 
 ### Building a Model: Step by Step
 
-![Construction Workflow](materials_discovery/images/construction-steps.svg)
+![Construction Workflow](images/construction-steps.svg)
 
 1. **Create origin point**: `FreePoint(0, 0, 0)` in the chosen algebraic field.
 2. **Build first strut**: `AnchoredSegment(origin, blueAxis[0], medium)` — creates a blue strut from the origin.
@@ -806,7 +806,7 @@ vZome's support for multiple algebraic fields connects to broader aperiodic and 
 
 Zome geometry is not just a mathematical curiosity — icosahedral symmetry over Q(φ) appears throughout physics, from atomic-scale crystals to string theory. The unifying principle: **whenever nature uses icosahedral symmetry, the mathematical description lives in the same Q(φ)³ vector space as Zometool.**
 
-![Physics Problems Connected to Zome Geometry](materials_discovery/images/physics-overview.svg)
+![Physics Problems Connected to Zome Geometry](images/physics-overview.svg)
 
 ### 10.1 Quasicrystals — The Strongest Connection
 
@@ -834,7 +834,7 @@ The standard technique for generating quasicrystal structures is the **cut-and-p
 
 The result is an aperiodic sequence of points with two spacings — Long (L) and Short (S) — whose ratio is φ. The sequence of L's and S's is the **Fibonacci word**, and the ratio of their counts approaches φ as the strip extends.
 
-![Cut-and-Project Method](materials_discovery/images/cut-and-project.svg)
+![Cut-and-Project Method](images/cut-and-project.svg)
 
 In the icosahedral case, this generalizes from 2D→1D to **6D→3D**: a 6-dimensional hypercubic lattice is sliced and projected along icosahedral directions to produce the 3D atomic positions of a quasicrystal. This is mathematically identical to what vZome does — the 6 integer coordinates per 3D point (two integers per Q(φ) coordinate) are exactly the 6D lattice coordinates before projection.
 
@@ -846,7 +846,7 @@ Many Zometool models can be interpreted as **finite patches sampled from quasicr
 
 Many viruses package their genetic material inside **icosahedral protein shells** called capsids. Nature uses icosahedral symmetry because it is the most efficient way to enclose a volume with identical protein subunits — the same 60-fold symmetry that drives Zometool.
 
-![Icosahedral Viral Capsid](materials_discovery/images/viral-capsid.svg)
+![Icosahedral Viral Capsid](images/viral-capsid.svg)
 
 #### The Caspar-Klug Classification
 
@@ -871,7 +871,7 @@ The vertex positions of a geodesic subdivided icosahedron (which models the caps
 
 In 1985, Kroto, Smalley, and Curl discovered **C₆₀** — a molecule of 60 carbon atoms arranged as a **truncated icosahedron** (Nobel Prize 1996). Named "buckminsterfullerene" after Buckminster Fuller's geodesic domes, it is a perfect example of icosahedral symmetry in chemistry.
 
-![C₆₀ Buckminsterfullerene](materials_discovery/images/c60-fullerene.svg)
+![C₆₀ Buckminsterfullerene](images/c60-fullerene.svg)
 
 #### Structure
 
@@ -897,7 +897,7 @@ All icosahedral fullerenes obey Euler's formula with exactly 12 pentagons (the r
 
 Penrose tilings are the 2D counterpart of 3D icosahedral quasicrystals. Discovered by Roger Penrose in 1974, they tile the plane with two shapes governed by the golden ratio — never repeating, yet maintaining long-range 5-fold orientational order.
 
-![Penrose Tiling](materials_discovery/images/penrose-tiling.svg)
+![Penrose Tiling](images/penrose-tiling.svg)
 
 #### The Two Rhombi
 
@@ -919,7 +919,7 @@ The 3D generalization of Penrose tilings uses two **rhombohedra** (3D rhombi) �
 
 The **E₈** lattice — the densest lattice packing in 8 dimensions — has a remarkable connection to icosahedral symmetry. When the 240 root vectors of E₈ are projected from 8D to 3D along icosahedral directions, they land on **concentric shells with exact icosahedral symmetry**, all with coordinates in Q(φ).
 
-![E₈ Root System Projected to 3D](materials_discovery/images/e8-projection.svg)
+![E₈ Root System Projected to 3D](images/e8-projection.svg)
 
 #### The H₃ Connection
 
@@ -982,7 +982,7 @@ Whenever a physical system exhibits icosahedral symmetry — whether it's a quas
 
 The core idea is still powerful: use icosahedral/golden-ratio structure to constrain search. But for software and physics, the search space must be defined in a way that is both computable and chemically meaningful.
 
-![Materials Discovery via Zome-Constrained Optimization](materials_discovery/images/materials-optimization.svg)
+![Materials Discovery via Zome-Constrained Optimization](images/materials-optimization.svg)
 
 #### 10.8.1 Two Corrections Before Optimization
 
@@ -1094,9 +1094,9 @@ Before claiming discovery, require all of the following:
 
 For full documentation of the implemented pipeline — architecture, Z[phi] geometry engine, per-stage reference, backend adapters, configuration, and data schemas — see:
 
-- [Materials Discovery Documentation](materials_discovery/index.md)
-- [Zomic Design Workflow](materials_discovery/zomic-design-workflow.md)
-- [Materials Discovery Software Scaffold](materials_discovery/materials-discovery-software-scaffold.md) (original design blueprint)
+- [Materials Discovery Documentation](index.md)
+- [Zomic Design Workflow](zomic-design-workflow.md)
+- [Materials Discovery Software Scaffold](materials-discovery-software-scaffold.md) (original design blueprint)
 
 #### 10.8.10 Implementation Status and Quickstart
 
@@ -1145,9 +1145,9 @@ This reframing keeps the original vision intact while making it implementable as
 - [Quick Start Guide](../website/docs/quick-start.md) — Interactive tutorial for building your first dodecahedron
 - [Zometool Introduction](../website/docs/zometool-intro.md) — Web-based introduction to Zometool geometry
 - [Zomic Language Reference](../core/docs/ZomicReference.md) — Complete Zomic scripting reference
-- [Materials Discovery Documentation](materials_discovery/index.md) — Full pipeline documentation for Chapter 10.8
-- [Zomic Design Workflow](materials_discovery/zomic-design-workflow.md) — How `.zomic` scripts feed the materials pipeline
-- [Materials Discovery Software Scaffold](materials_discovery/materials-discovery-software-scaffold.md) — Original design blueprint (historical)
+- [Materials Discovery Documentation](index.md) — Full pipeline documentation for Chapter 10.8
+- [Zomic Design Workflow](zomic-design-workflow.md) — How `.zomic` scripts feed the materials pipeline
+- [Materials Discovery Software Scaffold](materials-discovery-software-scaffold.md) — Original design blueprint (historical)
 - [Copilot Instructions](../.github/copilot-instructions.md) — Detailed architecture and codebase guide
 - [Zomod History](../website/docs/history/zomod/index.md) — History of vZome's predecessor
 

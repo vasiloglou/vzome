@@ -1,7 +1,7 @@
 # Materials Discovery Documentation
 
 No-DFT materials discovery pipeline for quasicrystal-compatible structures, built on
-Z[phi] geometry from [vZome Geometry Tutorial, Section 10.8](../vzome-geometry-tutorial.md#108-materials-optimization-over-z%CF%86).
+Z[phi] geometry from [vZome Geometry Tutorial, Section 10.8](vzome-geometry-tutorial.md#108-materials-optimization-over-z%CF%86).
 
 The pipeline generates candidate approximant structures whose atomic sites live in the
 ring Z[phi]^3, screens them with ML interatomic potentials (MACE, CHGNet, MatterSim),
@@ -96,6 +96,6 @@ The Zomic-authored path depends on `vZome core` and requires a local Java runtim
 
 ## Related Documents
 
-- [vZome Geometry Tutorial, Section 10.8](../vzome-geometry-tutorial.md) — Mathematical motivation
+- [vZome Geometry Tutorial, Section 10.8](vzome-geometry-tutorial.md) — Mathematical motivation
 - [Software Scaffold](materials-discovery-software-scaffold.md) — Original design blueprint (historical)
 - [Real-Mode Execution Plan](../../materials-discovery/REAL_MODE_EXECUTION_PLAN.md) — RM0-RM6 execution plan

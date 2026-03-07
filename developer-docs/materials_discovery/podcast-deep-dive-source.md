@@ -305,7 +305,7 @@ The connector ball has 62 holes. Each one encodes a symmetry axis. Each axis con
 - **Try vZome online:** https://vzome.com/app
 - **vZome website:** https://vzome.com
 - **Source code:** https://github.com/david-hall/vzome (vZome) and the `materials-discovery/` workspace within the repository
-- **vZome Geometry Tutorial:** `developer-docs/vzome-geometry-tutorial.md` — comprehensive mathematical reference (Section 10.8 covers the materials optimization framework)
+- **vZome Geometry Tutorial:** `developer-docs/materials_discovery/vzome-geometry-tutorial.md` — comprehensive mathematical reference (Section 10.8 covers the materials optimization framework)
 - **Materials Discovery Documentation:** `developer-docs/materials_discovery/index.md` — full pipeline reference including architecture, backend system, configuration, and data schemas
 - **HYPOD-X datasets:** https://www.nature.com/articles/s41597-024-04043-z
 - **Matbench Discovery benchmark:** https://www.nature.com/articles/s42256-025-01055-1

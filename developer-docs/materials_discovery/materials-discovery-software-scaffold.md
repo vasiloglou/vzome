@@ -4,7 +4,7 @@
 > discovery pipeline. For current documentation derived from the actual implementation,
 > see **[Materials Discovery Documentation](index.md)**.
 
-Companion to Chapter 10.8 in [vZome Geometry Tutorial](../vzome-geometry-tutorial.md).
+Companion to Chapter 10.8 in [vZome Geometry Tutorial](vzome-geometry-tutorial.md).
 
 ---
 

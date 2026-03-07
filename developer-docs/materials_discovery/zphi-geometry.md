@@ -4,7 +4,7 @@ This document describes the Z[phi] (integers adjoined with the golden ratio) geo
 system used by the materials discovery pipeline to generate quasicrystalline
 approximant candidate structures. For broader context on how the golden ratio
 appears in icosahedral geometry, see section 10.8 of the
-[vZome geometry tutorial](../vzome-geometry-tutorial.md).
+[vZome geometry tutorial](vzome-geometry-tutorial.md).
 
 ## Mathematical Foundation
 
