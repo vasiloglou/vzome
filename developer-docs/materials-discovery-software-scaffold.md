@@ -1,346 +1,53 @@
 # Materials Discovery Software Scaffold
 
+> **Historical document.** This was the original design blueprint for the materials
+> discovery pipeline. For current documentation derived from the actual implementation,
+> see **[Materials Discovery Documentation](materials_discovery/index.md)**.
+
 Companion to Chapter 10.8 in [vZome Geometry Tutorial](vzome-geometry-tutorial.md).
 
-This document turns the chapter into an executable software blueprint for quasicrystal/approximant discovery using Z[phi]-aware geometry plus modern materials workflows.
-
 ---
 
-## 0. Implementation Status (Current)
-
-- `M1 ingest`: implemented in `materials-discovery/src/materials_discovery/data/ingest_hypodx.py`.
-- `M2 generate`: implemented in `materials-discovery/src/materials_discovery/generator/candidate_factory.py`.
-- `M3 screen`: implemented in `materials-discovery/src/materials_discovery/screen/`.
-- `M4 hifi-validate`: implemented in `materials-discovery/src/materials_discovery/hifi_digital/` and wired through `materials_discovery.cli`.
-- `Phase 2 hull hardening`: started; `DeltaE_proxy_hull` now uses ingested competing phases plus convex-mixture baselines in real mode.
-- `Phase 2 ranking hardening`: started; `hifi-rank` now emits calibrated stability/OOD/novelty components and richer ranking calibration artifacts.
-- `M5 active-learn`: implemented in `materials-discovery/src/materials_discovery/active_learning/` and wired through `materials_discovery.cli`.
-- `RM5 hardening`: started; surrogate training now uses descriptor/screen features and acquisition is risk-aware instead of centroid-only.
-- `M6 hifi-rank + report`: implemented in `materials-discovery/src/materials_discovery/hifi_digital/rank_candidates.py` and `materials-discovery/src/materials_discovery/diffraction/`.
-- `RM6 hardening`: started; report outputs now include chemistry-driven XRD proxy fingerprints, recommendation tiers, risk flags, and release-gate calibration.
-- `Phase 3 adapter/calibration hardening`: implemented for `Al-Cu-Fe` real mode; validation now uses fixture-backed adapters, benchmark corpora calibrate `hifi-rank`/`active-learn`/`report`, and generation uses Z[phi] transforms instead of pair jitter.
-- `Phase 4 execution hardening`: started; real-mode validation now supports command-driven committee/phonon/MD/XRD adapters with reusable cache artifacts under `data/execution_cache/`.
-- `Exec integration path`: implemented for `Al-Cu-Fe`; `configs/systems/al_cu_fe_exec.yaml` routes validation through concrete runner modules and is covered by integration tests.
-- `Native provider path`: implemented behind optional dependencies; `configs/systems/al_cu_fe_native.yaml` preserves the same exec contract while switching runner internals to structure-based committee/phonon/MD/XRD providers.
-- `Explicit site coordinates`: implemented; generated candidates now emit `fractional_position` and `cartesian_position`, and the native provider path consumes those stored coordinates instead of reconstructing positions on the fly.
-
-### Local Quickstart
-
-```bash
-cd materials-discovery
-uv sync --extra dev
-uv run mdisc ingest --config configs/systems/al_cu_fe.yaml
-uv run mdisc ingest --config configs/systems/al_cu_fe_exec.yaml
-uv sync --extra dev --extra mlip
-uv run mdisc generate --config configs/systems/al_cu_fe.yaml --count 50
-uv run mdisc screen --config configs/systems/al_cu_fe.yaml
-uv run mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch all
-uv run mdisc hifi-rank --config configs/systems/al_cu_fe.yaml
-uv run mdisc active-learn --config configs/systems/al_cu_fe.yaml
-uv run mdisc report --config configs/systems/al_cu_fe.yaml
-./scripts/run_exec_pipeline.sh
-./scripts/run_native_pipeline.sh
-uv run pytest
-uv run ruff check .
-uv run mypy src
-```
-
----
-
-## 1. Scope
-
-### Primary Goal
+## Original Scope
 
 Build a reproducible pipeline that can:
 
-1. generate candidate quasicrystal-compatible structures,
-2. screen them with fast surrogate models,
-3. refine top candidates with high-fidelity digital validation (no DFT required),
-4. rank candidates for experimental follow-up.
+1. Generate candidate quasicrystal-compatible structures using Z[phi] geometry.
+2. Screen them with fast ML interatomic potentials (MACE, CHGNet, MatterSim).
+3. Refine top candidates with high-fidelity digital validation (no DFT required).
+4. Rank candidates for experimental follow-up.
 
-### Non-Goals (v0.1)
+## Implementation Status
 
-- Full autonomous lab integration.
-- Guaranteed true aperiodic bulk proof in first release.
-- Universal potential quality across all chemistries on day one.
+All milestones (M1-M6) and real-mode execution phases (RM0-RM6) are implemented.
+See the [current documentation](materials_discovery/index.md) for details.
 
----
+## Current Documentation
 
-## 2. Suggested Repo Layout
+| Topic | Document |
+|-------|----------|
+| Overview and quickstart | [index.md](materials_discovery/index.md) |
+| System architecture | [architecture.md](materials_discovery/architecture.md) |
+| Z[phi] geometry engine | [zphi-geometry.md](materials_discovery/zphi-geometry.md) |
+| Pipeline stage reference | [pipeline-stages.md](materials_discovery/pipeline-stages.md) |
+| Backend adapter system | [backend-system.md](materials_discovery/backend-system.md) |
+| Configuration reference | [configuration-reference.md](materials_discovery/configuration-reference.md) |
+| Data schema reference | [data-schema-reference.md](materials_discovery/data-schema-reference.md) |
+| Developer guide | [contributing.md](materials_discovery/contributing.md) |
 
-Create a new top-level workspace in the repo:
+## External Resources
 
-```text
-materials-discovery/
-  README.md
-  pyproject.toml
-  configs/
-    systems/
-      al_cu_fe.yaml
-      al_pd_mn.yaml
-      sc_zn.yaml
-  data/
-    raw/
-    external/
-    processed/
-    candidates/
-    reports/
-  src/
-    materials_discovery/
-      __init__.py
-      common/
-        io.py
-        schema.py
-        logging.py
-      data/
-        ingest_hypodx.py
-        ingest_reference_phases.py
-        normalize.py
-      generator/
-        approximant_templates.py
-        decorate_sites.py
-        candidate_factory.py
-      screen/
-        relax_fast.py
-        filter_thresholds.py
-        rank_shortlist.py
-      hifi_digital/
-        committee_relax.py
-        uncertainty.py
-        hull_proxy.py
-        phonon_mlip.py
-        md_stability.py
-        xrd_validate.py
-        rank_candidates.py
-      active_learning/
-        train_surrogate.py
-        select_next_batch.py
-      diffraction/
-        simulate_powder_xrd.py
-        compare_patterns.py
-      cli.py
-  orchestration/
-    prefect/
-    snakemake/
-  notebooks/
-  tests/
-    test_schema.py
-    test_generator.py
-    test_screen_filters.py
-```
+- [HYPOD-X datasets](https://www.nature.com/articles/s41597-024-04043-z)
+- [Matbench Discovery benchmark](https://www.nature.com/articles/s42256-025-01055-1)
+- [CHGNet](https://github.com/CederGroupHub/chgnet) |
+  [MACE](https://github.com/ACEsuit/mace) |
+  [MatterSim](https://github.com/microsoft/mattersim)
+- [Quasicrystal ML discovery](https://doi.org/10.1103/PhysRevMaterials.7.093805)
+- [QC structure prediction review](https://euler.phys.cmu.edu/widom/pubs/PDF/IJCR2023.pdf)
+- [Deep-learning XRD for QC identification](https://pubmed.ncbi.nlm.nih.gov/37964402/)
 
-If you do not want a new top-level directory, mirror this structure under `developer-docs/examples/materials-discovery/` first, then promote to production paths later.
+## Real-Mode Execution Plan
 
----
-
-## 3. Data Contract (Candidate Record)
-
-Use one canonical candidate schema from day one:
-
-```json
-{
-  "candidate_id": "md_000001",
-  "system": "Al-Cu-Fe",
-  "template_family": "icosahedral_approximant_1_1",
-  "cell": {"a": 14.2, "b": 14.2, "c": 14.2, "alpha": 90, "beta": 90, "gamma": 90},
-  "sites": [
-    {
-      "label": "S1",
-      "qphi": [[1,0],[0,1],[-1,1]],
-      "species": "Al",
-      "occ": 1.0,
-      "fractional_position": [0.156, 0.242, 0.318],
-      "cartesian_position": [2.2152, 3.4364, 4.5156]
-    }
-  ],
-  "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
-  "screen": {"model": "MACE", "energy_per_atom_ev": -3.12},
-  "digital_validation": {
-    "status": "pending",
-    "committee": ["MACE", "CHGNet", "MatterSim"],
-    "uncertainty_ev_per_atom": null
-  },
-  "provenance": {"generator_version": "0.1.0", "config_hash": "sha256:..."}
-}
-```
-
-Notes:
-
-- `qphi` stores `(a,b)` integer pairs for each Cartesian component `a + b*phi`.
-- generated candidates should store both `fractional_position` and `cartesian_position` for each site.
-- those coordinates should come from explicit approximant motifs with bounded Z[phi] translations, not from global min/max normalization of symbolic `qphi` values.
-- provenance should also identify the anchored prototype used for generation and its literature source.
-- when open crystallographic data exists, anchor prototypes should be exported from CIF/Wyckoff orbit libraries and loaded from data files rather than hardcoded Python site lists.
-- native validation backends should use stored coordinates first and only fall back to `qphi`-based reconstruction for older artifacts.
-- never drop provenance fields; they are required for reproducibility.
-
----
-
-## 4. Module Responsibilities
-
-### `data/`
-
-- Ingest HYPOD-X and reference phase data.
-- Normalize composition labels, phase names, and units.
-- Produce one deduplicated table for training/screening.
-
-### `generator/`
-
-- Generate periodic approximants from family-specific motif cells plus bounded Z[phi] translations.
-- Prefer system-anchored prototypes with resolved shell/orbit structure when literature-backed cells are available.
-- Prefer imported CIF/Wyckoff orbit libraries over hand-maintained site tables whenever open crystallographic data is available.
-- Apply decoration rules (species assignments and occupancy constraints).
-- Emit validated structure objects plus metadata.
-
-### `screen/`
-
-- Run fast relaxations (MACE/CHGNet/NequIP-based).
-- Apply hard filters: minimum distance, charge sanity, composition bounds.
-- Rank shortlist for high-fidelity digital validation.
-
-### `hifi_digital/`
-
-- Run committee relaxations across multiple MLIPs.
-- Quantify uncertainty via disagreement in energies/forces/stresses.
-- Compute proxy hull metrics against known competing phases.
-- Run selected MLIP phonon and short MD stability checks.
-- Produce uncertainty-aware candidate rankings.
-
-### `active_learning/`
-
-- Train/update surrogate from accumulated digital validation labels.
-- Select next candidate batch using uncertainty-aware criteria.
-
-### `diffraction/`
-
-- Simulate powder XRD for top candidates.
-- Compare to known signatures; flag experimental distinctness.
-
----
-
-## 5. Milestones and Definition of Done
-
-| Milestone | Duration | Definition of Done |
-|----------|----------|--------------------|
-| M1 Data foundation | 2 weeks | HYPOD-X + reference phases ingested; schema validated |
-| M2 Candidate generation | 3 weeks | >=10k unique candidates generated for one ternary system |
-| M3 Fast screening | 3 weeks | Top 1-5% shortlisted with reproducible ranking reports |
-| M4 High-fidelity digital validation | 5 weeks | >=200 candidates validated with committee uncertainty and proxy hull values |
-| M5 Active learning loop | 3 weeks | Surrogate retrained and improves top-k hit rate |
-| M6 Experiment report | 2 weeks | Ranked list with XRD signatures and provenance bundles |
-
----
-
-## 6. Metrics to Track
-
-- `screen_to_hifi_yield`: fraction of screened structures that remain competitive after digital validation.
-- `top_k_precision`: fraction of top-k surrogate predictions confirmed by committee ranking.
-- `DeltaE_proxy_hull_distribution`: stability profile under proxy hull model.
-- `committee_disagreement_mean`: average uncertainty for shortlisted candidates.
-- `dedupe_rate`: duplicate generation rate (should decline over time).
-- `reproducibility_rate`: jobs reproducing same result under rerun.
-
----
-
-## 7. Initial Command Surface
-
-Expose one CLI entry point:
-
-```bash
-mdisc ingest --config configs/systems/al_cu_fe.yaml
-mdisc generate --config configs/systems/al_cu_fe.yaml --count 20000
-mdisc screen --config configs/systems/al_cu_fe.yaml
-mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch top500
-mdisc hifi-rank --config configs/systems/al_cu_fe.yaml
-mdisc active-learn --config configs/systems/al_cu_fe.yaml
-mdisc report --config configs/systems/al_cu_fe.yaml
-```
-
----
-
-## 8. Recommended External Resources
-
-- HYPOD-X datasets and metadata: https://www.nature.com/articles/s41597-024-04043-z
-- Matbench Discovery benchmark paper: https://www.nature.com/articles/s42256-025-01055-1
-- Matbench Discovery project: https://github.com/janosh/matbench-discovery
-- CHGNet repository: https://github.com/CederGroupHub/chgnet
-- MACE repository: https://github.com/ACEsuit/mace
-- MatterSim repository: https://github.com/microsoft/mattersim
-- Quasicrystal ML discovery paper: https://doi.org/10.1103/PhysRevMaterials.7.093805
-- Optional future first-principles verification reference: https://www.nature.com/articles/s41567-025-02925-6
-- Quasicrystal structure prediction review: https://euler.phys.cmu.edu/widom/pubs/PDF/IJCR2023.pdf
-- Deep-learning XRD for QC identification: https://pubmed.ncbi.nlm.nih.gov/37964402/
-
----
-
-## 9. First Implementation Ticket List
-
-1. Add `materials-discovery/` skeleton and package metadata.
-2. Implement `schema.py` and round-trip JSON validation tests.
-3. Implement HYPOD-X ingestion and normalization.
-4. Implement one template generator for a single target system.
-5. Implement one fast-screen backend and one ranking report.
-6. Implement one `hifi_digital` committee workflow (relax + uncertainty + proxy hull).
-7. Add CI test suite for schema, generator determinism, and ranking reproducibility.
-8. Add an optional "future verification" interface to plug in first-principles checks later.
-
-This list is intentionally narrow so the first push produces a runnable vertical slice instead of a large unfinished framework.
-
----
-
-## 10. Real-Mode Execution Spec (March-August 2026)
-
-The scaffold is complete. The next step is replacing deterministic proxy internals with production backends while preserving CLI/schema contracts.
-
-Detailed plan document:
+For the RM0-RM6 execution plan (March-August 2026), see:
 
 - `materials-discovery/REAL_MODE_EXECUTION_PLAN.md`
-
-### 10.1 Program Dates
-
-Program start date: **March 9, 2026**  
-Target real-mode release date: **August 7, 2026**
-
-### 10.2 Dated Milestones
-
-| Milestone | Dates | Real Objective | Exit Criteria |
-|----------|-------|----------------|---------------|
-| RM0 Program Baseline | 2026-03-09 to 2026-03-13 | Freeze interfaces, add backend switch (`mock` vs `real`) and artifact versioning contract | Existing tests pass unchanged under `mock`; real backend interface tests added |
-| RM1 Real Data Ingestion | 2026-03-16 to 2026-03-27 | Wire real dataset connectors, normalization maps, and provenance | Ingest reproducible on pinned snapshots; data QA report generated |
-| RM2 Real Candidate Generation | 2026-03-30 to 2026-04-17 | Replace placeholder generator internals with real template/approximant parameterization | >=10k candidates generated for one ternary system with dedupe and geometry validity checks |
-| RM3 Real Screening | 2026-04-20 to 2026-05-15 | Integrate real MLIP relax adapters and calibrated shortlist scoring | Top 1-5% shortlist reproducible; screening calibration report produced |
-| RM4 Real High-Fidelity Validation | 2026-05-18 to 2026-06-19 | Production committee, uncertainty calibration, proxy hull + phonon/MD checks | >=200 validated candidates with uncertainty stats and pass/fail audit trail |
-| RM5 Real Active Learning | 2026-06-22 to 2026-07-10 | Retrain/update surrogate and select next batch with registry-backed artifacts | New model version improves at least one top-k metric on held-out validation set |
-| RM6 Real Ranking + Reporting + Hardening | 2026-07-13 to 2026-08-07 | Calibrated ranking, experiment reports, orchestration hardening | End-to-end runbook complete; release gate metrics met; reproducibility checks pass |
-
-### 10.3 Program-Level Acceptance Tests
-
-All of the following must pass to claim real-mode completion:
-
-1. **Contract stability**
-   - CLI command surface unchanged.
-   - Candidate/summary schemas backward-compatible.
-2. **Determinism**
-   - Re-running same config/data/model versions yields bitwise-identical ranking/report outputs.
-3. **Data quality**
-   - Composition normalization, dedupe fingerprinting, and provenance coverage tests pass.
-4. **Model quality checks**
-   - Committee uncertainty metrics and shortlist quality tracked and non-regressing over baseline.
-5. **Operational readiness**
-   - CI split into fast unit path and heavy integration path.
-   - End-to-end smoke run from `ingest` to `report` executes from clean checkout with documented dependencies.
-
-### 10.4 Execution Status (as of March 6, 2026)
-
-Execution completed for RM0-RM6 software deliverables in this repository (no-DFT path):
-
-1. Added `backend.mode` config (`mock`/`real`) and backend capability matrix.
-2. Added stage manifests for all commands under `data/manifests/`.
-3. Added pinned-snapshot real ingest adapter plus ingest QA checks.
-4. Added stage calibration artifacts under `data/calibration/` for generate/screen/validate/rank/report.
-5. Added active-learning feature/model registry outputs under `data/registry/features` and `data/registry/models`.
-6. Added pipeline-level manifest emission in `report` stage (`*_pipeline_manifest.json`).
-7. Added real-mode integration coverage (`pytest -m integration`) including full end-to-end artifact assertions.
-8. Added operational split CI:
-   - fast path (`pytest -m "not integration"`, lint, mypy) on push/PR
-   - integration-real path (`pytest -m integration` + real pipeline run script) on schedule/manual dispatch.

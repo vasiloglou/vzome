@@ -1090,11 +1090,12 @@ Before claiming discovery, require all of the following:
 - Deep-learning XRD-assisted quasicrystal identification  
   https://pubmed.ncbi.nlm.nih.gov/37964402/
 
-#### 10.8.9 Companion Build Blueprint
+#### 10.8.9 Companion Documentation
 
-For a concrete repository scaffold, module boundaries, milestones, and acceptance criteria aligned to this chapter, see:
+For full documentation of the implemented pipeline — architecture, Z[phi] geometry engine, per-stage reference, backend adapters, configuration, and data schemas — see:
 
-- [Materials Discovery Software Scaffold](materials-discovery-software-scaffold.md)
+- [Materials Discovery Documentation](materials_discovery/index.md)
+- [Materials Discovery Software Scaffold](materials-discovery-software-scaffold.md) (original design blueprint)
 
 #### 10.8.10 Implementation Status and Quickstart
 
@@ -1135,7 +1136,8 @@ This reframing keeps the original vision intact while making it implementable as
 - [Quick Start Guide](../website/docs/quick-start.md) — Interactive tutorial for building your first dodecahedron
 - [Zometool Introduction](../website/docs/zometool-intro.md) — Web-based introduction to Zometool geometry
 - [Zomic Language Reference](../core/docs/ZomicReference.md) — Complete Zomic scripting reference
-- [Materials Discovery Software Scaffold](materials-discovery-software-scaffold.md) — Practical implementation blueprint for Chapter 10.8
+- [Materials Discovery Documentation](materials_discovery/index.md) — Full pipeline documentation for Chapter 10.8
+- [Materials Discovery Software Scaffold](materials-discovery-software-scaffold.md) — Original design blueprint (historical)
 - [Copilot Instructions](../.github/copilot-instructions.md) — Detailed architecture and codebase guide
 - [Zomod History](../website/docs/history/zomod/index.md) — History of vZome's predecessor
 
