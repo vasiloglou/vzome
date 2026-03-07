@@ -1,0 +1,1793 @@
+{
+  "base_cell": {
+    "a": 13.7923,
+    "alpha": 90.0,
+    "b": 13.7923,
+    "beta": 90.0,
+    "c": 13.7923,
+    "gamma": 90.0
+  },
+  "minimum_site_separation": 0.08,
+  "motif_center": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "orbits": [
+    {
+      "orbit": "tsai_cu1",
+      "preferred_species": [
+        "Zn",
+        "Sc"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.0,
+            0.239,
+            0.0917
+          ],
+          "label": "Cu1_01"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.239,
+            0.9083
+          ],
+          "label": "Cu1_02"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.761,
+            0.0917
+          ],
+          "label": "Cu1_03"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.761,
+            0.9083
+          ],
+          "label": "Cu1_04"
+        },
+        {
+          "fractional_position": [
+            0.0917,
+            0.0,
+            0.239
+          ],
+          "label": "Cu1_05"
+        },
+        {
+          "fractional_position": [
+            0.0917,
+            0.0,
+            0.761
+          ],
+          "label": "Cu1_06"
+        },
+        {
+          "fractional_position": [
+            0.239,
+            0.0917,
+            0.0
+          ],
+          "label": "Cu1_07"
+        },
+        {
+          "fractional_position": [
+            0.239,
+            0.9083,
+            0.0
+          ],
+          "label": "Cu1_08"
+        },
+        {
+          "fractional_position": [
+            0.261,
+            0.4083,
+            0.5
+          ],
+          "label": "Cu1_09"
+        },
+        {
+          "fractional_position": [
+            0.261,
+            0.5917,
+            0.5
+          ],
+          "label": "Cu1_10"
+        },
+        {
+          "fractional_position": [
+            0.4083,
+            0.5,
+            0.261
+          ],
+          "label": "Cu1_11"
+        },
+        {
+          "fractional_position": [
+            0.4083,
+            0.5,
+            0.739
+          ],
+          "label": "Cu1_12"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.261,
+            0.4083
+          ],
+          "label": "Cu1_13"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.261,
+            0.5917
+          ],
+          "label": "Cu1_14"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.739,
+            0.4083
+          ],
+          "label": "Cu1_15"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.739,
+            0.5917
+          ],
+          "label": "Cu1_16"
+        },
+        {
+          "fractional_position": [
+            0.5917,
+            0.5,
+            0.261
+          ],
+          "label": "Cu1_17"
+        },
+        {
+          "fractional_position": [
+            0.5917,
+            0.5,
+            0.739
+          ],
+          "label": "Cu1_18"
+        },
+        {
+          "fractional_position": [
+            0.739,
+            0.4083,
+            0.5
+          ],
+          "label": "Cu1_19"
+        },
+        {
+          "fractional_position": [
+            0.739,
+            0.5917,
+            0.5
+          ],
+          "label": "Cu1_20"
+        },
+        {
+          "fractional_position": [
+            0.761,
+            0.0917,
+            0.0
+          ],
+          "label": "Cu1_21"
+        },
+        {
+          "fractional_position": [
+            0.761,
+            0.9083,
+            0.0
+          ],
+          "label": "Cu1_22"
+        },
+        {
+          "fractional_position": [
+            0.9083,
+            0.0,
+            0.239
+          ],
+          "label": "Cu1_23"
+        },
+        {
+          "fractional_position": [
+            0.9083,
+            0.0,
+            0.761
+          ],
+          "label": "Cu1_24"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "tsai_zn7",
+      "preferred_species": [
+        "Zn"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.0,
+            0.0787,
+            0.0788
+          ],
+          "label": "Zn7_01"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.0787,
+            0.9212
+          ],
+          "label": "Zn7_02"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.9213,
+            0.0788
+          ],
+          "label": "Zn7_03"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.9213,
+            0.9212
+          ],
+          "label": "Zn7_04"
+        },
+        {
+          "fractional_position": [
+            0.0787,
+            0.0788,
+            0.0
+          ],
+          "label": "Zn7_05"
+        },
+        {
+          "fractional_position": [
+            0.0787,
+            0.9212,
+            0.0
+          ],
+          "label": "Zn7_06"
+        },
+        {
+          "fractional_position": [
+            0.0788,
+            0.0,
+            0.0787
+          ],
+          "label": "Zn7_07"
+        },
+        {
+          "fractional_position": [
+            0.0788,
+            0.0,
+            0.9213
+          ],
+          "label": "Zn7_08"
+        },
+        {
+          "fractional_position": [
+            0.4212,
+            0.5,
+            0.4213
+          ],
+          "label": "Zn7_09"
+        },
+        {
+          "fractional_position": [
+            0.4212,
+            0.5,
+            0.5787
+          ],
+          "label": "Zn7_10"
+        },
+        {
+          "fractional_position": [
+            0.4213,
+            0.4212,
+            0.5
+          ],
+          "label": "Zn7_11"
+        },
+        {
+          "fractional_position": [
+            0.4213,
+            0.5788,
+            0.5
+          ],
+          "label": "Zn7_12"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.4213,
+            0.4212
+          ],
+          "label": "Zn7_13"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.4213,
+            0.5788
+          ],
+          "label": "Zn7_14"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.5787,
+            0.4212
+          ],
+          "label": "Zn7_15"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.5787,
+            0.5788
+          ],
+          "label": "Zn7_16"
+        },
+        {
+          "fractional_position": [
+            0.5787,
+            0.4212,
+            0.5
+          ],
+          "label": "Zn7_17"
+        },
+        {
+          "fractional_position": [
+            0.5787,
+            0.5788,
+            0.5
+          ],
+          "label": "Zn7_18"
+        },
+        {
+          "fractional_position": [
+            0.5788,
+            0.5,
+            0.4213
+          ],
+          "label": "Zn7_19"
+        },
+        {
+          "fractional_position": [
+            0.5788,
+            0.5,
+            0.5787
+          ],
+          "label": "Zn7_20"
+        },
+        {
+          "fractional_position": [
+            0.9212,
+            0.0,
+            0.0787
+          ],
+          "label": "Zn7_21"
+        },
+        {
+          "fractional_position": [
+            0.9212,
+            0.0,
+            0.9213
+          ],
+          "label": "Zn7_22"
+        },
+        {
+          "fractional_position": [
+            0.9213,
+            0.0788,
+            0.0
+          ],
+          "label": "Zn7_23"
+        },
+        {
+          "fractional_position": [
+            0.9213,
+            0.9212,
+            0.0
+          ],
+          "label": "Zn7_24"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "tsai_zn5",
+      "preferred_species": [
+        "Zn"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.0,
+            0.239,
+            0.0917
+          ],
+          "label": "Zn5_01"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.239,
+            0.9083
+          ],
+          "label": "Zn5_02"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.761,
+            0.0917
+          ],
+          "label": "Zn5_03"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.761,
+            0.9083
+          ],
+          "label": "Zn5_04"
+        },
+        {
+          "fractional_position": [
+            0.0917,
+            0.0,
+            0.239
+          ],
+          "label": "Zn5_05"
+        },
+        {
+          "fractional_position": [
+            0.0917,
+            0.0,
+            0.761
+          ],
+          "label": "Zn5_06"
+        },
+        {
+          "fractional_position": [
+            0.239,
+            0.0917,
+            0.0
+          ],
+          "label": "Zn5_07"
+        },
+        {
+          "fractional_position": [
+            0.239,
+            0.9083,
+            0.0
+          ],
+          "label": "Zn5_08"
+        },
+        {
+          "fractional_position": [
+            0.261,
+            0.4083,
+            0.5
+          ],
+          "label": "Zn5_09"
+        },
+        {
+          "fractional_position": [
+            0.261,
+            0.5917,
+            0.5
+          ],
+          "label": "Zn5_10"
+        },
+        {
+          "fractional_position": [
+            0.4083,
+            0.5,
+            0.261
+          ],
+          "label": "Zn5_11"
+        },
+        {
+          "fractional_position": [
+            0.4083,
+            0.5,
+            0.739
+          ],
+          "label": "Zn5_12"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.261,
+            0.4083
+          ],
+          "label": "Zn5_13"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.261,
+            0.5917
+          ],
+          "label": "Zn5_14"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.739,
+            0.4083
+          ],
+          "label": "Zn5_15"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.739,
+            0.5917
+          ],
+          "label": "Zn5_16"
+        },
+        {
+          "fractional_position": [
+            0.5917,
+            0.5,
+            0.261
+          ],
+          "label": "Zn5_17"
+        },
+        {
+          "fractional_position": [
+            0.5917,
+            0.5,
+            0.739
+          ],
+          "label": "Zn5_18"
+        },
+        {
+          "fractional_position": [
+            0.739,
+            0.4083,
+            0.5
+          ],
+          "label": "Zn5_19"
+        },
+        {
+          "fractional_position": [
+            0.739,
+            0.5917,
+            0.5
+          ],
+          "label": "Zn5_20"
+        },
+        {
+          "fractional_position": [
+            0.761,
+            0.0917,
+            0.0
+          ],
+          "label": "Zn5_21"
+        },
+        {
+          "fractional_position": [
+            0.761,
+            0.9083,
+            0.0
+          ],
+          "label": "Zn5_22"
+        },
+        {
+          "fractional_position": [
+            0.9083,
+            0.0,
+            0.239
+          ],
+          "label": "Zn5_23"
+        },
+        {
+          "fractional_position": [
+            0.9083,
+            0.0,
+            0.761
+          ],
+          "label": "Zn5_24"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "tsai_zn4",
+      "preferred_species": [
+        "Zn"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.0,
+            0.0,
+            0.4073
+          ],
+          "label": "Zn4_01"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.0,
+            0.5927
+          ],
+          "label": "Zn4_02"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.4073,
+            0.0
+          ],
+          "label": "Zn4_03"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.5927,
+            0.0
+          ],
+          "label": "Zn4_04"
+        },
+        {
+          "fractional_position": [
+            0.0927,
+            0.5,
+            0.5
+          ],
+          "label": "Zn4_05"
+        },
+        {
+          "fractional_position": [
+            0.4073,
+            0.0,
+            0.0
+          ],
+          "label": "Zn4_06"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.0927,
+            0.5
+          ],
+          "label": "Zn4_07"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.5,
+            0.0927
+          ],
+          "label": "Zn4_08"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.5,
+            0.9073
+          ],
+          "label": "Zn4_09"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.9073,
+            0.5
+          ],
+          "label": "Zn4_10"
+        },
+        {
+          "fractional_position": [
+            0.5927,
+            0.0,
+            0.0
+          ],
+          "label": "Zn4_11"
+        },
+        {
+          "fractional_position": [
+            0.9073,
+            0.5,
+            0.5
+          ],
+          "label": "Zn4_12"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "tsai_zn1",
+      "preferred_species": [
+        "Zn"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.0,
+            0.31,
+            0.5
+          ],
+          "label": "Zn1_01"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.5,
+            0.19
+          ],
+          "label": "Zn1_02"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.5,
+            0.81
+          ],
+          "label": "Zn1_03"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.69,
+            0.5
+          ],
+          "label": "Zn1_04"
+        },
+        {
+          "fractional_position": [
+            0.19,
+            0.0,
+            0.5
+          ],
+          "label": "Zn1_05"
+        },
+        {
+          "fractional_position": [
+            0.31,
+            0.5,
+            0.0
+          ],
+          "label": "Zn1_06"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.0,
+            0.31
+          ],
+          "label": "Zn1_07"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.0,
+            0.69
+          ],
+          "label": "Zn1_08"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.19,
+            0.0
+          ],
+          "label": "Zn1_09"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.81,
+            0.0
+          ],
+          "label": "Zn1_10"
+        },
+        {
+          "fractional_position": [
+            0.69,
+            0.5,
+            0.0
+          ],
+          "label": "Zn1_11"
+        },
+        {
+          "fractional_position": [
+            0.81,
+            0.0,
+            0.5
+          ],
+          "label": "Zn1_12"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "tsai_zn6",
+      "preferred_species": [
+        "Zn"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.1626,
+            0.1626,
+            0.1626
+          ],
+          "label": "Zn6_01"
+        },
+        {
+          "fractional_position": [
+            0.1626,
+            0.1626,
+            0.8374
+          ],
+          "label": "Zn6_02"
+        },
+        {
+          "fractional_position": [
+            0.1626,
+            0.8374,
+            0.1626
+          ],
+          "label": "Zn6_03"
+        },
+        {
+          "fractional_position": [
+            0.1626,
+            0.8374,
+            0.8374
+          ],
+          "label": "Zn6_04"
+        },
+        {
+          "fractional_position": [
+            0.3374,
+            0.3374,
+            0.3374
+          ],
+          "label": "Zn6_05"
+        },
+        {
+          "fractional_position": [
+            0.3374,
+            0.3374,
+            0.6626
+          ],
+          "label": "Zn6_06"
+        },
+        {
+          "fractional_position": [
+            0.3374,
+            0.6626,
+            0.3374
+          ],
+          "label": "Zn6_07"
+        },
+        {
+          "fractional_position": [
+            0.3374,
+            0.6626,
+            0.6626
+          ],
+          "label": "Zn6_08"
+        },
+        {
+          "fractional_position": [
+            0.6626,
+            0.3374,
+            0.3374
+          ],
+          "label": "Zn6_09"
+        },
+        {
+          "fractional_position": [
+            0.6626,
+            0.3374,
+            0.6626
+          ],
+          "label": "Zn6_10"
+        },
+        {
+          "fractional_position": [
+            0.6626,
+            0.6626,
+            0.3374
+          ],
+          "label": "Zn6_11"
+        },
+        {
+          "fractional_position": [
+            0.6626,
+            0.6626,
+            0.6626
+          ],
+          "label": "Zn6_12"
+        },
+        {
+          "fractional_position": [
+            0.8374,
+            0.1626,
+            0.1626
+          ],
+          "label": "Zn6_13"
+        },
+        {
+          "fractional_position": [
+            0.8374,
+            0.1626,
+            0.8374
+          ],
+          "label": "Zn6_14"
+        },
+        {
+          "fractional_position": [
+            0.8374,
+            0.8374,
+            0.1626
+          ],
+          "label": "Zn6_15"
+        },
+        {
+          "fractional_position": [
+            0.8374,
+            0.8374,
+            0.8374
+          ],
+          "label": "Zn6_16"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "tsai_zn2",
+      "preferred_species": [
+        "Zn"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.0,
+            0.4041,
+            0.3452
+          ],
+          "label": "Zn2_01"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.4041,
+            0.6548
+          ],
+          "label": "Zn2_02"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.5959,
+            0.3452
+          ],
+          "label": "Zn2_03"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.5959,
+            0.6548
+          ],
+          "label": "Zn2_04"
+        },
+        {
+          "fractional_position": [
+            0.0959,
+            0.1548,
+            0.5
+          ],
+          "label": "Zn2_05"
+        },
+        {
+          "fractional_position": [
+            0.0959,
+            0.8452,
+            0.5
+          ],
+          "label": "Zn2_06"
+        },
+        {
+          "fractional_position": [
+            0.1548,
+            0.5,
+            0.0959
+          ],
+          "label": "Zn2_07"
+        },
+        {
+          "fractional_position": [
+            0.1548,
+            0.5,
+            0.9041
+          ],
+          "label": "Zn2_08"
+        },
+        {
+          "fractional_position": [
+            0.3452,
+            0.0,
+            0.4041
+          ],
+          "label": "Zn2_09"
+        },
+        {
+          "fractional_position": [
+            0.3452,
+            0.0,
+            0.5959
+          ],
+          "label": "Zn2_10"
+        },
+        {
+          "fractional_position": [
+            0.4041,
+            0.3452,
+            0.0
+          ],
+          "label": "Zn2_11"
+        },
+        {
+          "fractional_position": [
+            0.4041,
+            0.6548,
+            0.0
+          ],
+          "label": "Zn2_12"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.0959,
+            0.1548
+          ],
+          "label": "Zn2_13"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.0959,
+            0.8452
+          ],
+          "label": "Zn2_14"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.9041,
+            0.1548
+          ],
+          "label": "Zn2_15"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.9041,
+            0.8452
+          ],
+          "label": "Zn2_16"
+        },
+        {
+          "fractional_position": [
+            0.5959,
+            0.3452,
+            0.0
+          ],
+          "label": "Zn2_17"
+        },
+        {
+          "fractional_position": [
+            0.5959,
+            0.6548,
+            0.0
+          ],
+          "label": "Zn2_18"
+        },
+        {
+          "fractional_position": [
+            0.6548,
+            0.0,
+            0.4041
+          ],
+          "label": "Zn2_19"
+        },
+        {
+          "fractional_position": [
+            0.6548,
+            0.0,
+            0.5959
+          ],
+          "label": "Zn2_20"
+        },
+        {
+          "fractional_position": [
+            0.8452,
+            0.5,
+            0.0959
+          ],
+          "label": "Zn2_21"
+        },
+        {
+          "fractional_position": [
+            0.8452,
+            0.5,
+            0.9041
+          ],
+          "label": "Zn2_22"
+        },
+        {
+          "fractional_position": [
+            0.9041,
+            0.1548,
+            0.5
+          ],
+          "label": "Zn2_23"
+        },
+        {
+          "fractional_position": [
+            0.9041,
+            0.8452,
+            0.5
+          ],
+          "label": "Zn2_24"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "tsai_sc1",
+      "preferred_species": [
+        "Sc"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.0,
+            0.1882,
+            0.3002
+          ],
+          "label": "Sc1_01"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.1882,
+            0.6998
+          ],
+          "label": "Sc1_02"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.8118,
+            0.3002
+          ],
+          "label": "Sc1_03"
+        },
+        {
+          "fractional_position": [
+            0.0,
+            0.8118,
+            0.6998
+          ],
+          "label": "Sc1_04"
+        },
+        {
+          "fractional_position": [
+            0.1882,
+            0.3002,
+            0.0
+          ],
+          "label": "Sc1_05"
+        },
+        {
+          "fractional_position": [
+            0.1882,
+            0.6998,
+            0.0
+          ],
+          "label": "Sc1_06"
+        },
+        {
+          "fractional_position": [
+            0.1998,
+            0.5,
+            0.3118
+          ],
+          "label": "Sc1_07"
+        },
+        {
+          "fractional_position": [
+            0.1998,
+            0.5,
+            0.6882
+          ],
+          "label": "Sc1_08"
+        },
+        {
+          "fractional_position": [
+            0.3002,
+            0.0,
+            0.1882
+          ],
+          "label": "Sc1_09"
+        },
+        {
+          "fractional_position": [
+            0.3002,
+            0.0,
+            0.8118
+          ],
+          "label": "Sc1_10"
+        },
+        {
+          "fractional_position": [
+            0.3118,
+            0.1998,
+            0.5
+          ],
+          "label": "Sc1_11"
+        },
+        {
+          "fractional_position": [
+            0.3118,
+            0.8002,
+            0.5
+          ],
+          "label": "Sc1_12"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.3118,
+            0.1998
+          ],
+          "label": "Sc1_13"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.3118,
+            0.8002
+          ],
+          "label": "Sc1_14"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.6882,
+            0.1998
+          ],
+          "label": "Sc1_15"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.6882,
+            0.8002
+          ],
+          "label": "Sc1_16"
+        },
+        {
+          "fractional_position": [
+            0.6882,
+            0.1998,
+            0.5
+          ],
+          "label": "Sc1_17"
+        },
+        {
+          "fractional_position": [
+            0.6882,
+            0.8002,
+            0.5
+          ],
+          "label": "Sc1_18"
+        },
+        {
+          "fractional_position": [
+            0.6998,
+            0.0,
+            0.1882
+          ],
+          "label": "Sc1_19"
+        },
+        {
+          "fractional_position": [
+            0.6998,
+            0.0,
+            0.8118
+          ],
+          "label": "Sc1_20"
+        },
+        {
+          "fractional_position": [
+            0.8002,
+            0.5,
+            0.3118
+          ],
+          "label": "Sc1_21"
+        },
+        {
+          "fractional_position": [
+            0.8002,
+            0.5,
+            0.6882
+          ],
+          "label": "Sc1_22"
+        },
+        {
+          "fractional_position": [
+            0.8118,
+            0.3002,
+            0.0
+          ],
+          "label": "Sc1_23"
+        },
+        {
+          "fractional_position": [
+            0.8118,
+            0.6998,
+            0.0
+          ],
+          "label": "Sc1_24"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "tsai_zn3",
+      "preferred_species": [
+        "Zn"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.1157,
+            0.3418,
+            0.2004
+          ],
+          "label": "Zn3_01"
+        },
+        {
+          "fractional_position": [
+            0.1157,
+            0.3418,
+            0.7996
+          ],
+          "label": "Zn3_02"
+        },
+        {
+          "fractional_position": [
+            0.1157,
+            0.6582,
+            0.2004
+          ],
+          "label": "Zn3_03"
+        },
+        {
+          "fractional_position": [
+            0.1157,
+            0.6582,
+            0.7996
+          ],
+          "label": "Zn3_04"
+        },
+        {
+          "fractional_position": [
+            0.1582,
+            0.2996,
+            0.3843
+          ],
+          "label": "Zn3_05"
+        },
+        {
+          "fractional_position": [
+            0.1582,
+            0.2996,
+            0.6157
+          ],
+          "label": "Zn3_06"
+        },
+        {
+          "fractional_position": [
+            0.1582,
+            0.7004,
+            0.3843
+          ],
+          "label": "Zn3_07"
+        },
+        {
+          "fractional_position": [
+            0.1582,
+            0.7004,
+            0.6157
+          ],
+          "label": "Zn3_08"
+        },
+        {
+          "fractional_position": [
+            0.2004,
+            0.1157,
+            0.3418
+          ],
+          "label": "Zn3_09"
+        },
+        {
+          "fractional_position": [
+            0.2004,
+            0.1157,
+            0.6582
+          ],
+          "label": "Zn3_10"
+        },
+        {
+          "fractional_position": [
+            0.2004,
+            0.8843,
+            0.3418
+          ],
+          "label": "Zn3_11"
+        },
+        {
+          "fractional_position": [
+            0.2004,
+            0.8843,
+            0.6582
+          ],
+          "label": "Zn3_12"
+        },
+        {
+          "fractional_position": [
+            0.2996,
+            0.3843,
+            0.1582
+          ],
+          "label": "Zn3_13"
+        },
+        {
+          "fractional_position": [
+            0.2996,
+            0.3843,
+            0.8418
+          ],
+          "label": "Zn3_14"
+        },
+        {
+          "fractional_position": [
+            0.2996,
+            0.6157,
+            0.1582
+          ],
+          "label": "Zn3_15"
+        },
+        {
+          "fractional_position": [
+            0.2996,
+            0.6157,
+            0.8418
+          ],
+          "label": "Zn3_16"
+        },
+        {
+          "fractional_position": [
+            0.3418,
+            0.2004,
+            0.1157
+          ],
+          "label": "Zn3_17"
+        },
+        {
+          "fractional_position": [
+            0.3418,
+            0.2004,
+            0.8843
+          ],
+          "label": "Zn3_18"
+        },
+        {
+          "fractional_position": [
+            0.3418,
+            0.7996,
+            0.1157
+          ],
+          "label": "Zn3_19"
+        },
+        {
+          "fractional_position": [
+            0.3418,
+            0.7996,
+            0.8843
+          ],
+          "label": "Zn3_20"
+        },
+        {
+          "fractional_position": [
+            0.3843,
+            0.1582,
+            0.2996
+          ],
+          "label": "Zn3_21"
+        },
+        {
+          "fractional_position": [
+            0.3843,
+            0.1582,
+            0.7004
+          ],
+          "label": "Zn3_22"
+        },
+        {
+          "fractional_position": [
+            0.3843,
+            0.8418,
+            0.2996
+          ],
+          "label": "Zn3_23"
+        },
+        {
+          "fractional_position": [
+            0.3843,
+            0.8418,
+            0.7004
+          ],
+          "label": "Zn3_24"
+        },
+        {
+          "fractional_position": [
+            0.6157,
+            0.1582,
+            0.2996
+          ],
+          "label": "Zn3_25"
+        },
+        {
+          "fractional_position": [
+            0.6157,
+            0.1582,
+            0.7004
+          ],
+          "label": "Zn3_26"
+        },
+        {
+          "fractional_position": [
+            0.6157,
+            0.8418,
+            0.2996
+          ],
+          "label": "Zn3_27"
+        },
+        {
+          "fractional_position": [
+            0.6157,
+            0.8418,
+            0.7004
+          ],
+          "label": "Zn3_28"
+        },
+        {
+          "fractional_position": [
+            0.6582,
+            0.2004,
+            0.1157
+          ],
+          "label": "Zn3_29"
+        },
+        {
+          "fractional_position": [
+            0.6582,
+            0.2004,
+            0.8843
+          ],
+          "label": "Zn3_30"
+        },
+        {
+          "fractional_position": [
+            0.6582,
+            0.7996,
+            0.1157
+          ],
+          "label": "Zn3_31"
+        },
+        {
+          "fractional_position": [
+            0.6582,
+            0.7996,
+            0.8843
+          ],
+          "label": "Zn3_32"
+        },
+        {
+          "fractional_position": [
+            0.7004,
+            0.3843,
+            0.1582
+          ],
+          "label": "Zn3_33"
+        },
+        {
+          "fractional_position": [
+            0.7004,
+            0.3843,
+            0.8418
+          ],
+          "label": "Zn3_34"
+        },
+        {
+          "fractional_position": [
+            0.7004,
+            0.6157,
+            0.1582
+          ],
+          "label": "Zn3_35"
+        },
+        {
+          "fractional_position": [
+            0.7004,
+            0.6157,
+            0.8418
+          ],
+          "label": "Zn3_36"
+        },
+        {
+          "fractional_position": [
+            0.7996,
+            0.1157,
+            0.3418
+          ],
+          "label": "Zn3_37"
+        },
+        {
+          "fractional_position": [
+            0.7996,
+            0.1157,
+            0.6582
+          ],
+          "label": "Zn3_38"
+        },
+        {
+          "fractional_position": [
+            0.7996,
+            0.8843,
+            0.3418
+          ],
+          "label": "Zn3_39"
+        },
+        {
+          "fractional_position": [
+            0.7996,
+            0.8843,
+            0.6582
+          ],
+          "label": "Zn3_40"
+        },
+        {
+          "fractional_position": [
+            0.8418,
+            0.2996,
+            0.3843
+          ],
+          "label": "Zn3_41"
+        },
+        {
+          "fractional_position": [
+            0.8418,
+            0.2996,
+            0.6157
+          ],
+          "label": "Zn3_42"
+        },
+        {
+          "fractional_position": [
+            0.8418,
+            0.7004,
+            0.3843
+          ],
+          "label": "Zn3_43"
+        },
+        {
+          "fractional_position": [
+            0.8418,
+            0.7004,
+            0.6157
+          ],
+          "label": "Zn3_44"
+        },
+        {
+          "fractional_position": [
+            0.8843,
+            0.3418,
+            0.2004
+          ],
+          "label": "Zn3_45"
+        },
+        {
+          "fractional_position": [
+            0.8843,
+            0.3418,
+            0.7996
+          ],
+          "label": "Zn3_46"
+        },
+        {
+          "fractional_position": [
+            0.8843,
+            0.6582,
+            0.2004
+          ],
+          "label": "Zn3_47"
+        },
+        {
+          "fractional_position": [
+            0.8843,
+            0.6582,
+            0.7996
+          ],
+          "label": "Zn3_48"
+        }
+      ],
+      "wyckoff": null
+    }
+  ],
+  "prototype_key": "sc_zn_tsai_sczn6",
+  "radial_scale": 0.012,
+  "reference": "Tsai-cluster 1/1 cubic approximant exported from COD entry 4344182 (Cu0.66Sc3Zn17.34, Im-3), mapped onto the Sc-Zn anchor with Cu-bearing orbits treated as Zn-like for no-DFT generation.",
+  "reference_axes": [
+    [
+      0.0,
+      0.5257311121191336,
+      0.85065080835204
+    ],
+    [
+      0.5257311121191336,
+      0.85065080835204,
+      0.0
+    ],
+    [
+      0.85065080835204,
+      0.0,
+      0.5257311121191336
+    ]
+  ],
+  "reference_url": "https://www.crystallography.net/cod/4344182.html",
+  "source_cif": "/Users/nvasil/vzome/materials-discovery/data/prototypes/raw/sc_zn_cod_4344182.cif",
+  "source_kind": "cif_export",
+  "space_group": "I m -3",
+  "space_group_number": 204.0,
+  "system_name": "Sc-Zn",
+  "tangential_scale": 0.026,
+  "template_family": "cubic_proxy_1_0",
+  "translation_divisor": 10.0
+}

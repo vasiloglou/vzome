@@ -1,0 +1,429 @@
+{
+  "base_cell": {
+    "a": 12.36,
+    "alpha": 90.0,
+    "b": 12.36,
+    "beta": 90.0,
+    "c": 12.36,
+    "gamma": 90.0
+  },
+  "minimum_site_separation": 0.1,
+  "motif_center": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "orbits": [
+    {
+      "orbit": "mackay_inner_tm",
+      "preferred_species": [
+        "Cu"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.5,
+            0.573602,
+            0.619091
+          ],
+          "label": "MCU01"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.573602,
+            0.380909
+          ],
+          "label": "MCU02"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.426398,
+            0.619091
+          ],
+          "label": "MCU03"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.426398,
+            0.380909
+          ],
+          "label": "MCU04"
+        },
+        {
+          "fractional_position": [
+            0.573602,
+            0.619091,
+            0.5
+          ],
+          "label": "MCU05"
+        },
+        {
+          "fractional_position": [
+            0.573602,
+            0.380909,
+            0.5
+          ],
+          "label": "MCU06"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "mackay_inner_fe",
+      "preferred_species": [
+        "Fe"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.426398,
+            0.619091,
+            0.5
+          ],
+          "label": "MFE07"
+        },
+        {
+          "fractional_position": [
+            0.426398,
+            0.380909,
+            0.5
+          ],
+          "label": "MFE08"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "mackay_inner_mix",
+      "preferred_species": [
+        "Cu",
+        "Fe",
+        "Al"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.619091,
+            0.5,
+            0.573602
+          ],
+          "label": "MMX09"
+        },
+        {
+          "fractional_position": [
+            0.619091,
+            0.5,
+            0.426398
+          ],
+          "label": "MMX10"
+        },
+        {
+          "fractional_position": [
+            0.380909,
+            0.5,
+            0.573602
+          ],
+          "label": "MMX11"
+        },
+        {
+          "fractional_position": [
+            0.380909,
+            0.5,
+            0.426398
+          ],
+          "label": "MMX12"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "mackay_outer_al",
+      "preferred_species": [
+        "Al"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.5,
+            0.5,
+            0.785
+          ],
+          "label": "MAL13"
+        },
+        {
+          "fractional_position": [
+            0.58807,
+            0.73057,
+            0.6425
+          ],
+          "label": "MAL14"
+        },
+        {
+          "fractional_position": [
+            0.41193,
+            0.73057,
+            0.6425
+          ],
+          "label": "MAL15"
+        },
+        {
+          "fractional_position": [
+            0.6425,
+            0.58807,
+            0.73057
+          ],
+          "label": "MAL16"
+        },
+        {
+          "fractional_position": [
+            0.3575,
+            0.58807,
+            0.73057
+          ],
+          "label": "MAL17"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.5,
+            0.215
+          ],
+          "label": "MAL18"
+        },
+        {
+          "fractional_position": [
+            0.58807,
+            0.73057,
+            0.3575
+          ],
+          "label": "MAL19"
+        },
+        {
+          "fractional_position": [
+            0.41193,
+            0.73057,
+            0.3575
+          ],
+          "label": "MAL20"
+        },
+        {
+          "fractional_position": [
+            0.6425,
+            0.58807,
+            0.26943
+          ],
+          "label": "MAL21"
+        },
+        {
+          "fractional_position": [
+            0.3575,
+            0.58807,
+            0.26943
+          ],
+          "label": "MAL22"
+        },
+        {
+          "fractional_position": [
+            0.58807,
+            0.26943,
+            0.6425
+          ],
+          "label": "MAL23"
+        },
+        {
+          "fractional_position": [
+            0.41193,
+            0.26943,
+            0.6425
+          ],
+          "label": "MAL24"
+        },
+        {
+          "fractional_position": [
+            0.6425,
+            0.41193,
+            0.73057
+          ],
+          "label": "MAL25"
+        },
+        {
+          "fractional_position": [
+            0.3575,
+            0.41193,
+            0.73057
+          ],
+          "label": "MAL26"
+        },
+        {
+          "fractional_position": [
+            0.58807,
+            0.26943,
+            0.3575
+          ],
+          "label": "MAL27"
+        },
+        {
+          "fractional_position": [
+            0.41193,
+            0.26943,
+            0.3575
+          ],
+          "label": "MAL28"
+        },
+        {
+          "fractional_position": [
+            0.6425,
+            0.41193,
+            0.26943
+          ],
+          "label": "MAL29"
+        },
+        {
+          "fractional_position": [
+            0.3575,
+            0.41193,
+            0.26943
+          ],
+          "label": "MAL30"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.785,
+            0.5
+          ],
+          "label": "MAL31"
+        },
+        {
+          "fractional_position": [
+            0.73057,
+            0.6425,
+            0.58807
+          ],
+          "label": "MAL32"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "mackay_outer_mix",
+      "preferred_species": [
+        "Al",
+        "Cu"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.73057,
+            0.6425,
+            0.41193
+          ],
+          "label": "MOX33"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.215,
+            0.5
+          ],
+          "label": "MOX34"
+        },
+        {
+          "fractional_position": [
+            0.73057,
+            0.3575,
+            0.58807
+          ],
+          "label": "MOX35"
+        },
+        {
+          "fractional_position": [
+            0.73057,
+            0.3575,
+            0.41193
+          ],
+          "label": "MOX36"
+        },
+        {
+          "fractional_position": [
+            0.26943,
+            0.6425,
+            0.58807
+          ],
+          "label": "MOX37"
+        },
+        {
+          "fractional_position": [
+            0.26943,
+            0.6425,
+            0.41193
+          ],
+          "label": "MOX38"
+        },
+        {
+          "fractional_position": [
+            0.26943,
+            0.3575,
+            0.58807
+          ],
+          "label": "MOX39"
+        },
+        {
+          "fractional_position": [
+            0.26943,
+            0.3575,
+            0.41193
+          ],
+          "label": "MOX40"
+        },
+        {
+          "fractional_position": [
+            0.785,
+            0.5,
+            0.5
+          ],
+          "label": "MOX41"
+        },
+        {
+          "fractional_position": [
+            0.215,
+            0.5,
+            0.5
+          ],
+          "label": "MOX42"
+        }
+      ],
+      "wyckoff": null
+    }
+  ],
+  "prototype_key": "al_cu_fe_mackay_1_1",
+  "radial_scale": 0.018,
+  "reference": "Mackay-type 1/1 cubic approximant anchor for Al-Cu-Fe local order, using the reported Al-Cu-Fe-Si Pm-3 approximant as the crystallographic model.",
+  "reference_axes": [
+    [
+      0.0,
+      0.5257311121191336,
+      0.85065080835204
+    ],
+    [
+      0.5257311121191336,
+      0.85065080835204,
+      0.0
+    ],
+    [
+      0.85065080835204,
+      0.0,
+      0.5257311121191336
+    ]
+  ],
+  "reference_url": "https://tohoku.elsevierpure.com/en/publications/atomic-structure-of-the-al-cu-fe-si-11-cubic-approximant",
+  "source_kind": "literature_export",
+  "space_group": null,
+  "system_name": "Al-Cu-Fe",
+  "tangential_scale": 0.038,
+  "template_family": "icosahedral_approximant_1_1",
+  "translation_divisor": 8.0
+}

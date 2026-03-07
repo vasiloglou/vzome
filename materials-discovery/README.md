@@ -33,8 +33,13 @@ This workspace implements a full M1-M6 runnable slice of the no-DFT materials di
 - `mdisc report` now emits chemistry-driven XRD proxy fingerprints, recommendation tiers, risk flags, and release-gate calibration artifacts.
 - Real-mode validation stages now run through fixture-backed adapters for committee, phonon, MD, and XRD, with analytic fallback when a pinned result is absent.
 - Real-mode ranking, active learning, and report release gates now load thresholds from pinned benchmark corpora instead of fixed constants.
-- Candidate geometry generation now applies Z[phi] scaling, permutation, and translation rules rather than pairwise random jitter.
+- Candidate geometry generation now resolves system-specific orbit libraries from `data/prototypes/*.json` before applying bounded Z[phi] translations.
+- The built-in anchors are:
+  - `Al-Cu-Fe`: Mackay-type 1/1 cubic pinned orbit library
+  - `Al-Pd-Mn`: `xi'` pseudo-Mackay pinned orbit library
+  - `Sc-Zn`: Tsai-cluster `ScZn6` orbit library exported from COD CIF `4344182`
 - Generated candidates now store explicit `fractional_position` and `cartesian_position` site coordinates in addition to symbolic `qphi`.
+- Candidate provenance now records `prototype_key`, `prototype_reference`, `prototype_reference_url`, `prototype_source_kind`, and `prototype_space_group`.
 - Real-mode validation now also supports executable adapters (`*_exec_cache_v1`) that run external commands against a JSON input/output contract and reuse results from `data/execution_cache/`.
 - Concrete pinned runner modules are available for command-backed validation:
   - `materials_discovery.backends.run_committee_backend`
@@ -117,7 +122,7 @@ uv sync --extra dev --extra mlip
 ./scripts/run_native_pipeline.sh
 ```
 
-Current limitation: the native path now consumes stored site coordinates directly, but those coordinates are still generated heuristically from the current Z[phi] template realization rather than from a full crystallographic construction.
+Current limitation: the generator now emits system-anchored orbit-library coordinates, but only the `Sc-Zn` anchor is currently derived from an open CIF import. `Al-Cu-Fe` and `Al-Pd-Mn` still use pinned literature exports until open machine-readable structures are added.
 
 ## Quickstart
 

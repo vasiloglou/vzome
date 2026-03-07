@@ -168,6 +168,9 @@ Notes:
 
 - `qphi` stores `(a,b)` integer pairs for each Cartesian component `a + b*phi`.
 - generated candidates should store both `fractional_position` and `cartesian_position` for each site.
+- those coordinates should come from explicit approximant motifs with bounded Z[phi] translations, not from global min/max normalization of symbolic `qphi` values.
+- provenance should also identify the anchored prototype used for generation and its literature source.
+- when open crystallographic data exists, anchor prototypes should be exported from CIF/Wyckoff orbit libraries and loaded from data files rather than hardcoded Python site lists.
 - native validation backends should use stored coordinates first and only fall back to `qphi`-based reconstruction for older artifacts.
 - never drop provenance fields; they are required for reproducibility.
 
@@ -183,7 +186,9 @@ Notes:
 
 ### `generator/`
 
-- Generate periodic approximants or bounded templates.
+- Generate periodic approximants from family-specific motif cells plus bounded Z[phi] translations.
+- Prefer system-anchored prototypes with resolved shell/orbit structure when literature-backed cells are available.
+- Prefer imported CIF/Wyckoff orbit libraries over hand-maintained site tables whenever open crystallographic data is available.
 - Apply decoration rules (species assignments and occupancy constraints).
 - Emit validated structure objects plus metadata.
 

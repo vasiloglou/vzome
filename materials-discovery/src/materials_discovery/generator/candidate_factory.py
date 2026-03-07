@@ -13,9 +13,9 @@ from materials_discovery.common.schema import (
     SystemConfig,
     validate_unique_candidate_ids,
 )
-from materials_discovery.generator.approximant_templates import get_template
+from materials_discovery.generator.approximant_templates import resolve_template
 from materials_discovery.generator.decorate_sites import assign_species
-from materials_discovery.generator.site_positions import site_positions_from_qphi
+from materials_discovery.generator.site_positions import site_positions_from_template
 from materials_discovery.generator.zphi_geometry import (
     cell_scale_multiplier,
     construct_site_qphi,
@@ -28,9 +28,12 @@ def _make_candidate(
     seed: int,
     rng: random.Random,
 ) -> CandidateRecord:
-    template = get_template(config.template_family)
+    template = resolve_template(config.system_name, config.template_family)
     species_assignments, composition = assign_species(
-        len(template.sites), config.composition_bounds, rng
+        len(template.sites),
+        config.composition_bounds,
+        rng,
+        site_preferences=[site.preferred_species for site in template.sites],
     )
 
     min_coeff = config.coeff_bounds.min
@@ -49,10 +52,17 @@ def _make_candidate(
         )
         qphi_coords.append(qphi)
 
-    a_value = round(template.cell_scale * cell_scale_multiplier(seed, idx), 6)
-    cell = {"a": a_value, "b": a_value, "c": a_value, "alpha": 90.0, "beta": 90.0, "gamma": 90.0}
+    multiplier = cell_scale_multiplier(seed, idx)
+    cell = {
+        axis: round(value * multiplier, 6) if axis in {"a", "b", "c"} else value
+        for axis, value in template.base_cell.items()
+    }
 
-    fractional_positions, cartesian_positions = site_positions_from_qphi(qphi_coords, cell)
+    fractional_positions, cartesian_positions = site_positions_from_template(
+        template,
+        qphi_coords,
+        cell,
+    )
 
     sites: list[SiteRecord] = []
     for i, template_site in enumerate(template.sites):
@@ -82,6 +92,11 @@ def _make_candidate(
             "generator_version": "0.1.0",
             "seed": seed,
             "config_hash": f"sha256:{digest[:16]}",
+            "prototype_key": template.prototype_key,
+            "prototype_reference": template.reference,
+            "prototype_reference_url": template.reference_url,
+            "prototype_source_kind": template.source_kind,
+            "prototype_space_group": template.space_group,
         },
     )
 

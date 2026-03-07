@@ -1,0 +1,510 @@
+{
+  "base_cell": {
+    "a": 32.3,
+    "alpha": 90.0,
+    "b": 12.3,
+    "beta": 90.0,
+    "c": 16.0,
+    "gamma": 90.0
+  },
+  "minimum_site_separation": 0.085,
+  "motif_center": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "orbits": [
+    {
+      "orbit": "xi_prime_inner_mn",
+      "preferred_species": [
+        "Mn"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.585,
+            0.5,
+            0.43
+          ],
+          "label": "XMN01"
+        },
+        {
+          "fractional_position": [
+            0.526266,
+            0.58084,
+            0.43
+          ],
+          "label": "XMN02"
+        },
+        {
+          "fractional_position": [
+            0.431234,
+            0.549962,
+            0.43
+          ],
+          "label": "XMN03"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "xi_prime_inner_mix",
+      "preferred_species": [
+        "Al",
+        "Mn"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.431234,
+            0.450038,
+            0.43
+          ],
+          "label": "XIM04"
+        },
+        {
+          "fractional_position": [
+            0.526266,
+            0.41916,
+            0.43
+          ],
+          "label": "XIM05"
+        },
+        {
+          "fractional_position": [
+            0.542426,
+            0.542426,
+            0.57
+          ],
+          "label": "XIM06"
+        },
+        {
+          "fractional_position": [
+            0.457574,
+            0.542426,
+            0.57
+          ],
+          "label": "XIM07"
+        },
+        {
+          "fractional_position": [
+            0.457574,
+            0.457574,
+            0.57
+          ],
+          "label": "XIM08"
+        },
+        {
+          "fractional_position": [
+            0.542426,
+            0.457574,
+            0.57
+          ],
+          "label": "XIM09"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "xi_prime_pmk_al",
+      "preferred_species": [
+        "Al"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.66,
+            0.5,
+            0.34
+          ],
+          "label": "XAL10"
+        },
+        {
+          "fractional_position": [
+            0.629443,
+            0.594046,
+            0.34
+          ],
+          "label": "XAL11"
+        },
+        {
+          "fractional_position": [
+            0.549443,
+            0.652169,
+            0.34
+          ],
+          "label": "XAL12"
+        },
+        {
+          "fractional_position": [
+            0.450557,
+            0.652169,
+            0.34
+          ],
+          "label": "XAL13"
+        },
+        {
+          "fractional_position": [
+            0.370557,
+            0.594046,
+            0.34
+          ],
+          "label": "XAL14"
+        },
+        {
+          "fractional_position": [
+            0.34,
+            0.5,
+            0.34
+          ],
+          "label": "XAL15"
+        },
+        {
+          "fractional_position": [
+            0.370557,
+            0.405954,
+            0.34
+          ],
+          "label": "XAL16"
+        },
+        {
+          "fractional_position": [
+            0.450557,
+            0.347831,
+            0.34
+          ],
+          "label": "XAL17"
+        },
+        {
+          "fractional_position": [
+            0.549443,
+            0.347831,
+            0.34
+          ],
+          "label": "XAL18"
+        },
+        {
+          "fractional_position": [
+            0.629443,
+            0.405954,
+            0.34
+          ],
+          "label": "XAL19"
+        },
+        {
+          "fractional_position": [
+            0.704477,
+            0.566439,
+            0.5
+          ],
+          "label": "XAL20"
+        },
+        {
+          "fractional_position": [
+            0.626374,
+            0.673939,
+            0.5
+          ],
+          "label": "XAL21"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.715,
+            0.5
+          ],
+          "label": "XAL22"
+        },
+        {
+          "fractional_position": [
+            0.373626,
+            0.673939,
+            0.5
+          ],
+          "label": "XAL23"
+        },
+        {
+          "fractional_position": [
+            0.295523,
+            0.566439,
+            0.5
+          ],
+          "label": "XAL24"
+        },
+        {
+          "fractional_position": [
+            0.295523,
+            0.433561,
+            0.5
+          ],
+          "label": "XAL25"
+        },
+        {
+          "fractional_position": [
+            0.373626,
+            0.326061,
+            0.5
+          ],
+          "label": "XAL26"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.285,
+            0.5
+          ],
+          "label": "XAL27"
+        },
+        {
+          "fractional_position": [
+            0.626374,
+            0.326061,
+            0.5
+          ],
+          "label": "XAL28"
+        },
+        {
+          "fractional_position": [
+            0.704477,
+            0.433561,
+            0.5
+          ],
+          "label": "XAL29"
+        },
+        {
+          "fractional_position": [
+            0.66,
+            0.5,
+            0.66
+          ],
+          "label": "XAL30"
+        },
+        {
+          "fractional_position": [
+            0.629443,
+            0.594046,
+            0.66
+          ],
+          "label": "XAL31"
+        },
+        {
+          "fractional_position": [
+            0.549443,
+            0.652169,
+            0.66
+          ],
+          "label": "XAL32"
+        },
+        {
+          "fractional_position": [
+            0.450557,
+            0.652169,
+            0.66
+          ],
+          "label": "XAL33"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "xi_prime_pmk_mix",
+      "preferred_species": [
+        "Al",
+        "Mn"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.370557,
+            0.594046,
+            0.66
+          ],
+          "label": "XAM34"
+        },
+        {
+          "fractional_position": [
+            0.34,
+            0.5,
+            0.66
+          ],
+          "label": "XAM35"
+        },
+        {
+          "fractional_position": [
+            0.370557,
+            0.405954,
+            0.66
+          ],
+          "label": "XAM36"
+        },
+        {
+          "fractional_position": [
+            0.450557,
+            0.347831,
+            0.66
+          ],
+          "label": "XAM37"
+        },
+        {
+          "fractional_position": [
+            0.549443,
+            0.347831,
+            0.66
+          ],
+          "label": "XAM38"
+        },
+        {
+          "fractional_position": [
+            0.629443,
+            0.405954,
+            0.66
+          ],
+          "label": "XAM39"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "xi_prime_outer_pd",
+      "preferred_species": [
+        "Pd"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.79,
+            0.5,
+            0.5
+          ],
+          "label": "XPD40"
+        },
+        {
+          "fractional_position": [
+            0.734615,
+            0.670458,
+            0.5
+          ],
+          "label": "XPD41"
+        },
+        {
+          "fractional_position": [
+            0.589615,
+            0.775806,
+            0.5
+          ],
+          "label": "XPD42"
+        },
+        {
+          "fractional_position": [
+            0.410385,
+            0.775806,
+            0.5
+          ],
+          "label": "XPD43"
+        },
+        {
+          "fractional_position": [
+            0.265385,
+            0.670458,
+            0.5
+          ],
+          "label": "XPD44"
+        },
+        {
+          "fractional_position": [
+            0.21,
+            0.5,
+            0.5
+          ],
+          "label": "XPD45"
+        },
+        {
+          "fractional_position": [
+            0.265385,
+            0.329542,
+            0.5
+          ],
+          "label": "XPD46"
+        },
+        {
+          "fractional_position": [
+            0.410385,
+            0.224194,
+            0.5
+          ],
+          "label": "XPD47"
+        }
+      ],
+      "wyckoff": null
+    },
+    {
+      "orbit": "xi_prime_outer_mix",
+      "preferred_species": [
+        "Pd",
+        "Al"
+      ],
+      "sites": [
+        {
+          "fractional_position": [
+            0.589615,
+            0.224194,
+            0.5
+          ],
+          "label": "XPM48"
+        },
+        {
+          "fractional_position": [
+            0.734615,
+            0.329542,
+            0.5
+          ],
+          "label": "XPM49"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.5,
+            0.22
+          ],
+          "label": "XPM50"
+        },
+        {
+          "fractional_position": [
+            0.5,
+            0.5,
+            0.78
+          ],
+          "label": "XPM51"
+        }
+      ],
+      "wyckoff": null
+    }
+  ],
+  "prototype_key": "al_pd_mn_xi_prime",
+  "radial_scale": 0.014,
+  "reference": "Pseudo-Mackay-cluster anchor for the xi' decagonal Al-Pd-Mn approximant, following reported Al9 inner shells inside Al30 and Pd12 outer shells.",
+  "reference_axes": [
+    [
+      1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.8090169943749475,
+      0.5877852522924731,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "reference_url": "https://arxiv.org/abs/cond-mat/9805194",
+  "source_kind": "literature_export",
+  "space_group": null,
+  "system_name": "Al-Pd-Mn",
+  "tangential_scale": 0.03,
+  "template_family": "decagonal_proxy_2_1",
+  "translation_divisor": 12.0
+}

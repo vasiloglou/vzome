@@ -1,5 +1,5 @@
 system_name: Sc-Zn
-template_family: decagonal_proxy_2_1
+template_family: cubic_proxy_1_0
 species:
   - Sc
   - Zn

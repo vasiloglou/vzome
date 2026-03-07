@@ -1,5 +1,5 @@
 system_name: Al-Pd-Mn
-template_family: icosahedral_approximant_1_1
+template_family: decagonal_proxy_2_1
 species:
   - Al
   - Pd

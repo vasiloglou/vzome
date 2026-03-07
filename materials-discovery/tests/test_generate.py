@@ -87,3 +87,33 @@ def test_generate_is_deterministic_for_fixed_seed(tmp_path: Path) -> None:
     generate_candidates(config, out_b, count=15, seed=123)
 
     assert out_a.read_text(encoding="utf-8") == out_b.read_text(encoding="utf-8")
+
+
+def test_system_anchored_generation_carries_prototype_metadata_and_shell_chemistry(
+    tmp_path: Path,
+) -> None:
+    workspace = Path(__file__).resolve().parents[1]
+    config_path = workspace / "configs" / "systems" / "sc_zn.yaml"
+    config = SystemConfig.model_validate(load_yaml(config_path))
+
+    out_path = tmp_path / "sc_zn_candidates.jsonl"
+    generate_candidates(config, out_path, count=1, seed=31)
+    rows = _read_jsonl(out_path)
+
+    assert len(rows) == 1
+    candidate = rows[0]
+    provenance = candidate["provenance"]
+    assert isinstance(provenance, dict)
+    assert provenance["prototype_key"] == "sc_zn_tsai_sczn6"
+    assert provenance["prototype_source_kind"] == "cif_export"
+    assert provenance["prototype_space_group"] == "I m -3"
+
+    sites = candidate["sites"]
+    assert isinstance(sites, list)
+    sc_shell = [
+        site
+        for site in sites
+        if isinstance(site, dict) and str(site["label"]).startswith("Sc1_")
+    ]
+    assert len(sc_shell) == 24
+    assert all(site["species"] == "Sc" for site in sc_shell)
