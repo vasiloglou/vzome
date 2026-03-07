@@ -84,7 +84,7 @@ public final class ExportZomicLabeledGeometry
 
         private final List<Map<String, Object>> labeledPoints;
 
-        private final Set<String> labelsSeen = new LinkedHashSet<>();
+        private final Map<String, Integer> labelOccurrences = new LinkedHashMap<>();
 
         LabelCapturingInterpreter(
             RecordingVirtualMachine vm,
@@ -99,9 +99,8 @@ public final class ExportZomicLabeledGeometry
         @Override
         public void visitLabel( String id )
         {
-            if ( ! this .labelsSeen .add( id ) )
-                throw new IllegalArgumentException( "duplicate Zomic label encountered: " + id );
-            this .labeledPoints .add( labeledPointMap( id, this .vm .currentLocation() ) );
+            int occurrence = this .labelOccurrences .merge( id, 1, Integer::sum );
+            this .labeledPoints .add( labeledPointMap( id, occurrence, this .vm .currentLocation() ) );
         }
     }
 
@@ -135,10 +134,12 @@ public final class ExportZomicLabeledGeometry
         return result;
     }
 
-    private static Map<String, Object> labeledPointMap( String label, AlgebraicVector location )
+    private static Map<String, Object> labeledPointMap( String label, int occurrence, AlgebraicVector location )
     {
         Map<String, Object> result = new LinkedHashMap<>();
-        result .put( "label", label );
+        result .put( "label", occurrence == 1 ? label : label + "#" + occurrence );
+        result .put( "source_label", label );
+        result .put( "occurrence", occurrence );
         result .put( "position", vectorMap( location ) );
         result .put( "cartesian", Arrays .stream( location .projectTo3d( true ) .to3dDoubleVector() )
             .boxed()
@@ -190,6 +191,10 @@ public final class ExportZomicLabeledGeometry
 
         File zomicFile = new File( args[ 0 ] );
         File outputFile = new File( args[ 1 ] );
+        File outputDir = outputFile .getAbsoluteFile() .getParentFile();
+        if ( outputDir != null && ! outputDir .isDirectory() && ! outputDir .mkdirs() ) {
+            throw new IOException( "unable to create output directory: " + outputDir );
+        }
 
         Map<String, Object> result = exportLabeledGeometry( zomicFile );
         ObjectMapper mapper = new ObjectMapper()

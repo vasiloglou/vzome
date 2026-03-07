@@ -72,6 +72,29 @@ def _fake_export_payload() -> dict[str, object]:
     }
 
 
+def _fake_duplicate_label_export_payload() -> dict[str, object]:
+    return {
+        "zomic_file": "demo.zomic",
+        "parser": "antlr4",
+        "symmetry": "icosahedral",
+        "labeled_points": [
+            {
+                "label": "shell.outer",
+                "source_label": "shell.outer",
+                "occurrence": 1,
+                "cartesian": [1.0, 0.0, 0.0],
+            },
+            {
+                "label": "shell.outer#2",
+                "source_label": "shell.outer",
+                "occurrence": 2,
+                "cartesian": [-1.0, 0.0, 0.0],
+            },
+        ],
+        "segments": [],
+    }
+
+
 def test_export_zomic_design_groups_labeled_sites_into_orbits(
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
@@ -98,6 +121,40 @@ def test_export_zomic_design_groups_labeled_sites_into_orbits(
     assert [orbit["orbit"] for orbit in orbit_library["orbits"]] == ["core", "shell"]
     assert orbit_library["orbits"][0]["preferred_species"] == ["Sc"]
     assert len(orbit_library["orbits"][1]["sites"]) == 2
+
+
+def test_export_zomic_design_accepts_repeated_source_labels(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
+    design_path = _write_design(tmp_path)
+
+    def fake_run_zomic_export(zomic_file: Path, output_path: Path) -> None:
+        del zomic_file
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(
+            json.dumps(_fake_duplicate_label_export_payload()),
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(
+        "materials_discovery.generator.zomic_bridge._run_zomic_export",
+        fake_run_zomic_export,
+    )
+
+    summary = export_zomic_design(design_path, force=True)
+    orbit_library = json.loads(Path(summary.orbit_library_path).read_text(encoding="utf-8"))
+
+    assert summary.labeled_site_count == 2
+    assert [orbit["orbit"] for orbit in orbit_library["orbits"]] == ["shell"]
+    assert [site["label"] for site in orbit_library["orbits"][0]["sites"]] == [
+        "shell.outer",
+        "shell.outer#2",
+    ]
+    assert [site["source_label"] for site in orbit_library["orbits"][0]["sites"]] == [
+        "shell.outer",
+        "shell.outer",
+    ]
 
 
 def test_generate_candidates_can_use_zomic_design_override(

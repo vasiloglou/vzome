@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,21 @@ from materials_discovery.common.schema import (
 
 def repo_root() -> Path:
     return workspace_root().parent
+
+
+def _detect_java_home() -> str | None:
+    java_home = os.environ.get("JAVA_HOME")
+    if java_home:
+        return java_home
+
+    candidates = [
+        Path("/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"),
+        Path("/usr/local/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"),
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate)
+    return None
 
 
 def _resolve_workspace_path(path_str: str) -> Path:
@@ -67,6 +83,12 @@ def _needs_refresh(output_path: Path, inputs: list[Path]) -> bool:
 
 def _run_zomic_export(zomic_file: Path, output_path: Path) -> None:
     gradlew = repo_root() / "gradlew"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+    java_home = _detect_java_home()
+    if java_home is not None:
+        env["JAVA_HOME"] = java_home
+        env["PATH"] = f"{java_home}/bin:{env.get('PATH', '')}"
     command = [
         str(gradlew),
         "-q",
@@ -79,6 +101,7 @@ def _run_zomic_export(zomic_file: Path, output_path: Path) -> None:
         cwd=repo_root(),
         check=False,
         capture_output=True,
+        env=env,
         text=True,
     )
     if completed.returncode != 0:
@@ -188,27 +211,43 @@ def _orbit_library_from_export(
         raise ValueError("zomic export must contain a non-empty labeled_points list")
 
     labels: list[str] = []
+    source_labels: list[str] = []
     cartesian_positions: list[tuple[float, float, float]] = []
+    occurrences: list[int | None] = []
     for point in raw_points:
         if not isinstance(point, dict):
             raise ValueError("zomic export labeled_points entries must be objects")
         label = point.get("label")
         if not isinstance(label, str) or not label:
             raise ValueError("zomic export labeled_points entries must define a label")
+        source_label = point.get("source_label")
+        if source_label is None:
+            source_label = label
+        if not isinstance(source_label, str) or not source_label:
+            raise ValueError("zomic export labeled_points source_label must be a non-empty string")
+        occurrence = point.get("occurrence")
+        if occurrence is not None and not isinstance(occurrence, int):
+            raise ValueError(
+                "zomic export labeled_points occurrence must be an integer when provided"
+            )
         labels.append(label)
+        source_labels.append(source_label)
+        occurrences.append(occurrence)
         cartesian_positions.append(_cartesian_position(point))
-
-    if len(labels) != len(set(labels)):
-        raise ValueError("zomic export contains duplicate site labels")
 
     fractional_positions, scale = _fractional_positions(cartesian_positions, design)
     grouped: dict[str, list[dict[str, Any]]] = {}
-    labeled_positions = zip(labels, fractional_positions, strict=True)
-    for label, fractional in sorted(labeled_positions, key=lambda item: item[0]):
-        orbit_name = _infer_orbit_name(label)
+    labeled_positions = zip(labels, source_labels, occurrences, fractional_positions, strict=True)
+    for label, source_label, occurrence, fractional in sorted(
+        labeled_positions,
+        key=lambda item: (item[1], item[0]),
+    ):
+        orbit_name = _infer_orbit_name(source_label)
         grouped.setdefault(orbit_name, []).append(
             {
                 "label": label,
+                "source_label": source_label,
+                "occurrence": occurrence,
                 "fractional_position": [fractional[0], fractional[1], fractional[2]],
             }
         )
