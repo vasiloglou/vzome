@@ -388,6 +388,27 @@ task zomicPP( type: JavaExec, dependsOn: build) {
 	}
 }
 
+task zomicExport( type: JavaExec, dependsOn: classes ) {
+    def theFile = 'src/regression/files/Zomic/purpleStrutModel2/purpleStrutModel2.zomic'
+    if( project.hasProperty( 'zomicFile' ) ){
+        theFile = zomicFile
+    }
+    def outFile = "${buildDir}/zomic-export.json"
+    if( project.hasProperty( 'zomicOut' ) ){
+        outFile = zomicOut
+    }
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'com.vzome.core.apps.ExportZomicLabeledGeometry'
+    args( theFile, outFile )
+
+    group = 'Verification'
+    description = """Exports labeled Zomic geometry to JSON
+        command-line options:
+            -PzomicFile=\"$theFile\"      (default shown, value can be absolute or relative)
+            -PzomicOut=\"$outFile\"       (default shown, value can be absolute or relative)
+    """
+}
+
 jar {
     manifest {
         attributes 'Implementation-Title': 'vzome-core',
@@ -412,5 +433,4 @@ def writeProjectProperties( keys, propsFile )
         writer.close()
     }
 }
-
 

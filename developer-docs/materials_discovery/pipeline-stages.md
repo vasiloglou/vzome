@@ -5,7 +5,9 @@ pipeline. Every command is defined in
 `materials-discovery/src/materials_discovery/cli.py`. All commands share a
 common error-handling pattern: `FileNotFoundError`, `ValidationError`, and
 `ValueError` are caught, printed to stderr, and the process exits with code 2.
-On success every command prints a JSON summary object to stdout.
+`mdisc export-zomic` also catches `RuntimeError` so subprocess export failures are
+reported with the same exit code. On success every command prints a JSON summary
+object to stdout.
 
 Path placeholders used below:
 
@@ -66,7 +68,46 @@ mdisc ingest --config PATH [--fixture PATH] [--out PATH]
 
 ---
 
-## 2. `mdisc generate`
+## 2. `mdisc export-zomic`
+
+Compile a Zomic-authored design into an orbit-library JSON prototype.
+
+### CLI syntax
+
+```
+mdisc export-zomic --design PATH [--out PATH] [--force]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--design` | PATH | Yes | -- | Path to the Zomic design YAML (`ZomicDesignConfig`) |
+| `--out` | PATH | No | Value of `export_path` in the design YAML, or `data/prototypes/generated/{prototype_key}.json` | Override for the orbit-library JSON output |
+| `--force` | FLAG | No | `False` | Force raw export and orbit-library regeneration even if cached artifacts are newer than the design and `.zomic` source |
+
+### Internal steps
+
+1. **Load design YAML.** Parse the YAML file at `--design` into `ZomicDesignConfig`.
+2. **Resolve source paths.** Resolve `zomic_file`, `raw_export_path`, and orbit-library output path.
+3. **Run vZome export when stale.** Invoke `./gradlew -q :core:zomicExport -PzomicFile=... -PzomicOut=...` if the raw export is missing or older than the design inputs.
+4. **Convert labeled points to orbits.** Group labeled VM locations by label prefix (`orbit.site` -> `orbit`, `orbit_01` -> `orbit`), embed them into the specified cell, and write the orbit-library JSON.
+5. **Emit summary.** Print the `ZomicExportSummary` as JSON to stdout.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Raw labeled geometry | Design `raw_export_path` or `{workspace}/data/prototypes/generated/{prototype_key}.raw.json` |
+| Orbit-library prototype | Design `export_path` or `{workspace}/data/prototypes/generated/{prototype_key}.json` |
+
+### Return type
+
+`ZomicExportSummary` (JSON to stdout).
+
+---
+
+## 3. `mdisc generate`
 
 Generate deterministic candidate structures into JSONL.
 
@@ -88,18 +129,22 @@ mdisc generate --config PATH --count INT [--seed INT] [--out PATH]
 ### Internal steps
 
 1. **Load configuration.** Parse and validate `SystemConfig` from the YAML file.
-2. **Generate candidates.** Call `generate_candidates(system_config, out_path,
-   count=count, seed=seed)`. This writes candidates to the output path and
-   returns a `GenerateSummary`.
-3. **Compute generation metrics.** Reload the written JSONL and count unique
+2. **Resolve the template source.** If the config sets `zomic_design`, export or
+   refresh the design-derived orbit library first. If the config sets
+   `prototype_library`, load that override directly. Otherwise fall back to the
+   anchored or generic template resolution path.
+3. **Generate candidates.** Call `generate_candidates(system_config, out_path,
+   count=count, seed=seed, config_path=config)`. This writes candidates to the
+   output path and returns a `GenerateSummary`.
+4. **Compute generation metrics.** Reload the written JSONL and count unique
    `candidate_id` values. Call `generation_metrics(requested_count,
    generated_count, invalid_filtered_count, unique_count)` to compute the
    deduplication rate and attach it to the summary as `qa_metrics`.
-4. **Write calibration.** Serialize the generation metrics dict as JSON to the
+5. **Write calibration.** Serialize the generation metrics dict as JSON to the
    calibration path.
-5. **Write manifest.** Build and write a stage manifest with `stage="generate"`,
+6. **Write manifest.** Build and write a stage manifest with `stage="generate"`,
    recording both the candidates JSONL and calibration JSON as output paths.
-6. **Emit summary.** Print the `GenerateSummary` as JSON to stdout.
+7. **Emit summary.** Print the `GenerateSummary` as JSON to stdout.
 
 ### Artifacts
 
@@ -115,7 +160,7 @@ mdisc generate --config PATH --count INT [--seed INT] [--out PATH]
 
 ---
 
-## 3. `mdisc screen`
+## 4. `mdisc screen`
 
 Run fast screening: proxy relaxation, threshold filtering, and shortlist
 ranking.
@@ -180,7 +225,7 @@ mdisc screen --config PATH
 
 ---
 
-## 4. `mdisc hifi-validate`
+## 5. `mdisc hifi-validate`
 
 Run high-fidelity digital validation on shortlisted candidates using committee
 models, phonon checks, MD stability, and XRD signature validation.
@@ -266,7 +311,7 @@ Any other value raises `ValueError`.
 
 ---
 
-## 5. `mdisc hifi-rank`
+## 6. `mdisc hifi-rank`
 
 Rank validated candidates with deterministic, uncertainty-aware scoring.
 
@@ -319,7 +364,7 @@ mdisc hifi-rank --config PATH
 
 ---
 
-## 6. `mdisc active-learn`
+## 7. `mdisc active-learn`
 
 Train a surrogate model on validated candidates and propose the next batch of
 candidates for high-fidelity validation.
@@ -403,7 +448,7 @@ mdisc active-learn --config PATH
 
 ---
 
-## 7. `mdisc report`
+## 8. `mdisc report`
 
 Build an experiment-facing report with ranked candidates and synthetic XRD
 signatures.

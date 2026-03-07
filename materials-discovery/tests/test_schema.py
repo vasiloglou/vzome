@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from materials_discovery.common.schema import CandidateRecord, SystemConfig
+from materials_discovery.common.schema import CandidateRecord, SystemConfig, ZomicDesignConfig
 
 
 def valid_candidate_payload() -> dict[str, object]:
@@ -88,3 +88,50 @@ def test_system_config_backend_mode_validation() -> None:
 
     with pytest.raises(ValidationError):
         SystemConfig.model_validate(payload)
+
+
+def test_system_config_rejects_both_prototype_library_and_zomic_design() -> None:
+    payload = {
+        "system_name": "Sc-Zn",
+        "template_family": "cubic_proxy_1_0",
+        "species": ["Sc", "Zn"],
+        "composition_bounds": {
+            "Sc": {"min": 0.2, "max": 0.4},
+            "Zn": {"min": 0.6, "max": 0.8},
+        },
+        "coeff_bounds": {"min": -2, "max": 2},
+        "seed": 11,
+        "default_count": 8,
+        "prototype_library": "data/prototypes/generated/demo.json",
+        "zomic_design": "designs/zomic/demo.yaml",
+    }
+
+    with pytest.raises(ValidationError):
+        SystemConfig.model_validate(payload)
+
+
+def test_zomic_design_requires_cell_and_embedding_metadata() -> None:
+    payload = {
+        "zomic_file": "demo.zomic",
+        "prototype_key": "demo",
+        "system_name": "Sc-Zn",
+        "template_family": "cubic_proxy_1_0",
+        "reference": "demo",
+        "base_cell": {
+            "a": 10.0,
+            "b": 10.0,
+            "c": 10.0,
+            "alpha": 90.0,
+            "beta": 90.0,
+            "gamma": 90.0,
+        },
+        "motif_center": [0.5, 0.5, 0.5],
+        "translation_divisor": 6.0,
+        "radial_scale": 0.02,
+        "tangential_scale": 0.05,
+        "reference_axes": [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+        "minimum_site_separation": 0.08,
+    }
+
+    design = ZomicDesignConfig.model_validate(payload)
+    assert design.prototype_key == "demo"

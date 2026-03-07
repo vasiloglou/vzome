@@ -1,0 +1,18 @@
+system_name: Sc-Zn
+template_family: cubic_proxy_1_0
+species:
+  - Sc
+  - Zn
+composition_bounds:
+  Sc:
+    min: 0.15
+    max: 0.40
+  Zn:
+    min: 0.60
+    max: 0.85
+coeff_bounds:
+  min: -2
+  max: 2
+seed: 31
+default_count: 64
+zomic_design: designs/zomic/sc_zn_tsai_bridge.yaml

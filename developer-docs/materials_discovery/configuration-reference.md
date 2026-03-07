@@ -4,7 +4,7 @@
 
 Each materials-discovery pipeline run is driven by a single YAML configuration file. These files live in `configs/systems/` and are deserialized into a `SystemConfig` Pydantic model defined in `src/materials_discovery/common/schema.py`. The config controls which chemical system to explore, how candidate structures are generated, and which backend adapters perform validation work.
 
-The repository ships six config files that form a progression from minimal mock-mode testing through full native-provider execution:
+The repository ships seven config files that form a progression from minimal mock-mode testing through full native-provider execution plus Zomic-authored generation:
 
 | File | Purpose | Backend mode |
 |---|---|---|
@@ -14,6 +14,7 @@ The repository ships six config files that form a progression from minimal mock-
 | `al_cu_fe_native.yaml` | Native provider real mode with in-process MLIP | real |
 | `al_pd_mn.yaml` | Alternative ternary system (decagonal) | mock |
 | `sc_zn.yaml` | Binary system (cubic) | mock |
+| `sc_zn_zomic.yaml` | Binary system generated from a Zomic-authored prototype bridge | mock |
 
 ---
 
@@ -30,6 +31,8 @@ The repository ships six config files that form a progression from minimal mock-
 | `coeff_bounds` | `CoeffBounds` | *required* | Integer bounds on Z[phi] lattice coefficients used during candidate generation. Has `min` and `max` fields; `min` must be `<= max`. Wider bounds produce a larger search space. |
 | `seed` | `int` | *required* | Random seed for reproducibility across generation and screening. |
 | `default_count` | `int` | *required* | Number of candidate structures to generate per run. |
+| `prototype_library` | `str \| None` | `None` | Optional workspace-root-relative path to an orbit-library JSON file. When set, generation uses this file instead of anchored template resolution. |
+| `zomic_design` | `str \| None` | `None` | Optional workspace-root-relative path to a `ZomicDesignConfig` YAML file. When set, `generate` exports the design and then loads the resulting orbit library automatically. |
 | `backend` | `BackendConfig` | mock-mode defaults | Backend configuration block. When omitted, defaults to mock mode with fixture adapters. See the BackendConfig section below. |
 
 ### Validation rules
@@ -37,6 +40,56 @@ The repository ships six config files that form a progression from minimal mock-
 - **composition_bounds coverage**: Every element listed in `species` must have a corresponding key in `composition_bounds`. The validator raises `ValueError` if any species is missing.
 - **CompositionBound range**: `min` and `max` must both lie in [0, 1], and `min <= max`.
 - **CoeffBounds ordering**: `min` must be `<= max`.
+- **Prototype override exclusivity**: `prototype_library` and `zomic_design` are mutually exclusive.
+
+### Path semantics
+
+- `prototype_library` and `zomic_design` are resolved relative to the materials-discovery workspace root.
+- Paths inside a Zomic design YAML (`zomic_file`, `export_path`, `raw_export_path`) are resolved relative to the design YAML file itself.
+
+---
+
+## ZomicDesignConfig Reference
+
+`ZomicDesignConfig` is a separate YAML contract used by `mdisc export-zomic` and by
+`mdisc generate` when `SystemConfig.zomic_design` is set. It defines how exact Zomic
+geometry is embedded into a crystallographic cell and converted into the orbit-library
+JSON format consumed by the generator.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `zomic_file` | `str` | *required* | Path to the `.zomic` source file, relative to the design YAML unless absolute. |
+| `prototype_key` | `str` | *required* | Stable key written into candidate provenance and the exported orbit-library JSON. |
+| `system_name` | `str` | *required* | Chemical system name the design targets. |
+| `template_family` | `str` | *required* | Generator family the design belongs to. |
+| `base_cell` | `dict[str, float]` | *required* | Unit cell used for embedding labeled Zomic points. Must include `a`, `b`, `c`, `alpha`, `beta`, `gamma`. |
+| `reference` | `str` | *required* | Human-readable provenance string for the design. |
+| `reference_url` | `str \| None` | `None` | Optional provenance URL. |
+| `motif_center` | `tuple[float, float, float]` | `(0.5, 0.5, 0.5)` | Fractional center used when embedding the exported points. Must lie strictly inside the unit cell. |
+| `translation_divisor` | `float` | *required* | Candidate-generation displacement divisor reused by the downstream site-position logic. Must be > 0. |
+| `radial_scale` | `float` | *required* | Radial perturbation scale for candidate generation. Must be > 0. |
+| `tangential_scale` | `float` | *required* | Tangential perturbation scale for candidate generation. Must be > 0. |
+| `reference_axes` | `tuple[Position3D, Position3D, Position3D]` | *required* | Local frame axes used by downstream site placement. |
+| `minimum_site_separation` | `float` | *required* | Minimum allowed site separation in fractional coordinates. Must be > 0. |
+| `preferred_species_by_orbit` | `dict[str, list[str]]` | `{}` | Optional chemistry preference hints keyed by inferred orbit name. |
+| `orbit_config` | `dict[str, ZomicOrbitConfig]` | `{}` | Optional per-orbit overrides for preferred species and Wyckoff labels. |
+| `cartesian_scale` | `float \| None` | `None` | Optional explicit scale factor from Zomic units into the target cell. If omitted, the bridge chooses a deterministic scale from `embedding_fraction`. |
+| `embedding_fraction` | `float` | `0.72` | Fraction of the available half-cell span that the embedded motif may occupy. Must lie in `(0, 1)`. |
+| `export_path` | `str \| None` | `None` | Optional output path for the generated orbit-library JSON. |
+| `raw_export_path` | `str \| None` | `None` | Optional output path for the raw labeled-geometry export from `vZome core`. |
+| `space_group` | `str \| None` | `None` | Optional space-group tag carried through to the orbit-library JSON and candidate provenance. |
+
+### Zomic labeling convention
+
+The bridge only turns labeled VM locations into atomic sites. Orbit names are inferred
+from labels:
+
+- `orbit.site_name` -> orbit `orbit`
+- `orbit_01` -> orbit `orbit`
+- otherwise -> full label
+
+This makes labels the stable authoring boundary between `Zomic` geometry and the
+materials generator.
 
 ---
 
@@ -137,6 +190,39 @@ coeff_bounds:
 seed: 17
 default_count: 100
 ```
+
+### Parallel authoring path: Zomic-backed mock mode (`sc_zn_zomic.yaml`)
+
+This config keeps the pipeline in mock mode but changes how generation gets its
+prototype. Instead of relying on `SYSTEM_TEMPLATE_PATHS`, it points at a Zomic
+design YAML:
+
+```yaml
+system_name: Sc-Zn
+template_family: cubic_proxy_1_0
+species:
+  - Sc
+  - Zn
+composition_bounds:
+  Sc:
+    min: 0.15
+    max: 0.40
+  Zn:
+    min: 0.60
+    max: 0.85
+coeff_bounds:
+  min: -2
+  max: 2
+seed: 31
+default_count: 64
+zomic_design: designs/zomic/sc_zn_tsai_bridge.yaml
+```
+
+What this path adds:
+
+- **Design authoring in Zomic**: candidate sites come from labeled VM locations in a `.zomic` script.
+- **Generated orbit library cache**: `generate` exports and reuses `data/prototypes/generated/*.json`.
+- **vZome runtime dependency**: generation now requires a local Java runtime because the bridge invokes `./gradlew :core:zomicExport`.
 
 ### Layer 2: Real mode with fixture fallback (`al_cu_fe_real.yaml`)
 

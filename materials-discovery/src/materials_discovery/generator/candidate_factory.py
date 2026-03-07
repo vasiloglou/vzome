@@ -13,9 +13,10 @@ from materials_discovery.common.schema import (
     SystemConfig,
     validate_unique_candidate_ids,
 )
-from materials_discovery.generator.approximant_templates import resolve_template
+from materials_discovery.generator.approximant_templates import resolve_template, template_from_path
 from materials_discovery.generator.decorate_sites import assign_species
 from materials_discovery.generator.site_positions import site_positions_from_template
+from materials_discovery.generator.zomic_bridge import prototype_library_for_config
 from materials_discovery.generator.zphi_geometry import (
     cell_scale_multiplier,
     construct_site_qphi,
@@ -27,8 +28,13 @@ def _make_candidate(
     config: SystemConfig,
     seed: int,
     rng: random.Random,
+    template_override_path: Path | None,
 ) -> CandidateRecord:
-    template = resolve_template(config.system_name, config.template_family)
+    template = (
+        template_from_path(template_override_path)
+        if template_override_path is not None
+        else resolve_template(config.system_name, config.template_family)
+    )
     species_assignments, composition = assign_species(
         len(template.sites),
         config.composition_bounds,
@@ -78,6 +84,20 @@ def _make_candidate(
         )
 
     digest = hashlib.sha256(f"{seed}:{idx}".encode()).hexdigest()
+    provenance = {
+        "generator_version": "0.1.0",
+        "seed": seed,
+        "config_hash": f"sha256:{digest[:16]}",
+        "prototype_key": template.prototype_key,
+        "prototype_reference": template.reference,
+        "prototype_reference_url": template.reference_url,
+        "prototype_source_kind": template.source_kind,
+        "prototype_space_group": template.space_group,
+    }
+    if template_override_path is not None:
+        provenance["prototype_library_path"] = str(template_override_path)
+    if config.zomic_design is not None:
+        provenance["zomic_design"] = config.zomic_design
 
     return CandidateRecord(
         candidate_id=f"md_{idx:06d}",
@@ -88,16 +108,7 @@ def _make_candidate(
         composition=composition,
         screen={"model": "MACE", "energy_per_atom_ev": -3.0},
         digital_validation=DigitalValidationRecord(status="pending"),
-        provenance={
-            "generator_version": "0.1.0",
-            "seed": seed,
-            "config_hash": f"sha256:{digest[:16]}",
-            "prototype_key": template.prototype_key,
-            "prototype_reference": template.reference,
-            "prototype_reference_url": template.reference_url,
-            "prototype_source_kind": template.source_kind,
-            "prototype_space_group": template.space_group,
-        },
+        provenance=provenance,
     )
 
 
@@ -106,9 +117,11 @@ def generate_candidates(
     output_path: Path,
     count: int,
     seed: int | None,
+    config_path: Path | None = None,
 ) -> GenerateSummary:
     effective_seed = config.seed if seed is None else seed
     rng = random.Random(effective_seed)
+    template_override_path = prototype_library_for_config(config, config_path=config_path)
 
     candidates: list[CandidateRecord] = []
     invalid_filtered = 0
@@ -116,7 +129,13 @@ def generate_candidates(
     next_idx = 1
     while len(candidates) < count:
         try:
-            candidate = _make_candidate(next_idx, config, effective_seed, rng)
+            candidate = _make_candidate(
+                next_idx,
+                config,
+                effective_seed,
+                rng,
+                template_override_path,
+            )
             candidates.append(candidate)
             next_idx += 1
         except ValueError:

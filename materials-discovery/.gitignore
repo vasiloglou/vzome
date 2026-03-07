@@ -19,3 +19,4 @@ data/calibration/*.json
 data/registry/models/*.jsonl
 data/registry/features/*.jsonl
 data/execution_cache/
+data/prototypes/generated/

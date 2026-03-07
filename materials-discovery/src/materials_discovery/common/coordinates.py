@@ -137,6 +137,8 @@ def fractional_to_cartesian(
 def cartesian_to_fractional(
     cartesian: CartesianCoord,
     cell_matrix: list[list[float]],
+    *,
+    wrap: bool = True,
 ) -> FractionalCoord:
     matrix = [
         [float(cell_matrix[row][col]) for col in range(3)]
@@ -156,7 +158,9 @@ def cartesian_to_fractional(
         inverse[1][0] * cartesian[0] + inverse[1][1] * cartesian[1] + inverse[1][2] * cartesian[2],
         inverse[2][0] * cartesian[0] + inverse[2][1] * cartesian[1] + inverse[2][2] * cartesian[2],
     )
-    return tuple(round(value % 1.0, 6) for value in fractional)  # type: ignore[return-value]
+    if wrap:
+        return tuple(round(value % 1.0, 6) for value in fractional)  # type: ignore[return-value]
+    return tuple(round(value, 6) for value in fractional)  # type: ignore[return-value]
 
 
 def _invert_3x3(matrix: list[list[float]], determinant: float) -> list[list[float]]:

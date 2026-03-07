@@ -234,10 +234,61 @@ chemical system.
 | `coeff_bounds` | `CoeffBounds` | *(required)* | Integer coefficient bounds for generation. |
 | `seed` | `int` | *(required)* | Random seed for reproducibility. |
 | `default_count` | `int` | *(required)* | Default number of candidates to generate. |
+| `prototype_library` | `str \| None` | `None` | Optional workspace-root-relative orbit-library override used by generation. |
+| `zomic_design` | `str \| None` | `None` | Optional workspace-root-relative path to a `ZomicDesignConfig` file. |
 | `backend` | `BackendConfig` | `BackendConfig()` | Backend configuration. |
 
 **Validators:**
 - Every element in `species` must have a corresponding key in `composition_bounds`.
+- `prototype_library` and `zomic_design` cannot both be set.
+
+---
+
+### ZomicOrbitConfig
+
+Optional per-orbit overrides used inside `ZomicDesignConfig`.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `preferred_species` | `list[str] \| None` | `None` | Preferred species ordering for the orbit. |
+| `wyckoff` | `str \| None` | `None` | Optional Wyckoff-style label to attach to the exported orbit. |
+
+---
+
+### ZomicDesignConfig
+
+Design-time schema for Zomic-authored prototype export.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `zomic_file` | `str` | *(required)* | Path to the `.zomic` source file, resolved relative to the design YAML unless absolute. |
+| `prototype_key` | `str` | *(required)* | Stable prototype identifier. |
+| `system_name` | `str` | *(required)* | Chemical system name for the design. |
+| `template_family` | `str` | *(required)* | Template family that the generated orbit library should advertise. |
+| `base_cell` | `dict[str, float]` | *(required)* | Crystallographic cell used for embedding the exported points. |
+| `reference` | `str` | *(required)* | Human-readable provenance string. |
+| `reference_url` | `str \| None` | `None` | Optional provenance URL. |
+| `motif_center` | `Position3D` | `(0.5, 0.5, 0.5)` | Fractional motif center; each component must lie strictly inside `(0, 1)`. |
+| `translation_divisor` | `float` | *(required)* | Generation displacement divisor; must be > 0. |
+| `radial_scale` | `float` | *(required)* | Radial displacement scale; must be > 0. |
+| `tangential_scale` | `float` | *(required)* | Tangential displacement scale; must be > 0. |
+| `reference_axes` | `tuple[Position3D, Position3D, Position3D]` | *(required)* | Local reference frame axes for downstream site placement. |
+| `minimum_site_separation` | `float` | *(required)* | Minimum site separation; must be > 0. |
+| `preferred_species_by_orbit` | `dict[str, list[str]]` | `{}` | Orbit-level chemistry preferences derived from label prefixes. |
+| `orbit_config` | `dict[str, ZomicOrbitConfig]` | `{}` | Optional orbit-level overrides for chemistry and Wyckoff labels. |
+| `cartesian_scale` | `float \| None` | `None` | Optional explicit Zomic-to-cell scale factor. |
+| `embedding_fraction` | `float` | `0.72` | Auto-scaling target in `(0, 1)` used when `cartesian_scale` is omitted. |
+| `export_path` | `str \| None` | `None` | Optional orbit-library output path. |
+| `raw_export_path` | `str \| None` | `None` | Optional raw labeled-geometry output path. |
+| `space_group` | `str \| None` | `None` | Optional space-group tag passed through to the orbit-library JSON. |
+
+**Validators:**
+- `base_cell` must contain `a`, `b`, `c`, `alpha`, `beta`, `gamma`.
+- `a`, `b`, and `c` must be > 0.
+- `alpha`, `beta`, and `gamma` must lie in `(0, 180)`.
+- `translation_divisor`, `radial_scale`, `tangential_scale`, and `minimum_site_separation` must be > 0.
+- `cartesian_scale`, when present, must be > 0.
+- `embedding_fraction` must lie in `(0, 1)`.
 
 ---
 
@@ -275,6 +326,17 @@ Each pipeline stage returns a summary model capturing counts and output paths.
 | `backend_adapter` | `str` | `"hypodx_fixture"` |
 | `qa_metrics` | `dict[str, float \| int \| bool]` | `{}` |
 | `manifest_path` | `str \| None` | `None` |
+
+### ZomicExportSummary
+
+| Field | Type | Default |
+|---|---|---|
+| `design_path` | `str` | *(required)* |
+| `zomic_file` | `str` | *(required)* |
+| `raw_export_path` | `str` | *(required)* |
+| `orbit_library_path` | `str` | *(required)* |
+| `labeled_site_count` | `int` | *(required)* |
+| `orbit_count` | `int` | *(required)* |
 
 ### GenerateSummary
 

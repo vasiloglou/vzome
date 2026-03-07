@@ -109,7 +109,25 @@ The config file declares the system name, element list, composition bounds, latt
 
 If the system uses known approximant structure templates, create a JSON orbit library file in `data/prototypes/` and register the path in `SYSTEM_TEMPLATE_PATHS` inside `src/materials_discovery/generator/approximant_templates.py`.
 
-### 4d. Validate
+### 4d. (Optional) Add a Zomic-authored design
+
+If the system should be authored procedurally in vZome terms instead of starting from
+a fixed prototype JSON:
+
+1. Create a `.zomic` file under `designs/zomic/`.
+2. Add a companion design YAML that conforms to `ZomicDesignConfig`.
+3. Label every VM location that should become an atomic site.
+4. Use orbit-style label prefixes such as `shell.01`, `core.01`, or `shell_01`.
+5. Point the system config at the design with `zomic_design: designs/zomic/your_design.yaml`.
+
+Validate the bridge directly:
+
+```bash
+uv run mdisc export-zomic --design designs/zomic/your_design.yaml
+uv run mdisc generate --config configs/systems/your_system.yaml --count 32
+```
+
+### 4e. Validate
 
 Run the full pipeline in mock mode to verify the new system config:
 

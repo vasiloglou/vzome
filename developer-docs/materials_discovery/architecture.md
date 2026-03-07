@@ -9,21 +9,22 @@ as implemented in `materials-discovery/src/materials_discovery/`.
 
 The codebase is organized into seven domain packages and one shared foundation
 package. Every domain package depends on `common/`; only `hifi_digital/`
-additionally depends on `backends/`.
+additionally depends on `backends/`. The generator package also has an explicit
+bridge into `vZome core` for Zomic-authored designs.
 
 ```
 materials_discovery/
   common/           Shared schemas, chemistry descriptors, coordinates, IO,
                     manifests, stage metrics, benchmarking
   data/             Ingest pipeline
-  generator/        Candidate generation with Z[phi] geometry
+  generator/        Candidate generation with Z[phi] geometry and Zomic bridge
   screen/           Fast screening: relax, filter, rank shortlist
   hifi_digital/     High-fidelity validation: committee relax, uncertainty,
                     hull proxy, phonon, MD, XRD, ranking
   active_learning/  Surrogate training and batch selection
   diffraction/      XRD simulation and experiment report compilation
   backends/         Adapter system for mock/real/exec/native execution modes
-  cli.py            Single orchestration layer (839 lines, 7 typer commands)
+  cli.py            Single orchestration layer (8 typer commands)
 ```
 
 Dependency graph:
@@ -49,11 +50,12 @@ Dependency graph:
 ## Orchestration
 
 There is no separate orchestration framework. `cli.py` is the pipeline. It
-defines seven typer commands that wire together the domain packages:
+defines eight typer commands that wire together the domain packages:
 
 | Command          | Packages used                      |
 |------------------|------------------------------------|
 | `ingest`         | `backends`, `data`                 |
+| `export-zomic`   | `generator`, `core`                |
 | `generate`       | `generator`                        |
 | `screen`         | `screen`                           |
 | `hifi-validate`  | `hifi_digital`, `backends`         |
@@ -69,14 +71,21 @@ artifacts to the filesystem.
 
 ## Data Flow
 
-The pipeline is strictly linear. Each stage reads the output of the previous
-stage and writes its own output to a dedicated directory under `data/`.
+The main pipeline is linear. The optional Zomic-authoring bridge sits before
+generation and produces an orbit-library prototype that `generate` can consume.
 
 ```
 Config YAML
     |
     v
 cli.py loads SystemConfig
+    |
+    v
+OPTIONAL ZOMIC EXPORT
+    export_zomic_design
+    -> ./gradlew :core:zomicExport
+    -> data/prototypes/generated/{prototype_key}.raw.json
+    -> data/prototypes/generated/{prototype_key}.json
     |
     v
 INGEST
@@ -149,6 +158,7 @@ data/
     fixtures/              Mock-mode fixture data
     pinned/                Pinned snapshots for real mode
   prototypes/              System-anchored orbit library JSONs
+    generated/             Zomic-exported orbit libraries and raw geometry
   benchmarks/              Pinned benchmark corpora
   processed/               Ingested reference phases         (JSONL)
   candidates/              Generated candidates               (JSONL)
@@ -171,7 +181,8 @@ data/
 
 `CandidateRecord` is the universal data carrier. A single record is created
 during candidate generation and accumulates fields as it passes through
-successive stages:
+successive stages. When generation came from a Zomic-authored design, the
+`provenance` block also carries `zomic_design` and `prototype_library_path`.
 
 ```
 CandidateRecord
@@ -211,6 +222,18 @@ YAML configuration file:
 The adapter interface is uniform: domain code calls the same functions
 regardless of which tier is active. The tier is resolved at startup from the
 configuration and injected into the domain functions by `cli.py`.
+
+## Zomic Bridge Boundary
+
+The Zomic bridge is intentionally narrow:
+
+- `vZome core` compiles and executes `.zomic` scripts
+- labeled VM locations are exported as exact geometry JSON
+- `materials-discovery` converts those labeled points into orbit-library JSON
+- downstream stages operate only on standard `CandidateRecord` structures
+
+This keeps design authoring and visualization in vZome terms without making the
+screening, validation, and ranking stages depend on the desktop application.
 
 ```
 cli.py

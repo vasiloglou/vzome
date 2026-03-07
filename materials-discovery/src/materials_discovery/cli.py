@@ -38,6 +38,7 @@ from materials_discovery.common.schema import (
     ReportSummary,
     ScreenSummary,
     SystemConfig,
+    ZomicExportSummary,
 )
 from materials_discovery.common.stage_metrics import (
     generation_metrics,
@@ -50,6 +51,7 @@ from materials_discovery.data.ingest_hypodx import ingest_rows
 from materials_discovery.diffraction.compare_patterns import compile_experiment_report
 from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_xrd_patterns
 from materials_discovery.generator.candidate_factory import generate_candidates
+from materials_discovery.generator.zomic_bridge import export_zomic_design
 from materials_discovery.hifi_digital.committee_relax import run_committee_relaxation
 from materials_discovery.hifi_digital.hull_proxy import compute_proxy_hull
 from materials_discovery.hifi_digital.md_stability import run_short_md_stability
@@ -340,7 +342,13 @@ def generate_command(
         )
         out_path = out or default_out
 
-        summary = generate_candidates(system_config, out_path, count=count, seed=seed)
+        summary = generate_candidates(
+            system_config,
+            out_path,
+            count=count,
+            seed=seed,
+            config_path=config,
+        )
         generated_rows = load_jsonl(out_path)
         unique_count = len({row["candidate_id"] for row in generated_rows})
         metrics = generation_metrics(
@@ -376,6 +384,21 @@ def generate_command(
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"generate failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("export-zomic")
+def export_zomic_command(
+    design: Path = typer.Option(..., "--design", exists=False, dir_okay=False),
+    out: Path | None = typer.Option(None, "--out", exists=False, dir_okay=False),
+    force: bool = typer.Option(False, "--force"),
+) -> None:
+    """Compile a Zomic design into an orbit-library prototype JSON file."""
+    try:
+        summary: ZomicExportSummary = export_zomic_design(design, output_path=out, force=force)
+        typer.echo(summary.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
+        _emit_error(f"export-zomic failed: {exc}")
         raise typer.Exit(code=2)
 
 

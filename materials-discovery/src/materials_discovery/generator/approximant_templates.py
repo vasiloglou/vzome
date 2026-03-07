@@ -366,6 +366,10 @@ def _load_orbit_library_template(path_str: str) -> ApproximantTemplate:
     return _template_from_orbit_library(load_json_object(Path(path_str)))
 
 
+def template_from_path(path: Path) -> ApproximantTemplate:
+    return _load_orbit_library_template(str(path.resolve()))
+
+
 def get_template(template_family: str) -> ApproximantTemplate:
     try:
         return FAMILY_TEMPLATES[template_family]

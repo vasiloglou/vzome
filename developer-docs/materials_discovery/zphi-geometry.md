@@ -108,12 +108,26 @@ JSON files. The mapping is stored in `SYSTEM_TEMPLATE_PATHS`:
 | Al-Pd-Mn | `decagonal_proxy_2_1` | `data/prototypes/al_pd_mn_xi_prime.json` | Xi-prime pseudo-Mackay |
 | Sc-Zn | `cubic_proxy_1_0` | `data/prototypes/sc_zn_tsai_sczn6.json` | Tsai ScZn6 (COD CIF 4344182) |
 
+### Zomic-Authored Orbit Libraries
+
+The generator can also consume orbit libraries produced from `.zomic` scripts. In that
+path, `materials_discovery.generator.zomic_bridge`:
+
+1. invokes `./gradlew :core:zomicExport`
+2. reads labeled VM locations exported by `vZome core`
+3. embeds those labeled points into the specified crystal cell
+4. writes a generated orbit-library JSON under `data/prototypes/generated/`
+
 ### Template Resolution
 
 `resolve_template(system_name, template_family)` checks whether a system-specific
 orbit library exists on disk for the given `(system_name, template_family)` pair. If
 it does, the orbit library is loaded (and cached via `@functools.cache`). Otherwise
 the generic template from `FAMILY_TEMPLATES` is returned.
+
+When the config provides `prototype_library` or `zomic_design`, generation bypasses
+`SYSTEM_TEMPLATE_PATHS` and loads the resolved orbit library directly with
+`template_from_path(path)`.
 
 ### Template Data Structures
 
@@ -136,7 +150,7 @@ the generic template from `FAMILY_TEMPLATES` is returned.
 - `reference_axes` -- three reference directions for building local coordinate frames
 - `minimum_site_separation` -- minimum allowed fractional distance between sites
 - `space_group` -- optional space group symbol
-- `source_kind` -- `"generic"` or `"orbit_library"`
+- `source_kind` -- `"generic"`, `"orbit_library"`, `"cif_export"`, or `"zomic_export"`
 
 ### Fractional-to-QPhiCoord Conversion
 
@@ -308,7 +322,9 @@ The `generate_candidates` function in `candidate_factory.py` ties everything tog
 For each candidate index:
 
 1. **Resolve template**: `resolve_template(system_name, template_family)` returns
-   the appropriate `ApproximantTemplate` (system-specific or generic).
+   the appropriate `ApproximantTemplate` unless the config specifies
+   `prototype_library` or `zomic_design`, in which case the override path is loaded
+   with `template_from_path(...)`.
 
 2. **Assign species**: `assign_species` from `decorate_sites` maps element types to
    sites using `composition_bounds` and site preferences from the template.

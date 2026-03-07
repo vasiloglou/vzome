@@ -180,6 +180,73 @@ class BackendConfig(BaseModel):
         return self
 
 
+class ZomicOrbitConfig(BaseModel):
+    preferred_species: list[str] | None = None
+    wyckoff: str | None = None
+
+
+class ZomicDesignConfig(BaseModel):
+    zomic_file: str
+    prototype_key: str
+    system_name: str
+    template_family: str
+    base_cell: dict[str, float]
+    reference: str
+    reference_url: str | None = None
+    motif_center: Position3D = (0.5, 0.5, 0.5)
+    translation_divisor: float
+    radial_scale: float
+    tangential_scale: float
+    reference_axes: tuple[Position3D, Position3D, Position3D]
+    minimum_site_separation: float
+    preferred_species_by_orbit: dict[str, list[str]] = Field(default_factory=dict)
+    orbit_config: dict[str, ZomicOrbitConfig] = Field(default_factory=dict)
+    cartesian_scale: float | None = None
+    embedding_fraction: float = 0.72
+    export_path: str | None = None
+    raw_export_path: str | None = None
+    space_group: str | None = None
+
+    @field_validator("motif_center")
+    @classmethod
+    def validate_motif_center(cls, value: Position3D) -> Position3D:
+        for coord in value:
+            if coord <= 0.0 or coord >= 1.0:
+                raise ValueError("motif_center coordinates must be strictly within (0, 1)")
+        return value
+
+    @field_validator("base_cell")
+    @classmethod
+    def validate_base_cell(cls, value: dict[str, float]) -> dict[str, float]:
+        required = {"a", "b", "c", "alpha", "beta", "gamma"}
+        missing = sorted(required - set(value))
+        if missing:
+            raise ValueError(f"base_cell missing required keys: {missing}")
+        for key in ("a", "b", "c"):
+            if value[key] <= 0.0:
+                raise ValueError(f"base_cell.{key} must be > 0")
+        for key in ("alpha", "beta", "gamma"):
+            if value[key] <= 0.0 or value[key] >= 180.0:
+                raise ValueError(f"base_cell.{key} must be in (0, 180)")
+        return value
+
+    @model_validator(mode="after")
+    def validate_embedding(self) -> ZomicDesignConfig:
+        if self.translation_divisor <= 0.0:
+            raise ValueError("translation_divisor must be > 0")
+        if self.radial_scale <= 0.0:
+            raise ValueError("radial_scale must be > 0")
+        if self.tangential_scale <= 0.0:
+            raise ValueError("tangential_scale must be > 0")
+        if self.minimum_site_separation <= 0.0:
+            raise ValueError("minimum_site_separation must be > 0")
+        if self.cartesian_scale is not None and self.cartesian_scale <= 0.0:
+            raise ValueError("cartesian_scale must be > 0 when provided")
+        if self.embedding_fraction <= 0.0 or self.embedding_fraction >= 1.0:
+            raise ValueError("embedding_fraction must be in (0, 1)")
+        return self
+
+
 class SystemConfig(BaseModel):
     system_name: str
     template_family: str
@@ -188,6 +255,8 @@ class SystemConfig(BaseModel):
     coeff_bounds: CoeffBounds
     seed: int
     default_count: int
+    prototype_library: str | None = None
+    zomic_design: str | None = None
     backend: BackendConfig = Field(default_factory=BackendConfig)
 
     @model_validator(mode="after")
@@ -195,6 +264,8 @@ class SystemConfig(BaseModel):
         missing = [s for s in self.species if s not in self.composition_bounds]
         if missing:
             raise ValueError(f"composition_bounds missing species entries: {missing}")
+        if self.prototype_library and self.zomic_design:
+            raise ValueError("prototype_library and zomic_design are mutually exclusive")
         return self
 
 
@@ -235,6 +306,15 @@ class GenerateSummary(BaseModel):
     qa_metrics: dict[str, float | int | bool] = Field(default_factory=dict)
     calibration_path: str | None = None
     manifest_path: str | None = None
+
+
+class ZomicExportSummary(BaseModel):
+    design_path: str
+    zomic_file: str
+    raw_export_path: str
+    orbit_library_path: str
+    labeled_site_count: int
+    orbit_count: int
 
 
 class ScreenSummary(BaseModel):

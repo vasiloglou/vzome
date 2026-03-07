@@ -2,9 +2,9 @@
 
 > **Historical document.** This was the original design blueprint for the materials
 > discovery pipeline. For current documentation derived from the actual implementation,
-> see **[Materials Discovery Documentation](materials_discovery/index.md)**.
+> see **[Materials Discovery Documentation](index.md)**.
 
-Companion to Chapter 10.8 in [vZome Geometry Tutorial](vzome-geometry-tutorial.md).
+Companion to Chapter 10.8 in [vZome Geometry Tutorial](../vzome-geometry-tutorial.md).
 
 ---
 
@@ -20,20 +20,21 @@ Build a reproducible pipeline that can:
 ## Implementation Status
 
 All milestones (M1-M6) and real-mode execution phases (RM0-RM6) are implemented.
-See the [current documentation](materials_discovery/index.md) for details.
+See the [current documentation](index.md) for details.
 
 ## Current Documentation
 
 | Topic | Document |
 |-------|----------|
-| Overview and quickstart | [index.md](materials_discovery/index.md) |
-| System architecture | [architecture.md](materials_discovery/architecture.md) |
-| Z[phi] geometry engine | [zphi-geometry.md](materials_discovery/zphi-geometry.md) |
-| Pipeline stage reference | [pipeline-stages.md](materials_discovery/pipeline-stages.md) |
-| Backend adapter system | [backend-system.md](materials_discovery/backend-system.md) |
-| Configuration reference | [configuration-reference.md](materials_discovery/configuration-reference.md) |
-| Data schema reference | [data-schema-reference.md](materials_discovery/data-schema-reference.md) |
-| Developer guide | [contributing.md](materials_discovery/contributing.md) |
+| Overview and quickstart | [index.md](index.md) |
+| System architecture | [architecture.md](architecture.md) |
+| Z[phi] geometry engine | [zphi-geometry.md](zphi-geometry.md) |
+| Zomic design workflow | [zomic-design-workflow.md](zomic-design-workflow.md) |
+| Pipeline stage reference | [pipeline-stages.md](pipeline-stages.md) |
+| Backend adapter system | [backend-system.md](backend-system.md) |
+| Configuration reference | [configuration-reference.md](configuration-reference.md) |
+| Data schema reference | [data-schema-reference.md](data-schema-reference.md) |
+| Developer guide | [contributing.md](contributing.md) |
 
 ## External Resources
 

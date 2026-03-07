@@ -58,6 +58,13 @@ def ensure_parent(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
+def write_json_object(record: dict[str, Any], path: Path) -> None:
+    ensure_parent(path)
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(record, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+
+
 def write_jsonl(records: list[dict[str, Any]], path: Path) -> None:
     ensure_parent(path)
     with path.open("w", encoding="utf-8") as handle:
