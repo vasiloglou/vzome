@@ -26,5 +26,8 @@ preferred_species_by_orbit:
   joint: [Zn]
 embedding_fraction: 0.68
 anchor_prototype: ../../data/prototypes/sc_zn_tsai_sczn6.json
+anchor_orbit_strategy: seed_orbit_expand
+anchor_site_target: 100
+anchor_orbit_min_votes: 2
 export_path: ../../data/prototypes/generated/sc_zn_tsai_bridge.json
 raw_export_path: ../../data/prototypes/generated/sc_zn_tsai_bridge.raw.json

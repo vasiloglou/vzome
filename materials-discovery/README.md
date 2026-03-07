@@ -43,6 +43,14 @@ crystallographic `sc_zn_tsai_sczn6.json` prototype before candidate generation.
 That keeps Zomic as the authoring language while tightening the downstream
 geometry used by the real/native validation stages.
 
+The current `Sc-Zn` bridge goes one step further: it expands the snapped Zomic
+seed geometry into a fuller anchored orbit set (`100` sites across five selected
+`ScZn6` anchor orbits) instead of emitting only the reduced labeled subset.
+
+Real/native `hifi-validate` now also applies a cheap geometry prefilter before
+phonon. Crowded candidates are failed early with recorded metrics instead of
+spending most of the runtime inside the native phonon backend.
+
 `sc_zn_real.yaml` and `sc_zn_native.yaml` use the local
 `data/external/fixtures/hypodx_sample.json` ingest source because the pinned
 HYPOD-X snapshot does not yet include `Sc-Zn` rows. Their calibrated assets are:

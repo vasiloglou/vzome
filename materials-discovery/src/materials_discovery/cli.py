@@ -53,6 +53,7 @@ from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_
 from materials_discovery.generator.candidate_factory import generate_candidates
 from materials_discovery.generator.zomic_bridge import export_zomic_design
 from materials_discovery.hifi_digital.committee_relax import run_committee_relaxation
+from materials_discovery.hifi_digital.geometry_prefilter import run_geometry_prefilter
 from materials_discovery.hifi_digital.hull_proxy import compute_proxy_hull
 from materials_discovery.hifi_digital.md_stability import run_short_md_stability
 from materials_discovery.hifi_digital.phonon_mlip import run_mlip_phonon_checks
@@ -519,6 +520,7 @@ def hifi_validate_command(
         validated = run_committee_relaxation(system_config, selected, batch)
         validated = compute_committee_uncertainty(validated)
         validated = compute_proxy_hull(validated, config=system_config)
+        validated = run_geometry_prefilter(validated, config=system_config)
         validated = run_mlip_phonon_checks(validated, config=system_config)
         validated = run_short_md_stability(validated, config=system_config)
         validated = validate_xrd_signatures(system_config, validated)

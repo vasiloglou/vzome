@@ -73,6 +73,11 @@ class DigitalValidationRecord(BaseModel):
     proxy_hull_baseline_ev_per_atom: float | None = None
     proxy_hull_reference_distance: float | None = None
     proxy_hull_reference_phases: list[str] | None = None
+    geometry_prefilter_pass: bool | None = None
+    geometry_prefilter_reason: str | None = None
+    minimum_cartesian_distance_angstrom: float | None = None
+    close_contact_pairs: int | None = None
+    volume_per_atom_ang3: float | None = None
     phonon_imaginary_modes: int | None = None
     phonon_pass: bool | None = None
     md_stability_score: float | None = None
@@ -204,6 +209,9 @@ class ZomicDesignConfig(BaseModel):
     cartesian_scale: float | None = None
     embedding_fraction: float = 0.72
     anchor_prototype: str | None = None
+    anchor_orbit_strategy: Literal["snap_only", "seed_orbit_expand"] = "snap_only"
+    anchor_site_target: int | None = None
+    anchor_orbit_min_votes: int = 1
     export_path: str | None = None
     raw_export_path: str | None = None
     space_group: str | None = None
@@ -245,6 +253,17 @@ class ZomicDesignConfig(BaseModel):
             raise ValueError("cartesian_scale must be > 0 when provided")
         if self.embedding_fraction <= 0.0 or self.embedding_fraction >= 1.0:
             raise ValueError("embedding_fraction must be in (0, 1)")
+        if self.anchor_prototype is None:
+            if self.anchor_orbit_strategy != "snap_only":
+                raise ValueError("anchor_orbit_strategy requires anchor_prototype")
+            if self.anchor_site_target is not None:
+                raise ValueError("anchor_site_target requires anchor_prototype")
+            if self.anchor_orbit_min_votes != 1:
+                raise ValueError("anchor_orbit_min_votes requires anchor_prototype")
+        if self.anchor_site_target is not None and self.anchor_site_target <= 0:
+            raise ValueError("anchor_site_target must be > 0 when provided")
+        if self.anchor_orbit_min_votes <= 0:
+            raise ValueError("anchor_orbit_min_votes must be > 0")
         return self
 
 

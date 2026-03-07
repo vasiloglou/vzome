@@ -16,6 +16,9 @@ def _run_mlip_phonon_checks_mock(
     scored: list[CandidateRecord] = []
     for candidate in candidates:
         copied = deepcopy(candidate)
+        if copied.digital_validation.geometry_prefilter_pass is False:
+            scored.append(copied)
+            continue
         complexity = qphi_complexity(copied)
         delta_hull = copied.digital_validation.delta_e_proxy_hull_ev_per_atom or 0.0
 
@@ -43,10 +46,15 @@ def _run_mlip_phonon_checks_real(
     config: SystemConfig,
 ) -> list[CandidateRecord]:
     """Fixture-backed phonon stability adapter for no-DFT real mode."""
-    adapter = resolve_phonon_adapter(config.backend.mode, config.backend.phonon_adapter)
+    adapter = None
     scored: list[CandidateRecord] = []
     for candidate in candidates:
         copied = deepcopy(candidate)
+        if copied.digital_validation.geometry_prefilter_pass is False:
+            scored.append(copied)
+            continue
+        if adapter is None:
+            adapter = resolve_phonon_adapter(config.backend.mode, config.backend.phonon_adapter)
         imaginary_modes = adapter.evaluate_candidate(config, copied).imaginary_modes
 
         validation = copied.digital_validation.model_copy(deep=True)

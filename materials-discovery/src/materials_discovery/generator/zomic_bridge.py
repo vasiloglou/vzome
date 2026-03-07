@@ -308,6 +308,209 @@ def _snap_to_anchor_sites(
     return snapped, matches, summary
 
 
+class _AnchorOrbitRecord(TypedDict):
+    orbit: str
+    preferred_species: list[str] | None
+    wyckoff: str | None
+    sites: list[dict[str, Any]]
+
+
+class _AnchorOrbitEvidence(TypedDict):
+    orbit: str
+    votes: int
+    size: int
+    preferred_species: list[str] | None
+    design_votes: dict[str, int]
+    wyckoff: str | None
+
+
+def _anchor_orbit_records(anchor_data: dict[str, Any]) -> dict[str, _AnchorOrbitRecord]:
+    raw_orbits = anchor_data.get("orbits")
+    if not isinstance(raw_orbits, list) or not raw_orbits:
+        raise ValueError("anchor prototype must contain a non-empty 'orbits' list")
+
+    records: dict[str, _AnchorOrbitRecord] = {}
+    for orbit in raw_orbits:
+        if not isinstance(orbit, dict):
+            raise ValueError("anchor prototype orbit entries must be objects")
+        orbit_name = str(orbit["orbit"])
+        raw_sites = orbit.get("sites")
+        if not isinstance(raw_sites, list) or not raw_sites:
+            raise ValueError("anchor prototype orbits must define a non-empty 'sites' list")
+        preferred_species = orbit.get("preferred_species")
+        if preferred_species is not None and not isinstance(preferred_species, list):
+            raise ValueError("anchor prototype preferred_species must be a list when provided")
+        records[orbit_name] = {
+            "orbit": orbit_name,
+            "preferred_species": (
+                None
+                if preferred_species is None
+                else [str(species) for species in preferred_species]
+            ),
+            "wyckoff": None if orbit.get("wyckoff") is None else str(orbit["wyckoff"]),
+            "sites": [dict(site) for site in raw_sites if isinstance(site, dict)],
+        }
+    return records
+
+
+def _anchor_orbit_evidence(
+    unique_sites: list[tuple[str, str, int | None, tuple[float, float, float], list[str]]],
+    *,
+    anchor_match_by_position: dict[tuple[float, float, float], _AnchorMatch],
+    anchor_records: dict[str, _AnchorOrbitRecord],
+) -> dict[str, _AnchorOrbitEvidence]:
+    evidence: dict[str, _AnchorOrbitEvidence] = {}
+    for _, source_label, _, fractional, _ in unique_sites:
+        anchor_match = anchor_match_by_position.get(fractional)
+        if anchor_match is None:
+            continue
+        orbit_name = anchor_match["orbit"]
+        record = anchor_records[orbit_name]
+        entry = evidence.setdefault(
+            orbit_name,
+            {
+                "orbit": orbit_name,
+                "votes": 0,
+                "size": len(record["sites"]),
+                "preferred_species": record["preferred_species"],
+                "design_votes": {},
+                "wyckoff": record["wyckoff"],
+            },
+        )
+        design_orbit = _infer_orbit_name(source_label)
+        entry["votes"] += 1
+        entry["design_votes"][design_orbit] = entry["design_votes"].get(design_orbit, 0) + 1
+    return evidence
+
+
+def _select_anchor_orbits(
+    evidence_by_orbit: dict[str, _AnchorOrbitEvidence],
+    *,
+    target: int | None,
+    min_votes: int,
+) -> list[str]:
+    candidates = [
+        evidence
+        for evidence in evidence_by_orbit.values()
+        if evidence["votes"] >= min_votes
+    ]
+    if not candidates:
+        return []
+
+    if target is None:
+        ordered = sorted(
+            candidates,
+            key=lambda item: (-item["votes"], item["size"], item["orbit"]),
+        )
+        return [item["orbit"] for item in ordered]
+
+    selected: list[str] = []
+    covered_species: set[str] = set()
+    total_sites = 0
+    remaining = candidates.copy()
+    while remaining and total_sites < target:
+        fit_candidates = [
+            item
+            for item in remaining
+            if total_sites + item["size"] <= target
+        ]
+        if fit_candidates:
+            chosen = max(
+                fit_candidates,
+                key=lambda item: (
+                    int(
+                        item["preferred_species"] is not None
+                        and any(
+                            species not in covered_species
+                            for species in item["preferred_species"]
+                        )
+                    ),
+                    item["votes"],
+                    -item["size"],
+                    item["orbit"],
+                ),
+            )
+        else:
+            chosen = min(
+                remaining,
+                key=lambda item: (
+                    total_sites + item["size"] - target,
+                    -int(
+                        item["preferred_species"] is not None
+                        and any(
+                            species not in covered_species
+                            for species in item["preferred_species"]
+                        )
+                    ),
+                    -item["votes"],
+                    item["size"],
+                    item["orbit"],
+                ),
+            )
+        selected.append(chosen["orbit"])
+        if chosen["preferred_species"] is not None:
+            covered_species.update(chosen["preferred_species"])
+        total_sites += chosen["size"]
+        remaining = [item for item in remaining if item["orbit"] != chosen["orbit"]]
+    return selected
+
+
+def _expanded_anchor_orbits(
+    *,
+    selected_anchor_orbits: list[str],
+    anchor_records: dict[str, _AnchorOrbitRecord],
+    evidence_by_orbit: dict[str, _AnchorOrbitEvidence],
+    design: ZomicDesignConfig,
+) -> list[dict[str, Any]]:
+    orbits: list[dict[str, Any]] = []
+    for orbit_name in selected_anchor_orbits:
+        record = anchor_records[orbit_name]
+        evidence = evidence_by_orbit[orbit_name]
+        sites: list[dict[str, Any]] = []
+        for site in record["sites"]:
+            position = site.get("fractional_position")
+            if (
+                not isinstance(position, list)
+                or len(position) != 3
+                or not all(isinstance(value, (int, float)) for value in position)
+            ):
+                raise ValueError("anchor orbit sites must contain numeric fractional_position")
+            sites.append(
+                {
+                    "label": str(site["label"]),
+                    "fractional_position": [
+                        round(float(position[0]), 6),
+                        round(float(position[1]), 6),
+                        round(float(position[2]), 6),
+                    ],
+                }
+            )
+
+        dominant_design_orbit = None
+        if evidence["design_votes"]:
+            dominant_design_orbit = max(
+                evidence["design_votes"].items(),
+                key=lambda item: (item[1], item[0]),
+            )[0]
+
+        preferred_species = record["preferred_species"]
+        if preferred_species is None and dominant_design_orbit is not None:
+            preferred_species = design.preferred_species_by_orbit.get(dominant_design_orbit)
+
+        orbits.append(
+            {
+                "orbit": orbit_name,
+                "wyckoff": record["wyckoff"],
+                "preferred_species": preferred_species,
+                "source_design_orbit": dominant_design_orbit,
+                "seed_votes": evidence["votes"],
+                "seed_design_votes": evidence["design_votes"],
+                "sites": sites,
+            }
+        )
+    return orbits
+
+
 class _DedupedSite(TypedDict):
     label: str
     source_label: str
@@ -441,28 +644,64 @@ def _orbit_library_from_export(
         grouped.setdefault(orbit_name, []).append(site_payload)
 
     orbits: list[dict[str, Any]] = []
-    for orbit_name in sorted(grouped):
-        config = design.orbit_config.get(orbit_name)
-        preferred_species = None
-        if config is not None and config.preferred_species is not None:
-            preferred_species = config.preferred_species
-        elif orbit_name in design.preferred_species_by_orbit:
-            preferred_species = design.preferred_species_by_orbit[orbit_name]
-        orbits.append(
-            {
-                "orbit": orbit_name,
-                "wyckoff": None if config is None else config.wyckoff,
-                "preferred_species": preferred_species,
-                "sites": grouped[orbit_name],
-            }
+    anchor_orbit_summary: dict[str, Any] | None = None
+    if (
+        anchor_data is not None
+        and design.anchor_orbit_strategy == "seed_orbit_expand"
+    ):
+        anchor_records = _anchor_orbit_records(anchor_data)
+        evidence_by_orbit = _anchor_orbit_evidence(
+            unique_sites,
+            anchor_match_by_position=anchor_match_by_position,
+            anchor_records=anchor_records,
         )
+        selected_anchor_orbits = _select_anchor_orbits(
+            evidence_by_orbit,
+            target=design.anchor_site_target,
+            min_votes=design.anchor_orbit_min_votes,
+        )
+        orbits = _expanded_anchor_orbits(
+            selected_anchor_orbits=selected_anchor_orbits,
+            anchor_records=anchor_records,
+            evidence_by_orbit=evidence_by_orbit,
+            design=design,
+        )
+        anchor_orbit_summary = {
+            "strategy": design.anchor_orbit_strategy,
+            "site_target": design.anchor_site_target,
+            "min_votes": design.anchor_orbit_min_votes,
+            "selected_orbits": selected_anchor_orbits,
+            "selected_site_count": sum(len(orbit["sites"]) for orbit in orbits),
+        }
+    else:
+        for orbit_name in sorted(grouped):
+            config = design.orbit_config.get(orbit_name)
+            preferred_species = None
+            if config is not None and config.preferred_species is not None:
+                preferred_species = config.preferred_species
+            elif orbit_name in design.preferred_species_by_orbit:
+                preferred_species = design.preferred_species_by_orbit[orbit_name]
+            orbits.append(
+                {
+                    "orbit": orbit_name,
+                    "wyckoff": None if config is None else config.wyckoff,
+                    "preferred_species": preferred_species,
+                    "sites": grouped[orbit_name],
+                }
+            )
 
     return {
         "prototype_key": design.prototype_key,
         "system_name": design.system_name,
         "template_family": design.template_family,
         "source_kind": (
-            "zomic_export_anchor_fitted" if anchor_path is not None else "zomic_export"
+            "zomic_export_anchor_expanded"
+            if anchor_path is not None and design.anchor_orbit_strategy == "seed_orbit_expand"
+            else (
+                "zomic_export_anchor_fitted"
+                if anchor_path is not None
+                else "zomic_export"
+            )
         ),
         "source_zomic": str(zomic_file),
         "source_raw_export": str(raw_export_path),
@@ -479,6 +718,7 @@ def _orbit_library_from_export(
         "embedding_scale": scale,
         "anchor_prototype": None if anchor_path is None else str(anchor_path),
         "anchor_alignment": anchor_alignment,
+        "anchor_orbit_summary": anchor_orbit_summary,
         "anchor_space_group": None if anchor_data is None else anchor_data.get("space_group"),
         "orbits": orbits,
     }

@@ -19,6 +19,9 @@ def _run_short_md_stability_mock(
     scored: list[CandidateRecord] = []
     for candidate in candidates:
         copied = deepcopy(candidate)
+        if copied.digital_validation.geometry_prefilter_pass is False:
+            scored.append(copied)
+            continue
         uncertainty = copied.digital_validation.uncertainty_ev_per_atom or 0.05
         delta_hull = copied.digital_validation.delta_e_proxy_hull_ev_per_atom or 0.1
 
@@ -44,10 +47,15 @@ def _run_short_md_stability_real(
     config: SystemConfig,
 ) -> list[CandidateRecord]:
     """Fixture-backed short-MD stability adapter for no-DFT real mode."""
-    adapter = resolve_md_adapter(config.backend.mode, config.backend.md_adapter)
+    adapter = None
     scored: list[CandidateRecord] = []
     for candidate in candidates:
         copied = deepcopy(candidate)
+        if copied.digital_validation.geometry_prefilter_pass is False:
+            scored.append(copied)
+            continue
+        if adapter is None:
+            adapter = resolve_md_adapter(config.backend.mode, config.backend.md_adapter)
         stability_score = adapter.evaluate_candidate(config, copied).stability_score
 
         validation = copied.digital_validation.model_copy(deep=True)

@@ -61,6 +61,9 @@ def _validate_xrd_signatures_mock(
 
     for candidate in candidates:
         copied = deepcopy(candidate)
+        if copied.digital_validation.geometry_prefilter_pass is False:
+            scored.append(copied)
+            continue
         phonon_penalty = (copied.digital_validation.phonon_imaginary_modes or 0) * 0.03
 
         digest = hashlib.sha256(
@@ -85,11 +88,16 @@ def _validate_xrd_signatures_real(
     min_confidence: float,
 ) -> list[CandidateRecord]:
     """Fixture-backed XRD confidence adapter for no-DFT real mode."""
-    adapter = resolve_xrd_adapter(config.backend.mode, config.backend.xrd_adapter)
+    adapter = None
     scored: list[CandidateRecord] = []
 
     for candidate in candidates:
         copied = deepcopy(candidate)
+        if copied.digital_validation.geometry_prefilter_pass is False:
+            scored.append(copied)
+            continue
+        if adapter is None:
+            adapter = resolve_xrd_adapter(config.backend.mode, config.backend.xrd_adapter)
         confidence = adapter.evaluate_candidate(config, copied).confidence
 
         validation = copied.digital_validation.model_copy(deep=True)

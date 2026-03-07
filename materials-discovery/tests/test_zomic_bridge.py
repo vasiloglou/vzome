@@ -265,6 +265,82 @@ def test_export_zomic_design_can_snap_to_anchor_prototype(
     assert sorted(anchor_labels) == ["A1", "A2", "A3"]
 
 
+def test_export_zomic_design_can_expand_seed_anchor_orbits(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
+    anchor_path = tmp_path / "anchor_expanded.json"
+    anchor_path.write_text(
+        json.dumps(
+            {
+                "prototype_key": "anchor_expanded_demo",
+                "space_group": "I m -3",
+                "orbits": [
+                    {
+                        "orbit": "alpha",
+                        "preferred_species": ["Sc"],
+                        "sites": [
+                            {"label": "A1", "fractional_position": [0.5, 0.5, 0.5]},
+                            {"label": "A2", "fractional_position": [0.5, 0.6, 0.5]},
+                        ],
+                    },
+                    {
+                        "orbit": "beta",
+                        "preferred_species": ["Zn"],
+                        "sites": [
+                            {"label": "B1", "fractional_position": [0.6, 0.5, 0.5]},
+                            {"label": "B2", "fractional_position": [0.6, 0.6, 0.5]},
+                            {"label": "B3", "fractional_position": [0.6, 0.4, 0.5]},
+                        ],
+                    },
+                    {
+                        "orbit": "gamma",
+                        "preferred_species": ["Zn"],
+                        "sites": [
+                            {"label": "G1", "fractional_position": [0.4, 0.5, 0.5]},
+                            {"label": "G2", "fractional_position": [0.4, 0.6, 0.5]},
+                            {"label": "G3", "fractional_position": [0.4, 0.4, 0.5]},
+                            {"label": "G4", "fractional_position": [0.4, 0.5, 0.6]},
+                        ],
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    design_path = _write_design(
+        tmp_path,
+        extra_config={
+            "anchor_prototype": str(anchor_path),
+            "anchor_orbit_strategy": "seed_orbit_expand",
+            "anchor_site_target": 5,
+            "anchor_orbit_min_votes": 1,
+        },
+    )
+
+    def fake_run_zomic_export(zomic_file: Path, output_path: Path) -> None:
+        del zomic_file
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(_fake_export_payload()), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "materials_discovery.generator.zomic_bridge._run_zomic_export",
+        fake_run_zomic_export,
+    )
+
+    summary = export_zomic_design(design_path, force=True)
+    orbit_library = json.loads(Path(summary.orbit_library_path).read_text(encoding="utf-8"))
+
+    assert orbit_library["source_kind"] == "zomic_export_anchor_expanded"
+    assert orbit_library["anchor_orbit_summary"]["strategy"] == "seed_orbit_expand"
+    assert orbit_library["anchor_orbit_summary"]["selected_orbits"] == ["alpha", "beta"]
+    assert orbit_library["anchor_orbit_summary"]["selected_site_count"] == 5
+    assert [orbit["orbit"] for orbit in orbit_library["orbits"]] == ["alpha", "beta"]
+    assert [len(orbit["sites"]) for orbit in orbit_library["orbits"]] == [2, 3]
+    assert orbit_library["orbits"][0]["preferred_species"] == ["Sc"]
+    assert orbit_library["orbits"][1]["preferred_species"] == ["Zn"]
+
+
 def test_generate_candidates_can_use_zomic_design_override(
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
@@ -309,3 +385,92 @@ def test_generate_candidates_can_use_zomic_design_override(
     assert provenance["zomic_design"] == str(design_path)
     assert provenance["prototype_library_path"].endswith("demo_zomic.json")
     assert len(candidate["sites"]) == 3
+
+
+def test_generate_candidates_can_use_anchor_expanded_zomic_design(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
+    anchor_path = tmp_path / "anchor_expanded.json"
+    anchor_path.write_text(
+        json.dumps(
+            {
+                "prototype_key": "anchor_expanded_demo",
+                "orbits": [
+                    {
+                        "orbit": "alpha",
+                        "preferred_species": ["Sc"],
+                        "sites": [
+                            {"label": "A1", "fractional_position": [0.5, 0.5, 0.5]},
+                            {"label": "A2", "fractional_position": [0.5, 0.6, 0.5]},
+                        ],
+                    },
+                    {
+                        "orbit": "beta",
+                        "preferred_species": ["Zn"],
+                        "sites": [
+                            {"label": "B1", "fractional_position": [0.6, 0.5, 0.5]},
+                            {"label": "B2", "fractional_position": [0.6, 0.6, 0.5]},
+                            {"label": "B3", "fractional_position": [0.6, 0.4, 0.5]},
+                        ],
+                    },
+                    {
+                        "orbit": "gamma",
+                        "preferred_species": ["Zn"],
+                        "sites": [
+                            {"label": "G1", "fractional_position": [0.4, 0.5, 0.5]},
+                            {"label": "G2", "fractional_position": [0.4, 0.6, 0.5]},
+                            {"label": "G3", "fractional_position": [0.4, 0.4, 0.5]},
+                            {"label": "G4", "fractional_position": [0.4, 0.5, 0.6]},
+                        ],
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    design_path = _write_design(
+        tmp_path,
+        extra_config={
+            "anchor_prototype": str(anchor_path),
+            "anchor_orbit_strategy": "seed_orbit_expand",
+            "anchor_site_target": 5,
+            "anchor_orbit_min_votes": 1,
+        },
+    )
+
+    def fake_run_zomic_export(zomic_file: Path, output_path: Path) -> None:
+        del zomic_file
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(_fake_export_payload()), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "materials_discovery.generator.zomic_bridge._run_zomic_export",
+        fake_run_zomic_export,
+    )
+
+    config = SystemConfig.model_validate(
+        {
+            "system_name": "Sc-Zn",
+            "template_family": "cubic_proxy_1_0",
+            "species": ["Sc", "Zn"],
+            "composition_bounds": {
+                "Sc": {"min": 0.2, "max": 0.4},
+                "Zn": {"min": 0.6, "max": 0.8},
+            },
+            "coeff_bounds": {"min": -2, "max": 2},
+            "seed": 11,
+            "default_count": 8,
+            "zomic_design": str(design_path),
+        }
+    )
+
+    out_path = tmp_path / "expanded.jsonl"
+    generate_candidates(config, out_path, count=1, seed=11)
+    rows = [json.loads(line) for line in out_path.read_text(encoding="utf-8").splitlines()]
+
+    assert len(rows) == 1
+    candidate = rows[0]
+    assert len(candidate["sites"]) == 5
+    provenance = candidate["provenance"]
+    assert provenance["prototype_source_kind"] == "zomic_export_anchor_expanded"

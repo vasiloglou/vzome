@@ -8,6 +8,10 @@ ring Z[phi]^3, screens them with ML interatomic potentials (MACE, CHGNet, Matter
 validates survivors with phonon, molecular dynamics, and XRD checks, and ranks the
 results for experimental follow-up. All stages run without DFT.
 
+Real/native validation now includes a cheap geometry prefilter before phonon so
+obviously crowded structures fail quickly instead of consuming most of the
+runtime in the native phonon backend.
+
 ## Status
 
 All milestones (M1-M6) and real-mode execution phases (RM0-RM6) are implemented.
@@ -80,7 +84,7 @@ Three systems are configured out of the box:
 | Al-Cu-Fe | Icosahedral 1/1 approximant | `configs/systems/al_cu_fe.yaml` |
 | Al-Pd-Mn | Decagonal 2/1 proxy | `configs/systems/al_pd_mn.yaml` |
 | Sc-Zn | Cubic 1/0 proxy | `configs/systems/sc_zn.yaml` |
-| Sc-Zn (Zomic-authored) | Cubic 1/0 proxy via Zomic bridge, anchor-fitted to `ScZn6` | `configs/systems/sc_zn_zomic.yaml` |
+| Sc-Zn (Zomic-authored) | Cubic 1/0 proxy via Zomic bridge, expanded onto five `ScZn6` anchor orbits | `configs/systems/sc_zn_zomic.yaml` |
 | Sc-Zn (real calibrated) | Zomic bridge + pinned Sc-Zn calibration pack | `configs/systems/sc_zn_real.yaml` |
 | Sc-Zn (native MLIP) | Zomic bridge + native providers | `configs/systems/sc_zn_native.yaml` |
 

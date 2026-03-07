@@ -81,6 +81,10 @@ nearest unique sites from that crystallographic orbit library. This is the recom
 path for real/native execution because it keeps the Zomic-authored orbit intent while
 starting from physically anchored positions.
 
+If `anchor_orbit_strategy: seed_orbit_expand` is also set, those snapped seed sites are
+used to choose a fuller set of anchor orbits. The bridge then emits the full anchor
+orbit sites, not just the reduced labeled subset from the original Zomic script.
+
 ## Example Design YAML
 
 The repository ships a working example at
@@ -114,6 +118,9 @@ preferred_species_by_orbit:
   joint: [Zn]
 embedding_fraction: 0.68
 anchor_prototype: ../../data/prototypes/sc_zn_tsai_sczn6.json
+anchor_orbit_strategy: seed_orbit_expand
+anchor_site_target: 100
+anchor_orbit_min_votes: 2
 export_path: ../../data/prototypes/generated/sc_zn_tsai_bridge.json
 raw_export_path: ../../data/prototypes/generated/sc_zn_tsai_bridge.raw.json
 ```
@@ -139,9 +146,11 @@ At generate time the pipeline will:
 
 1. export the Zomic design if the raw export or orbit library is stale
 2. anchor-fit the exported geometry if `anchor_prototype` is configured
-3. load the generated orbit library
-4. decorate the exported orbits with chemistry and candidate-specific `QPhiCoord`
-5. continue through the normal screening and validation stages
+3. optionally expand the seed-matched anchor orbits if `anchor_orbit_strategy` is set
+4. load the generated orbit library
+5. decorate the exported orbits with chemistry and candidate-specific `QPhiCoord`
+6. continue through the normal screening and validation stages, including the
+   cheap real/native geometry prefilter before phonon
 
 ## Artifacts
 
@@ -181,7 +190,7 @@ still an embedding step:
 
 So this is not yet a fully direct `Zomic -> crystallographic symmetry orbit` compiler.
 It is a controlled authoring bridge, optionally tightened by snapping onto an anchored
-orbit library.
+orbit library and optionally expanded into a fuller anchored orbit set.
 
 ## Source References
 
