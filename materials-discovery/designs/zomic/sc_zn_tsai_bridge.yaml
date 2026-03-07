@@ -12,18 +12,19 @@ base_cell:
   beta: 90.0
   gamma: 90.0
 motif_center: [0.5, 0.5, 0.5]
-translation_divisor: 6.0
-radial_scale: 0.018
-tangential_scale: 0.04
+translation_divisor: 10.0
+radial_scale: 0.012
+tangential_scale: 0.026
 reference_axes:
   - [1.0, 0.0, 0.0]
   - [0.0, 1.0, 0.0]
   - [0.0, 0.0, 1.0]
-minimum_site_separation: 0.08
+minimum_site_separation: 0.1
 preferred_species_by_orbit:
   pent: [Sc, Zn]
   frustum: [Zn, Sc]
   joint: [Zn]
 embedding_fraction: 0.68
+anchor_prototype: ../../data/prototypes/sc_zn_tsai_sczn6.json
 export_path: ../../data/prototypes/generated/sc_zn_tsai_bridge.json
 raw_export_path: ../../data/prototypes/generated/sc_zn_tsai_bridge.raw.json

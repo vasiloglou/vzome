@@ -69,7 +69,15 @@ def _bound_coord(coord: QPhiCoord, min_coeff: int, max_coeff: int) -> QPhiCoord:
 
 
 
-def cell_scale_multiplier(seed: int, candidate_index: int) -> float:
+def cell_scale_multiplier(
+    seed: int,
+    candidate_index: int,
+    *,
+    template_source_kind: str = "generic",
+) -> float:
+    if template_source_kind != "generic":
+        variant = ((seed + 3 * candidate_index) % 5) - 2
+        return round(1.0 + 0.015 * variant, 6)
     variant = (seed + 5 * candidate_index) % 3 - 1
     return round(PHI**variant, 6)
 

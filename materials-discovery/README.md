@@ -37,6 +37,12 @@ Additional checked-in `Sc-Zn` real/native configs are now available:
 - `configs/systems/sc_zn_real.yaml`
 - `configs/systems/sc_zn_native.yaml`
 
+The shipped `Sc-Zn` Zomic design at
+`designs/zomic/sc_zn_tsai_bridge.yaml` is anchor-fitted to the
+crystallographic `sc_zn_tsai_sczn6.json` prototype before candidate generation.
+That keeps Zomic as the authoring language while tightening the downstream
+geometry used by the real/native validation stages.
+
 `sc_zn_real.yaml` and `sc_zn_native.yaml` use the local
 `data/external/fixtures/hypodx_sample.json` ingest source because the pinned
 HYPOD-X snapshot does not yet include `Sc-Zn` rows. Their calibrated assets are:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from materials_discovery.generator.zphi_geometry import (
+    cell_scale_multiplier,
     construct_site_qphi,
     phi_scale_pair,
 )
@@ -39,3 +40,14 @@ def test_construct_site_qphi_is_deterministic_and_bounded() -> None:
     for pair in first:
         assert -3 <= pair[0] <= 3
         assert -3 <= pair[1] <= 3
+
+
+def test_cell_scale_multiplier_uses_tight_window_for_anchored_templates() -> None:
+    generic = {cell_scale_multiplier(31, idx) for idx in range(1, 7)}
+    anchored = {
+        cell_scale_multiplier(31, idx, template_source_kind="zomic_export_anchor_fitted")
+        for idx in range(1, 7)
+    }
+
+    assert generic == {0.618034, 1.0, 1.618034}
+    assert anchored == {0.97, 0.985, 1.0, 1.015, 1.03}

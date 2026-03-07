@@ -199,6 +199,115 @@ def _fractional_positions(
     return positions, scale
 
 
+def _periodic_axis_delta(first: float, second: float) -> float:
+    delta = abs(first - second)
+    return min(delta, 1.0 - delta)
+
+
+def _periodic_distance(
+    first: tuple[float, float, float],
+    second: tuple[float, float, float],
+) -> float:
+    dx = _periodic_axis_delta(first[0], second[0])
+    dy = _periodic_axis_delta(first[1], second[1])
+    dz = _periodic_axis_delta(first[2], second[2])
+    return float((dx * dx + dy * dy + dz * dz) ** 0.5)
+
+
+class _AnchorSite(TypedDict):
+    label: str
+    orbit: str
+    fractional: tuple[float, float, float]
+
+
+class _AnchorMatch(TypedDict):
+    label: str
+    orbit: str
+    fractional: tuple[float, float, float]
+    distance: float
+
+
+def _anchor_sites(anchor_data: dict[str, Any]) -> list[_AnchorSite]:
+    raw_orbits = anchor_data.get("orbits")
+    if not isinstance(raw_orbits, list) or not raw_orbits:
+        raise ValueError("anchor prototype must contain a non-empty 'orbits' list")
+
+    sites: list[_AnchorSite] = []
+    for orbit in raw_orbits:
+        if not isinstance(orbit, dict):
+            raise ValueError("anchor prototype orbit entries must be objects")
+        orbit_name = str(orbit["orbit"])
+        raw_sites = orbit.get("sites")
+        if not isinstance(raw_sites, list):
+            raise ValueError("anchor prototype orbits must define a 'sites' list")
+        for site in raw_sites:
+            if not isinstance(site, dict):
+                raise ValueError("anchor prototype site entries must be objects")
+            position = site.get("fractional_position")
+            if (
+                not isinstance(position, list)
+                or len(position) != 3
+                or not all(isinstance(value, (int, float)) for value in position)
+            ):
+                raise ValueError(
+                    "anchor prototype sites must define numeric 3D fractional positions"
+                )
+            sites.append(
+                {
+                    "label": str(site["label"]),
+                    "orbit": orbit_name,
+                    "fractional": (
+                        round(float(position[0]), 6),
+                        round(float(position[1]), 6),
+                        round(float(position[2]), 6),
+                    ),
+                }
+            )
+    return sites
+
+
+def _snap_to_anchor_sites(
+    fractional_positions: list[tuple[float, float, float]],
+    anchor_data: dict[str, Any],
+) -> tuple[list[tuple[float, float, float]], list[_AnchorMatch], dict[str, float | int]]:
+    anchors = _anchor_sites(anchor_data)
+    if len(fractional_positions) > len(anchors):
+        raise ValueError("anchor prototype does not contain enough sites for the Zomic export")
+
+    remaining = anchors.copy()
+    snapped: list[tuple[float, float, float]] = []
+    matches: list[_AnchorMatch] = []
+    distances: list[float] = []
+    for position in fractional_positions:
+        best_index = min(
+            range(len(remaining)),
+            key=lambda index: (
+                _periodic_distance(position, remaining[index]["fractional"]),
+                remaining[index]["orbit"],
+                remaining[index]["label"],
+            ),
+        )
+        best_site = remaining.pop(best_index)
+        distance = _periodic_distance(position, best_site["fractional"])
+        distances.append(distance)
+        snapped.append(best_site["fractional"])
+        matches.append(
+            {
+                "label": best_site["label"],
+                "orbit": best_site["orbit"],
+                "fractional": best_site["fractional"],
+                "distance": round(distance, 6),
+            }
+        )
+
+    summary = {
+        "assigned_sites": len(matches),
+        "mean_distance": round(sum(distances) / len(distances), 6),
+        "max_distance": round(max(distances), 6),
+    }
+    return snapped, matches, summary
+
+
 class _DedupedSite(TypedDict):
     label: str
     source_label: str
@@ -257,6 +366,7 @@ def _orbit_library_from_export(
     export_data: dict[str, Any],
     design: ZomicDesignConfig,
     *,
+    design_dir: Path,
     raw_export_path: Path,
     zomic_file: Path,
 ) -> dict[str, Any]:
@@ -290,6 +400,17 @@ def _orbit_library_from_export(
         cartesian_positions.append(_cartesian_position(point))
 
     fractional_positions, scale = _fractional_positions(cartesian_positions, design)
+    anchor_matches: list[_AnchorMatch] | None = None
+    anchor_path: Path | None = None
+    anchor_data: dict[str, Any] | None = None
+    anchor_alignment: dict[str, float | int] | None = None
+    if design.anchor_prototype is not None:
+        anchor_path = _resolve_relative_path(design.anchor_prototype, design_dir)
+        anchor_data = load_json_object(anchor_path)
+        fractional_positions, anchor_matches, anchor_alignment = _snap_to_anchor_sites(
+            fractional_positions,
+            anchor_data,
+        )
     grouped: dict[str, list[dict[str, Any]]] = {}
     unique_sites = _dedupe_fractional_sites(
         labels,
@@ -297,6 +418,11 @@ def _orbit_library_from_export(
         occurrences,
         fractional_positions,
     )
+    anchor_match_by_position: dict[tuple[float, float, float], _AnchorMatch] = {}
+    if anchor_matches is not None:
+        for match in anchor_matches:
+            anchor_match_by_position[match["fractional"]] = match
+
     for label, source_label, occurrence, fractional, aliases in unique_sites:
         orbit_name = _infer_orbit_name(source_label)
         site_payload: dict[str, Any] = {
@@ -305,6 +431,11 @@ def _orbit_library_from_export(
             "occurrence": occurrence,
             "fractional_position": [fractional[0], fractional[1], fractional[2]],
         }
+        anchor_match = anchor_match_by_position.get(fractional)
+        if anchor_match is not None:
+            site_payload["anchor_label"] = anchor_match["label"]
+            site_payload["anchor_orbit"] = anchor_match["orbit"]
+            site_payload["anchor_distance"] = anchor_match["distance"]
         if aliases:
             site_payload["aliases"] = aliases
         grouped.setdefault(orbit_name, []).append(site_payload)
@@ -330,7 +461,9 @@ def _orbit_library_from_export(
         "prototype_key": design.prototype_key,
         "system_name": design.system_name,
         "template_family": design.template_family,
-        "source_kind": "zomic_export",
+        "source_kind": (
+            "zomic_export_anchor_fitted" if anchor_path is not None else "zomic_export"
+        ),
         "source_zomic": str(zomic_file),
         "source_raw_export": str(raw_export_path),
         "reference": design.reference,
@@ -344,6 +477,9 @@ def _orbit_library_from_export(
         "reference_axes": [list(axis) for axis in design.reference_axes],
         "minimum_site_separation": design.minimum_site_separation,
         "embedding_scale": scale,
+        "anchor_prototype": None if anchor_path is None else str(anchor_path),
+        "anchor_alignment": anchor_alignment,
+        "anchor_space_group": None if anchor_data is None else anchor_data.get("space_group"),
         "orbits": orbits,
     }
 
@@ -381,12 +517,16 @@ def export_zomic_design(
     orbit_library = _orbit_library_from_export(
         export_data,
         design,
+        design_dir=design_dir,
         raw_export_path=raw_export_path,
         zomic_file=zomic_file,
     )
+    orbit_inputs = [resolved_design_path, zomic_file, raw_export_path]
+    if design.anchor_prototype is not None:
+        orbit_inputs.append(_resolve_relative_path(design.anchor_prototype, design_dir))
     if force or _needs_refresh(
         orbit_library_path,
-        [resolved_design_path, zomic_file, raw_export_path],
+        orbit_inputs,
     ):
         write_json_object(orbit_library, orbit_library_path)
 

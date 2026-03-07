@@ -76,6 +76,11 @@ YAML provides:
 The bridge centers the labeled Zomic points, scales them into the specified cell, and
 writes fractional positions to an orbit-library JSON file.
 
+If `anchor_prototype` is set, the bridge then snaps the embedded Zomic points onto the
+nearest unique sites from that crystallographic orbit library. This is the recommended
+path for real/native execution because it keeps the Zomic-authored orbit intent while
+starting from physically anchored positions.
+
 ## Example Design YAML
 
 The repository ships a working example at
@@ -95,19 +100,20 @@ base_cell:
   beta: 90.0
   gamma: 90.0
 motif_center: [0.5, 0.5, 0.5]
-translation_divisor: 6.0
-radial_scale: 0.018
-tangential_scale: 0.04
+translation_divisor: 10.0
+radial_scale: 0.012
+tangential_scale: 0.026
 reference_axes:
   - [1.0, 0.0, 0.0]
   - [0.0, 1.0, 0.0]
   - [0.0, 0.0, 1.0]
-minimum_site_separation: 0.08
+minimum_site_separation: 0.1
 preferred_species_by_orbit:
   pent: [Sc, Zn]
   frustum: [Zn, Sc]
   joint: [Zn]
 embedding_fraction: 0.68
+anchor_prototype: ../../data/prototypes/sc_zn_tsai_sczn6.json
 export_path: ../../data/prototypes/generated/sc_zn_tsai_bridge.json
 raw_export_path: ../../data/prototypes/generated/sc_zn_tsai_bridge.raw.json
 ```
@@ -132,9 +138,10 @@ zomic_design: designs/zomic/sc_zn_tsai_bridge.yaml
 At generate time the pipeline will:
 
 1. export the Zomic design if the raw export or orbit library is stale
-2. load the generated orbit library
-3. decorate the exported orbits with chemistry and candidate-specific `QPhiCoord`
-4. continue through the normal screening and validation stages
+2. anchor-fit the exported geometry if `anchor_prototype` is configured
+3. load the generated orbit library
+4. decorate the exported orbits with chemistry and candidate-specific `QPhiCoord`
+5. continue through the normal screening and validation stages
 
 ## Artifacts
 
@@ -173,7 +180,8 @@ still an embedding step:
 - The design YAML still chooses the crystal cell and embedding scale.
 
 So this is not yet a fully direct `Zomic -> crystallographic symmetry orbit` compiler.
-It is a controlled authoring bridge.
+It is a controlled authoring bridge, optionally tightened by snapping onto an anchored
+orbit library.
 
 ## Source References
 

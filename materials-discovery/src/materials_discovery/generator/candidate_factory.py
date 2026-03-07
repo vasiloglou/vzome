@@ -58,7 +58,11 @@ def _make_candidate(
         )
         qphi_coords.append(qphi)
 
-    multiplier = cell_scale_multiplier(seed, idx)
+    multiplier = cell_scale_multiplier(
+        seed,
+        idx,
+        template_source_kind=template.source_kind,
+    )
     cell = {
         axis: round(value * multiplier, 6) if axis in {"a", "b", "c"} else value
         for axis, value in template.base_cell.items()

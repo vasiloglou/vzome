@@ -80,7 +80,7 @@ Three systems are configured out of the box:
 | Al-Cu-Fe | Icosahedral 1/1 approximant | `configs/systems/al_cu_fe.yaml` |
 | Al-Pd-Mn | Decagonal 2/1 proxy | `configs/systems/al_pd_mn.yaml` |
 | Sc-Zn | Cubic 1/0 proxy | `configs/systems/sc_zn.yaml` |
-| Sc-Zn (Zomic-authored) | Cubic 1/0 proxy via Zomic bridge | `configs/systems/sc_zn_zomic.yaml` |
+| Sc-Zn (Zomic-authored) | Cubic 1/0 proxy via Zomic bridge, anchor-fitted to `ScZn6` | `configs/systems/sc_zn_zomic.yaml` |
 | Sc-Zn (real calibrated) | Zomic bridge + pinned Sc-Zn calibration pack | `configs/systems/sc_zn_real.yaml` |
 | Sc-Zn (native MLIP) | Zomic bridge + native providers | `configs/systems/sc_zn_native.yaml` |
 

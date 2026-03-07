@@ -11,48 +11,48 @@ from materials_discovery.generator.candidate_factory import generate_candidates
 from materials_discovery.generator.zomic_bridge import export_zomic_design
 
 
-def _write_design(tmp_path: Path) -> Path:
+def _write_design(tmp_path: Path, extra_config: dict[str, object] | None = None) -> Path:
     design_dir = tmp_path / "designs"
     design_dir.mkdir()
     zomic_path = design_dir / "demo.zomic"
     zomic_path.write_text("label core.01\nlabel shell.01\nlabel shell.02\n", encoding="utf-8")
 
     design_path = design_dir / "demo.yaml"
+    payload: dict[str, object] = {
+        "zomic_file": "demo.zomic",
+        "prototype_key": "demo_zomic",
+        "system_name": "Sc-Zn",
+        "template_family": "cubic_proxy_1_0",
+        "reference": "demo",
+        "base_cell": {
+            "a": 10.0,
+            "b": 10.0,
+            "c": 10.0,
+            "alpha": 90.0,
+            "beta": 90.0,
+            "gamma": 90.0,
+        },
+        "motif_center": [0.5, 0.5, 0.5],
+        "translation_divisor": 6.0,
+        "radial_scale": 0.018,
+        "tangential_scale": 0.04,
+        "reference_axes": [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ],
+        "minimum_site_separation": 0.08,
+        "preferred_species_by_orbit": {
+            "core": ["Sc"],
+            "shell": ["Zn", "Sc"],
+        },
+        "export_path": "generated/demo_zomic.json",
+        "raw_export_path": "generated/demo_zomic.raw.json",
+    }
+    if extra_config is not None:
+        payload.update(extra_config)
     design_path.write_text(
-        yaml.safe_dump(
-            {
-                "zomic_file": "demo.zomic",
-                "prototype_key": "demo_zomic",
-                "system_name": "Sc-Zn",
-                "template_family": "cubic_proxy_1_0",
-                "reference": "demo",
-                "base_cell": {
-                    "a": 10.0,
-                    "b": 10.0,
-                    "c": 10.0,
-                    "alpha": 90.0,
-                    "beta": 90.0,
-                    "gamma": 90.0,
-                },
-                "motif_center": [0.5, 0.5, 0.5],
-                "translation_divisor": 6.0,
-                "radial_scale": 0.018,
-                "tangential_scale": 0.04,
-                "reference_axes": [
-                    [1.0, 0.0, 0.0],
-                    [0.0, 1.0, 0.0],
-                    [0.0, 0.0, 1.0],
-                ],
-                "minimum_site_separation": 0.08,
-                "preferred_species_by_orbit": {
-                    "core": ["Sc"],
-                    "shell": ["Zn", "Sc"],
-                },
-                "export_path": "generated/demo_zomic.json",
-                "raw_export_path": "generated/demo_zomic.raw.json",
-            },
-            sort_keys=False,
-        ),
+        yaml.safe_dump(payload, sort_keys=False),
         encoding="utf-8",
     )
     return design_path
@@ -207,6 +207,62 @@ def test_export_zomic_design_dedupes_coincident_sites(
     assert len(sites) == 1
     assert sites[0]["label"] == "shell.outer"
     assert sites[0]["aliases"] == ["shell.outer#2"]
+
+
+def test_export_zomic_design_can_snap_to_anchor_prototype(
+    tmp_path: Path,
+    monkeypatch: MonkeyPatch,
+) -> None:
+    anchor_path = tmp_path / "anchor.json"
+    anchor_path.write_text(
+        json.dumps(
+            {
+                "prototype_key": "anchor_demo",
+                "space_group": "I m -3",
+                "orbits": [
+                    {
+                        "orbit": "anchor_shell",
+                        "sites": [
+                            {"label": "A1", "fractional_position": [0.5, 0.5, 0.5]},
+                            {"label": "A2", "fractional_position": [0.6, 0.5, 0.5]},
+                            {"label": "A3", "fractional_position": [0.4, 0.5, 0.5]},
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    design_path = _write_design(
+        tmp_path,
+        extra_config={"anchor_prototype": str(anchor_path)},
+    )
+
+    def fake_run_zomic_export(zomic_file: Path, output_path: Path) -> None:
+        del zomic_file
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(_fake_export_payload()), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "materials_discovery.generator.zomic_bridge._run_zomic_export",
+        fake_run_zomic_export,
+    )
+
+    summary = export_zomic_design(design_path, force=True)
+    orbit_library = json.loads(Path(summary.orbit_library_path).read_text(encoding="utf-8"))
+
+    positions = []
+    anchor_labels = []
+    for orbit in orbit_library["orbits"]:
+        for site in orbit["sites"]:
+            positions.append(site["fractional_position"])
+            anchor_labels.append(site["anchor_label"])
+
+    assert orbit_library["source_kind"] == "zomic_export_anchor_fitted"
+    assert orbit_library["anchor_prototype"] == str(anchor_path)
+    assert orbit_library["anchor_alignment"]["assigned_sites"] == 3
+    assert sorted(positions) == [[0.4, 0.5, 0.5], [0.5, 0.5, 0.5], [0.6, 0.5, 0.5]]
+    assert sorted(anchor_labels) == ["A1", "A2", "A3"]
 
 
 def test_generate_candidates_can_use_zomic_design_override(

@@ -203,6 +203,7 @@ class ZomicDesignConfig(BaseModel):
     orbit_config: dict[str, ZomicOrbitConfig] = Field(default_factory=dict)
     cartesian_scale: float | None = None
     embedding_fraction: float = 0.72
+    anchor_prototype: str | None = None
     export_path: str | None = None
     raw_export_path: str | None = None
     space_group: str | None = None
