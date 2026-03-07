@@ -1,0 +1,710 @@
+{
+  "system": "Sc-Zn",
+  "version": "2026-03-07",
+  "candidates": [
+    {
+      "candidate_id": "md_000001",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.794189,
+        "CHGNet": -2.785939,
+        "MatterSim": -2.785939
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.682371,
+      "xrd_confidence": 0.806482
+    },
+    {
+      "candidate_id": "md_000002",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.793917,
+        "CHGNet": -2.785667,
+        "MatterSim": -2.785667
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.647025,
+      "xrd_confidence": 0.784391
+    },
+    {
+      "candidate_id": "md_000003",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.872517,
+        "CHGNet": -2.867267,
+        "MatterSim": -2.867267
+      },
+      "phonon_imaginary_modes": 0,
+      "md_stability_score": 0.819623,
+      "xrd_confidence": 0.892264
+    },
+    {
+      "candidate_id": "md_000004",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.761657,
+        "CHGNet": -2.753407,
+        "MatterSim": -2.753407
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.543047,
+      "xrd_confidence": 0.719404
+    },
+    {
+      "candidate_id": "md_000005",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.773899,
+        "CHGNet": -2.765649,
+        "MatterSim": -2.765649
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.606269,
+      "xrd_confidence": 0.758918
+    },
+    {
+      "candidate_id": "md_000006",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.798457,
+        "CHGNet": -2.790207,
+        "MatterSim": -2.790207
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.697927,
+      "xrd_confidence": 0.816204
+    },
+    {
+      "candidate_id": "md_000007",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.778449,
+        "CHGNet": -2.770199,
+        "MatterSim": -2.770199
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.613549,
+      "xrd_confidence": 0.763468
+    },
+    {
+      "candidate_id": "md_000008",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.789989,
+        "CHGNet": -2.781739,
+        "MatterSim": -2.781739
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.675651,
+      "xrd_confidence": 0.802282
+    },
+    {
+      "candidate_id": "md_000009",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.815776,
+        "CHGNet": -2.809026,
+        "MatterSim": -2.809026
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.727237,
+      "xrd_confidence": 0.834523
+    },
+    {
+      "candidate_id": "md_000010",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.776699,
+        "CHGNet": -2.768449,
+        "MatterSim": -2.768449
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.610749,
+      "xrd_confidence": 0.761718
+    },
+    {
+      "candidate_id": "md_000011",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.773549,
+        "CHGNet": -2.765299,
+        "MatterSim": -2.765299
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.605709,
+      "xrd_confidence": 0.758568
+    },
+    {
+      "candidate_id": "md_000012",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.798107,
+        "CHGNet": -2.789857,
+        "MatterSim": -2.789857
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.697367,
+      "xrd_confidence": 0.815854
+    },
+    {
+      "candidate_id": "md_000013",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.793839,
+        "CHGNet": -2.785589,
+        "MatterSim": -2.785589
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.681811,
+      "xrd_confidence": 0.806132
+    },
+    {
+      "candidate_id": "md_000014",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.774599,
+        "CHGNet": -2.766349,
+        "MatterSim": -2.766349
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.607389,
+      "xrd_confidence": 0.759618
+    },
+    {
+      "candidate_id": "md_000015",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.791039,
+        "CHGNet": -2.782789,
+        "MatterSim": -2.782789
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.677331,
+      "xrd_confidence": 0.803332
+    },
+    {
+      "candidate_id": "md_000016",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.792439,
+        "CHGNet": -2.784189,
+        "MatterSim": -2.784189
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.679571,
+      "xrd_confidence": 0.804732
+    },
+    {
+      "candidate_id": "md_000017",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.797757,
+        "CHGNet": -2.789507,
+        "MatterSim": -2.789507
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.696807,
+      "xrd_confidence": 0.815504
+    },
+    {
+      "candidate_id": "md_000018",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.773199,
+        "CHGNet": -2.764949,
+        "MatterSim": -2.764949
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.605149,
+      "xrd_confidence": 0.758218
+    },
+    {
+      "candidate_id": "md_000019",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.778099,
+        "CHGNet": -2.769849,
+        "MatterSim": -2.769849
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.612989,
+      "xrd_confidence": 0.763118
+    },
+    {
+      "candidate_id": "md_000020",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.789639,
+        "CHGNet": -2.781389,
+        "MatterSim": -2.781389
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.675091,
+      "xrd_confidence": 0.801932
+    },
+    {
+      "candidate_id": "md_000021",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.775649,
+        "CHGNet": -2.767399,
+        "MatterSim": -2.767399
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.609069,
+      "xrd_confidence": 0.760668
+    },
+    {
+      "candidate_id": "md_000022",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.792089,
+        "CHGNet": -2.783839,
+        "MatterSim": -2.783839
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.679011,
+      "xrd_confidence": 0.804382
+    },
+    {
+      "candidate_id": "md_000023",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.761307,
+        "CHGNet": -2.753057,
+        "MatterSim": -2.753057
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.542487,
+      "xrd_confidence": 0.719054
+    },
+    {
+      "candidate_id": "md_000024",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.772849,
+        "CHGNet": -2.764599,
+        "MatterSim": -2.764599
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.604589,
+      "xrd_confidence": 0.757868
+    },
+    {
+      "candidate_id": "md_000025",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.777749,
+        "CHGNet": -2.769499,
+        "MatterSim": -2.769499
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.612429,
+      "xrd_confidence": 0.762768
+    },
+    {
+      "candidate_id": "md_000026",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.799857,
+        "CHGNet": -2.791607,
+        "MatterSim": -2.791607
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.700167,
+      "xrd_confidence": 0.817604
+    },
+    {
+      "candidate_id": "md_000027",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.790689,
+        "CHGNet": -2.782439,
+        "MatterSim": -2.782439
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.676771,
+      "xrd_confidence": 0.802982
+    },
+    {
+      "candidate_id": "md_000028",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.873217,
+        "CHGNet": -2.867967,
+        "MatterSim": -2.867967
+      },
+      "phonon_imaginary_modes": 0,
+      "md_stability_score": 0.820743,
+      "xrd_confidence": 0.892964
+    },
+    {
+      "candidate_id": "md_000029",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.797407,
+        "CHGNet": -2.789157,
+        "MatterSim": -2.789157
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.696247,
+      "xrd_confidence": 0.815154
+    },
+    {
+      "candidate_id": "md_000030",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.788939,
+        "CHGNet": -2.780689,
+        "MatterSim": -2.780689
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.673971,
+      "xrd_confidence": 0.801232
+    },
+    {
+      "candidate_id": "md_000031",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.777399,
+        "CHGNet": -2.769149,
+        "MatterSim": -2.769149
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.611869,
+      "xrd_confidence": 0.762418
+    },
+    {
+      "candidate_id": "md_000032",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.799507,
+        "CHGNet": -2.791257,
+        "MatterSim": -2.791257
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.699607,
+      "xrd_confidence": 0.817254
+    },
+    {
+      "candidate_id": "md_000033",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.775299,
+        "CHGNet": -2.767049,
+        "MatterSim": -2.767049
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.608509,
+      "xrd_confidence": 0.760318
+    },
+    {
+      "candidate_id": "md_000034",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.776349,
+        "CHGNet": -2.768099,
+        "MatterSim": -2.768099
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.610189,
+      "xrd_confidence": 0.761368
+    },
+    {
+      "candidate_id": "md_000035",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.772499,
+        "CHGNet": -2.764249,
+        "MatterSim": -2.764249
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.604029,
+      "xrd_confidence": 0.757518
+    },
+    {
+      "candidate_id": "md_000036",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.797057,
+        "CHGNet": -2.788807,
+        "MatterSim": -2.788807
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.695687,
+      "xrd_confidence": 0.814804
+    },
+    {
+      "candidate_id": "md_000037",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.793489,
+        "CHGNet": -2.785239,
+        "MatterSim": -2.785239
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.681251,
+      "xrd_confidence": 0.805782
+    },
+    {
+      "candidate_id": "md_000038",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.774249,
+        "CHGNet": -2.765999,
+        "MatterSim": -2.765999
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.606829,
+      "xrd_confidence": 0.759268
+    },
+    {
+      "candidate_id": "md_000039",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.815526,
+        "CHGNet": -2.808776,
+        "MatterSim": -2.808776
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.726837,
+      "xrd_confidence": 0.834273
+    },
+    {
+      "candidate_id": "md_000040",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.791739,
+        "CHGNet": -2.783489,
+        "MatterSim": -2.783489
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.678451,
+      "xrd_confidence": 0.804032
+    },
+    {
+      "candidate_id": "md_000041",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.788589,
+        "CHGNet": -2.780339,
+        "MatterSim": -2.780339
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.673411,
+      "xrd_confidence": 0.800882
+    },
+    {
+      "candidate_id": "md_000042",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.772149,
+        "CHGNet": -2.763899,
+        "MatterSim": -2.763899
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.603469,
+      "xrd_confidence": 0.757168
+    },
+    {
+      "candidate_id": "md_000043",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.777049,
+        "CHGNet": -2.768799,
+        "MatterSim": -2.768799
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.611309,
+      "xrd_confidence": 0.762068
+    },
+    {
+      "candidate_id": "md_000044",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.799157,
+        "CHGNet": -2.790907,
+        "MatterSim": -2.790907
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.699047,
+      "xrd_confidence": 0.816904
+    },
+    {
+      "candidate_id": "md_000045",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.774949,
+        "CHGNet": -2.766699,
+        "MatterSim": -2.766699
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.607949,
+      "xrd_confidence": 0.759968
+    },
+    {
+      "candidate_id": "md_000046",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.872867,
+        "CHGNet": -2.867617,
+        "MatterSim": -2.867617
+      },
+      "phonon_imaginary_modes": 0,
+      "md_stability_score": 0.820183,
+      "xrd_confidence": 0.892614
+    },
+    {
+      "candidate_id": "md_000047",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.788239,
+        "CHGNet": -2.779989,
+        "MatterSim": -2.779989
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.672851,
+      "xrd_confidence": 0.800532
+    },
+    {
+      "candidate_id": "md_000048",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.787889,
+        "CHGNet": -2.779639,
+        "MatterSim": -2.779639
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.672291,
+      "xrd_confidence": 0.800182
+    },
+    {
+      "candidate_id": "md_000049",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.793139,
+        "CHGNet": -2.784889,
+        "MatterSim": -2.784889
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.680691,
+      "xrd_confidence": 0.805432
+    },
+    {
+      "candidate_id": "md_000050",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.793567,
+        "CHGNet": -2.785317,
+        "MatterSim": -2.785317
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.646465,
+      "xrd_confidence": 0.784041
+    },
+    {
+      "candidate_id": "md_000051",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.800557,
+        "CHGNet": -2.792307,
+        "MatterSim": -2.792307
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.701287,
+      "xrd_confidence": 0.818304
+    },
+    {
+      "candidate_id": "md_000052",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.862449,
+        "CHGNet": -2.857199,
+        "MatterSim": -2.857199
+      },
+      "phonon_imaginary_modes": 0,
+      "md_stability_score": 0.759877,
+      "xrd_confidence": 0.854923
+    },
+    {
+      "candidate_id": "md_000053",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.796707,
+        "CHGNet": -2.788457,
+        "MatterSim": -2.788457
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.695127,
+      "xrd_confidence": 0.814454
+    },
+    {
+      "candidate_id": "md_000054",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.796357,
+        "CHGNet": -2.788107,
+        "MatterSim": -2.788107
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.694567,
+      "xrd_confidence": 0.814104
+    },
+    {
+      "candidate_id": "md_000055",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.762007,
+        "CHGNet": -2.753757,
+        "MatterSim": -2.753757
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.543607,
+      "xrd_confidence": 0.719754
+    },
+    {
+      "candidate_id": "md_000056",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.789289,
+        "CHGNet": -2.781039,
+        "MatterSim": -2.781039
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.674531,
+      "xrd_confidence": 0.801582
+    },
+    {
+      "candidate_id": "md_000057",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.790339,
+        "CHGNet": -2.782089,
+        "MatterSim": -2.782089
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.676211,
+      "xrd_confidence": 0.802632
+    },
+    {
+      "candidate_id": "md_000058",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.775999,
+        "CHGNet": -2.767749,
+        "MatterSim": -2.767749
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.609629,
+      "xrd_confidence": 0.761018
+    },
+    {
+      "candidate_id": "md_000059",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.771799,
+        "CHGNet": -2.763549,
+        "MatterSim": -2.763549
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.602909,
+      "xrd_confidence": 0.756818
+    },
+    {
+      "candidate_id": "md_000060",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.771449,
+        "CHGNet": -2.763199,
+        "MatterSim": -2.763199
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.602349,
+      "xrd_confidence": 0.756468
+    },
+    {
+      "candidate_id": "md_000061",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.792789,
+        "CHGNet": -2.784539,
+        "MatterSim": -2.784539
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.680131,
+      "xrd_confidence": 0.805082
+    },
+    {
+      "candidate_id": "md_000062",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.798807,
+        "CHGNet": -2.790557,
+        "MatterSim": -2.790557
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.698487,
+      "xrd_confidence": 0.816554
+    },
+    {
+      "candidate_id": "md_000063",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.800207,
+        "CHGNet": -2.791957,
+        "MatterSim": -2.791957
+      },
+      "phonon_imaginary_modes": 1,
+      "md_stability_score": 0.700727,
+      "xrd_confidence": 0.817954
+    },
+    {
+      "candidate_id": "md_000064",
+      "committee_energy_ev_per_atom": {
+        "MACE": -2.791389,
+        "CHGNet": -2.783139,
+        "MatterSim": -2.783139
+      },
+      "phonon_imaginary_modes": 2,
+      "md_stability_score": 0.677891,
+      "xrd_confidence": 0.803682
+    }
+  ]
+}

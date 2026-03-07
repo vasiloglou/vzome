@@ -1,0 +1,230 @@
+{
+  "system": "Sc-Zn",
+  "version": "2026-03-07",
+  "cases": [
+    {
+      "label": "md_000052_stable",
+      "outcome": "stable",
+      "composition": {
+        "Sc": 0.363636,
+        "Zn": 0.636364
+      },
+      "features": {
+        "frac_Sc": 0.363636,
+        "frac_Zn": 0.636364,
+        "qphi_complexity_norm": 0.238095,
+        "radius_mismatch_norm": 0.6343,
+        "en_spread_norm": 0.697515,
+        "pair_mixing_preference": 0.493663,
+        "energy_preference": 0.346727,
+        "packing_preference": 0.4343,
+        "shortlist_signal": 1.0
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.043259,
+        "uncertainty_ev_per_atom": 0.002475,
+        "md_stability_score": 0.759877,
+        "xrd_confidence": 0.854923,
+        "reference_distance": 0.127273,
+        "ood_score": 0.293682,
+        "xrd_distinctiveness": 0.153883
+      }
+    },
+    {
+      "label": "md_000028_stable",
+      "outcome": "stable",
+      "composition": {
+        "Sc": 0.318182,
+        "Zn": 0.681818
+      },
+      "features": {
+        "frac_Sc": 0.318182,
+        "frac_Zn": 0.681818,
+        "qphi_complexity_norm": 0.238095,
+        "radius_mismatch_norm": 0.619727,
+        "en_spread_norm": 0.675365,
+        "pair_mixing_preference": 0.46281,
+        "energy_preference": 0.335301,
+        "packing_preference": 0.43558,
+        "shortlist_signal": 0.25
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.027945,
+        "uncertainty_ev_per_atom": 0.002475,
+        "md_stability_score": 0.820743,
+        "xrd_confidence": 0.892964,
+        "reference_distance": 0.036364,
+        "ood_score": 0.163007,
+        "xrd_distinctiveness": 0.155938
+      }
+    },
+    {
+      "label": "md_000046_stable",
+      "outcome": "stable",
+      "composition": {
+        "Sc": 0.318182,
+        "Zn": 0.681818
+      },
+      "features": {
+        "frac_Sc": 0.318182,
+        "frac_Zn": 0.681818,
+        "qphi_complexity_norm": 0.238095,
+        "radius_mismatch_norm": 0.619727,
+        "en_spread_norm": 0.675365,
+        "pair_mixing_preference": 0.46281,
+        "energy_preference": 0.335301,
+        "packing_preference": 0.43558,
+        "shortlist_signal": 0.2
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.028295,
+        "uncertainty_ev_per_atom": 0.002475,
+        "md_stability_score": 0.820183,
+        "xrd_confidence": 0.892614,
+        "reference_distance": 0.036364,
+        "ood_score": 0.163007,
+        "xrd_distinctiveness": 0.155938
+      }
+    },
+    {
+      "label": "md_000003_stable",
+      "outcome": "stable",
+      "composition": {
+        "Sc": 0.318182,
+        "Zn": 0.681818
+      },
+      "features": {
+        "frac_Sc": 0.318182,
+        "frac_Zn": 0.681818,
+        "qphi_complexity_norm": 0.266234,
+        "radius_mismatch_norm": 0.619727,
+        "en_spread_norm": 0.675365,
+        "pair_mixing_preference": 0.46281,
+        "energy_preference": 0.332937,
+        "packing_preference": 0.429835,
+        "shortlist_signal": 0.166667
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.028645,
+        "uncertainty_ev_per_atom": 0.002475,
+        "md_stability_score": 0.819623,
+        "xrd_confidence": 0.892264,
+        "reference_distance": 0.036364,
+        "ood_score": 0.166057,
+        "xrd_distinctiveness": 0.155198
+      }
+    },
+    {
+      "label": "md_000027_unstable",
+      "outcome": "unstable",
+      "composition": {
+        "Sc": 0.272727,
+        "Zn": 0.727273
+      },
+      "features": {
+        "frac_Sc": 0.272727,
+        "frac_Zn": 0.727273,
+        "qphi_complexity_norm": 0.266234,
+        "radius_mismatch_norm": 0.598,
+        "en_spread_norm": 0.645775,
+        "pair_mixing_preference": 0.42314,
+        "energy_preference": 0.320283,
+        "packing_preference": 0.431677,
+        "shortlist_signal": 0.03125
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.113382,
+        "uncertainty_ev_per_atom": 0.003889,
+        "md_stability_score": 0.676771,
+        "xrd_confidence": 0.802982,
+        "reference_distance": 0.054545,
+        "ood_score": 0.193686,
+        "xrd_distinctiveness": 0.153951
+      }
+    },
+    {
+      "label": "md_000015_unstable",
+      "outcome": "unstable",
+      "composition": {
+        "Sc": 0.272727,
+        "Zn": 0.727273
+      },
+      "features": {
+        "frac_Sc": 0.272727,
+        "frac_Zn": 0.727273,
+        "qphi_complexity_norm": 0.266234,
+        "radius_mismatch_norm": 0.598,
+        "en_spread_norm": 0.645775,
+        "pair_mixing_preference": 0.42314,
+        "energy_preference": 0.320283,
+        "packing_preference": 0.431677,
+        "shortlist_signal": 0.032258
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.113032,
+        "uncertainty_ev_per_atom": 0.003889,
+        "md_stability_score": 0.677331,
+        "xrd_confidence": 0.803332,
+        "reference_distance": 0.054545,
+        "ood_score": 0.193686,
+        "xrd_distinctiveness": 0.153951
+      }
+    },
+    {
+      "label": "md_000008_unstable",
+      "outcome": "unstable",
+      "composition": {
+        "Sc": 0.272727,
+        "Zn": 0.727273
+      },
+      "features": {
+        "frac_Sc": 0.272727,
+        "frac_Zn": 0.727273,
+        "qphi_complexity_norm": 0.270563,
+        "radius_mismatch_norm": 0.598,
+        "en_spread_norm": 0.645775,
+        "pair_mixing_preference": 0.42314,
+        "energy_preference": 0.319919,
+        "packing_preference": 0.430793,
+        "shortlist_signal": 0.029412
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.114082,
+        "uncertainty_ev_per_atom": 0.003889,
+        "md_stability_score": 0.675651,
+        "xrd_confidence": 0.802282,
+        "reference_distance": 0.054545,
+        "ood_score": 0.194155,
+        "xrd_distinctiveness": 0.153837
+      }
+    },
+    {
+      "label": "md_000054_unstable",
+      "outcome": "unstable",
+      "composition": {
+        "Sc": 0.318182,
+        "Zn": 0.681818
+      },
+      "features": {
+        "frac_Sc": 0.318182,
+        "frac_Zn": 0.681818,
+        "qphi_complexity_norm": 0.28355,
+        "radius_mismatch_norm": 0.619727,
+        "en_spread_norm": 0.675365,
+        "pair_mixing_preference": 0.46281,
+        "energy_preference": 0.331483,
+        "packing_preference": 0.4263,
+        "shortlist_signal": 0.047619
+      },
+      "metrics": {
+        "delta_hull_ev_per_atom": 0.106805,
+        "uncertainty_ev_per_atom": 0.003889,
+        "md_stability_score": 0.694567,
+        "xrd_confidence": 0.814104,
+        "reference_distance": 0.036364,
+        "ood_score": 0.167934,
+        "xrd_distinctiveness": 0.154743
+      }
+    }
+  ]
+}

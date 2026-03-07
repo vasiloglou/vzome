@@ -28,10 +28,20 @@ uv run mdisc report    --config configs/systems/al_cu_fe.yaml
 For real-mode execution with MLIP backends:
 
 ```bash
-uv sync --extra dev --extra mlip
+uv sync --python 3.11 --extra dev --extra mlip
 ./scripts/run_exec_pipeline.sh
 ./scripts/run_native_pipeline.sh
 ```
+
+Additional checked-in `Sc-Zn` real/native configs are now available:
+- `configs/systems/sc_zn_real.yaml`
+- `configs/systems/sc_zn_native.yaml`
+
+`sc_zn_real.yaml` and `sc_zn_native.yaml` use the local
+`data/external/fixtures/hypodx_sample.json` ingest source because the pinned
+HYPOD-X snapshot does not yet include `Sc-Zn` rows. Their calibrated assets are:
+- `data/benchmarks/sc_zn_benchmark.json`
+- `data/external/pinned/sc_zn_validation_snapshot_2026_03_07.json`
 
 ## What is Implemented
 

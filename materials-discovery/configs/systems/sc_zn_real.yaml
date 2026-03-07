@@ -1,0 +1,32 @@
+system_name: Sc-Zn
+template_family: cubic_proxy_1_0
+species:
+  - Sc
+  - Zn
+composition_bounds:
+  Sc:
+    min: 0.15
+    max: 0.40
+  Zn:
+    min: 0.60
+    max: 0.85
+coeff_bounds:
+  min: -2
+  max: 2
+seed: 31
+default_count: 64
+zomic_design: designs/zomic/sc_zn_tsai_bridge.yaml
+backend:
+  mode: real
+  ingest_adapter: hypodx_pinned_v2026_03_09
+  committee_adapter: committee_fixture_fallback_v2026_03_09
+  phonon_adapter: phonon_fixture_fallback_v2026_03_09
+  md_adapter: md_fixture_fallback_v2026_03_09
+  xrd_adapter: xrd_fixture_fallback_v2026_03_09
+  pinned_snapshot: data/external/fixtures/hypodx_sample.json
+  validation_snapshot: data/external/pinned/sc_zn_validation_snapshot_2026_03_07.json
+  benchmark_corpus: data/benchmarks/sc_zn_benchmark.json
+  versions:
+    hypodx_snapshot: "fixture-local"
+    validation_snapshot: "2026-03-07"
+    benchmark_corpus: "2026-03-07"

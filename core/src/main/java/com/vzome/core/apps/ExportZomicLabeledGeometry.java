@@ -24,6 +24,7 @@ import com.vzome.core.construction.FreePoint;
 import com.vzome.core.construction.Point;
 import com.vzome.core.construction.Segment;
 import com.vzome.core.math.symmetry.IcosahedralSymmetry;
+import com.vzome.core.render.AbstractZomicEventHandler;
 import com.vzome.core.zomic.Interpreter;
 import com.vzome.core.zomic.ZomicASTCompiler;
 import com.vzome.core.zomic.ZomicException;
@@ -67,21 +68,41 @@ public final class ExportZomicLabeledGeometry
 
     private static final class RecordingVirtualMachine extends ZomicVirtualMachine
     {
+        private final ConstructionChanges effects;
+
+        private final IcosahedralSymmetry symmetry;
+
         RecordingVirtualMachine( Point start, ConstructionChanges effects, IcosahedralSymmetry symmetry )
         {
             super( start, effects, symmetry );
+            this .effects = effects;
+            this .symmetry = symmetry;
         }
 
         AlgebraicVector currentLocation()
         {
             return this .getLocation();
         }
+
+        @Override
+        protected AbstractZomicEventHandler copyLocation()
+        {
+            return new RecordingVirtualMachine(
+                (Point) this .getLastPoint(),
+                this .effects,
+                this .symmetry
+            );
+        }
+
+        @Override
+        protected void restoreLocation( AbstractZomicEventHandler changed )
+        {
+            super .restoreLocation( changed );
+        }
     }
 
     private static final class LabelCapturingInterpreter extends Interpreter
     {
-        private final RecordingVirtualMachine vm;
-
         private final List<Map<String, Object>> labeledPoints;
 
         private final Map<String, Integer> labelOccurrences = new LinkedHashMap<>();
@@ -92,7 +113,6 @@ public final class ExportZomicLabeledGeometry
             List<Map<String, Object>> labeledPoints )
         {
             super( vm, symmetry );
-            this .vm = vm;
             this .labeledPoints = labeledPoints;
         }
 
@@ -100,7 +120,10 @@ public final class ExportZomicLabeledGeometry
         public void visitLabel( String id )
         {
             int occurrence = this .labelOccurrences .merge( id, 1, Integer::sum );
-            this .labeledPoints .add( labeledPointMap( id, occurrence, this .vm .currentLocation() ) );
+            RecordingVirtualMachine currentVm = (RecordingVirtualMachine) this .mEvents;
+            this .labeledPoints .add(
+                labeledPointMap( id, occurrence, currentVm .currentLocation() )
+            );
         }
     }
 

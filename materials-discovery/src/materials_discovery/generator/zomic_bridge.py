@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import subprocess
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 from materials_discovery.common.coordinates import (
     cartesian_to_fractional,
@@ -199,6 +199,60 @@ def _fractional_positions(
     return positions, scale
 
 
+class _DedupedSite(TypedDict):
+    label: str
+    source_label: str
+    occurrence: int | None
+    fractional: tuple[float, float, float]
+    aliases: list[str]
+
+
+def _dedupe_fractional_sites(
+    labels: list[str],
+    source_labels: list[str],
+    occurrences: list[int | None],
+    fractional_positions: list[tuple[float, float, float]],
+) -> list[tuple[str, str, int | None, tuple[float, float, float], list[str]]]:
+    unique_by_position: dict[tuple[float, float, float], _DedupedSite] = {}
+    for label, source_label, occurrence, fractional in zip(
+        labels,
+        source_labels,
+        occurrences,
+        fractional_positions,
+        strict=True,
+    ):
+        key = (
+            round(fractional[0], 6),
+            round(fractional[1], 6),
+            round(fractional[2], 6),
+        )
+        existing = unique_by_position.get(key)
+        if existing is not None:
+            aliases = existing["aliases"]
+            assert isinstance(aliases, list)
+            aliases.append(label)
+            continue
+        unique_by_position[key] = {
+            "label": label,
+            "source_label": source_label,
+            "occurrence": occurrence,
+            "fractional": fractional,
+            "aliases": [],
+        }
+    deduped = []
+    for item in unique_by_position.values():
+        deduped.append(
+            (
+                item["label"],
+                item["source_label"],
+                item["occurrence"],
+                item["fractional"],
+                item["aliases"],
+            )
+        )
+    return sorted(deduped, key=lambda item: (item[1], item[0]))
+
+
 def _orbit_library_from_export(
     export_data: dict[str, Any],
     design: ZomicDesignConfig,
@@ -237,20 +291,23 @@ def _orbit_library_from_export(
 
     fractional_positions, scale = _fractional_positions(cartesian_positions, design)
     grouped: dict[str, list[dict[str, Any]]] = {}
-    labeled_positions = zip(labels, source_labels, occurrences, fractional_positions, strict=True)
-    for label, source_label, occurrence, fractional in sorted(
-        labeled_positions,
-        key=lambda item: (item[1], item[0]),
-    ):
+    unique_sites = _dedupe_fractional_sites(
+        labels,
+        source_labels,
+        occurrences,
+        fractional_positions,
+    )
+    for label, source_label, occurrence, fractional, aliases in unique_sites:
         orbit_name = _infer_orbit_name(source_label)
-        grouped.setdefault(orbit_name, []).append(
-            {
-                "label": label,
-                "source_label": source_label,
-                "occurrence": occurrence,
-                "fractional_position": [fractional[0], fractional[1], fractional[2]],
-            }
-        )
+        site_payload: dict[str, Any] = {
+            "label": label,
+            "source_label": source_label,
+            "occurrence": occurrence,
+            "fractional_position": [fractional[0], fractional[1], fractional[2]],
+        }
+        if aliases:
+            site_payload["aliases"] = aliases
+        grouped.setdefault(orbit_name, []).append(site_payload)
 
     orbits: list[dict[str, Any]] = []
     for orbit_name in sorted(grouped):

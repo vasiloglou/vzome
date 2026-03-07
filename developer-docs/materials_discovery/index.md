@@ -40,6 +40,13 @@ uv run mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch all
 uv run mdisc hifi-rank --config configs/systems/al_cu_fe.yaml
 uv run mdisc active-learn --config configs/systems/al_cu_fe.yaml
 uv run mdisc report    --config configs/systems/al_cu_fe.yaml
+
+# Sc-Zn calibrated real mode
+uv run mdisc ingest --config configs/systems/sc_zn_real.yaml
+uv run mdisc generate --config configs/systems/sc_zn_real.yaml --count 64
+uv run mdisc screen --config configs/systems/sc_zn_real.yaml
+uv run mdisc hifi-validate --config configs/systems/sc_zn_real.yaml --batch all
+uv run mdisc hifi-rank --config configs/systems/sc_zn_real.yaml
 ```
 
 ## Documentation Map
@@ -74,10 +81,21 @@ Three systems are configured out of the box:
 | Al-Pd-Mn | Decagonal 2/1 proxy | `configs/systems/al_pd_mn.yaml` |
 | Sc-Zn | Cubic 1/0 proxy | `configs/systems/sc_zn.yaml` |
 | Sc-Zn (Zomic-authored) | Cubic 1/0 proxy via Zomic bridge | `configs/systems/sc_zn_zomic.yaml` |
+| Sc-Zn (real calibrated) | Zomic bridge + pinned Sc-Zn calibration pack | `configs/systems/sc_zn_real.yaml` |
+| Sc-Zn (native MLIP) | Zomic bridge + native providers | `configs/systems/sc_zn_native.yaml` |
 
-Al-Cu-Fe has additional configs for real-mode progression:
-`al_cu_fe_real.yaml` (fixture-backed), `al_cu_fe_exec.yaml` (command-backed),
-`al_cu_fe_native.yaml` (native MLIP providers).
+Additional real-mode configs:
+- `al_cu_fe_real.yaml`: fixture-backed real mode
+- `al_cu_fe_exec.yaml`: command-backed real mode
+- `al_cu_fe_native.yaml`: native MLIP providers
+- `sc_zn_real.yaml`: pinned `Sc-Zn` benchmark + validation snapshot
+- `sc_zn_native.yaml`: native MLIP providers for `Sc-Zn`
+
+The native MLIP path should be installed into a Python 3.11 `uv` environment:
+
+```bash
+uv sync --python 3.11 --extra dev --extra mlip
+```
 
 The Zomic-authored path depends on `vZome core` and requires a local Java runtime for
 `mdisc export-zomic` and for `mdisc generate` when `zomic_design` is set.

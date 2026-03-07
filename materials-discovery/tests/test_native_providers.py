@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import importlib
+from typing import Any
+
 import pytest
+from pytest import MonkeyPatch
 
 from materials_discovery.backends.native_providers import (
     evaluate_committee_provider,
@@ -81,21 +85,50 @@ def _config() -> SystemConfig:
     )
 
 
-def test_native_committee_provider_fails_cleanly_without_optional_deps() -> None:
+def _block_optional_modules(monkeypatch: MonkeyPatch, blocked: set[str]) -> None:
+    original_import_module = importlib.import_module
+
+    def fake_import_module(name: str, package: str | None = None) -> Any:
+        if name in blocked:
+            raise ImportError(f"blocked optional module: {name}")
+        return original_import_module(name, package)
+
+    monkeypatch.setattr(importlib, "import_module", fake_import_module)
+
+
+def test_native_committee_provider_fails_cleanly_without_optional_deps(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    _block_optional_modules(
+        monkeypatch,
+        {"mace.calculators", "chgnet.model.model", "mattersim.forcefield"},
+    )
     with pytest.raises(RuntimeError, match="uv sync --extra dev --extra mlip"):
         evaluate_committee_provider(_config(), _candidate())
 
 
-def test_native_phonon_provider_fails_cleanly_without_optional_deps() -> None:
+def test_native_phonon_provider_fails_cleanly_without_optional_deps(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    _block_optional_modules(monkeypatch, {"mace.calculators"})
     with pytest.raises(RuntimeError, match="uv sync --extra dev --extra mlip"):
         evaluate_phonon_provider(_config(), _candidate())
 
 
-def test_native_md_provider_fails_cleanly_without_optional_deps() -> None:
-    with pytest.raises(RuntimeError, match="uv sync --extra dev --extra mlip"):
+def test_native_md_provider_fails_cleanly_without_optional_deps(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    _block_optional_modules(
+        monkeypatch,
+        {"mace.calculators", "chgnet.model.dynamics", "mattersim.forcefield"},
+    )
+    with pytest.raises(RuntimeError, match="ASE-compatible calculator"):
         evaluate_md_provider(_config(), _candidate())
 
 
-def test_native_xrd_provider_fails_cleanly_without_optional_deps() -> None:
+def test_native_xrd_provider_fails_cleanly_without_optional_deps(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    _block_optional_modules(monkeypatch, {"pymatgen.analysis.diffraction.xrd"})
     with pytest.raises(RuntimeError, match="uv sync --extra dev --extra mlip"):
         evaluate_xrd_provider(_config(), _candidate())

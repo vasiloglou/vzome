@@ -74,8 +74,10 @@ def _mace_hessian(candidate: CandidateRecord, device: str | None) -> Any:
     calc = _mace_factory(device)
     atoms.calc = calc
     hessian = np.asarray(calc.get_hessian(atoms=atoms), dtype=float)
+    atom_count = len(atoms)
     if hessian.ndim == 4:
-        atom_count = len(atoms)
+        return hessian.reshape(3 * atom_count, 3 * atom_count)
+    if hessian.ndim == 3 and hessian.shape == (3 * atom_count, atom_count, 3):
         return hessian.reshape(3 * atom_count, 3 * atom_count)
     if hessian.ndim == 2:
         return hessian
@@ -83,14 +85,20 @@ def _mace_hessian(candidate: CandidateRecord, device: str | None) -> Any:
 
 
 @lru_cache(maxsize=4)
-def _chgnet_model() -> Any:
+def _chgnet_model(device: str | None) -> Any:
     model_module = _require_module("chgnet.model.model", "chgnet")
-    return model_module.CHGNet.load()
+    kwargs: dict[str, object] = {}
+    if device is not None:
+        kwargs["use_device"] = device
+    model = model_module.CHGNet.load(**kwargs)
+    if hasattr(model, "float"):
+        model = model.float()
+    return model
 
 
-def _chgnet_energy_per_atom(candidate: CandidateRecord) -> float:
+def _chgnet_energy_per_atom(candidate: CandidateRecord, device: str | None) -> float:
     structure = build_pymatgen_structure(candidate)
-    prediction = _chgnet_model().predict_structure(structure, task="e")
+    prediction = _chgnet_model(device).predict_structure(structure, task="e")
     if not isinstance(prediction, dict):
         raise ValueError("CHGNet prediction must be a mapping")
     for key in ("e", "energy", "energy_per_atom"):
@@ -124,7 +132,7 @@ def _committee_native(config: SystemConfig, candidate: CandidateRecord) -> Commi
     except Exception as exc:  # pragma: no cover - exercised only when deps are present
         failures.append(f"MACE={exc}")
     try:
-        energies["CHGNet"] = _chgnet_energy_per_atom(candidate)
+        energies["CHGNet"] = _chgnet_energy_per_atom(candidate, device)
     except Exception as exc:  # pragma: no cover - exercised only when deps are present
         failures.append(f"CHGNet={exc}")
     try:
