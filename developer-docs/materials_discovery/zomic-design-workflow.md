@@ -192,6 +192,82 @@ So this is not yet a fully direct `Zomic -> crystallographic symmetry orbit` com
 It is a controlled authoring bridge, optionally tightened by snapping onto an anchored
 orbit library and optionally expanded into a fuller anchored orbit set.
 
+---
+
+## LLM-Generated Zomic (Planned)
+
+The Zomic bridge will gain a new design source: LLM-generated Zomic scripts. Instead
+of hand-authoring `.zomic` files, a fine-tuned LLM generates Zomic conditioned on
+composition constraints and target properties.
+
+### How It Connects
+
+```
+LLM generates Zomic text
+    |
+    v
+ANTLR4 parse validation (rejects invalid syntax)
+    |
+    v
+vZome core compiles (same as hand-authored Zomic)
+    |
+    v
+Zomic bridge embeds into crystal cell (same pipeline)
+    |
+    v
+CandidateRecord → screen → validate → rank
+```
+
+The key insight is that the entire downstream pipeline is unchanged. The only
+difference is the origin of the `.zomic` text: human author vs. LLM.
+
+### Why Zomic for LLMs
+
+Standard crystal-generating LLMs (CrystaLLM, CrystalTextLLM) generate CIF text,
+which relies on periodic boundary conditions. CIF cannot represent quasicrystals.
+Zomic operates natively in the golden field Z[phi]³, making it the first text-based
+representation that allows an LLM to generate true quasicrystal-compatible structures.
+
+See [LLM Integration](llm-integration.md) for the full architecture and training plan.
+
+---
+
+## Reverse Engineering Zomic from Candidates (Planned)
+
+To build the LLM training corpus, pipeline-generated CandidateRecords can be
+reverse-engineered into Zomic scripts via a `record2zomic` converter:
+
+1. Group sites by orbit label
+2. For each site, compute displacement from origin as a Z[phi]³ vector
+3. Decompose the displacement into a sequence of Zomic strut moves (greedy search
+   over the 62 axis directions × available sizes)
+4. Wrap each orbit in `branch { label ... strut ... }` structure
+5. Post-process: merge consecutive same-axis struts, identify `repeat`/`symmetry`
+   patterns
+
+This produces Zomic scripts that round-trip through the bridge to reproduce the
+original candidate geometry (within `minimum_site_separation` tolerance).
+
+---
+
+## CIF-to-Zomic Conversion (Planned)
+
+A `cif2zomic` converter will allow importing approximant crystal structures from
+external databases (HYPOD-X, ICSD, Materials Project) into the Zomic training corpus:
+
+1. Parse CIF with pymatgen → Cartesian atomic positions
+2. Map each position to the nearest Z[phi]³ point using continued-fraction
+   expansion in phi
+3. Group by Wyckoff site → orbit labels
+4. Generate Zomic via the same strut decomposition as `record2zomic`
+5. Generate a companion design YAML with cell parameters from the CIF
+
+This conversion is approximate (periodic Cartesian → Z[phi] mapping introduces small
+errors) but sufficient for LLM training data. The trained LLM will learn to generate
+structures that are more natively quasicrystal-compatible than their CIF origins.
+
+See [Zomic LLM Data Plan](zomic-llm-data-plan.md) for the full data pipeline.
+
 ## Source References
 
 - `core/src/main/java/com/vzome/core/apps/ExportZomicLabeledGeometry.java`

@@ -16,18 +16,21 @@ runtime in the native phonon backend.
 
 All milestones (M1-M6) and real-mode execution phases (RM0-RM6) are implemented.
 The codebase contains ~60 Python modules (7200+ LOC) with 22 test files covering
-unit, integration, and end-to-end scenarios.
+unit, integration, and end-to-end scenarios. LLM integration is in design phase.
 
-| Stage | CLI Command | Module |
-|-------|-------------|--------|
-| Ingest reference phases | `mdisc ingest` | `data/` |
-| Export Zomic design | `mdisc export-zomic` | `generator/` + `core/` |
-| Generate candidates | `mdisc generate` | `generator/` |
-| Fast screening | `mdisc screen` | `screen/` |
-| High-fidelity validation | `mdisc hifi-validate` | `hifi_digital/` |
-| Ranking | `mdisc hifi-rank` | `hifi_digital/` |
-| Active learning | `mdisc active-learn` | `active_learning/` |
-| Experiment report | `mdisc report` | `diffraction/` |
+| Stage | CLI Command | Module | Status |
+|-------|-------------|--------|--------|
+| Ingest reference phases | `mdisc ingest` | `data/` | Implemented |
+| Export Zomic design | `mdisc export-zomic` | `generator/` + `core/` | Implemented |
+| Generate candidates | `mdisc generate` | `generator/` | Implemented |
+| Fast screening | `mdisc screen` | `screen/` | Implemented |
+| High-fidelity validation | `mdisc hifi-validate` | `hifi_digital/` | Implemented |
+| Ranking | `mdisc hifi-rank` | `hifi_digital/` | Implemented |
+| Active learning | `mdisc active-learn` | `active_learning/` | Implemented |
+| Experiment report | `mdisc report` | `diffraction/` | Implemented |
+| LLM-powered generation | `mdisc llm-generate` | `llm/` | Planned |
+| LLM-powered evaluation | `mdisc llm-evaluate` | `llm/` | Planned |
+| LLM-guided suggestions | `mdisc llm-suggest` | `llm/` | Planned |
 
 ## Quickstart
 
@@ -65,6 +68,8 @@ uv run mdisc hifi-rank --config configs/systems/sc_zn_real.yaml
 | What are the YAML config options? | [Configuration Reference](configuration-reference.md) |
 | What are the Pydantic data models? | [Data Schema Reference](data-schema-reference.md) |
 | How do I set up development? | [Contributing](contributing.md) |
+| How will LLMs generate quasicrystals? | [LLM Integration](llm-integration.md) |
+| How do we build the Zomic training corpus? | [Zomic LLM Data Plan](zomic-llm-data-plan.md) |
 
 ## Scope
 
@@ -106,18 +111,42 @@ The Zomic-authored path depends on `vZome core` and requires a local Java runtim
 
 ## External Resources
 
-- [HYPOD-X datasets](https://www.nature.com/articles/s41597-024-04043-z)
+### Databases & Datasets
+- [HYPOD-X datasets](https://www.nature.com/articles/s41597-024-04043-z) — Comprehensive QC + approximant data
 - [Matbench Discovery benchmark](https://www.nature.com/articles/s42256-025-01055-1)
+- [NIMS Materials Data Repository](https://mdr.nims.go.jp/) — TSAI model training data
+- [Bilbao Incommensurate Structures DB](https://www.cryst.ehu.eus/bincstrdb/) — Superspace formalism
+
+### ML Interatomic Potentials (integrated)
 - [CHGNet](https://github.com/CederGroupHub/chgnet) |
   [MACE](https://github.com/ACEsuit/mace) |
   [MatterSim](https://github.com/microsoft/mattersim)
+
+### Crystal-Generating LLMs
+- [CrystaLLM](https://github.com/lantunes/CrystaLLM) — GPT-2 trained on CIF ([Nature Comms 2024](https://www.nature.com/articles/s41467-024-54639-7))
+- [CrystalTextLLM](https://github.com/facebookresearch/crystal-text-llm) — Fine-tuned LLaMA-2 ([ICLR 2024](https://arxiv.org/abs/2402.04379))
+- [MatLLMSearch](https://arxiv.org/abs/2502.20933) — Evolution-guided, training-free
+- [CSLLM](https://github.com/szl666/CSLLM) — 98.6% synthesizability accuracy ([Nature Comms 2025](https://www.nature.com/articles/s41467-025-61778-y))
+
+### Quasicrystal-Specific ML
+- [TSAI model — first ML-discovered QCs](https://doi.org/10.1103/PhysRevMaterials.7.093805)
+- [Deep-learning PXRD for QC identification](https://github.com/SuperspaceLab/ml-qc-pxrd) ([Advanced Science 2024](https://advanced.onlinelibrary.wiley.com/doi/full/10.1002/advs.202304546))
+- [NN-VMC electronic quasicrystals](https://arxiv.org/abs/2512.10909)
+- [SCIGEN — diffusion model with geometric constraints](https://github.com/RyotaroOKabe/SCIGEN) ([Nature Materials 2025](https://www.nature.com/articles/s41563-025-02355-y))
+
+### Quasicrystal Tools
+- [PyQCstrc — 6D icosahedral QC modeling](https://pmc.ncbi.nlm.nih.gov/articles/PMC8366420/)
+- [Jana2020 — superspace refinement](https://jana.fzu.cz/)
 - [Zomic Reference](../../core/docs/ZomicReference.md)
-- [Quasicrystal ML discovery](https://doi.org/10.1103/PhysRevMaterials.7.093805)
-- [QC structure prediction review](https://euler.phys.cmu.edu/widom/pubs/PDF/IJCR2023.pdf)
-- [Deep-learning XRD for QC identification](https://pubmed.ncbi.nlm.nih.gov/37964402/)
+
+### Theoretical
+- [LLM as quasi-crystal analogy](https://arxiv.org/abs/2504.11986)
+- [Aperiodic approximants bridging QCs and modulated structures](https://www.nature.com/articles/s41467-024-49843-4)
 
 ## Related Documents
 
 - [vZome Geometry Tutorial, Section 10.8](vzome-geometry-tutorial.md) — Mathematical motivation
 - [Software Scaffold](materials-discovery-software-scaffold.md) — Original design blueprint (historical)
 - [Real-Mode Execution Plan](../../materials-discovery/REAL_MODE_EXECUTION_PLAN.md) — RM0-RM6 execution plan
+- [LLM Integration Architecture](llm-integration.md) — LLM-powered generation and evaluation
+- [Zomic LLM Data Plan](zomic-llm-data-plan.md) — Training corpus construction

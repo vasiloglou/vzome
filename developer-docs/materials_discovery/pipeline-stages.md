@@ -531,19 +531,151 @@ On any of these exceptions:
 
 ---
 
+---
+
+## 9. `mdisc llm-generate` (Planned)
+
+Generate candidate structures using an LLM that outputs Zomic scripts conditioned
+on composition constraints.
+
+### CLI syntax
+
+```
+mdisc llm-generate --config PATH --count INT [--seed-zomic PATH] [--temperature FLOAT] [--out PATH]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--config` | PATH | Yes | -- | Path to the YAML system configuration file |
+| `--count` | INT | Yes (min=1) | -- | Number of candidates to generate |
+| `--seed-zomic` | PATH | No | `None` | Optional seed Zomic script to extend or vary |
+| `--temperature` | FLOAT | No | `0.7` | LLM sampling temperature |
+| `--out` | PATH | No | `data/candidates/{slug}_llm_candidates.jsonl` | Output path |
+
+### Internal steps
+
+1. **Load configuration.** Parse and validate `SystemConfig`.
+2. **Resolve LLM backend.** Select the LLM adapter (mock/api/local) from config.
+3. **Format prompt.** Build the generation prompt from composition constraints,
+   template family, and optional seed Zomic.
+4. **Generate Zomic scripts.** Call the LLM to produce `count` Zomic scripts.
+   Each generation includes composition prefix and Zomic body.
+5. **Parse and validate.** For each generated script:
+   - Parse with ANTLR4 grammar (reject syntax errors)
+   - Compile with vZome core (reject runtime errors)
+   - Check collision constraints (minimum site separation)
+6. **Convert to candidates.** For each valid Zomic script:
+   - Run Zomic bridge to convert labeled geometry → orbit library
+   - Wrap as CandidateRecord with `source: "llm"` provenance
+7. **Write output.** Serialize valid candidates to JSONL.
+8. **Write calibration.** Record parse rate, compile rate, collision rate.
+9. **Write manifest.** Stage manifest with `stage="llm_generate"`.
+10. **Emit summary.** Print `LlmGenerateSummary` as JSON to stdout.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| LLM candidates JSONL | `{workspace}/data/candidates/{slug}_llm_candidates.jsonl` |
+| LLM generation metrics | `{workspace}/data/calibration/{slug}_llm_generation_metrics.json` |
+| Stage manifest | `{workspace}/data/manifests/{slug}_llm_generate_manifest.json` |
+
+### Return type
+
+`LlmGenerateSummary` (JSON to stdout).
+
+---
+
+## 10. `mdisc llm-evaluate` (Planned)
+
+Enrich validated candidates with LLM-powered assessment: synthesizability scoring,
+precursor suggestions, and anomaly detection.
+
+### CLI syntax
+
+```
+mdisc llm-evaluate --config PATH [--batch BATCH]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--config` | PATH | Yes | -- | Path to the YAML system configuration file |
+| `--batch` | STR | No | `"all"` | Batch selector (same semantics as `hifi-validate`) |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Validated JSONL | `{workspace}/data/hifi_validated/{slug}_*_validated.jsonl` | `mdisc hifi-validate` |
+
+### Internal steps
+
+1. **Load configuration.** Parse and validate `SystemConfig`.
+2. **Load validated candidates.** Same loading logic as `hifi-rank`.
+3. **Resolve LLM backend.** Select the evaluation LLM adapter from config (typically
+   a general-purpose model like Claude or GPT-4, not the fine-tuned Zomic model).
+4. **For each candidate:**
+   a. Serialize structure, composition, and validation results as a structured prompt.
+   b. LLM assesses synthesizability (inspired by CSLLM: can this be made in a lab?).
+   c. LLM suggests chemical precursors for synthesis.
+   d. LLM checks for anomalies (inconsistent validation results, unusual compositions).
+   e. LLM provides literature context (does this match known QC families?).
+5. **Attach assessments.** Add `llm_assessment` block to each CandidateRecord.
+6. **Write output.** Serialize enriched candidates to output JSONL.
+7. **Write calibration.** Record LLM call count, average assessment time.
+8. **Write manifest.** Stage manifest with `stage="llm_evaluate"`.
+9. **Emit summary.** Print `LlmEvaluateSummary` as JSON to stdout.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| LLM-evaluated JSONL | `{workspace}/data/llm_evaluated/{slug}_{batch_slug}_llm_evaluated.jsonl` |
+| LLM evaluation metrics | `{workspace}/data/calibration/{slug}_{batch_slug}_llm_evaluation_metrics.json` |
+| Stage manifest | `{workspace}/data/manifests/{slug}_{batch_slug}_llm_evaluate_manifest.json` |
+
+### Return type
+
+`LlmEvaluateSummary` (JSON to stdout).
+
+---
+
 ## Pipeline data flow
 
 The commands are designed to run in sequence. Each stage reads the output of a
 prior stage and writes its own artifacts. The canonical ordering is:
 
 ```
-ingest --> generate --> screen --> hifi-validate --> hifi-rank --> report
-                                        |                ^
-                                        v                |
-                                    active-learn --------+
-                                    (loop back to hifi-validate)
+                                  llm-generate (Zomic via LLM)
+                                       |
+ingest --> generate ------+            |
+                          |            |
+                          v            v
+                    screen (merges all candidates)
+                          |
+                          v
+                    hifi-validate --> llm-evaluate (enrichment)
+                          |                |
+                          v                v
+                    hifi-rank <--- (optional merge)
+                          |
+                          v
+                    active-learn / llm-suggest
+                          |
+                          v
+                       report
 ```
 
 The `active-learn` command forms a feedback loop: it reads validated candidates,
 trains a surrogate, selects the next batch, and the user runs `hifi-validate`
 again on that batch before re-ranking and re-reporting.
+
+The planned `llm-generate` command provides an alternative candidate source alongside
+`generate`. Both produce CandidateRecord JSONL that feeds into `screen`. The planned
+`llm-evaluate` command enriches validated candidates with synthesizability and
+precursor information before reporting. The planned `llm-suggest` command can replace
+or augment `active-learn` with LLM-guided exploration.

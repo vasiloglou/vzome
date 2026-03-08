@@ -24,7 +24,12 @@ materials_discovery/
   active_learning/  Surrogate training and batch selection
   diffraction/      XRD simulation and experiment report compilation
   backends/         Adapter system for mock/real/exec/native execution modes
-  cli.py            Single orchestration layer (8 typer commands)
+  llm/              [PLANNED] LLM-powered generation, evaluation, and suggestion
+                    llm_generate.py     Zomic generation conditioned on composition
+                    llm_evaluate.py     Synthesizability scoring and anomaly detection
+                    llm_suggest.py      Composition/motif suggestions for active learning
+                    converters/         record2zomic, cif2zomic, projection2zomic
+  cli.py            Single orchestration layer (8+3 typer commands)
 ```
 
 Dependency graph:
@@ -34,16 +39,20 @@ Dependency graph:
                          |  common  |
                          +----+-----+
                               |
-        +----------+----------+----------+-----------+----------+
-        |          |          |          |            |          |
-   +----+---+ +---+----+ +--+---+ +----+------+ +---+-----+ +--+--------+
-   |  data  | |generator| |screen| |hifi_digital| |active   | |diffraction|
-   +--------+ +---------+ +------+ +-----+------+ |learning | +-----------+
-                                         |         +---------+
-                                    +----+----+
-                                    | backends |
+        +----------+----------+----------+-----------+----------+----------+
+        |          |          |          |            |          |          |
+   +----+---+ +---+----+ +--+---+ +----+------+ +---+-----+ +--+--------+ +-----+
+   |  data  | |generator| |screen| |hifi_digital| |active   | |diffraction| | llm |
+   +--------+ +---------+ +------+ +-----+------+ |learning | +-----------+ +--+--+
+                                         |         +---------+                 |
+                                    +----+----+                                |
+                                    | backends | <-----------------------------+
                                     +---------+
 ```
+
+The planned `llm/` package depends on `common/` (schemas, coordinates) and `backends/`
+(LLM adapter selection). It also calls into `generator/zomic_bridge.py` to compile
+LLM-generated Zomic scripts into orbit libraries.
 
 ---
 
@@ -52,16 +61,19 @@ Dependency graph:
 There is no separate orchestration framework. `cli.py` is the pipeline. It
 defines eight typer commands that wire together the domain packages:
 
-| Command          | Packages used                      |
-|------------------|------------------------------------|
-| `ingest`         | `backends`, `data`                 |
-| `export-zomic`   | `generator`, `core`                |
-| `generate`       | `generator`                        |
-| `screen`         | `screen`                           |
-| `hifi-validate`  | `hifi_digital`, `backends`         |
-| `hifi-rank`      | `hifi_digital`                     |
-| `active-learn`   | `active_learning`                  |
-| `report`         | `diffraction`                      |
+| Command          | Packages used                      | Status |
+|------------------|------------------------------------| ------- |
+| `ingest`         | `backends`, `data`                 | Implemented |
+| `export-zomic`   | `generator`, `core`                | Implemented |
+| `generate`       | `generator`                        | Implemented |
+| `screen`         | `screen`                           | Implemented |
+| `hifi-validate`  | `hifi_digital`, `backends`         | Implemented |
+| `hifi-rank`      | `hifi_digital`                     | Implemented |
+| `active-learn`   | `active_learning`                  | Implemented |
+| `report`         | `diffraction`                      | Implemented |
+| `llm-generate`   | `llm`, `generator`, `backends`     | Planned |
+| `llm-evaluate`   | `llm`, `backends`                  | Planned |
+| `llm-suggest`    | `llm`, `active_learning`, `backends` | Planned |
 
 Each command reads a single YAML configuration file, loads it into a
 `SystemConfig` object, invokes the relevant domain functions, and writes
@@ -279,3 +291,12 @@ resolve_backend(config.backend_mode)
    multiple domain packages. Domain packages depend only on `common/` (and
    `hifi_digital/` additionally on `backends/`). This keeps the dependency
    graph shallow and the domain packages independently testable.
+
+7. **Zomic as the LLM representation format.** [PLANNED] Rather than
+   generating coordinates or CIF text, LLMs generate Zomic scripts that are
+   compiled by the existing vZome core. This ensures that LLM output is either
+   syntactically valid (and geometrically exact via the golden field) or
+   rejected at parse time — there is no "approximately right" failure mode.
+   The Zomic language's native aperiodicity makes it uniquely suited for
+   quasicrystal generation, unlike CIF which requires periodic boundary
+   conditions. See [LLM Integration](llm-integration.md).
