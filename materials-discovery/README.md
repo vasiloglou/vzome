@@ -33,6 +33,9 @@ uv sync --python 3.11 --extra dev --extra mlip
 ./scripts/run_native_pipeline.sh
 ```
 
+A `Ti-Zr-Ni` icosahedral quasicrystal system is also available:
+- `configs/systems/ti_zr_ni.yaml`
+
 Additional checked-in `Sc-Zn` real/native configs are now available:
 - `configs/systems/sc_zn_real.yaml`
 - `configs/systems/sc_zn_native.yaml`

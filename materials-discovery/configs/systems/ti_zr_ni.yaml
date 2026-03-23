@@ -1,0 +1,21 @@
+system_name: Ti-Zr-Ni
+template_family: icosahedral_approximant_1_1
+species:
+  - Ti
+  - Zr
+  - Ni
+composition_bounds:
+  Ti:
+    min: 0.30
+    max: 0.50
+  Zr:
+    min: 0.25
+    max: 0.45
+  Ni:
+    min: 0.10
+    max: 0.25
+coeff_bounds:
+  min: -3
+  max: 3
+seed: 41
+default_count: 100

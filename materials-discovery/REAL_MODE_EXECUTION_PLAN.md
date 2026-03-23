@@ -40,6 +40,12 @@ This document defines the execution plan to move `materials-discovery/` from sca
   - `configs/systems/al_cu_fe_exec.yaml` now exercises concrete runner modules through the exec adapter path,
   - `configs/systems/al_cu_fe_native.yaml` now exposes import-safe native provider backends behind the same command/cache contract.
 
+- Ti-Zr-Ni system support (added March 22, 2026):
+  - element property priors (Ti, Zr, Ni) and pairwise mixing-enthalpy proxies added,
+  - mock-mode config `configs/systems/ti_zr_ni.yaml` using icosahedral_approximant_1_1 template,
+  - template path entry for future `ti_zr_ni_icosahedral_1_1.json` prototype,
+  - composition bounds calibrated to the known Ti₄₁.₅Zr₄₁.₅Ni₁₇ icosahedral phase region.
+
 Note: these are production-oriented software pathways; domain-model fidelity can be raised iteratively by swapping adapters and calibrations without changing CLI/schema contracts.
 
 ## 1. Program Guardrails
@@ -59,7 +65,7 @@ Program target completion: **August 7, 2026**
 |---|---|---|---|
 | RM0 Baseline and Interface Freeze | 2026-03-09 to 2026-03-13 | Backend mode switch, artifact naming/versioning contract, config freeze | `mock` path still green; backend interface tests added; docs updated |
 | RM1 Real Ingestion | 2026-03-16 to 2026-03-27 | Real data connectors, normalization maps, provenance and data QA | Ingestion reproducible from pinned snapshots; QA report generated |
-| RM2 Real Generation | 2026-03-30 to 2026-04-17 | True approximant/template parameterization, geometry validity checks, dedupe at scale | >=10k candidates produced for one ternary system with validity and dedupe metrics |
+| RM2 Real Generation | 2026-03-30 to 2026-04-17 | True approximant/template parameterization, geometry validity checks, dedupe at scale. Target systems: Al-Cu-Fe, Al-Pd-Mn, Sc-Zn, Ti-Zr-Ni | >=10k candidates produced for one ternary system with validity and dedupe metrics |
 | RM3 Real Screening | 2026-04-20 to 2026-05-15 | MLIP relax adapters, threshold calibration, shortlist audit | Top 1-5% shortlist reproducible; calibration metrics published |
 | RM4 Real Validation | 2026-05-18 to 2026-06-19 | Committee prediction, uncertainty calibration, proxy hull, phonon/MD checks | >=200 validated candidates with complete uncertainty/pass-fail traces |
 | RM5 Real Active Learning | 2026-06-22 to 2026-07-10 | Surrogate retraining, model registry, acquisition policy rollout | New model version improves at least one top-k metric on held-out set |

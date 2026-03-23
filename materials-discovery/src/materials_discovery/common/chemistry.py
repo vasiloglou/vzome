@@ -42,6 +42,9 @@ PAIR_MIXING_ENTHALPY_EV: dict[tuple[str, str], float] = {
     ("Al", "Mn"): -0.20,
     ("Mn", "Pd"): -0.15,
     ("Sc", "Zn"): -0.16,
+    ("Ni", "Ti"): -0.35,
+    ("Ni", "Zr"): -0.49,
+    ("Ti", "Zr"): 0.00,
 }
 
 
@@ -87,6 +90,24 @@ ELEMENT_PROPERTIES: dict[str, ElementProperties] = {
         covalent_radius_pm=122.0,
         pauling_electronegativity=1.65,
         valence_electrons=12.0,
+    ),
+    "Ti": ElementProperties(
+        atomic_number=22,
+        covalent_radius_pm=160.0,
+        pauling_electronegativity=1.54,
+        valence_electrons=4.0,
+    ),
+    "Zr": ElementProperties(
+        atomic_number=40,
+        covalent_radius_pm=175.0,
+        pauling_electronegativity=1.33,
+        valence_electrons=4.0,
+    ),
+    "Ni": ElementProperties(
+        atomic_number=28,
+        covalent_radius_pm=124.0,
+        pauling_electronegativity=1.91,
+        valence_electrons=10.0,
     ),
 }
 

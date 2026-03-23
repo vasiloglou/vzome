@@ -256,6 +256,10 @@ SYSTEM_TEMPLATE_PATHS: dict[tuple[str, str], Path] = {
     / "data"
     / "prototypes"
     / "sc_zn_tsai_sczn6.json",
+    ("Ti-Zr-Ni", "icosahedral_approximant_1_1"): workspace_root()
+    / "data"
+    / "prototypes"
+    / "ti_zr_ni_icosahedral_1_1.json",
 }
 
 
