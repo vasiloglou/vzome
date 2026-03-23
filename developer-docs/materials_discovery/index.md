@@ -68,6 +68,7 @@ uv run mdisc hifi-rank --config configs/systems/sc_zn_real.yaml
 | What are the YAML config options? | [Configuration Reference](configuration-reference.md) |
 | What are the Pydantic data models? | [Data Schema Reference](data-schema-reference.md) |
 | How do I set up development? | [Contributing](contributing.md) |
+| How do LLMs and AI interact with quasicrystals? | [LLM & Quasicrystal Landscape](llm-quasicrystal-landscape.md) |
 | How will LLMs generate quasicrystals? | [LLM Integration](llm-integration.md) |
 | How do we build the Zomic training corpus? | [Zomic LLM Data Plan](zomic-llm-data-plan.md) |
 
@@ -82,13 +83,14 @@ proof, universal potential quality across all chemistries.
 
 ## Chemical Systems
 
-Three systems are configured out of the box:
+Four systems are configured out of the box:
 
 | System | Template Family | Config |
 |--------|----------------|--------|
 | Al-Cu-Fe | Icosahedral 1/1 approximant | `configs/systems/al_cu_fe.yaml` |
 | Al-Pd-Mn | Decagonal 2/1 proxy | `configs/systems/al_pd_mn.yaml` |
 | Sc-Zn | Cubic 1/0 proxy | `configs/systems/sc_zn.yaml` |
+| Ti-Zr-Ni | Icosahedral 1/1 approximant | `configs/systems/ti_zr_ni.yaml` |
 | Sc-Zn (Zomic-authored) | Cubic 1/0 proxy via Zomic bridge, expanded onto five `ScZn6` anchor orbits | `configs/systems/sc_zn_zomic.yaml` |
 | Sc-Zn (real calibrated) | Zomic bridge + pinned Sc-Zn calibration pack | `configs/systems/sc_zn_real.yaml` |
 | Sc-Zn (native MLIP) | Zomic bridge + native providers | `configs/systems/sc_zn_native.yaml` |
