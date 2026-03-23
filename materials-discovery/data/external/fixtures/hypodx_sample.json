@@ -28,5 +28,23 @@
     "phase": "approximant",
     "composition": {"Sc": 0.3, "Zn": 0.7},
     "source": "hypodx_fixture"
+  },
+  {
+    "system": "Ti-Zr-Ni",
+    "phase": "i-phase",
+    "composition": {"Ti": 0.415, "Zr": 0.415, "Ni": 0.17},
+    "source": "hypodx_fixture"
+  },
+  {
+    "system": "Ti-Zr-Ni",
+    "phase": "approximant",
+    "composition": {"Ti": 0.36, "Zr": 0.36, "Ni": 0.28},
+    "source": "hypodx_fixture"
+  },
+  {
+    "system": "Ti-Zr-Ni",
+    "phase_name": "C14-Laves",
+    "composition": {"Ti": 0.33, "Zr": 0.33, "Ni": 0.34},
+    "source": "hypodx_fixture"
   }
 ]

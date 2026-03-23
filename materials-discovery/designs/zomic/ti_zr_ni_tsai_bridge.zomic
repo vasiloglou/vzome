@@ -1,0 +1,48 @@
+size 7 purple +0
+
+symmetry around blue +13
+symmetry through +13
+branch{
+
+branch {
+
+size 7 purple -0
+from { yellow +0 red +0 }
+
+label icosa.vertex.top
+short blue -12
+label icosa.vertex.left
+short blue -10
+label icosa.vertex.bottom.left
+short blue +13
+label icosa.vertex.bottom.right
+short blue +11
+label icosa.vertex.right
+
+green +3
+label shell.outer.right
+branch { repeat 2 short orange -2 short blue -6 }
+short blue -13
+label shell.outer.left
+blue -5
+label shell.inner.left
+short blue +13
+label shell.inner.right
+branch green -33
+blue -2
+}
+
+from short red +1
+branch purple -0
+label bridge.top.right
+from short blue -13
+branch purple -0
+label bridge.top.left
+from blue -5
+branch purple -0
+label bridge.bottom.left
+from short blue +13
+branch purple -0
+label bridge.bottom.right
+
+}

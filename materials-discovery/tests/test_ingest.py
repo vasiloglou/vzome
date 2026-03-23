@@ -27,7 +27,7 @@ def test_ingest_dedupes_and_writes_sorted_output(tmp_path: Path) -> None:
     summary = ingest_fixture(config, fixture_path, out_path)
     rows = _read_jsonl(out_path)
 
-    assert summary.raw_count == 5
+    assert summary.raw_count == 8
     assert summary.matched_count == 3
     assert summary.deduped_count == 2
     assert len(rows) == 2

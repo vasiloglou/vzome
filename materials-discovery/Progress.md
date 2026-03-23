@@ -7,6 +7,8 @@
 | 2026-03-22 | Initial Progress.md created | Tracking document for experiments and actions |
 | 2026-03-22 | Added Ti-Zr-Ni system | New ternary icosahedral quasicrystal target; element priors, pair enthalpies, mock config, template path, execution plan updated |
 | 2026-03-23 | Added LLM-quasicrystal landscape doc | New developer doc covering how LLMs and AI models interact with quasicrystals: challenges, workflows, MLIP simulation, diffusion models, TSAI, and LLM-QC analogy |
+| 2026-03-23 | Ran ingest for Ti-Zr-Ni | 3 reference phases ingested (i-phase, approximant, C14-Laves); QA passed; fixture updated with Ti-Zr-Ni rows |
+| 2026-03-23 | Executed Ti-Zr-Ni export-zomic | Zomic design compiled to orbit library: 22 sites (10 icosa, 8 shell, 4 bridge) across 3 orbits |
 
 ## Diary
 
@@ -34,3 +36,24 @@
   - Includes a section connecting the landscape to our pipeline's hybrid approach (Zomic representation, MLIP validation, planned LLM stages).
   - Linked from `developer-docs/materials_discovery/index.md` documentation map.
   - Also updated index.md Chemical Systems table to include Ti-Zr-Ni.
+
+- **Executed Stage 1 (ingest) for Ti-Zr-Ni.**
+  - Added 3 Ti-Zr-Ni reference phases to `data/external/fixtures/hypodx_sample.json`:
+    - i-phase: Ti₄₁.₅Zr₄₁.₅Ni₁₇ (the canonical icosahedral composition)
+    - approximant: Ti₃₆Zr₃₆Ni₂₈
+    - C14-Laves: Ti₃₃Zr₃₃Ni₃₄ (competing phase for proxy hull)
+  - Ran `mdisc ingest --config configs/systems/ti_zr_ni.yaml` successfully.
+  - Output: `data/processed/ti_zr_ni_reference_phases.jsonl` (3 deduped rows).
+  - Manifest: `data/manifests/ti_zr_ni_ingest_manifest.json`.
+  - QA: 0% invalid rate, 0% duplicate rate, passed.
+  - Updated `tests/test_ingest.py` assertion (raw_count 5 → 8) to reflect new fixture rows.
+
+- **Executed Stage 2 (export-zomic) for Ti-Zr-Ni.**
+  - Created `designs/zomic/ti_zr_ni_tsai_bridge.zomic`: Tsai-type icosahedral cluster motif with icosa (vertex), shell (outer/inner), and bridge (connector) orbits.
+  - Created `designs/zomic/ti_zr_ni_tsai_bridge.yaml`: design config with 14.2A cell, preferred species (Ti/Zr on icosa vertices, Ni/Ti on shells, Ni on bridges).
+  - Ran `mdisc export-zomic --design designs/zomic/ti_zr_ni_tsai_bridge.yaml` successfully (JDK 21 installed).
+  - Output: `data/prototypes/generated/ti_zr_ni_tsai_bridge.json` — 22 sites across 3 orbits:
+    - **icosa**: 10 sites (preferred: Ti, Zr) — icosahedral vertex positions
+    - **shell**: 8 sites (preferred: Ni, Ti) — outer/inner shell positions
+    - **bridge**: 4 sites (preferred: Ni) — connector positions
+  - Raw export: `data/prototypes/generated/ti_zr_ni_tsai_bridge.raw.json`.

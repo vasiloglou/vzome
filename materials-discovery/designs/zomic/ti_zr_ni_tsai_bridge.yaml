@@ -1,0 +1,29 @@
+zomic_file: ti_zr_ni_tsai_bridge.zomic
+prototype_key: ti_zr_ni_tsai_bridge
+system_name: Ti-Zr-Ni
+template_family: icosahedral_approximant_1_1
+reference: Zomic-authored Tsai-inspired icosahedral cluster for Ti-Zr-Ni
+reference_url: null
+base_cell:
+  a: 14.2
+  b: 14.2
+  c: 14.2
+  alpha: 90.0
+  beta: 90.0
+  gamma: 90.0
+motif_center: [0.5, 0.5, 0.5]
+translation_divisor: 8.0
+radial_scale: 0.028
+tangential_scale: 0.064
+reference_axes:
+  - [1.0, 0.0, 0.0]
+  - [0.0, 1.0, 0.0]
+  - [0.0, 0.0, 1.0]
+minimum_site_separation: 0.15
+preferred_species_by_orbit:
+  icosa: [Ti, Zr]
+  shell: [Ni, Ti]
+  bridge: [Ni]
+embedding_fraction: 0.68
+export_path: ../../data/prototypes/generated/ti_zr_ni_tsai_bridge.json
+raw_export_path: ../../data/prototypes/generated/ti_zr_ni_tsai_bridge.raw.json
