@@ -40,6 +40,10 @@ instead of living in separate prototypes.
   configs for Al-Cu-Fe and Sc-Zn, output-side comparability (BenchmarkRunContext,
   provenance in rank/report), operator-facing benchmark runner and runbook,
   172 tests passing.
+- Validated in Phase 5: Platform is analytically useful — canonical data lake
+  with per-directory catalogs and hash-based staleness detection, lane-centric
+  cross-system comparison engine with benchmark-pack dereferencing, three
+  analytics notebooks, unified operator RUNBOOK.md, 200 tests passing.
 
 ### Active
 
@@ -108,4 +112,4 @@ instead of living in separate prototypes.
 | Defer large-model training until corpus + evaluation are ready | Prevents premature spending and noisy benchmarks | ✓ Good |
 
 ---
-*Last updated: 2026-04-03 after Phase 4 reference-aware no-DFT materials discovery execution*
+*Last updated: 2026-04-03 after Phase 5 candidate/reference data lake and analysis layer execution*
