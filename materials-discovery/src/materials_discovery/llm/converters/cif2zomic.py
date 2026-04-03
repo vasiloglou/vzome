@@ -6,6 +6,7 @@ from pathlib import Path
 from materials_discovery.common.io import workspace_root
 from materials_discovery.data_sources.schema import CanonicalRawSourceRecord
 from materials_discovery.generator.prototype_import import expand_cif_orbits, parse_cif
+from materials_discovery.generator.zomic_bridge import _infer_orbit_name
 from materials_discovery.llm.schema import (
     CorpusExample,
     CorpusProvenance,
@@ -33,7 +34,7 @@ def _cif_orbit_script(expanded: dict[str, object]) -> tuple[str, list[str], list
     for orbit_index, orbit in enumerate(orbits):
         if not isinstance(orbit, dict):
             continue
-        orbit_name = str(orbit["orbit"])
+        orbit_name = _infer_orbit_name(str(orbit.get("label", orbit["orbit"])))
         orbit_names.append(orbit_name)
         symbol = str(orbit.get("symbol", "X"))
         lines.append(f"// orbit={orbit_name}")

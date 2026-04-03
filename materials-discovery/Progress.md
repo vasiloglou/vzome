@@ -37,6 +37,7 @@
 | 2026-04-03 | Phase 6 Plan 03 Task 2: compile helper and projection2zomic | Added a bridge-backed temporary compile helper, a PyQCstrc projection payload conversion path, and focused pytest coverage for compile success/failure reporting and deterministic cell scaling |
 | 2026-04-03 | Phase 6 Plan 04 Task 1: CIF/open approximant conversion | Added CIF-driven corpus conversion for COD and HYPOD-X-style fixtures, plus canonical-record fallback handling and focused pytest coverage that stays green with the existing prototype/COD tests |
 | 2026-04-03 | Phase 6 Plan 04 Task 2: native and generated source loaders | Added explicit loaders for repo-native `.zomic` files and generated raw export artifacts, with exact vs anchored fidelity handling and focused pytest coverage for loader-hint alignment |
+| 2026-04-03 | Phase 6 Plan 04 Task 3: end-to-end corpus builder | Added the inventory-driven corpus builder that routes all loader hints, validates/grades/dedupes examples, and writes syntax/materials/rejects/inventory/QA/manifest artifacts under `data/llm_corpus/{build_id}` |
 
 ## Diary
 
@@ -237,3 +238,8 @@
   - New module: `llm/converters/generated_export.py` for raw export artifacts, preserving direct source metadata and choosing `exact` only when a source `.zomic` file is available.
   - Added loader-hint metadata (`native_zomic`, `generated_export`) so the final builder can dispatch from inventory rows without re-inferring source type.
   - Added `tests/test_llm_native_sources.py`; focused verification passed with `5 passed`.
+
+- Phase 6 Plan 04 Task 3 — Added the end-to-end corpus builder:
+  - New module: `llm/corpus_builder.py` that starts from `build_inventory()`, dispatches by `loader_hint`, compiles/validates generated examples, grades them, dedupes them, and writes `syntax_corpus.jsonl`, `materials_corpus.jsonl`, `rejects.jsonl`, `inventory.json`, `qa.json`, and `manifest.json`.
+  - Tightened the CIF conversion seam so CIF-derived orbit names line up with label-derived orbit validation inside the shared QA rules, preventing valid canonical-source examples from being rejected downstream.
+  - Added `tests/test_llm_corpus_builder.py`; focused verification passed with `17 passed` together with the inventory and QA slices.
