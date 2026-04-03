@@ -110,6 +110,7 @@ def _write_pack(
     override_gate: dict | None = None,
 ) -> Path:
     """Write a benchmark-pack JSON with an embedded report reference."""
+    tmp_path.mkdir(parents=True, exist_ok=True)
     report_path = tmp_path / f"{system.lower().replace('-', '_')}_report.json"
     report_path.write_text(json.dumps(report_data, indent=2), encoding="utf-8")
 
