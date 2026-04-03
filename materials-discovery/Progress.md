@@ -26,6 +26,7 @@
 
 | 2026-04-03 | Phase 5 Plan 01: data lake metadata layer | Added `lake` package with `catalog.py` (CatalogEntry, DirectoryCatalog, ARTIFACT_DIRECTORIES with 17 entries, build_directory_catalog, write_catalog), `staleness.py` (hash-based + mtime-hint staleness detection), and `index.py` (LakeIndex, build_lake_index, write_lake_index, lake_stats); wired `mdisc lake index` and `mdisc lake stats` CLI subcommands; 15 new tests pass, 187 total |
 | 2026-04-03 | Phase 5 Plan 02: cross-lane comparison engine | Added `lake/compare.py` with lane-centric model (LaneSnapshot, MetricDistribution, GateDelta, MetricDelta, ComparisonResult); dereferences benchmark-pack report paths to compute metric distributions (mean/min/max/std for 8 key metrics); wired `mdisc lake compare` CLI command with dual-format output (JSON + table); graceful fallback for missing report files; 10 new tests, 197 total |
+| 2026-04-03 | Phase 5 Plan 03 Task 1: analytics notebooks and smoke tests | Three starter notebooks (source_contribution_analysis, cross_run_drift_detection, metric_distribution_deep_dive) under `notebooks/`; each uses workspace_root() and degrades gracefully when data is absent; `tests/test_notebooks.py` with 3 static + 3 conditional execution smoke tests |
 
 ## Diary
 
@@ -141,6 +142,13 @@
   - `tests/test_benchmarking.py`: extended with 31 new deterministic tests asserting config validity, pack IDs, member source keys, snapshot IDs, priority ordering, benchmark corpus/validation-snapshot hooks, zomic-design preservation (Sc-Zn), and second-source fixture existence.
 
 ### 2026-04-03 (Phase 5 Plan 02)
+
+- Phase 5 Plan 03 Task 1 — Created three analytics notebooks and notebook smoke tests:
+  - `notebooks/source_contribution_analysis.ipynb` (new): loads report JSON, groups candidates by source (via benchmark_context.source_keys and evidence.calibration_provenance), renders grouped bar chart by priority (high/medium/watch), top-N candidate table, and summary text.
+  - `notebooks/cross_run_drift_detection.ipynb` (new): loads two benchmark packs as LaneSnapshots, runs compare_benchmark_packs, renders gate pass/fail comparison bar chart and metric distribution side-by-side bars with error bars, and delta interpretation table.
+  - `notebooks/metric_distribution_deep_dive.ipynb` (new): loads one or more report JSONs, renders histograms for hifi_score/stability_probability/ood_score, scatter for xrd_confidence vs xrd_distinctiveness, and a summary statistics table; supports overlay mode for cross-run comparison.
+  - All notebooks use `workspace_root()` for data path construction and degrade gracefully when data files are missing.
+  - `tests/test_notebooks.py` (new): 6 tests — 3 static (valid JSON, imports from materials_discovery, uses workspace_root) always run; 3 execution smoke tests (via nbconvert + fixture workspace injection) skip gracefully when nbformat/nbconvert not installed.
 
 - Phase 5 Plan 02 — Built cross-lane comparison engine and wired `mdisc lake compare` CLI command:
   - `lake/compare.py` (new): lane-centric internal model with `MetricDistribution` (mean, min, max, std, count), `LaneSnapshot` (loads from benchmark_pack.json, dereferences stage_manifest_paths["report"] to read deeper report entries for per-candidate metric aggregation), `GateDelta` (with status: both_pass/both_fail/regression/improvement), `MetricDelta`, and `ComparisonResult` (schema_version "comparison/v1").
