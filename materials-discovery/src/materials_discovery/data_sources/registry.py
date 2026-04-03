@@ -3,6 +3,9 @@ from __future__ import annotations
 from materials_discovery.data_sources.adapters import (
     build_cod_source_adapters,
     build_hypodx_source_adapters,
+    build_jarvis_source_adapters,
+    build_materials_project_source_adapters,
+    build_oqmd_source_adapters,
 )
 from materials_discovery.data_sources.types import SourceAdapter, SourceAdapterInfo
 
@@ -49,7 +52,13 @@ def register_builtin_source_adapters() -> None:
     global _BUILTINS_REGISTERED
     if _BUILTINS_REGISTERED:
         return
-    for adapter in [*build_hypodx_source_adapters(), *build_cod_source_adapters()]:
+    for adapter in [
+        *build_hypodx_source_adapters(),
+        *build_cod_source_adapters(),
+        *build_materials_project_source_adapters(),
+        *build_oqmd_source_adapters(),
+        *build_jarvis_source_adapters(),
+    ]:
         register_source_adapter(adapter, make_default=True)
     _BUILTINS_REGISTERED = True
 
