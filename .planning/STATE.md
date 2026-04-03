@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 3
 current_phase_name: reference phase integration with current pipeline
-current_plan: Not started
-status: ready_to_plan
-stopped_at: Completed 02-ingestion-platform-mvp
-last_updated: "2026-04-03T13:47:16.330994+00:00"
-last_activity: 2026-04-03 -- Phase 02 complete, ready for Phase 03 planning
+current_plan: 1
+status: ready_to_execute
+stopped_at: Planned 03-reference-phase-integration-with-current-pipeline
+last_updated: "2026-04-03T14:01:19Z"
+last_activity: 2026-04-03 -- Phase 03 planned, ready for execution
 progress:
   total_phases: 9
   completed_phases: 2
-  total_plans: 4
+  total_plans: 7
   completed_plans: 4
-  percent: 100
+  percent: 57
 ---
 
 # Project State
@@ -31,15 +31,15 @@ See: `.planning/PROJECT.md` (updated 2026-04-02)
 Current Phase: 3
 Current Phase Name: reference phase integration with current pipeline
 Total Phases: 9
-Current Plan: Not started
+Current Plan: 1
 Total Plans in Phase: 3
-Phase: 03 (reference-phase-integration-with-current-pipeline) — READY TO PLAN
-Plan: Not started
-Status: Ready to plan Phase 03
-Last activity: 2026-04-03 -- Phase 02 complete, ready for Phase 03 planning
-Last Activity Description: Phase 02 complete, transitioned to Phase 3
+Phase: 03 (reference-phase-integration-with-current-pipeline) — PLANNED
+Plan: 1 of 3
+Status: Ready to execute Phase 03
+Last activity: 2026-04-03 -- Phase 03 planned, ready for execution
+Last Activity Description: Phase 03 planning complete, ready for execution
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 57%
 
 ## Performance Metrics
 
@@ -80,6 +80,8 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 01-program-charter-and-canonical-data-model]: Lock Phase 2 priority to HYPOD-X, COD, Materials Project, OQMD, and JARVIS while preserving the broader watchlist and tooling inventory.
 - [Phase 02-ingestion-platform-mvp]: Keep built-in source adapter registration explicit so tests can clear and reconstruct the registry deterministically.
 - [Phase 02-ingestion-platform-mvp]: Keep `httpx` imports lazy in API adapters so offline pytest runs do not require the ingestion extra to be installed.
+- [Phase 03-reference-phase-integration-with-current-pipeline]: Use `source_registry_v1` as the only bridge selector and keep the legacy HYPOD-X ingest path unchanged.
+- [Phase 03-reference-phase-integration-with-current-pipeline]: Project canonical source records into additive `IngestRecord` rows rather than replacing the processed reference-phase contract.
 
 ### Pending Todos
 
@@ -92,5 +94,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-03T04:03:43.051Z
-Stopped at: Completed 02-ingestion-platform-mvp
+Stopped at: Planned 03-reference-phase-integration-with-current-pipeline
 Resume file: None
