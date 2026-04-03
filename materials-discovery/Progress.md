@@ -38,6 +38,7 @@
 | 2026-04-03 | Phase 6 Plan 04 Task 1: CIF/open approximant conversion | Added CIF-driven corpus conversion for COD and HYPOD-X-style fixtures, plus canonical-record fallback handling and focused pytest coverage that stays green with the existing prototype/COD tests |
 | 2026-04-03 | Phase 6 Plan 04 Task 2: native and generated source loaders | Added explicit loaders for repo-native `.zomic` files and generated raw export artifacts, with exact vs anchored fidelity handling and focused pytest coverage for loader-hint alignment |
 | 2026-04-03 | Phase 6 Plan 04 Task 3: end-to-end corpus builder | Added the inventory-driven corpus builder that routes all loader hints, validates/grades/dedupes examples, and writes syntax/materials/rejects/inventory/QA/manifest artifacts under `data/llm_corpus/{build_id}` |
+| 2026-04-03 | Phase 6 Plan 04 Task 4: llm-corpus CLI command | Added the `mdisc llm-corpus build` sub-application/command, JSON summary output, and focused CLI tests for success, invalid configs, and workspace-relative config paths |
 
 ## Diary
 
@@ -243,3 +244,8 @@
   - New module: `llm/corpus_builder.py` that starts from `build_inventory()`, dispatches by `loader_hint`, compiles/validates generated examples, grades them, dedupes them, and writes `syntax_corpus.jsonl`, `materials_corpus.jsonl`, `rejects.jsonl`, `inventory.json`, `qa.json`, and `manifest.json`.
   - Tightened the CIF conversion seam so CIF-derived orbit names line up with label-derived orbit validation inside the shared QA rules, preventing valid canonical-source examples from being rejected downstream.
   - Added `tests/test_llm_corpus_builder.py`; focused verification passed with `17 passed` together with the inventory and QA slices.
+
+- Phase 6 Plan 04 Task 4 — Added the operator-facing corpus CLI:
+  - `cli.py` now mounts `llm_corpus_app` under `mdisc llm-corpus` and exposes `mdisc llm-corpus build --config ...`.
+  - The new command validates the YAML as `CorpusBuildConfig`, calls `build_llm_corpus()`, prints `CorpusBuildSummary` as JSON, and follows the existing CLI error path with exit code 2 on invalid configs.
+  - Added `tests/test_llm_corpus_cli.py`; focused verification passed with `11 passed` together with the existing `test_cli.py` contract suite.

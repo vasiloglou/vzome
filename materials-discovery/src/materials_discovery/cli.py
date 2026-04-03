@@ -99,12 +99,18 @@ from materials_discovery.lake.index import (
     lake_stats,
     write_lake_index,
 )
+from materials_discovery.llm.corpus_builder import build_llm_corpus
+from materials_discovery.llm.schema import CorpusBuildConfig
 
 app = typer.Typer(add_completion=False, help="No-DFT materials discovery CLI scaffold")
 
 # --- Lake sub-application (D-10: lake catalog and analysis commands) ---
 lake_app = typer.Typer(help="Data lake catalog and analysis commands")
 app.add_typer(lake_app, name="lake")
+
+# --- LLM corpus preparation sub-application ---
+llm_corpus_app = typer.Typer(help="LLM corpus preparation commands")
+app.add_typer(llm_corpus_app, name="llm-corpus")
 
 
 def _emit_error(message: str) -> None:
@@ -1217,8 +1223,22 @@ def lake_compare_cmd(
 
     if not json_only:
         typer.echo(format_comparison_table(result))
-
     typer.echo(f"\nComparison JSON written to: {out_path}")
+
+
+@llm_corpus_app.command("build")
+def llm_corpus_build_cmd(
+    config: Path = typer.Option(..., "--config", exists=True, dir_okay=False),
+) -> None:
+    try:
+        raw = load_yaml(config)
+        build_config = CorpusBuildConfig.model_validate(raw)
+        summary = build_llm_corpus(build_config)
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(str(exc))
+        raise typer.Exit(code=2) from exc
+
+    typer.echo(summary.model_dump_json())
 
 
 if __name__ == "__main__":
