@@ -53,7 +53,11 @@ from materials_discovery.common.stage_metrics import (
     validation_calibration,
 )
 from materials_discovery.data.ingest_hypodx import ingest_rows
-from materials_discovery.data_sources.projection import project_snapshot_to_ingest_records
+from materials_discovery.data_sources.projection import (
+    project_canonical_records,
+    project_snapshot_to_ingest_records,
+)
+from materials_discovery.data_sources.reference_packs import assemble_reference_pack_from_config
 from materials_discovery.data_sources.registry import (
     SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY,
     register_builtin_source_adapters,
@@ -63,6 +67,8 @@ from materials_discovery.data_sources.runtime import (
     load_cached_source_stage_summary,
     stage_registered_source_snapshot,
 )
+from materials_discovery.data_sources.schema import CanonicalRawSourceRecord
+from materials_discovery.common.io import load_jsonl as _load_jsonl_for_pack
 from materials_discovery.diffraction.compare_patterns import compile_experiment_report
 from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_xrd_patterns
 from materials_discovery.generator.candidate_factory import generate_candidates
@@ -291,6 +297,64 @@ def _workspace_path(path_str: str) -> Path:
     return workspace_root() / path
 
 
+def _ingest_via_reference_pack(
+    config: SystemConfig,
+    out_path: Path,
+) -> tuple[IngestSummary, dict[str, object]]:
+    """Assemble a multi-source reference pack and project into processed IngestRecords.
+
+    Called when ``ingestion.reference_pack`` is set in the system config.
+    This is a no-DFT path: it assembles, deduplicates, and projects canonical
+    source records into processed reference phases without invoking any
+    high-fidelity validation adapters.
+    """
+    pack_manifest = assemble_reference_pack_from_config(config)
+
+    canonical_records_path = _workspace_path(pack_manifest.canonical_records_path)
+    raw_rows = _load_jsonl_for_pack(canonical_records_path)
+    records = [CanonicalRawSourceRecord.model_validate(row) for row in raw_rows]
+    projected, projection_summary = project_canonical_records(records, config)
+
+    if not projected:
+        raise ValueError("reference-pack projection produced zero usable records")
+
+    write_jsonl([row.model_dump(mode="json") for row in projected], out_path)
+
+    summary = IngestSummary(
+        raw_count=pack_manifest.total_canonical_records,
+        matched_count=projection_summary.matched_system_count,
+        deduped_count=projection_summary.deduped_count,
+        output_path=str(out_path),
+        invalid_count=projection_summary.skipped_missing_composition_count,
+        backend_mode=config.backend.mode,
+        backend_adapter=SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY,
+        qa_metrics={
+            "passed": projection_summary.deduped_count > 0,
+            "input_count": projection_summary.input_count,
+            "matched_system_count": projection_summary.matched_system_count,
+            "projected_count": projection_summary.projected_count,
+            "deduped_count": projection_summary.deduped_count,
+            "skipped_system_mismatch_count": projection_summary.skipped_system_mismatch_count,
+            "skipped_missing_composition_count": projection_summary.skipped_missing_composition_count,
+            "duplicate_dropped_count": projection_summary.duplicate_dropped_count,
+        },
+    )
+    source_lineage: dict[str, object] = {
+        "pack_id": pack_manifest.pack_id,
+        "system_slug": pack_manifest.system_slug,
+        "pack_fingerprint": pack_manifest.pack_fingerprint,
+        "canonical_records_path": pack_manifest.canonical_records_path,
+        "total_canonical_records": pack_manifest.total_canonical_records,
+        "member_sources": [
+            {"source_key": m.source_key, "snapshot_id": m.snapshot_id}
+            for m in pack_manifest.members
+        ],
+        "priority_order": pack_manifest.priority_order,
+        "projection_summary": projection_summary.model_dump(mode="json"),
+    }
+    return summary, source_lineage
+
+
 def _source_registry_snapshot_id(config: SystemConfig) -> tuple[str, str, str | None]:
     ingestion = config.ingestion
     if ingestion is None:
@@ -387,7 +451,13 @@ def ingest_command(
         )
         out_path = out or default_out
         source_lineage: dict[str, object] | None = None
-        if is_source_runtime_ingest_adapter(system_config.backend.ingest_adapter):
+        _has_reference_pack = (
+            system_config.ingestion is not None
+            and system_config.ingestion.reference_pack is not None
+        )
+        if is_source_runtime_ingest_adapter(system_config.backend.ingest_adapter) and _has_reference_pack:
+            summary, source_lineage = _ingest_via_reference_pack(system_config, out_path)
+        elif is_source_runtime_ingest_adapter(system_config.backend.ingest_adapter):
             summary, source_lineage = _ingest_via_source_registry(system_config, fixture, out_path)
         else:
             backend = resolve_ingest_backend(

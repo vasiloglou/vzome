@@ -1,0 +1,71 @@
+# Phase 4 benchmark lane: Sc-Zn richer multi-source reference-aware config.
+#
+# Preserves the Zomic authoring path (zomic_design field) from sc_zn_real.yaml.
+# Routes ingest through source_registry_v1 and declares an explicit
+# ingestion.reference_pack block with two sources.
+#
+# Reference pack members:
+#   1. hypodx (local fixture) — QC/approximant-specific, highest priority
+#   2. cod (local fixture) — open crystal structure DB, second priority
+#
+# Operator workflow:
+#   mdisc ingest         --config configs/systems/sc_zn_reference_aware.yaml
+#   mdisc generate       --config configs/systems/sc_zn_reference_aware.yaml
+#   mdisc screen         --config configs/systems/sc_zn_reference_aware.yaml
+#   mdisc hifi-validate  --config configs/systems/sc_zn_reference_aware.yaml --batch all
+#   mdisc hifi-rank      --config configs/systems/sc_zn_reference_aware.yaml
+
+system_name: Sc-Zn
+template_family: cubic_proxy_1_0
+species:
+  - Sc
+  - Zn
+composition_bounds:
+  Sc:
+    min: 0.15
+    max: 0.40
+  Zn:
+    min: 0.60
+    max: 0.85
+coeff_bounds:
+  min: -2
+  max: 2
+seed: 31
+default_count: 64
+
+# Zomic authoring path preserved from sc_zn_real.yaml.
+zomic_design: designs/zomic/sc_zn_tsai_bridge.yaml
+
+backend:
+  mode: real
+  ingest_adapter: source_registry_v1
+  committee_adapter: committee_fixture_fallback_v2026_03_09
+  phonon_adapter: phonon_fixture_fallback_v2026_03_09
+  md_adapter: md_fixture_fallback_v2026_03_09
+  xrd_adapter: xrd_fixture_fallback_v2026_03_09
+  validation_snapshot: data/external/pinned/sc_zn_validation_snapshot_2026_03_07.json
+  benchmark_corpus: data/benchmarks/sc_zn_benchmark.json
+  versions:
+    hypodx_snapshot: "fixture-local"
+    cod_snapshot: "cod_fixture_v1"
+    validation_snapshot: "2026-03-07"
+    benchmark_corpus: "2026-03-07"
+
+# Phase 4 reference-pack contract.
+# Plan 02 may consume pack_id, members, and priority_order directly.
+ingestion:
+  source_key: ""
+  artifact_root: data/external/sources
+  reference_pack:
+    pack_id: sc_zn_v1
+    reuse_cached_pack: true
+    priority_order:
+      - hypodx
+      - cod
+    members:
+      - source_key: hypodx
+        snapshot_id: hypodx_fixture_local
+        staged_canonical_path: data/external/sources/hypodx/hypodx_fixture_local/canonical_records.jsonl
+      - source_key: cod
+        snapshot_id: cod_fixture_v1
+        staged_canonical_path: data/external/sources/cod/cod_fixture_v1/canonical_records.jsonl

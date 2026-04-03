@@ -1,0 +1,73 @@
+# Phase 4 benchmark lane: Al-Cu-Fe richer multi-source reference-aware config.
+#
+# This config routes ingest through source_registry_v1 and declares an explicit
+# ingestion.reference_pack block so the multi-source inputs are a committed
+# artifact rather than ad hoc operator logic.
+#
+# Reference pack members:
+#   1. hypodx (pinned 2026-03-09) — QC/approximant-specific, highest priority
+#   2. materials_project (pinned fixture) — generic periodic, second priority
+#
+# Operator workflow:
+#   mdisc ingest         --config configs/systems/al_cu_fe_reference_aware.yaml
+#   mdisc generate       --config configs/systems/al_cu_fe_reference_aware.yaml
+#   mdisc screen         --config configs/systems/al_cu_fe_reference_aware.yaml
+#   mdisc hifi-validate  --config configs/systems/al_cu_fe_reference_aware.yaml --batch all
+#   mdisc hifi-rank      --config configs/systems/al_cu_fe_reference_aware.yaml
+#   mdisc report         --config configs/systems/al_cu_fe_reference_aware.yaml
+
+system_name: Al-Cu-Fe
+template_family: icosahedral_approximant_1_1
+species:
+  - Al
+  - Cu
+  - Fe
+composition_bounds:
+  Al:
+    min: 0.60
+    max: 0.80
+  Cu:
+    min: 0.10
+    max: 0.25
+  Fe:
+    min: 0.05
+    max: 0.20
+coeff_bounds:
+  min: -3
+  max: 3
+seed: 17
+default_count: 100
+
+backend:
+  mode: real
+  ingest_adapter: source_registry_v1
+  committee_adapter: committee_fixture_fallback_v2026_03_09
+  phonon_adapter: phonon_fixture_fallback_v2026_03_09
+  md_adapter: md_fixture_fallback_v2026_03_09
+  xrd_adapter: xrd_fixture_fallback_v2026_03_09
+  validation_snapshot: data/external/pinned/al_cu_fe_validation_snapshot_2026_03_09.json
+  benchmark_corpus: data/benchmarks/al_cu_fe_benchmark.json
+  versions:
+    hypodx_snapshot: "2026-03-09"
+    materials_project_snapshot: "mp_fixture_v1"
+    validation_snapshot: "2026-03-09"
+    benchmark_corpus: "2026-03-06"
+
+# Phase 4 reference-pack contract.
+# Plan 02 may consume pack_id, members, and priority_order directly.
+ingestion:
+  source_key: ""
+  artifact_root: data/external/sources
+  reference_pack:
+    pack_id: al_cu_fe_v1
+    reuse_cached_pack: true
+    priority_order:
+      - hypodx
+      - materials_project
+    members:
+      - source_key: hypodx
+        snapshot_id: hypodx_pinned_2026_03_09
+        staged_canonical_path: data/external/sources/hypodx/hypodx_pinned_2026_03_09/canonical_records.jsonl
+      - source_key: materials_project
+        snapshot_id: mp_fixture_v1
+        staged_canonical_path: data/external/sources/materials_project/mp_fixture_v1/canonical_records.jsonl
