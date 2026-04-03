@@ -122,7 +122,10 @@ def test_native_md_provider_fails_cleanly_without_optional_deps(
         monkeypatch,
         {"mace.calculators", "chgnet.model.dynamics", "mattersim.forcefield"},
     )
-    with pytest.raises(RuntimeError, match="ASE-compatible calculator"):
+    with pytest.raises(
+        RuntimeError,
+        match="ASE-compatible calculator|optional dependency 'ase'",
+    ):
         evaluate_md_provider(_config(), _candidate())
 
 
