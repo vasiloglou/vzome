@@ -185,19 +185,78 @@ class BackendConfig(BaseModel):
         return self
 
 
-class IngestionConfig(BaseModel):
+class ReferencePackMemberConfig(BaseModel):
+    """Single source-snapshot member of a reference pack (config layer)."""
+
     source_key: str
+    snapshot_id: str
+    staged_canonical_path: str | None = None
+    staged_manifest_path: str | None = None
+
+    @model_validator(mode="after")
+    def _strip(self) -> ReferencePackMemberConfig:
+        self.source_key = self.source_key.strip()
+        if not self.source_key:
+            raise ValueError("reference_pack member source_key must not be empty")
+        self.snapshot_id = self.snapshot_id.strip()
+        if not self.snapshot_id:
+            raise ValueError("reference_pack member snapshot_id must not be empty")
+        return self
+
+
+class ReferencePackConfig(BaseModel):
+    """Phase 4 reference-pack config block nested under ``ingestion``.
+
+    Shape::
+
+        ingestion:
+          reference_pack:
+            pack_id: al_cu_fe_v1
+            members:
+              - source_key: hypodx
+                snapshot_id: snap_v1
+              - source_key: cod
+                snapshot_id: cod_snap_v1
+            reuse_cached_pack: true
+            priority_order:
+              - hypodx
+              - cod
+    """
+
+    pack_id: str
+    members: list[ReferencePackMemberConfig]
+    reuse_cached_pack: bool = True
+    priority_order: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _validate(self) -> ReferencePackConfig:
+        self.pack_id = self.pack_id.strip()
+        if not self.pack_id:
+            raise ValueError("reference_pack.pack_id must not be empty")
+        if not self.members:
+            raise ValueError("reference_pack.members must not be empty")
+        seen: set[str] = set()
+        for member in self.members:
+            key = f"{member.source_key}:{member.snapshot_id}"
+            if key in seen:
+                raise ValueError(f"duplicate reference_pack member: {key}")
+            seen.add(key)
+        return self
+
+
+class IngestionConfig(BaseModel):
+    source_key: str = ""
     adapter_key: str | None = None
     snapshot_id: str | None = None
     use_cached_snapshot: bool = True
     query: dict[str, Any] = Field(default_factory=dict)
     artifact_root: str | None = None
+    reference_pack: ReferencePackConfig | None = None
 
     @model_validator(mode="after")
     def validate_ingestion(self) -> IngestionConfig:
         self.source_key = self.source_key.strip()
-        if not self.source_key:
-            raise ValueError("ingestion.source_key must not be empty")
+        # source_key is optional when reference_pack is provided
         if self.adapter_key is not None:
             self.adapter_key = self.adapter_key.strip() or None
         if self.snapshot_id is not None:

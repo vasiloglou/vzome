@@ -227,3 +227,37 @@ class ProjectionSummary(BaseModel):
     skipped_system_mismatch_count: int = 0
     skipped_missing_composition_count: int = 0
     duplicate_dropped_count: int = 0
+
+
+# ---------------------------------------------------------------------------
+# Reference-pack manifest and assembly summary (written to disk, Phase 4)
+# Config-layer models (ReferencePackConfig, ReferencePackMemberConfig) live
+# in materials_discovery.common.schema to avoid circular imports.
+# ---------------------------------------------------------------------------
+
+
+class ReferencePackMemberResult(BaseModel):
+    """Per-member assembly outcome recorded in pack_manifest.json."""
+
+    source_key: str
+    snapshot_id: str
+    canonical_records_path: str
+    snapshot_manifest_path: str | None = None
+    canonical_record_count: int
+    priority_rank: int
+
+
+class ReferencePackManifest(BaseModel):
+    """Written as ``pack_manifest.json`` inside the reference-pack directory."""
+
+    schema_version: str = "reference-pack-manifest/v1"
+    pack_id: str
+    system_slug: str
+    created_at_utc: str
+    pack_fingerprint: str
+    members: list[ReferencePackMemberResult]
+    priority_order: list[str]
+    total_canonical_records: int
+    duplicate_dropped_count: int
+    overlap_count: int
+    canonical_records_path: str

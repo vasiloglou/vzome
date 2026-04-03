@@ -52,3 +52,41 @@ def workspace_relative(path: Path) -> str:
         return str(path.relative_to(root))
     except ValueError:
         return str(path)
+
+
+# ---------------------------------------------------------------------------
+# Reference-pack storage paths (Phase 4)
+# ---------------------------------------------------------------------------
+
+
+def _reference_pack_root(pack_root: str | None = None) -> Path:
+    if pack_root is not None:
+        path = Path(pack_root)
+        if path.is_absolute():
+            return path
+        return workspace_root() / path
+    return workspace_root() / "data" / "external" / "reference_packs"
+
+
+def reference_pack_dir(
+    system_slug: str,
+    pack_id: str,
+    pack_root: str | None = None,
+) -> Path:
+    return _reference_pack_root(pack_root) / system_slug / pack_id
+
+
+def reference_pack_canonical_records_path(
+    system_slug: str,
+    pack_id: str,
+    pack_root: str | None = None,
+) -> Path:
+    return reference_pack_dir(system_slug, pack_id, pack_root) / "canonical_records.jsonl"
+
+
+def reference_pack_manifest_path(
+    system_slug: str,
+    pack_id: str,
+    pack_root: str | None = None,
+) -> Path:
+    return reference_pack_dir(system_slug, pack_id, pack_root) / "pack_manifest.json"
