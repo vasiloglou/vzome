@@ -194,7 +194,7 @@ stronger benchmarks.
 
 **Notes**
 
-- This is the point where “project 2” becomes real instead of just being the
+- This is the point where "project 2" becomes real instead of just being the
   existing scaffold.
 
 ## Phase 5: Candidate/Reference Data Lake and Analysis Layer
@@ -217,10 +217,17 @@ stronger benchmarks.
 
 - `PIPE-04`, `PIPE-05`
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md -- Catalog schema, per-directory catalog generator, staleness detection, mdisc lake index and stats CLI
+- [ ] 05-02-PLAN.md -- Cross-lane comparison engine and mdisc lake compare CLI
+- [ ] 05-03-PLAN.md -- Analytics notebooks, RUNBOOK.md, and human verification
+
 **Notes**
 
-- This phase makes it easier to ask “what changed?” and “which source made this
-  result stronger?” without manual archaeology.
+- This phase makes it easier to ask "what changed?" and "which source made this
+  result stronger?" without manual archaeology.
 
 ## Phase 6: Zomic Training Corpus Pipeline
 
