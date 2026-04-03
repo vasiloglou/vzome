@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 04
 current_phase_name: reference-aware-no-dft-materials-discovery-v1
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-04-03T15:30:35.761Z"
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-04-03T15:39:10.057Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 70
 ---
 
@@ -31,10 +31,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-02)
 Current Phase: 04
 Current Phase Name: reference-aware-no-dft-materials-discovery-v1
 Total Phases: 9
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 3
 Phase: 04 (reference-aware-no-dft-materials-discovery-v1) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-03
 Last Activity Description: Phase 04 execution started
@@ -70,6 +70,7 @@ Progress: [███████░░░] 70%
 | Phase 03 P2 | 17min | 3 tasks | 9 files |
 | Phase 03 P3 | 27min | 3 tasks | 5 files |
 | Phase 04 P01 | 12 | 2 tasks | 15 files |
+| Phase 04 P02 | 18 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,9 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 04]: ReferencePackConfig and ReferencePackMemberConfig live in common/schema.py to avoid circular imports; disk-artifact models in data_sources/schema.py
 - [Phase 04]: CLI detects ingestion.reference_pack and routes source_registry_v1 through _ingest_via_reference_pack for multi-source pack assembly before projection
 - [Phase 04]: Second source for Al-Cu-Fe benchmark: materials_project (mp_fixture_v1); for Sc-Zn: cod (cod_fixture_v1)
+- [Phase 04]: CLI assembles BenchmarkRunContext once from config+lineage and passes it forward; downstream stages do not reconstruct context independently
+- [Phase 04]: benchmark_context field on ArtifactManifest is nullable so existing manifest readers remain valid when context is absent
+- [Phase 04]: benchmark_pack.json is a high-level index referencing stage manifests/calibration JSONs rather than duplicating their content
 
 ### Pending Todos
 
@@ -106,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T15:30:35.758Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-04-03T15:39:10.051Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None
