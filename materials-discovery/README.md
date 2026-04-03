@@ -23,6 +23,10 @@ uv run mdisc hifi-validate --config configs/systems/al_cu_fe.yaml --batch all
 uv run mdisc hifi-rank --config configs/systems/al_cu_fe.yaml
 uv run mdisc active-learn --config configs/systems/al_cu_fe.yaml
 uv run mdisc report    --config configs/systems/al_cu_fe.yaml
+
+# Run the first LLM inference path (mock + compile-backed validation)
+uv run mdisc llm-generate --config configs/systems/al_cu_fe_llm_mock.yaml --count 5
+./scripts/run_llm_generate_benchmarks.sh --systems all --count 5
 ```
 
 For real-mode execution with MLIP backends:
@@ -79,8 +83,9 @@ HYPOD-X snapshot does not yet include `Sc-Zn` rows. Their calibrated assets are:
 
 ## What is Implemented
 
-All M1-M6 milestones and RM0-RM6 real-mode execution phases. Eight CLI commands
-(`ingest`, `export-zomic`, `generate`, `screen`, `hifi-validate`, `hifi-rank`,
+All M1-M6 milestones and RM0-RM6 real-mode execution phases, plus the first
+Phase 7 LLM inference path. Nine CLI commands (`ingest`, `export-zomic`,
+`generate`, `llm-generate`, `screen`, `hifi-validate`, `hifi-rank`,
 `active-learn`, `report`) with mock and real backend modes.
 
 `export-zomic` and Zomic-backed generation invoke `vZome core` through

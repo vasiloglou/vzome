@@ -533,7 +533,7 @@ On any of these exceptions:
 
 ---
 
-## 9. `mdisc llm-generate` (Planned)
+## 9. `mdisc llm-generate`
 
 Generate candidate structures using an LLM that outputs Zomic scripts conditioned
 on composition constraints.
@@ -552,35 +552,44 @@ mdisc llm-generate --config PATH --count INT [--seed-zomic PATH] [--temperature 
 | `--count` | INT | Yes (min=1) | -- | Number of candidates to generate |
 | `--seed-zomic` | PATH | No | `None` | Optional seed Zomic script to extend or vary |
 | `--temperature` | FLOAT | No | `0.7` | LLM sampling temperature |
-| `--out` | PATH | No | `data/candidates/{slug}_llm_candidates.jsonl` | Output path |
+| `--out` | PATH | No | `data/candidates/{slug}_candidates.jsonl` | Output path |
 
 ### Internal steps
 
 1. **Load configuration.** Parse and validate `SystemConfig`.
-2. **Resolve LLM backend.** Select the LLM adapter (mock/api/local) from config.
-3. **Format prompt.** Build the generation prompt from composition constraints,
-   template family, and optional seed Zomic.
-4. **Generate Zomic scripts.** Call the LLM to produce `count` Zomic scripts.
-   Each generation includes composition prefix and Zomic body.
-5. **Parse and validate.** For each generated script:
-   - Parse with ANTLR4 grammar (reject syntax errors)
-   - Compile with vZome core (reject runtime errors)
-   - Check collision constraints (minimum site separation)
-6. **Convert to candidates.** For each valid Zomic script:
-   - Run Zomic bridge to convert labeled geometry → orbit library
-   - Wrap as CandidateRecord with `source: "llm"` provenance
-7. **Write output.** Serialize valid candidates to JSONL.
-8. **Write calibration.** Record parse rate, compile rate, collision rate.
-9. **Write manifest.** Stage manifest with `stage="llm_generate"`.
-10. **Emit summary.** Print `LlmGenerateSummary` as JSON to stdout.
+2. **Resolve LLM backend.** Select the configured adapter from `BackendConfig`
+   (currently mock or the first hosted-provider seam).
+3. **Validate optional seed input.** If `--seed-zomic` or
+   `llm_generate.seed_zomic` is present, load the seed script and validate it
+   once through the compile bridge before any provider call.
+4. **Format prompt.** Build a config-driven prompt containing system name,
+   template family, composition bounds, and an optional `SEED_ZOMIC` block.
+5. **Run bounded retries.** Attempt up to `requested_count * max_attempts`
+   generations. Every raw completion is persisted even if provider, parse,
+   compile, or conversion fails.
+6. **Compile via vZome authority.** For each raw completion, call the Zomic
+   bridge and record explicit parse/compile status, error classification, and
+   persisted raw-export/orbit-library artifact paths.
+7. **Convert valid outputs.** Successful orbit-library outputs are wrapped as
+   standard `CandidateRecord` rows with additive LLM provenance fields so
+   `mdisc screen` can consume them without a schema fork.
+8. **Write run artifacts.** Persist `prompt.json`, `attempts.jsonl`,
+   `compile_results.jsonl`, and `run_manifest.json` under
+   `data/llm_runs/{slug}_{request_hash}/`.
+9. **Write calibration.** Record attempt count, parse pass rate, compile pass
+   rate, and generation success rate in the calibration JSON.
+10. **Write Stage manifest.** Stage manifest with `stage="llm_generate"` hashes
+   the candidates JSONL, calibration JSON, and run manifest.
+11. **Emit summary.** Print `LlmGenerateSummary` as JSON to stdout.
 
 ### Artifacts
 
 | Artifact | Default path |
 |---|---|
-| LLM candidates JSONL | `{workspace}/data/candidates/{slug}_llm_candidates.jsonl` |
+| LLM candidates JSONL | `{workspace}/data/candidates/{slug}_candidates.jsonl` |
 | LLM generation metrics | `{workspace}/data/calibration/{slug}_llm_generation_metrics.json` |
 | Stage manifest | `{workspace}/data/manifests/{slug}_llm_generate_manifest.json` |
+| Run manifest | `{workspace}/data/llm_runs/{slug}_{request_hash}/run_manifest.json` |
 
 ### Return type
 
@@ -674,8 +683,9 @@ The `active-learn` command forms a feedback loop: it reads validated candidates,
 trains a surrogate, selects the next batch, and the user runs `hifi-validate`
 again on that batch before re-ranking and re-reporting.
 
-The planned `llm-generate` command provides an alternative candidate source alongside
-`generate`. Both produce CandidateRecord JSONL that feeds into `screen`. The planned
-`llm-evaluate` command enriches validated candidates with synthesizability and
-precursor information before reporting. The planned `llm-suggest` command can replace
-or augment `active-learn` with LLM-guided exploration.
+The implemented `llm-generate` command provides an alternative candidate source
+alongside `generate`. Both produce CandidateRecord JSONL that feeds into
+`screen`. The planned `llm-evaluate` command will enrich validated candidates
+with synthesizability and precursor information before reporting. The planned
+`llm-suggest` command can replace or augment `active-learn` with LLM-guided
+exploration.

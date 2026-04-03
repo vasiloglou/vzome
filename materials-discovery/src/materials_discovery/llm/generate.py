@@ -40,11 +40,12 @@ def _effective_seed_path(
     *,
     config_path: Path | None,
 ) -> Path | None:
+    del config_path
     if seed_zomic_path is not None:
         return seed_zomic_path.resolve()
     if config.llm_generate is None or config.llm_generate.seed_zomic is None:
         return None
-    return _resolve_relative_path(config.llm_generate.seed_zomic, config_path=config_path)
+    return _resolve_relative_path(config.llm_generate.seed_zomic, config_path=None)
 
 
 def _request_hash(

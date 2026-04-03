@@ -136,8 +136,10 @@ Already integrated in our pipeline. Key references:
 
 ### 3.1 Two New Pipeline Stages
 
-The pipeline gains two LLM-powered stages that sit alongside (not replacing) the
-existing generation and evaluation paths:
+The pipeline gains LLM-powered stages that sit alongside (not replacing) the
+existing generation and evaluation paths. Phase 7 implements the first
+`mdisc llm-generate` MVP with mock coverage plus one hosted-provider seam;
+`llm-evaluate` and `llm-suggest` remain future work.
 
 #### `mdisc llm-generate` — LLM-Powered Candidate Generation
 
@@ -157,7 +159,9 @@ existing generation and evaluation paths:
 
 **Output:**
 - CandidateRecord JSONL (same format as `mdisc generate`)
-- Generation provenance includes `source: "llm"`, model ID, prompt, temperature
+- Stage calibration + manifest output
+- Run-level audit artifacts (`prompt.json`, `attempts.jsonl`,
+  `compile_results.jsonl`, `run_manifest.json`) under `data/llm_runs/`
 
 **Key design choice:** The LLM generates Zomic text, not coordinates. The Zomic
 compiler handles the geometry exactly. This means even an imperfect LLM output is

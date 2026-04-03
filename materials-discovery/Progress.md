@@ -41,6 +41,7 @@
 | 2026-04-03 | Phase 6 Plan 04 Task 4: llm-corpus CLI command | Added the `mdisc llm-corpus build` sub-application/command, JSON summary output, and focused CLI tests for success, invalid configs, and workspace-relative config paths |
 | 2026-04-03 | Phase 7 Plan 01: llm-generate contracts and runtime seam | Added additive `llm_generate` config/schema contracts, Phase 7 runtime request/attempt/run-manifest models, the `llm_fixture_v1` / `anthropic_api_v1` adapter seam, configuration docs, and focused schema/runtime pytest coverage |
 | 2026-04-03 | Phase 7 Plan 02: llm-generate core path | Added config-driven prompt assembly, bounded retry generation, compile-backed candidate conversion, the `mdisc llm-generate` CLI command, committed mock configs, and focused core/CLI pytest coverage |
+| 2026-04-03 | Phase 7 Plan 03: llm benchmark and docs layer | Added the offline deterministic-vs-LLM comparison helper, benchmark runner script, docs refresh, pytest marker, and two-system benchmark regression coverage for Al-Cu-Fe and Sc-Zn |
 
 ## Diary
 
@@ -271,3 +272,16 @@
   - Extended `generator/candidate_factory.py` with `build_candidate_from_prototype_library(...)` so compiled template geometry can become normal candidates without reusing the Z[phi] perturbation branch.
   - Added `llm_generation_metrics(...)` and wired the new `llm-generate` Typer command into `cli.py`, including calibration JSON and stage-manifest output.
   - Added committed mock configs for `Al-Cu-Fe` and `Sc-Zn`, plus focused tests in `tests/test_llm_generate_core.py`, `tests/test_llm_generate_cli.py`, and `tests/test_cli.py`.
+
+### 2026-04-03 (Phase 7 Plan 03)
+
+- Added the Phase 7 benchmark comparison layer:
+  - New `llm/benchmark.py` builds deterministic-vs-LLM comparison payloads and writes comparison JSON under `data/benchmarks/llm_generate/`.
+  - Added `scripts/run_llm_generate_benchmarks.sh` as the thin operator wrapper around `mdisc generate`, `mdisc llm-generate`, and `mdisc screen`.
+  - Added the `llm_lane` pytest marker plus `tests/test_llm_generate_benchmarks.py` for offline two-system benchmark coverage across `Al-Cu-Fe` and `Sc-Zn`.
+- Refreshed docs so the first LLM inference path is described as implemented rather than planned:
+  - `README.md`
+  - `developers-docs/index.md`
+  - `developers-docs/pipeline-stages.md`
+  - `developers-docs/llm-integration.md`
+- Re-verified the whole `materials-discovery` suite after landing the benchmark layer to keep Phase 7 closed with a project-wide green state.

@@ -12,6 +12,10 @@ from materials_discovery.llm.manifests import (
     write_corpus_manifest,
 )
 from materials_discovery.llm.generate import generate_llm_candidates
+from materials_discovery.llm.benchmark import (
+    build_llm_generate_comparison,
+    write_llm_generate_comparison,
+)
 from materials_discovery.llm.prompting import build_generation_prompt, load_seed_zomic_text
 from materials_discovery.llm.qa import (
     dedupe_corpus_examples,
@@ -76,6 +80,7 @@ __all__ = [
     "DEFAULT_BUILDER_VERSION",
     "DEFAULT_CORPUS_MANIFEST_VERSION",
     "DEFAULT_CORPUS_SCHEMA_VERSION",
+    "build_llm_generate_comparison",
     "build_generation_prompt",
     "dedupe_corpus_examples",
     "CorpusBuildConfig",
@@ -108,5 +113,6 @@ __all__ = [
     "summarize_corpus_quality",
     "syntax_corpus_path",
     "ValidationStatus",
+    "write_llm_generate_comparison",
     "write_corpus_manifest",
 ]
