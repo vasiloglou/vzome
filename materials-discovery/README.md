@@ -33,6 +33,23 @@ uv sync --python 3.11 --extra dev --extra mlip
 ./scripts/run_native_pipeline.sh
 ```
 
+For the **Phase 4 reference-aware benchmark workflow** (two-system benchmark
+matrix with multi-source reference packs):
+
+```bash
+# Full two-system benchmark run (Al-Cu-Fe + Sc-Zn):
+./scripts/run_reference_aware_benchmarks.sh
+
+# Quick smoke run (30 candidates, skip active-learn):
+./scripts/run_reference_aware_benchmarks.sh --count 30 --no-active-learn
+
+# Only one lane:
+./scripts/run_reference_aware_benchmarks.sh --config-filter al_cu_fe
+```
+
+See the [reference-aware benchmark runbook](./developers-docs/reference-aware-benchmarks.md)
+for full prerequisites, config details, and artifact locations.
+
 A `Ti-Zr-Ni` icosahedral quasicrystal system is also available:
 - `configs/systems/ti_zr_ni.yaml`
 

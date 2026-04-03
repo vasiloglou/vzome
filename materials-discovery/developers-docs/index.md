@@ -71,6 +71,7 @@ uv run mdisc hifi-rank --config configs/systems/sc_zn_real.yaml
 | How do LLMs and AI interact with quasicrystals? | [LLM & Quasicrystal Landscape](llm-quasicrystal-landscape.md) |
 | How will LLMs generate quasicrystals? | [LLM Integration](llm-integration.md) |
 | How do we build the Zomic training corpus? | [Zomic LLM Data Plan](zomic-llm-data-plan.md) |
+| How do I run the Phase 4 benchmark workflow? | [Reference-Aware Benchmark Runbook](reference-aware-benchmarks.md) |
 
 ## Scope
 
@@ -101,6 +102,13 @@ Additional real-mode configs:
 - `al_cu_fe_native.yaml`: native MLIP providers
 - `sc_zn_real.yaml`: pinned `Sc-Zn` benchmark + validation snapshot
 - `sc_zn_native.yaml`: native MLIP providers for `Sc-Zn`
+
+Phase 4 reference-aware benchmark configs (multi-source reference packs):
+- `al_cu_fe_reference_aware.yaml`: Al-Cu-Fe with hypodx + materials_project reference pack
+- `sc_zn_reference_aware.yaml`: Sc-Zn with hypodx + cod reference pack
+
+See the [Reference-Aware Benchmark Runbook](reference-aware-benchmarks.md) for
+operator instructions, prerequisite Java/Zomic notes, and artifact locations.
 
 The native MLIP path should be installed into a Python 3.11 `uv` environment:
 

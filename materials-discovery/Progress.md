@@ -102,6 +102,12 @@
   - Task 2 (provenance in rank and report): `rank_validated_candidates()` now embeds `calibration_provenance` (source, benchmark_corpus, backend_mode) and optional `benchmark_context` in each ranked candidate's `hifi_rank` block; `compile_experiment_report()` surfaces these in per-entry evidence blocks and at the report top level via `_extract_benchmark_context()`.
   - Task 3 (regression coverage): extended all three test files — `test_benchmarking.py` adds `TestBuildBenchmarkRunContext` (8 tests, both Phase 4 systems, cross-lane key alignment); `test_hifi_rank.py` adds 3 provenance assertions; `test_report.py` adds `test_report_emits_benchmark_context_*`, `test_benchmark_pack_written_by_report_command`, and `test_cross_lane_benchmark_context_keys_match`; total 164 tests passing.
 
+- Phase 4 Plan 03 Task 1 — Added operator benchmark runner script and runbook docs:
+  - `scripts/run_reference_aware_benchmarks.sh` (new): config-driven two-system benchmark runner for the Phase 4 Al-Cu-Fe and Sc-Zn reference-aware lanes; supports `--count`, `--seed`, `--config-filter`, `--no-active-learn`, and `--dry-run` overrides; reports benchmark-pack artifact paths on completion.
+  - `developers-docs/reference-aware-benchmarks.md` (new): operator runbook covering prerequisites (Python env, Java/Zomic dependency for Sc-Zn), full and smoke run commands, benchmark config descriptions, reference-pack input paths, benchmark-pack output structure, and regression test commands.
+  - `README.md`: added Phase 4 benchmark runner quickstart section with link to runbook.
+  - `developers-docs/index.md`: added runbook to Documentation Map and Phase 4 reference-aware configs to Chemical Systems table.
+
 - Phase 4 Plan 01 Task 2 — Added benchmark-ready reference-aware configs and second-source fixtures:
   - `configs/systems/al_cu_fe_reference_aware.yaml` (new): source_registry_v1, real mode, HYPOD-X + Materials Project reference pack (priority order: hypodx > materials_project), benchmark corpus and validation snapshot wired.
   - `configs/systems/sc_zn_reference_aware.yaml` (new): source_registry_v1, real mode, Zomic design path preserved, HYPOD-X + COD reference pack (priority order: hypodx > cod), benchmark corpus and validation snapshot wired.
