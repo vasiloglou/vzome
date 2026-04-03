@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 04
 current_phase_name: reference-aware-no-dft-materials-discovery-v1
 current_plan: 3
-status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-04-03T15:39:10.057Z"
+status: verifying
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-04-03T15:57:26.683Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 70
 ---
 
@@ -35,7 +35,7 @@ Current Plan: 3
 Total Plans in Phase: 3
 Phase: 04 (reference-aware-no-dft-materials-discovery-v1) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-03
 Last Activity Description: Phase 04 execution started
 
@@ -71,6 +71,7 @@ Progress: [███████░░░] 70%
 | Phase 03 P3 | 27min | 3 tasks | 5 files |
 | Phase 04 P01 | 12 | 2 tasks | 15 files |
 | Phase 04 P02 | 18 | 3 tasks | 9 files |
+| Phase 04 P03 | 8 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,9 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 04]: CLI assembles BenchmarkRunContext once from config+lineage and passes it forward; downstream stages do not reconstruct context independently
 - [Phase 04]: benchmark_context field on ArtifactManifest is nullable so existing manifest readers remain valid when context is absent
 - [Phase 04]: benchmark_pack.json is a high-level index referencing stage manifests/calibration JSONs rather than duplicating their content
+- [Phase 04]: Keep benchmark runner as thin config-driven wrapper around mdisc stage commands (no new orchestration framework)
+- [Phase 04]: Use benchmark_lane pytest marker to isolate slower E2E tests as a clearly separate lane
+- [Phase 04]: Cross-lane comparison: Al-Cu-Fe real vs reference-aware real (same backend mode, different source pack) for maximal source-difference visibility
 
 ### Pending Todos
 
@@ -110,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T15:39:10.051Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-04-03T15:57:26.681Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
