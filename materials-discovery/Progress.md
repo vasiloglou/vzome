@@ -35,6 +35,7 @@
 | 2026-04-03 | Phase 6 Plan 02 Task 2: LLM corpus QA grading and dedupe | Added typed gold/silver/reject grading, deterministic duplicate resolution, QA summaries, and focused pytest coverage for release-tier promotion, label validation, and issue tallies |
 | 2026-04-03 | Phase 6 Plan 03 Task 1: deterministic record2zomic conversion | Added the shared axis-walk decomposition helper, deterministic `CandidateRecord -> Zomic` serialization with conversion traces, and focused pytest coverage for ordering, label preservation, and duplicate-label disambiguation |
 | 2026-04-03 | Phase 6 Plan 03 Task 2: compile helper and projection2zomic | Added a bridge-backed temporary compile helper, a PyQCstrc projection payload conversion path, and focused pytest coverage for compile success/failure reporting and deterministic cell scaling |
+| 2026-04-03 | Phase 6 Plan 04 Task 1: CIF/open approximant conversion | Added CIF-driven corpus conversion for COD and HYPOD-X-style fixtures, plus canonical-record fallback handling and focused pytest coverage that stays green with the existing prototype/COD tests |
 
 ## Diary
 
@@ -223,3 +224,9 @@
   - New module: `llm/converters/projection2zomic.py` for committed PyQCstrc-style projection payload conversion into `CorpusExample` records without a live PyQCstrc dependency.
   - Restored `projection_payload_to_zomic` to the public `llm/converters/__init__.py` exports for later builder dispatch.
   - Added `tests/test_llm_projection2zomic.py`; focused verification passed with `12 passed` alongside the companion record2zomic slice.
+
+- Phase 6 Plan 04 Task 1 — Added CIF/open approximant conversion:
+  - New module: `llm/converters/cif2zomic.py` reusing `expand_cif_orbits()` when symmetry metadata is present and falling back to `parse_cif()` on thin offline fixtures without a symmetry loop.
+  - Added `tests/fixtures/hypodx_approximant_sample.cif` as the committed HYPOD-X-style approximant sample for offline coverage.
+  - Added `canonical_record_to_zomic()` support for CIF-backed canonical source records plus a deterministic composition-only fallback for staged records that do not carry a structure representation.
+  - Added `tests/test_llm_cif2zomic.py`; focused verification passed with `9 passed` together with `test_prototype_import.py` and `test_data_source_cod.py`.
