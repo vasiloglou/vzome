@@ -18,12 +18,12 @@ reinforce each other instead of living in separate prototypes.
   adapters and an OPTIMADE-based adapter path for compatible databases.
 - [ ] **DATA-04**: The ingestion layer emits QA metrics for duplicates, missing
   fields, invalid compositions, malformed structures, and schema drift.
-- [ ] **DATA-05**: The ingestion layer can normalize periodic crystal sources
+- [x] **DATA-05**: The ingestion layer can normalize periodic crystal sources
   and QC/approximant sources into pipeline-compatible reference-phase artifacts.
 
 ### Reference-Aware No-DFT Materials Discovery
 
-- [ ] **PIPE-01**: The current `ingest -> generate -> screen -> hifi-validate -> hifi-rank -> active-learn -> report`
+- [x] **PIPE-01**: The current `ingest -> generate -> screen -> hifi-validate -> hifi-rank -> active-learn -> report`
   discovery workflow remains green while ingesting richer external data.
 - [ ] **PIPE-02**: The reference-aware no-DFT discovery workflow can run a
   benchmarked end-to-end flow on at least two target systems using non-mock
@@ -56,7 +56,7 @@ reinforce each other instead of living in separate prototypes.
   and subscription-only data sources.
 - [x] **OPS-02**: Source adapters are prioritized by implementation cost,
   scientific value, and licensing friction.
-- [ ] **OPS-03**: The system keeps the no-DFT boundary explicit in required
+- [x] **OPS-03**: The system keeps the no-DFT boundary explicit in required
   execution paths.
 - [ ] **OPS-04**: The roadmap preserves compatibility with the current
   `materials-discovery` CLI and schema unless a deliberate version change is
@@ -102,8 +102,8 @@ reinforce each other instead of living in separate prototypes.
 | DATA-02 | Phase 1 | Pending |
 | DATA-03 | Phase 2 | Pending |
 | DATA-04 | Phase 2 | Pending |
-| DATA-05 | Phase 3 | Pending |
-| PIPE-01 | Phase 3 | Pending |
+| DATA-05 | Phase 3 | Complete |
+| PIPE-01 | Phase 3 | Complete |
 | PIPE-02 | Phase 4 | Pending |
 | PIPE-03 | Phase 4 | Pending |
 | PIPE-04 | Phase 5 | Pending |
@@ -115,7 +115,7 @@ reinforce each other instead of living in separate prototypes.
 | LLM-05 | Phase 9 | Pending |
 | OPS-01 | Phase 1 | Complete |
 | OPS-02 | Phase 1 | Complete |
-| OPS-03 | Phase 3 | Pending |
+| OPS-03 | Phase 3 | Complete |
 | OPS-04 | Phase 2 | Pending |
 
 **Coverage:**
@@ -125,4 +125,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-02 after roadmap synthesis from repo docs and external source research*
+*Last updated: 2026-04-03 after Phase 03 execution completed DATA-05, PIPE-01, and OPS-03*
