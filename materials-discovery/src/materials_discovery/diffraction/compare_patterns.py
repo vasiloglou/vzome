@@ -122,6 +122,21 @@ def _report_fingerprint(report_entries: list[dict[str, Any]]) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:16]
 
 
+def _extract_benchmark_context(candidates: list[CandidateRecord]) -> dict[str, Any] | None:
+    """Extract benchmark_context from the first ranked candidate that carries one.
+
+    The context is embedded by ``rank_validated_candidates`` or by the CLI
+    ``hifi-rank`` command.  Returns ``None`` if no candidate carries it.
+    """
+    for candidate in candidates:
+        hifi_rank = candidate.provenance.get("hifi_rank")
+        if isinstance(hifi_rank, dict):
+            ctx = hifi_rank.get("benchmark_context")
+            if isinstance(ctx, dict):
+                return ctx
+    return None
+
+
 def compile_experiment_report(
     config: SystemConfig,
     ranked_candidates: list[CandidateRecord],
@@ -140,6 +155,9 @@ def compile_experiment_report(
     )
     selected = ranked[: min(top_n, len(ranked))]
     calibration = load_calibration_profile(config)
+
+    # Collect benchmark/reference context surfaced in ranked candidate provenance
+    benchmark_context_from_candidates = _extract_benchmark_context(ranked_candidates)
 
     report_entries: list[dict[str, Any]] = []
     for candidate in selected:
@@ -194,6 +212,12 @@ def compile_experiment_report(
                     "committee_std_ev_per_atom": float(validation.committee_std_ev_per_atom or 0.0),
                     "xrd_confidence": xrd_confidence,
                     "passed_checks": passed_checks,
+                    "calibration_provenance": (
+                        (candidate.provenance.get("hifi_rank") or {}).get("calibration_provenance")
+                    ),
+                    "benchmark_context": (
+                        (candidate.provenance.get("hifi_rank") or {}).get("benchmark_context")
+                    ),
                 },
                 "selection_rationale": (
                     "promote_for_synthesis"
@@ -237,7 +261,7 @@ def compile_experiment_report(
     release_gate["ready_for_experimental_pack"] = all(release_gate.values())
 
     report_fingerprint = _report_fingerprint(report_entries)
-    return {
+    result: dict[str, Any] = {
         "system": config.system_name,
         "report_version": "0.2.0",
         "ranked_count": len(ranked_candidates),
@@ -276,3 +300,7 @@ def compile_experiment_report(
         "release_gate": release_gate,
         "entries": report_entries,
     }
+    # Additive benchmark/reference context in the report summary block
+    if benchmark_context_from_candidates is not None:
+        result["benchmark_context"] = benchmark_context_from_candidates
+    return result

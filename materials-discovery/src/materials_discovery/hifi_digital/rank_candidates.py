@@ -147,13 +147,36 @@ def _rank_metrics(
 def rank_validated_candidates(
     config: SystemConfig,
     candidates: list[CandidateRecord],
+    benchmark_context: dict | None = None,
 ) -> list[CandidateRecord]:
-    """Rank digitally validated candidates with calibrated success and OOD components."""
+    """Rank digitally validated candidates with calibrated success and OOD components.
+
+    Parameters
+    ----------
+    config:
+        The active system config.
+    candidates:
+        Validated candidates to rank.
+    benchmark_context:
+        Optional pre-assembled benchmark run context dict.  When supplied it is
+        embedded in the ``hifi_rank`` provenance block of each ranked candidate
+        so operators can confirm which lane produced each result without opening
+        separate config or manifest files.  Callers that do not supply this
+        argument still get deterministic ranking — provenance is simply absent.
+    """
     if not candidates:
         raise ValueError("no validated candidates found for hifi ranking")
 
     names = feature_names(config)
     calibration = load_calibration_profile(config, feature_names=names)
+
+    # Calibration-profile provenance that surfaces in every ranked candidate
+    calibration_provenance = {
+        "source": calibration.source,
+        "benchmark_corpus": config.backend.benchmark_corpus,
+        "backend_mode": config.backend.mode,
+    }
+
     scored = [
         (_rank_metrics(candidate, config, calibration, names), candidate)
         for candidate in candidates
@@ -175,7 +198,7 @@ def rank_validated_candidates(
         copied = deepcopy(candidate)
 
         provenance = dict(copied.provenance)
-        provenance["hifi_rank"] = {
+        hifi_rank_block: dict = {
             "rank": rank,
             "score": metrics["decision_score"],
             "decision_score": metrics["decision_score"],
@@ -186,7 +209,11 @@ def rank_validated_candidates(
             "benchmark_alignment": metrics["benchmark_alignment"],
             "uncertainty_penalty": metrics["uncertainty_penalty"],
             "hull_penalty": metrics["hull_penalty"],
+            "calibration_provenance": calibration_provenance,
         }
+        if benchmark_context is not None:
+            hifi_rank_block["benchmark_context"] = benchmark_context
+        provenance["hifi_rank"] = hifi_rank_block
         copied.provenance = provenance
 
         validation = copied.digital_validation.model_copy(deep=True)
