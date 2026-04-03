@@ -30,8 +30,10 @@ created: 2026-04-03
 
 - **After every task commit:** Run the smallest focused Phase 7 command that
   matches the files changed.
-- **After every plan wave:** Run the focused command(s) for that wave. Run the
-  benchmark command after the benchmark/evaluation wave.
+- **After every plan wave:** Run the focused command(s) for that wave. After
+  Wave 2, run the full `materials-discovery` suite because Plan 02 refactors
+  shared candidate-generation code. Run the benchmark command after the
+  benchmark/evaluation wave.
 - **Before `$gsd-verify-work`:** Full suite must be green.
 - **Max feedback latency:** 240 seconds
 
@@ -45,6 +47,7 @@ created: 2026-04-03
 | 07-01-02 | 01 | 1 | LLM-02 | unit | `cd materials-discovery && uv run pytest tests/test_llm_runtime.py -x -v` | ⬜ | ⬜ pending |
 | 07-02-01 | 02 | 2 | LLM-02 | unit/integration | `cd materials-discovery && uv run pytest tests/test_llm_generate_core.py -x -v` | ⬜ | ⬜ pending |
 | 07-02-02 | 02 | 2 | LLM-02 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_generate_cli.py tests/test_cli.py -x -v` | ⬜ | ⬜ pending |
+| 07-02-WG | 02 | 2 | LLM-02 | regression gate | `cd materials-discovery && uv run pytest` | ⬜ | ⬜ pending |
 | 07-03-01 | 03 | 3 | LLM-02 | benchmark/integration | `cd materials-discovery && uv run pytest tests/test_llm_generate_benchmarks.py -x -v` | ⬜ | ⬜ pending |
 | 07-03-02 | 03 | 3 | LLM-02 | benchmark/CLI | `cd materials-discovery && uv run pytest tests/test_llm_generate_benchmarks.py tests/test_cli.py -x -v` | ⬜ | ⬜ pending |
 
@@ -68,6 +71,12 @@ created: 2026-04-03
   network access is required in repo verification
 - [ ] Any `httpx` import for the hosted adapter must stay lazy so the minimal
   install path and mock-only tests remain viable
+- [ ] Any seed-Zomic validation tests must fail before provider calls when the
+  seed path is missing or unparseable
+- [ ] Any compile classification tests must use controlled monkeypatched bridge
+  outcomes so the offline lane does not depend on a live Java export
+- [ ] Any benchmark fixture Zomic used for `screen` assertions must produce
+  non-degenerate geometry with at least two distinct sites
 - [ ] Any Phase 7 execution that changes `materials-discovery/` must update
   `materials-discovery/Progress.md` per repo policy
 - [ ] Any new pytest marker used for slower LLM benchmark tests must be declared
