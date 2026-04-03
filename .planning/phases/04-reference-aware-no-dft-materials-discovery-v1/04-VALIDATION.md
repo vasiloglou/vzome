@@ -21,9 +21,9 @@ created: 2026-04-03
 | **Config file** | none — existing repo test infrastructure already present |
 | **Quick run command** | `cd materials-discovery && uv run pytest tests/test_benchmarking.py tests/test_hifi_rank.py tests/test_report.py` |
 | **Reference-pack command** | `cd materials-discovery && uv run pytest tests/test_reference_packs.py tests/test_ingest_source_registry.py tests/test_cli.py` |
-| **Two-system benchmark command** | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py tests/test_hifi_rank.py tests/test_report.py tests/test_active_learn.py` |
+| **Reference-aware benchmark command** | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py tests/test_hifi_rank.py tests/test_report.py` |
 | **Full suite command** | `cd materials-discovery && uv run pytest` |
-| **Estimated runtime** | ~30-180 seconds depending on whether both benchmark systems and full pipeline tests are included |
+| **Estimated runtime** | ~30-180 seconds depending on whether the dedicated reference-aware benchmark lane and the full suite are included |
 
 ---
 
@@ -34,7 +34,7 @@ created: 2026-04-03
   `common/manifest.py`, `common/benchmarking.py`, or any benchmark config
   changes.
 - **After every plan wave:** Run the quick command plus the plan-specific
-  reference-pack or two-system benchmark command for that wave.
+  reference-pack or reference-aware benchmark command for that wave.
 - **Before `$gsd-verify-work`:** Full suite must be green.
 - **Max feedback latency:** 180 seconds
 
@@ -48,7 +48,7 @@ created: 2026-04-03
 | 04-01-02 | 01 | 1 | PIPE-02 | integration | `cd materials-discovery && uv run pytest tests/test_reference_packs.py tests/test_benchmarking.py tests/test_cli.py` | ⬜ | ⬜ pending |
 | 04-02-01 | 02 | 2 | PIPE-03 | unit | `cd materials-discovery && uv run pytest tests/test_benchmarking.py tests/test_hifi_rank.py` | ✅ | ⬜ pending |
 | 04-02-02 | 02 | 2 | PIPE-03 | integration | `cd materials-discovery && uv run pytest tests/test_report.py tests/test_real_mode_pipeline.py` | ✅ | ⬜ pending |
-| 04-02-03 | 02 | 2 | PIPE-03 | integration | `cd materials-discovery && uv run pytest tests/test_hifi_rank.py tests/test_report.py tests/test_active_learn.py` | ✅ | ⬜ pending |
+| 04-02-03 | 02 | 2 | PIPE-03 | integration | `cd materials-discovery && uv run pytest tests/test_benchmarking.py tests/test_hifi_rank.py tests/test_report.py` | ✅ | ⬜ pending |
 | 04-03-01 | 03 | 3 | PIPE-02 | integration | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py` | ✅ | ⬜ pending |
 | 04-03-02 | 03 | 3 | PIPE-03 | integration | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py tests/test_report.py tests/test_hifi_rank.py` | ✅ | ⬜ pending |
 | 04-03-03 | 03 | 3 | PIPE-02, PIPE-03 | full | `cd materials-discovery && uv run pytest` | ✅ | ⬜ pending |
@@ -66,11 +66,17 @@ created: 2026-04-03
   current single-system assertion set to cover both benchmark systems and any
   new benchmark-pack metadata
 - [ ] `materials-discovery/tests/test_real_mode_pipeline.py` must cover both
-  required Phase 4 benchmark systems and at least one cross-lane comparison
+  required Phase 4 benchmark systems and at least one cross-lane comparison,
+  with the new reference-aware matrix isolated as a clearly slower lane rather
+  than silently stretching the quick path
 - [ ] `materials-discovery/tests/test_hifi_rank.py` and
   `materials-discovery/tests/test_report.py` must assert on additive
   benchmark/reference provenance, not only fingerprints and basic metrics
+- [ ] The Phase 4 multi-source proof must include at least one thin second-source
+  local fixture or staged payload, not only reused HYPOD-X fixture rows
 - [ ] No Phase 4 verification may require live network access
+- [ ] The `Sc-Zn` benchmark lane must either skip gracefully when Java is absent
+  or use a pre-exported orbit-library fixture
 - [ ] New benchmark scripts/docs must be runnable from a clean checkout using
   committed configs and local assets
 
