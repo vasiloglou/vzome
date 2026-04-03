@@ -33,6 +33,7 @@
 | 2026-04-03 | Phase 6 Plan 01 Task 2: LLM corpus storage and manifest helpers | Added deterministic `data/llm_corpus/{build_id}` path helpers, corpus fingerprint/manifest builders, and focused pytest coverage for workspace-relative manifest paths and persisted manifest JSON |
 | 2026-04-03 | Phase 6 Plan 02 Task 1: LLM corpus inventory layer | Added offline inventory collectors for repo Zomic scripts, candidate JSONL records, generated raw exports, canonical source/reference-pack records, and a committed PyQCstrc projection fixture, with deterministic sorting and focused pytest coverage |
 | 2026-04-03 | Phase 6 Plan 02 Task 2: LLM corpus QA grading and dedupe | Added typed gold/silver/reject grading, deterministic duplicate resolution, QA summaries, and focused pytest coverage for release-tier promotion, label validation, and issue tallies |
+| 2026-04-03 | Phase 6 Plan 03 Task 1: deterministic record2zomic conversion | Added the shared axis-walk decomposition helper, deterministic `CandidateRecord -> Zomic` serialization with conversion traces, and focused pytest coverage for ordering, label preservation, and duplicate-label disambiguation |
 
 ## Diary
 
@@ -209,3 +210,9 @@
   - Locked the release policy around pending -> gold/silver/reject promotion, label/orbit validation via `_infer_orbit_name`, and deterministic duplicate precedence on release tier, fidelity tier, source family, and example id.
   - Extended `llm/__init__.py` to export the QA helpers for the later builder flow.
   - Added `tests/test_llm_corpus_qa.py`; focused verification passed with `5 passed`.
+
+- Phase 6 Plan 03 Task 1 — Added deterministic record2zomic conversion:
+  - New modules: `llm/converters/axis_walk.py` and `llm/converters/record2zomic.py`, plus the new `llm/converters/` package surface.
+  - Added a bounded, auditable qphi axis-walk decomposition strategy with explicit `direct_basis`, `bounded_search`, `anchored_fallback`, and `heuristic_fallback` trace labels.
+  - Added deterministic `CandidateRecord -> CorpusExample` serialization with orbit-grouped branch blocks, comment preambles, preserved `source_label_map`, and anchored/approximate/heuristic fidelity visibility through `CorpusConversionTrace`.
+  - Added `tests/test_llm_record2zomic.py`; focused verification passed with `12 passed` alongside the companion projection/compiler slice.
