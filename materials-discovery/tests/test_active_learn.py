@@ -31,9 +31,15 @@ def _prepare_validated_inputs(
     runner = CliRunner()
     workspace = Path(__file__).resolve().parents[1]
     config = SystemConfig.model_validate(load_yaml(config_path))
+    system_slug = _system_slug(config.system_name)
+
+    for stale_path in (workspace / "data" / "hifi_validated").glob(
+        f"{system_slug}_*_validated.jsonl"
+    ):
+        stale_path.unlink()
 
     candidates_path = (
-        workspace / "data" / "candidates" / f"{_system_slug(config.system_name)}_candidates.jsonl"
+        workspace / "data" / "candidates" / f"{system_slug}_candidates.jsonl"
     )
     generate_candidates(config, candidates_path, count=count, seed=seed)
 

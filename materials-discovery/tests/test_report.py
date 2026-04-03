@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
 from typer.testing import CliRunner
 
 from materials_discovery.cli import app
@@ -42,6 +43,25 @@ def _prepare_ranked_inputs(config_path: Path, count: int, seed: int) -> None:
         == 0
     )
     assert runner.invoke(app, ["hifi-rank", "--config", str(config_path)]).exit_code == 0
+
+
+def _write_source_registry_real_config(tmp_path: Path) -> Path:
+    workspace = Path(__file__).resolve().parents[1]
+    base_config = workspace / "configs" / "systems" / "al_cu_fe_real.yaml"
+    data = load_yaml(base_config)
+    data["system_name"] = "Al-Cu-Fe-SourceRegistry"
+    data["backend"]["ingest_adapter"] = "source_registry_v1"
+    data["ingestion"] = {
+        "source_key": "hypodx",
+        "adapter_key": "fixture_json_v1",
+        "snapshot_id": "report_source_registry_v1",
+        "use_cached_snapshot": False,
+        "artifact_root": str(tmp_path / "source_cache"),
+    }
+
+    config_path = tmp_path / "al_cu_fe_report_source_registry.yaml"
+    config_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    return config_path
 
 
 def test_report_runs_pipeline() -> None:
@@ -128,3 +148,26 @@ def test_report_is_deterministic() -> None:
     assert content_a == content_b
     assert calibration_a == calibration_b
     assert pipeline_manifest_a["output_hashes"] == pipeline_manifest_b["output_hashes"]
+
+
+def test_report_runs_after_source_registry_ingest(tmp_path: Path) -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    config_path = _write_source_registry_real_config(tmp_path)
+    fixture_path = workspace / "data" / "external" / "fixtures" / "hypodx_sample.json"
+
+    ingest = runner.invoke(
+        app,
+        ["ingest", "--config", str(config_path), "--fixture", str(fixture_path)],
+    )
+    assert ingest.exit_code == 0
+
+    _prepare_ranked_inputs(config_path, count=40, seed=888)
+
+    result = runner.invoke(app, ["report", "--config", str(config_path)])
+    assert result.exit_code == 0
+
+    summary = json.loads(result.stdout)
+    manifest = json.loads(Path(summary["manifest_path"]).read_text(encoding="utf-8"))
+    assert manifest["stage"] == "report"
+    assert "report_json" in manifest["output_hashes"]
