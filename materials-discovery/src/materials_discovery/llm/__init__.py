@@ -11,6 +11,11 @@ from materials_discovery.llm.manifests import (
     corpus_build_fingerprint,
     write_corpus_manifest,
 )
+from materials_discovery.llm.qa import (
+    dedupe_corpus_examples,
+    grade_corpus_example,
+    summarize_corpus_quality,
+)
 from materials_discovery.llm.schema import (
     DEFAULT_BUILDER_VERSION,
     DEFAULT_CORPUS_MANIFEST_VERSION,
@@ -56,6 +61,7 @@ __all__ = [
     "DEFAULT_BUILDER_VERSION",
     "DEFAULT_CORPUS_MANIFEST_VERSION",
     "DEFAULT_CORPUS_SCHEMA_VERSION",
+    "dedupe_corpus_examples",
     "CorpusBuildConfig",
     "CorpusBuildSummary",
     "CorpusConversionTrace",
@@ -66,9 +72,11 @@ __all__ = [
     "CorpusQaSummary",
     "CorpusValidationState",
     "FidelityTier",
+    "grade_corpus_example",
     "materials_corpus_path",
     "ReleaseTier",
     "SourceFamily",
+    "summarize_corpus_quality",
     "syntax_corpus_path",
     "ValidationStatus",
     "write_corpus_manifest",
