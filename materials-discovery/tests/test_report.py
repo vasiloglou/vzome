@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
+import pytest
 import yaml
 from typer.testing import CliRunner
 
@@ -10,6 +12,8 @@ from materials_discovery.cli import app
 from materials_discovery.common.io import load_yaml
 from materials_discovery.common.schema import SystemConfig
 from materials_discovery.generator.candidate_factory import generate_candidates
+
+_java_absent = shutil.which("java") is None
 
 
 def _read_jsonl(path: Path) -> list[dict[str, object]]:
@@ -295,3 +299,175 @@ def test_report_runs_after_source_registry_ingest(tmp_path: Path) -> None:
     manifest = json.loads(Path(summary["manifest_path"]).read_text(encoding="utf-8"))
     assert manifest["stage"] == "report"
     assert "report_json" in manifest["output_hashes"]
+
+
+# ---------------------------------------------------------------------------
+# Phase 4: benchmark-pack report coverage for both benchmark systems
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.benchmark_lane
+def test_al_cu_fe_reference_aware_benchmark_pack_context() -> None:
+    """Al-Cu-Fe reference-aware report must embed the v1 reference pack context."""
+    from materials_discovery.common.benchmarking import build_benchmark_run_context
+    from materials_discovery.common.schema import CandidateRecord
+    from materials_discovery.diffraction.compare_patterns import compile_experiment_report
+    from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_xrd_patterns
+    from materials_discovery.hifi_digital.rank_candidates import rank_validated_candidates
+
+    workspace = Path(__file__).resolve().parents[1]
+    config = SystemConfig.model_validate(
+        load_yaml(workspace / "configs" / "systems" / "al_cu_fe_reference_aware.yaml")
+    )
+
+    candidate = CandidateRecord.model_validate(
+        {
+            "candidate_id": "rp_al_cu_fe_1",
+            "system": "Al-Cu-Fe",
+            "template_family": "icosahedral_approximant_1_1",
+            "cell": {
+                "a": 14.2,
+                "b": 14.2,
+                "c": 14.2,
+                "alpha": 90.0,
+                "beta": 90.0,
+                "gamma": 90.0,
+            },
+            "sites": [
+                {"label": "S1", "qphi": [[1, 0], [0, 1], [-1, 1]], "species": "Al", "occ": 1.0}
+            ],
+            "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            "screen": {"energy_proxy_ev_per_atom": -2.9},
+            "digital_validation": {
+                "status": "passed",
+                "committee": ["MACE", "CHGNet", "MatterSim"],
+                "uncertainty_ev_per_atom": 0.006,
+                "committee_energy_ev_per_atom": {
+                    "MACE": -2.91,
+                    "CHGNet": -2.90,
+                    "MatterSim": -2.89,
+                },
+                "committee_std_ev_per_atom": 0.006,
+                "delta_e_proxy_hull_ev_per_atom": 0.012,
+                "proxy_hull_reference_distance": 0.0,
+                "proxy_hull_reference_phases": ["i-phase"],
+                "phonon_imaginary_modes": 0,
+                "phonon_pass": True,
+                "md_stability_score": 0.90,
+                "md_pass": True,
+                "xrd_confidence": 0.91,
+                "xrd_pass": True,
+                "passed_checks": True,
+            },
+            "provenance": {"generator_version": "0.1.0"},
+        }
+    )
+
+    bm_ctx = build_benchmark_run_context(config).as_dict()
+    ranked = rank_validated_candidates(config, [candidate], benchmark_context=bm_ctx)
+    xrd_patterns = simulate_powder_xrd_patterns(ranked)
+    report = compile_experiment_report(config, ranked, xrd_patterns)
+
+    assert "benchmark_context" in report
+    rpt_ctx = report["benchmark_context"]
+    assert rpt_ctx["reference_pack_id"] == "al_cu_fe_v1"
+    assert "hypodx" in rpt_ctx["source_keys"]
+    assert "materials_project" in rpt_ctx["source_keys"]
+    assert rpt_ctx["lane_id"].startswith("al_cu_fe_v1:")
+
+
+@pytest.mark.benchmark_lane
+def test_sc_zn_reference_aware_benchmark_pack_context() -> None:
+    """Sc-Zn reference-aware report must embed the sc_zn_v1 reference pack context."""
+    from materials_discovery.common.benchmarking import build_benchmark_run_context
+    from materials_discovery.common.schema import CandidateRecord
+    from materials_discovery.diffraction.compare_patterns import compile_experiment_report
+    from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_xrd_patterns
+    from materials_discovery.hifi_digital.rank_candidates import rank_validated_candidates
+
+    workspace = Path(__file__).resolve().parents[1]
+    config = SystemConfig.model_validate(
+        load_yaml(workspace / "configs" / "systems" / "sc_zn_reference_aware.yaml")
+    )
+
+    candidate = CandidateRecord.model_validate(
+        {
+            "candidate_id": "rp_sc_zn_1",
+            "system": "Sc-Zn",
+            "template_family": "cubic_proxy_1_0",
+            "cell": {
+                "a": 9.6,
+                "b": 9.6,
+                "c": 9.6,
+                "alpha": 90.0,
+                "beta": 90.0,
+                "gamma": 90.0,
+            },
+            "sites": [
+                {"label": "S1", "qphi": [[1, 0], [0, 1], [-1, 1]], "species": "Sc", "occ": 1.0}
+            ],
+            "composition": {"Sc": 0.3, "Zn": 0.7},
+            "screen": {"energy_proxy_ev_per_atom": -1.8},
+            "digital_validation": {
+                "status": "passed",
+                "committee": ["MACE", "CHGNet", "MatterSim"],
+                "uncertainty_ev_per_atom": 0.006,
+                "committee_energy_ev_per_atom": {
+                    "MACE": -1.81,
+                    "CHGNet": -1.80,
+                    "MatterSim": -1.79,
+                },
+                "committee_std_ev_per_atom": 0.006,
+                "delta_e_proxy_hull_ev_per_atom": 0.015,
+                "proxy_hull_reference_distance": 0.0,
+                "proxy_hull_reference_phases": ["tsai-phase"],
+                "phonon_imaginary_modes": 0,
+                "phonon_pass": True,
+                "md_stability_score": 0.85,
+                "md_pass": True,
+                "xrd_confidence": 0.88,
+                "xrd_pass": True,
+                "passed_checks": True,
+            },
+            "provenance": {"generator_version": "0.1.0"},
+        }
+    )
+
+    bm_ctx = build_benchmark_run_context(config).as_dict()
+    ranked = rank_validated_candidates(config, [candidate], benchmark_context=bm_ctx)
+    xrd_patterns = simulate_powder_xrd_patterns(ranked)
+    report = compile_experiment_report(config, ranked, xrd_patterns)
+
+    assert "benchmark_context" in report
+    rpt_ctx = report["benchmark_context"]
+    assert rpt_ctx["reference_pack_id"] == "sc_zn_v1"
+    assert "hypodx" in rpt_ctx["source_keys"]
+    assert "cod" in rpt_ctx["source_keys"]
+    assert rpt_ctx["lane_id"].startswith("sc_zn_v1:")
+
+
+@pytest.mark.benchmark_lane
+def test_both_phase4_benchmark_configs_report_context_keys_match() -> None:
+    """Al-Cu-Fe and Sc-Zn reference-aware report contexts must have identical key sets."""
+    from materials_discovery.common.benchmarking import build_benchmark_run_context
+
+    workspace = Path(__file__).resolve().parents[1]
+    al_cu_fe_config = SystemConfig.model_validate(
+        load_yaml(workspace / "configs" / "systems" / "al_cu_fe_reference_aware.yaml")
+    )
+    sc_zn_config = SystemConfig.model_validate(
+        load_yaml(workspace / "configs" / "systems" / "sc_zn_reference_aware.yaml")
+    )
+
+    al_ctx = build_benchmark_run_context(al_cu_fe_config).as_dict()
+    sc_ctx = build_benchmark_run_context(sc_zn_config).as_dict()
+
+    # Both Phase 4 systems must expose the same benchmark context keys
+    assert set(al_ctx.keys()) == set(sc_ctx.keys()), (
+        f"Phase 4 report context key mismatch: "
+        f"al_cu_fe={sorted(al_ctx)}, sc_zn={sorted(sc_ctx)}"
+    )
+    # The two systems must produce distinct lane_ids
+    assert al_ctx["lane_id"] != sc_ctx["lane_id"], (
+        "Al-Cu-Fe and Sc-Zn reference-aware lanes must have distinct lane_id values"
+    )

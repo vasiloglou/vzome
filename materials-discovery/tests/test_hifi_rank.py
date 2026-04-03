@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from materials_discovery.cli import app
@@ -10,6 +12,8 @@ from materials_discovery.common.io import load_yaml
 from materials_discovery.common.schema import CandidateRecord, SystemConfig
 from materials_discovery.generator.candidate_factory import generate_candidates
 from materials_discovery.hifi_digital.rank_candidates import rank_validated_candidates
+
+_java_absent = shutil.which("java") is None
 
 
 def _read_jsonl(path: Path) -> list[dict[str, object]]:
@@ -363,3 +367,125 @@ def test_real_mode_rank_penalizes_ood_and_high_risk_candidates() -> None:
     assert top_rank["stability_probability"] > bottom_rank["stability_probability"]
     assert top_rank["ood_score"] < bottom_rank["ood_score"]
     assert top_rank["score"] > bottom_rank["score"]
+
+
+# ---------------------------------------------------------------------------
+# Phase 4 benchmark system rank coverage
+# ---------------------------------------------------------------------------
+
+
+def _sc_zn_reference_aware_config() -> SystemConfig:
+    workspace = Path(__file__).resolve().parents[1]
+    config_path = workspace / "configs" / "systems" / "sc_zn_reference_aware.yaml"
+    return SystemConfig.model_validate(load_yaml(config_path))
+
+
+def _sc_zn_validated_candidate(
+    candidate_id: str,
+    *,
+    passed_checks: bool,
+) -> CandidateRecord:
+    return CandidateRecord.model_validate(
+        {
+            "candidate_id": candidate_id,
+            "system": "Sc-Zn",
+            "template_family": "cubic_proxy_1_0",
+            "cell": {
+                "a": 9.6,
+                "b": 9.6,
+                "c": 9.6,
+                "alpha": 90.0,
+                "beta": 90.0,
+                "gamma": 90.0,
+            },
+            "sites": [
+                {
+                    "label": "S1",
+                    "qphi": [[1, 0], [0, 1], [-1, 1]],
+                    "species": "Sc",
+                    "occ": 1.0,
+                }
+            ],
+            "composition": {"Sc": 0.3, "Zn": 0.7},
+            "screen": {"energy_proxy_ev_per_atom": -1.8},
+            "digital_validation": {
+                "status": "passed" if passed_checks else "failed",
+                "committee": ["MACE", "CHGNet", "MatterSim"],
+                "uncertainty_ev_per_atom": 0.006 if passed_checks else 0.035,
+                "committee_energy_ev_per_atom": {
+                    "MACE": -1.81,
+                    "CHGNet": -1.80,
+                    "MatterSim": -1.79,
+                },
+                "committee_std_ev_per_atom": 0.006,
+                "delta_e_proxy_hull_ev_per_atom": 0.015 if passed_checks else 0.090,
+                "proxy_hull_reference_distance": 0.0,
+                "proxy_hull_reference_phases": ["tsai-phase"],
+                "phonon_imaginary_modes": 0,
+                "phonon_pass": passed_checks,
+                "md_stability_score": 0.85 if passed_checks else 0.40,
+                "md_pass": passed_checks,
+                "xrd_confidence": 0.88 if passed_checks else 0.45,
+                "xrd_pass": passed_checks,
+                "passed_checks": passed_checks,
+            },
+            "provenance": {"generator_version": "0.1.0"},
+        }
+    )
+
+
+@pytest.mark.benchmark_lane
+def test_sc_zn_reference_aware_rank_embeds_benchmark_context() -> None:
+    """Phase 4 Sc-Zn lane: rank must embed benchmark_context from sc_zn reference pack config."""
+    from materials_discovery.common.benchmarking import build_benchmark_run_context
+
+    config = _sc_zn_reference_aware_config()
+    candidates = [
+        _sc_zn_validated_candidate("sc_zn_ref_a", passed_checks=True),
+        _sc_zn_validated_candidate("sc_zn_ref_b", passed_checks=False),
+    ]
+
+    bm_ctx = build_benchmark_run_context(config).as_dict()
+    ranked = rank_validated_candidates(config, candidates, benchmark_context=bm_ctx)
+
+    assert len(ranked) == 2
+    for candidate in ranked:
+        hifi_rank = candidate.provenance["hifi_rank"]
+        assert isinstance(hifi_rank, dict)
+        assert "calibration_provenance" in hifi_rank
+        assert "benchmark_context" in hifi_rank
+
+        embedded_ctx = hifi_rank["benchmark_context"]
+        assert embedded_ctx["reference_pack_id"] == "sc_zn_v1"
+        assert "hypodx" in embedded_ctx["source_keys"]
+        assert "cod" in embedded_ctx["source_keys"]
+        assert embedded_ctx["backend_mode"] == "real"
+        assert embedded_ctx["lane_id"].startswith("sc_zn_v1:")
+
+
+@pytest.mark.benchmark_lane
+def test_both_phase4_benchmark_configs_have_comparable_context_keys() -> None:
+    """Both Phase 4 benchmark configs must produce BenchmarkRunContext with identical key sets."""
+    from materials_discovery.common.benchmarking import build_benchmark_run_context
+
+    workspace = Path(__file__).resolve().parents[1]
+    al_cu_fe_config = SystemConfig.model_validate(
+        load_yaml(workspace / "configs" / "systems" / "al_cu_fe_reference_aware.yaml")
+    )
+    sc_zn_config = SystemConfig.model_validate(
+        load_yaml(workspace / "configs" / "systems" / "sc_zn_reference_aware.yaml")
+    )
+
+    al_ctx = build_benchmark_run_context(al_cu_fe_config).as_dict()
+    sc_ctx = build_benchmark_run_context(sc_zn_config).as_dict()
+
+    assert set(al_ctx.keys()) == set(sc_ctx.keys()), (
+        f"Phase 4 benchmark configs have different context key sets: "
+        f"al_cu_fe={sorted(al_ctx)}, sc_zn={sorted(sc_ctx)}"
+    )
+    # Lane IDs must differ across the two systems
+    assert al_ctx["lane_id"] != sc_ctx["lane_id"], (
+        "Al-Cu-Fe and Sc-Zn reference-aware lanes must have distinct lane_id values"
+    )
+    # Reference pack IDs must differ
+    assert al_ctx["reference_pack_id"] != sc_ctx["reference_pack_id"]

@@ -52,6 +52,7 @@ pythonpath = ["src"]
 testpaths = ["tests"]
 markers = [
   "integration: snapshot-backed integration tests for real-mode adapters",
+  "benchmark_lane: Phase 4 two-system end-to-end benchmark tests (slower lane)",
 ]
 
 [tool.ruff]
