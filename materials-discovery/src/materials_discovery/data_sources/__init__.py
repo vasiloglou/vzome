@@ -10,10 +10,14 @@ from materials_discovery.data_sources.registry import (
     SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY,
     clear_source_adapters_for_tests,
     list_source_adapters,
+    register_builtin_source_adapters,
     register_source_adapter,
     resolve_source_adapter,
 )
-from materials_discovery.data_sources.runtime import stage_source_snapshot
+from materials_discovery.data_sources.runtime import (
+    stage_registered_source_snapshot,
+    stage_source_snapshot,
+)
 from materials_discovery.data_sources.schema import (
     CanonicalCommonFields,
     CanonicalQaState,
@@ -53,10 +57,12 @@ __all__ = [
     "prepare_records_for_staging",
     "qa_report_path",
     "raw_rows_path",
+    "register_builtin_source_adapters",
     "register_source_adapter",
     "resolve_source_adapter",
     "snapshot_manifest_path",
     "source_snapshot_dir",
+    "stage_registered_source_snapshot",
     "stage_source_snapshot",
     "write_source_snapshot_manifest",
 ]

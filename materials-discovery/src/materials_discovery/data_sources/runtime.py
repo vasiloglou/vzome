@@ -11,6 +11,7 @@ from materials_discovery.data_sources.manifests import (
     write_source_snapshot_manifest,
 )
 from materials_discovery.data_sources.qa import evaluate_source_qa, prepare_records_for_staging
+from materials_discovery.data_sources.registry import resolve_source_adapter
 from materials_discovery.data_sources.schema import SourceStageSummary
 from materials_discovery.data_sources.storage import (
     canonical_records_path,
@@ -105,3 +106,13 @@ def stage_source_snapshot(
         qa_report_path=workspace_relative(qa_path),
         snapshot_manifest_path=workspace_relative(manifest_path),
     )
+
+
+def stage_registered_source_snapshot(
+    config: SystemConfig,
+    source_key: str,
+    adapter_key: str | None = None,
+    snapshot_path: Path | None = None,
+) -> SourceStageSummary:
+    adapter = resolve_source_adapter(source_key, adapter_key)
+    return stage_source_snapshot(config, adapter, snapshot_path=snapshot_path)
