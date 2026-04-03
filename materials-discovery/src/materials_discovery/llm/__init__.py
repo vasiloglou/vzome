@@ -1,3 +1,11 @@
+from materials_discovery.llm.inventory import (
+    build_inventory,
+    collect_candidate_inventory,
+    collect_generated_export_inventory,
+    collect_pyqcstrc_inventory,
+    collect_repo_zomic_inventory,
+    collect_source_inventory,
+)
 from materials_discovery.llm.manifests import (
     build_corpus_manifest,
     corpus_build_fingerprint,
@@ -33,6 +41,12 @@ from materials_discovery.llm.storage import (
 
 __all__ = [
     "build_corpus_manifest",
+    "build_inventory",
+    "collect_candidate_inventory",
+    "collect_generated_export_inventory",
+    "collect_pyqcstrc_inventory",
+    "collect_repo_zomic_inventory",
+    "collect_source_inventory",
     "corpus_build_dir",
     "corpus_build_fingerprint",
     "corpus_inventory_path",

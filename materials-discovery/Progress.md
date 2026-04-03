@@ -31,6 +31,7 @@
 | 2026-04-03 | Phase 5 complete: data lake and analysis layer | All 3 plans executed across 3 waves; verification passed 15/15 must-haves; 200 tests passing; all 6 cross-AI review concerns addressed; PIPE-04 and PIPE-05 satisfied |
 | 2026-04-03 | Phase 6 Plan 01 Task 1: LLM corpus contracts and config | Added the new `materials_discovery.llm` schema package, committed `configs/llm/corpus_v1.yaml`, and introduced schema-focused pytest coverage for corpus config, provenance, inventory rows, validation state, and build summaries |
 | 2026-04-03 | Phase 6 Plan 01 Task 2: LLM corpus storage and manifest helpers | Added deterministic `data/llm_corpus/{build_id}` path helpers, corpus fingerprint/manifest builders, and focused pytest coverage for workspace-relative manifest paths and persisted manifest JSON |
+| 2026-04-03 | Phase 6 Plan 02 Task 1: LLM corpus inventory layer | Added offline inventory collectors for repo Zomic scripts, candidate JSONL records, generated raw exports, canonical source/reference-pack records, and a committed PyQCstrc projection fixture, with deterministic sorting and focused pytest coverage |
 
 ## Diary
 
@@ -195,3 +196,9 @@
   - Added deterministic `corpus_build_fingerprint()`, `build_corpus_manifest()`, and `write_corpus_manifest()` using workspace-relative paths and output hashes.
   - Extended `llm/__init__.py` to export the new helper surface.
   - Added `tests/test_llm_corpus_storage.py` and `tests/test_llm_corpus_manifest.py`; combined `06-01` validation passed with `11 passed`.
+
+- Phase 6 Plan 02 Task 1 — Added the deterministic LLM corpus inventory layer:
+  - New module: `llm/inventory.py` with dedicated collectors for repo regression scripts, part scripts, materials-design `.zomic` files, candidate JSONL rows, generated raw exports, canonical source records, reference-pack records, and the committed PyQCstrc projection payload.
+  - Added `tests/fixtures/pyqcstrc_projection_sample.json` as the offline fixture backing the required `pyqcstrc_projection` source family.
+  - Extended `llm/__init__.py` to export the public inventory helpers so later builder code can reuse them directly.
+  - Added `tests/test_llm_corpus_inventory.py`; focused verification passed with `7 passed`.

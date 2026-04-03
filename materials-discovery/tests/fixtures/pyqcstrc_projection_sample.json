@@ -1,0 +1,23 @@
+{
+  "source": "pyqcstrc",
+  "model_id": "ico_demo_v1",
+  "system": "Al-Cu-Fe",
+  "coordinate_system": "qphi",
+  "composition": {
+    "Al": 0.7,
+    "Cu": 0.2,
+    "Fe": 0.1
+  },
+  "positions": [
+    {
+      "label": "shell.01",
+      "qphi": [[0, 0], [1, 0], [0, 0]],
+      "species": "Al"
+    },
+    {
+      "label": "shell.02",
+      "qphi": [[0, 0], [0, 1], [0, 0]],
+      "species": "Cu"
+    }
+  ]
+}
