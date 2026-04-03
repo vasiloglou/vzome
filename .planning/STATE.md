@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 2
-current_phase_name: ingestion platform mvp
+current_phase: 3
+current_phase_name: reference phase integration with current pipeline
 current_plan: Not started
-status: planning
-stopped_at: Completed 01-program-charter-and-canonical-data-model-01-PLAN.md
-last_updated: "2026-04-03T04:18:02.069Z"
-last_activity: 2026-04-03 -- Phase 01 complete, transitioned to Phase 2
+status: ready_to_plan
+stopped_at: Completed 02-ingestion-platform-mvp
+last_updated: "2026-04-03T13:47:16.330994+00:00"
+last_activity: 2026-04-03 -- Phase 02 complete, ready for Phase 03 planning
 progress:
   total_phases: 9
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 0
+  completed_phases: 2
+  total_plans: 4
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -24,43 +24,47 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-02)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 2 — Ingestion Platform MVP
+**Current focus:** Phase 03 — reference-phase-integration-with-current-pipeline
 
 ## Current Position
 
-Current Phase: 2
-Current Phase Name: ingestion platform mvp
+Current Phase: 3
+Current Phase Name: reference phase integration with current pipeline
 Total Phases: 9
 Current Plan: Not started
-Total Plans in Phase: 1
-Phase: 2 of 9 (Ingestion Platform MVP)
+Total Plans in Phase: 3
+Phase: 03 (reference-phase-integration-with-current-pipeline) — READY TO PLAN
 Plan: Not started
-Status: Phase 1 complete — ready to plan Phase 2
-Last activity: 2026-04-03 -- Phase 01 complete, transitioned to Phase 2
-Last Activity Description: Phase 01 complete, transitioned to Phase 2
+Status: Ready to plan Phase 03
+Last activity: 2026-04-03 -- Phase 02 complete, ready for Phase 03 planning
+Last Activity Description: Phase 02 complete, transitioned to Phase 3
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
-- Average duration: 0 min
-- Total execution time: 0.0 hours
+- Total plans completed: 4
+- Average duration: 33 min
+- Total execution time: 2.2 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 | 0 | 0 min | 0 min |
+| 1 | 1 | 9 min | 9 min |
+| 2 | 3 | 122 min | 41 min |
 
 **Recent Trend:**
 
-- Last 5 plans: none yet
-- Trend: baseline
+- Last 5 plans: P1=9min, P2.01=59min, P2.02=31min, P2.03=32min
+- Trend: stable
 
 | Phase 01-program-charter-and-canonical-data-model P01 | 9min | 3 tasks | 8 files |
+| Phase 02-ingestion-platform-mvp P01 | 59min | 3 tasks | 15 files |
+| Phase 02-ingestion-platform-mvp P02 | 31min | 3 tasks | 11 files |
+| Phase 02-ingestion-platform-mvp P03 | 32min | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -74,6 +78,8 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 01-program-charter-and-canonical-data-model]: Keep the canonical raw-source contract separate from the existing processed IngestRecord.
 - [Phase 01-program-charter-and-canonical-data-model]: Use materials_discovery/data_sources/ as the provider-ingestion package and keep backends/ as a thin runtime-mode bridge.
 - [Phase 01-program-charter-and-canonical-data-model]: Lock Phase 2 priority to HYPOD-X, COD, Materials Project, OQMD, and JARVIS while preserving the broader watchlist and tooling inventory.
+- [Phase 02-ingestion-platform-mvp]: Keep built-in source adapter registration explicit so tests can clear and reconstruct the registry deterministically.
+- [Phase 02-ingestion-platform-mvp]: Keep `httpx` imports lazy in API adapters so offline pytest runs do not require the ingestion extra to be installed.
 
 ### Pending Todos
 
@@ -86,5 +92,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-03T04:03:43.051Z
-Stopped at: Completed 01-program-charter-and-canonical-data-model-01-PLAN.md
+Stopped at: Completed 02-ingestion-platform-mvp
 Resume file: None
