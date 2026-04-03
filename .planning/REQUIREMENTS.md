@@ -25,7 +25,7 @@ reinforce each other instead of living in separate prototypes.
 
 - [x] **PIPE-01**: The current `ingest -> generate -> screen -> hifi-validate -> hifi-rank -> active-learn -> report`
   discovery workflow remains green while ingesting richer external data.
-- [ ] **PIPE-02**: The reference-aware no-DFT discovery workflow can run a
+- [x] **PIPE-02**: The reference-aware no-DFT discovery workflow can run a
   benchmarked end-to-end flow on at least two target systems using non-mock
   data inputs.
 - [ ] **PIPE-03**: The platform produces comparable manifests, calibration
@@ -104,7 +104,7 @@ reinforce each other instead of living in separate prototypes.
 | DATA-04 | Phase 2 | Pending |
 | DATA-05 | Phase 3 | Complete |
 | PIPE-01 | Phase 3 | Complete |
-| PIPE-02 | Phase 4 | Pending |
+| PIPE-02 | Phase 4 | Complete |
 | PIPE-03 | Phase 4 | Pending |
 | PIPE-04 | Phase 5 | Pending |
 | PIPE-05 | Phase 5 | Pending |
