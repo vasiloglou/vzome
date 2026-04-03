@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 07
 current_phase_name: llm-inference-mvp
-current_plan: 0
-status: planning
-stopped_at: Phase 7 context gathered
-last_updated: "2026-04-03T21:15:10.677Z"
-last_activity: 2026-04-03 -- Phase 06 execution completed
+current_plan: 1
+status: ready_to_execute
+stopped_at: Phase 07 planning complete; ready to execute
+last_updated: "2026-04-03T21:29:11Z"
+last_activity: 2026-04-03 -- Phase 07 planning completed
 progress:
   total_phases: 9
   completed_phases: 6
-  total_plans: 17
+  total_plans: 20
   completed_plans: 17
-  percent: 78
+  percent: 85
 ---
 
 # Project State
@@ -31,15 +31,15 @@ See: `.planning/PROJECT.md` (updated 2026-04-02)
 Current Phase: 07
 Current Phase Name: llm-inference-mvp
 Total Phases: 9
-Current Plan: 0
-Total Plans in Phase: 0
-Phase: 07 (llm-inference-mvp) — READY TO PLAN
-Plan: not planned yet
-Status: Ready to plan Phase 07
-Last activity: 2026-04-03 -- Phase 06 execution completed
-Last Activity Description: Phase 06 execution completed with full verification green (`254 passed, 3 skipped`)
+Current Plan: 1
+Total Plans in Phase: 3
+Phase: 07 (llm-inference-mvp) — READY TO EXECUTE
+Plan: 3 plans created
+Status: Ready to execute Phase 07
+Last activity: 2026-04-03 -- Phase 07 planning completed
+Last Activity Description: Phase 07 planning completed with 3 plans, research, and validation strategy ready for execution
 
-Progress: [████████░░] 78%
+Progress: [█████████░] 85%
 
 ## Performance Metrics
 
@@ -129,6 +129,10 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 06-zomic-training-corpus-pipeline]: Let thin offline CIF fixtures fall back to `parse_cif()` when symmetry metadata is absent instead of requiring richer crystallographic inputs.
 - [Phase 06-zomic-training-corpus-pipeline]: The corpus builder dispatches by `loader_hint` first and writes the full audit trail under `data/llm_corpus/{build_id}/`.
 - [Phase 06-zomic-training-corpus-pipeline]: Operators build the corpus through `mdisc llm-corpus build --config ...`, not via ad hoc scripts.
+- [Phase 07-llm-inference-mvp]: Start with deterministic mock coverage plus one hosted API provider; local-model serving is deferred.
+- [Phase 07-llm-inference-mvp]: Keep llm-generate config-driven with optional seed Zomic support, not a free-form chat prompt.
+- [Phase 07-llm-inference-mvp]: Preserve rich prompt/raw-output lineage at the run level and keep CandidateRecord provenance lighter by linking back to the run.
+- [Phase 07-llm-inference-mvp]: Benchmark `Al-Cu-Fe` and `Sc-Zn` at parse/compile/conversion/screen level in Phase 7; full hi-fi comparison is deferred to Phase 8.
 
 ### Pending Todos
 
@@ -140,6 +144,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T21:15:10.673Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-llm-inference-mvp/07-CONTEXT.md
+Last session: 2026-04-03T21:29:11Z
+Stopped at: Phase 07 planning complete; ready to execute
+Resume file: .planning/phases/07-llm-inference-mvp/07-01-PLAN.md
