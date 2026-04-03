@@ -6,9 +6,9 @@ current_phase: 3
 current_phase_name: reference phase integration with current pipeline
 current_plan: 1
 status: ready_to_execute
-stopped_at: Planned 03-reference-phase-integration-with-current-pipeline
-last_updated: "2026-04-03T14:01:19Z"
-last_activity: 2026-04-03 -- Phase 03 planned, ready for execution
+stopped_at: Replanned 03-reference-phase-integration-with-current-pipeline after reviews
+last_updated: "2026-04-03T14:11:55Z"
+last_activity: 2026-04-03 -- Phase 03 replanned after reviews, ready for execution
 progress:
   total_phases: 9
   completed_phases: 2
@@ -36,8 +36,8 @@ Total Plans in Phase: 3
 Phase: 03 (reference-phase-integration-with-current-pipeline) — PLANNED
 Plan: 1 of 3
 Status: Ready to execute Phase 03
-Last activity: 2026-04-03 -- Phase 03 planned, ready for execution
-Last Activity Description: Phase 03 planning complete, ready for execution
+Last activity: 2026-04-03 -- Phase 03 replanned after reviews, ready for execution
+Last Activity Description: Phase 03 replanning complete after cross-AI review
 
 Progress: [██████░░░░] 57%
 
@@ -82,6 +82,8 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 02-ingestion-platform-mvp]: Keep `httpx` imports lazy in API adapters so offline pytest runs do not require the ingestion extra to be installed.
 - [Phase 03-reference-phase-integration-with-current-pipeline]: Use `source_registry_v1` as the only bridge selector and keep the legacy HYPOD-X ingest path unchanged.
 - [Phase 03-reference-phase-integration-with-current-pipeline]: Project canonical source records into additive `IngestRecord` rows rather than replacing the processed reference-phase contract.
+- [Phase 03-reference-phase-integration-with-current-pipeline]: Lock manifest lineage to an optional additive field and make cached-snapshot reuse explicit in the bridge path.
+- [Phase 03-reference-phase-integration-with-current-pipeline]: Use dynamic thin fixtures/configs for bridge-backed pipeline tests and keep legacy ingest determinism in the final verification sweep.
 
 ### Pending Todos
 
@@ -94,5 +96,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-03T04:03:43.051Z
-Stopped at: Planned 03-reference-phase-integration-with-current-pipeline
+Stopped at: Replanned 03-reference-phase-integration-with-current-pipeline after reviews
 Resume file: None

@@ -19,9 +19,9 @@ created: 2026-04-03
 |----------|-------|
 | **Framework** | pytest |
 | **Config file** | none — existing repo test infrastructure already present |
-| **Quick run command** | `cd materials-discovery && uv run pytest tests/test_cli.py tests/test_ingest.py tests/test_ingest_real_backend.py` |
+| **Quick run command** | `cd materials-discovery && uv run pytest tests/test_cli.py tests/test_ingest.py tests/test_ingest_real_backend.py tests/test_generate.py` |
 | **Bridge command** | `cd materials-discovery && uv run pytest tests/test_data_source_projection.py tests/test_ingest_source_registry.py` |
-| **Full pipeline command** | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py tests/test_hull_proxy.py tests/test_report.py` |
+| **Full pipeline command** | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py tests/test_hull_proxy.py tests/test_report.py tests/test_ingest.py` |
 | **Full suite command** | `cd materials-discovery && uv run pytest` |
 | **Estimated runtime** | ~20-120 seconds depending on whether the full real-mode smoke is included |
 
@@ -45,10 +45,10 @@ created: 2026-04-03
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
 | 03-01-01 | 01 | 1 | DATA-05 | unit | `cd materials-discovery && uv run pytest tests/test_data_source_projection.py` | ⬜ | ⬜ pending |
 | 03-01-02 | 01 | 1 | OPS-03 | unit | `cd materials-discovery && uv run pytest tests/test_data_source_projection.py tests/test_hull_proxy.py` | ✅ | ⬜ pending |
-| 03-02-01 | 02 | 2 | PIPE-01 | integration | `cd materials-discovery && uv run pytest tests/test_ingest_source_registry.py tests/test_cli.py tests/test_ingest.py tests/test_ingest_real_backend.py` | ⬜ | ⬜ pending |
+| 03-02-01 | 02 | 2 | PIPE-01 | integration | `cd materials-discovery && uv run pytest tests/test_ingest_source_registry.py tests/test_cli.py tests/test_ingest.py tests/test_ingest_real_backend.py tests/test_generate.py` | ✅ | ⬜ pending |
 | 03-02-02 | 02 | 2 | OPS-03 | integration | `cd materials-discovery && uv run pytest tests/test_ingest_source_registry.py tests/test_cli.py` | ⬜ | ⬜ pending |
-| 03-03-01 | 03 | 3 | PIPE-01 | integration | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py tests/test_hull_proxy.py tests/test_report.py` | ✅ | ⬜ pending |
-| 03-03-02 | 03 | 3 | DATA-05 | integration | `cd materials-discovery && uv run pytest tests/test_data_source_projection.py tests/test_ingest_source_registry.py tests/test_real_mode_pipeline.py` | ⬜ | ⬜ pending |
+| 03-03-01 | 03 | 3 | PIPE-01 | integration | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py tests/test_hull_proxy.py tests/test_report.py tests/test_ingest.py` | ✅ | ⬜ pending |
+| 03-03-02 | 03 | 3 | DATA-05 | integration | `cd materials-discovery && uv run pytest tests/test_data_source_projection.py tests/test_ingest_source_registry.py tests/test_real_mode_pipeline.py tests/test_ingest.py` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -60,8 +60,11 @@ created: 2026-04-03
   system matching, deterministic phase-label derivation, and metadata coverage
 - [ ] `materials-discovery/tests/test_ingest_source_registry.py` — source
   bridge ingest, staged-source reuse, manifest lineage, and CLI summary
+- [ ] `materials-discovery/tests/test_generate.py` — non-ingest manifest regression guard after additive `ArtifactManifest` changes
 - [ ] Source-backed offline payload fixture(s) or inline test data for at least
   one bridge path so no Phase 3 verification depends on live network access
+- [ ] Dynamic in-test config generation for the bridge-backed real-mode pipeline
+  smoke so Phase 3 does not add permanent YAML config debt
 
 *Existing pytest infrastructure is already present. Wave 0 is about the Phase 3
 test files and fixtures, not tooling installation.*
