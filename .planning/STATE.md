@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 03
-current_phase_name: reference-phase-integration-with-current-pipeline
-current_plan: 3
-status: complete
-stopped_at: Completed 03-reference-phase-integration-with-current-pipeline
-last_updated: "2026-04-03T14:30:16.408Z"
-last_activity: 2026-04-03 -- Phase 03 completed, ready for Phase 04 planning
+current_phase: 04
+current_phase_name: reference-aware-no-dft-materials-discovery-v1
+current_plan: 1
+status: ready_to_execute
+stopped_at: Planned 04-reference-aware-no-dft-materials-discovery-v1
+last_updated: "2026-04-03T18:30:00Z"
+last_activity: 2026-04-03 -- Phase 04 planned, ready for execution
 progress:
   total_phases: 9
   completed_phases: 3
-  total_plans: 7
+  total_plans: 10
   completed_plans: 7
-  percent: 100
+  percent: 70
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-02)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 04 planning — reference-aware-no-dft-materials-discovery-v1
+**Current focus:** Phase 04 — reference-aware-no-dft-materials-discovery-v1
 
 ## Current Position
 
-Current Phase: 03
-Current Phase Name: reference-phase-integration-with-current-pipeline
+Current Phase: 04
+Current Phase Name: reference-aware-no-dft-materials-discovery-v1
 Total Phases: 9
-Current Plan: 3
+Current Plan: 1
 Total Plans in Phase: 3
-Phase: 03 (reference-phase-integration-with-current-pipeline) — COMPLETE
-Plan: 3 of 3
-Status: Phase 03 complete — ready to plan Phase 04
-Last activity: 2026-04-03 -- Phase 03 completed, ready for Phase 04 planning
-Last Activity Description: Completed Phase 03 execution and verification
+Phase: 04 (reference-aware-no-dft-materials-discovery-v1) — PLANNED
+Plan: 1 of 3
+Status: Ready to execute Phase 04
+Last activity: 2026-04-03 -- Phase 04 planned, ready for execution
+Last Activity Description: Phase 04 planning complete, ready for execution
 
-Progress: [██████████] 100%
+Progress: [███████░░░] 70%
 
 ## Performance Metrics
 
@@ -88,6 +88,9 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 03-reference-phase-integration-with-current-pipeline]: Project canonical source records into additive `IngestRecord` rows rather than replacing the processed reference-phase contract.
 - [Phase 03-reference-phase-integration-with-current-pipeline]: Lock manifest lineage to an optional additive field and make cached-snapshot reuse explicit in the bridge path.
 - [Phase 03-reference-phase-integration-with-current-pipeline]: Use dynamic thin fixtures/configs for bridge-backed pipeline tests and keep legacy ingest determinism in the final verification sweep.
+- [Phase 04-reference-aware-no-dft-materials-discovery-v1]: Lock the required benchmark systems to `Al-Cu-Fe` and `Sc-Zn`.
+- [Phase 04-reference-aware-no-dft-materials-discovery-v1]: Introduce explicit reference-pack inputs and benchmark-pack outputs rather than overloading existing manifests.
+- [Phase 04-reference-aware-no-dft-materials-discovery-v1]: Make comparability additive across manifests, calibration outputs, ranking provenance, and report outputs.
 
 ### Pending Todos
 
@@ -100,5 +103,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-03T04:03:43.051Z
-Stopped at: Completed 03-reference-phase-integration-with-current-pipeline
+Stopped at: Planned 04-reference-aware-no-dft-materials-discovery-v1
 Resume file: None
