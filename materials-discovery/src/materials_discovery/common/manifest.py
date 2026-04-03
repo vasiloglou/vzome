@@ -4,7 +4,7 @@ import hashlib
 import json
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 from uuid import uuid4
 
 from materials_discovery.common.io import ensure_parent
@@ -31,6 +31,7 @@ def build_manifest(
     backend_versions: dict[str, str],
     output_paths: dict[str, Path],
     source_lineage: dict[str, object] | None = None,
+    benchmark_context: dict[str, Any] | None = None,
 ) -> ArtifactManifest:
     output_hashes = {key: file_sha256(path) for key, path in output_paths.items()}
 
@@ -44,6 +45,7 @@ def build_manifest(
         output_hashes=output_hashes,
         created_at_utc=datetime.now(UTC).isoformat(),
         source_lineage=source_lineage,
+        benchmark_context=benchmark_context,
     )
 
 

@@ -29,6 +29,11 @@ from materials_discovery.common.io import (
     workspace_root,
     write_jsonl,
 )
+from materials_discovery.common.benchmarking import (
+    BenchmarkRunContext,
+    build_benchmark_run_context,
+    write_benchmark_pack,
+)
 from materials_discovery.common.manifest import build_manifest, write_manifest
 from materials_discovery.common.pipeline_manifest import (
     build_pipeline_manifest,
@@ -434,6 +439,31 @@ def _ingest_via_source_registry(
     return summary, source_lineage
 
 
+def _load_benchmark_context(
+    config: SystemConfig,
+    system_slug: str,
+) -> BenchmarkRunContext:
+    """Load and assemble the benchmark run context for downstream stage commands.
+
+    Reads the previously written ingest manifest (if present) to recover the
+    source lineage, then delegates to :func:`build_benchmark_run_context`.
+    Falls back gracefully to a config-only context when the manifest is absent.
+    """
+    ingest_manifest_path = (
+        workspace_root() / "data" / "manifests" / f"{system_slug}_ingest_manifest.json"
+    )
+    source_lineage: dict[str, object] | None = None
+    if ingest_manifest_path.exists():
+        try:
+            raw_manifest = load_json_object(ingest_manifest_path)
+            lineage = raw_manifest.get("source_lineage")
+            if isinstance(lineage, dict):
+                source_lineage = lineage
+        except Exception:  # noqa: BLE001
+            pass
+    return build_benchmark_run_context(config, source_lineage)
+
+
 @app.command("ingest")
 def ingest_command(
     config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
@@ -765,13 +795,27 @@ def hifi_rank_command(
         system_config = _load_system_config(config)
         system_slug = _system_slug(system_config.system_name)
 
+        benchmark_ctx = _load_benchmark_context(system_config, system_slug)
+
         validated = _load_validated_candidates(system_slug)
         ranked = rank_validated_candidates(system_config, validated)
 
-        output_path = workspace_root() / "data" / "ranked" / f"{system_slug}_ranked.jsonl"
-        write_jsonl([candidate.model_dump() for candidate in ranked], output_path)
+        # Embed benchmark/reference provenance into ranked candidate provenance blocks.
+        bm_ctx_dict = benchmark_ctx.as_dict()
+        enriched_ranked = []
+        for candidate in ranked:
+            copied = candidate.model_copy(deep=True)
+            provenance = dict(copied.provenance)
+            hifi_rank = dict(provenance.get("hifi_rank") or {})
+            hifi_rank["benchmark_context"] = bm_ctx_dict
+            provenance["hifi_rank"] = hifi_rank
+            copied.provenance = provenance
+            enriched_ranked.append(copied)
 
-        calibration = ranking_calibration(ranked)
+        output_path = workspace_root() / "data" / "ranked" / f"{system_slug}_ranked.jsonl"
+        write_jsonl([candidate.model_dump() for candidate in enriched_ranked], output_path)
+
+        calibration = ranking_calibration(enriched_ranked)
         calibration_path = (
             workspace_root() / "data" / "calibration" / f"{system_slug}_ranking_calibration.json"
         )
@@ -790,14 +834,15 @@ def hifi_rank_command(
                 "ranked_jsonl": output_path,
                 "ranking_calibration_json": calibration_path,
             },
+            benchmark_context=bm_ctx_dict,
         )
         write_manifest(manifest, manifest_path)
 
         summary = HifiRankSummary(
             input_count=len(validated),
-            ranked_count=len(ranked),
+            ranked_count=len(enriched_ranked),
             passed_count=sum(
-                candidate.digital_validation.passed_checks is True for candidate in ranked
+                candidate.digital_validation.passed_checks is True for candidate in enriched_ranked
             ),
             output_path=str(output_path),
             calibration_path=str(calibration_path),
@@ -962,9 +1007,15 @@ def report_command(
         system_config = _load_system_config(config)
         system_slug = _system_slug(system_config.system_name)
 
+        benchmark_ctx = _load_benchmark_context(system_config, system_slug)
+        bm_ctx_dict = benchmark_ctx.as_dict()
+
         ranked = _load_ranked_candidates(system_slug)
         xrd_patterns = simulate_powder_xrd_patterns(ranked)
         report = compile_experiment_report(system_config, ranked, xrd_patterns)
+
+        # Inject benchmark/reference context into the report payload
+        report["benchmark_context"] = bm_ctx_dict
 
         report_dir = workspace_root() / "data" / "reports"
         xrd_path = report_dir / f"{system_slug}_xrd_patterns.jsonl"
@@ -994,6 +1045,7 @@ def report_command(
                 "xrd_patterns_jsonl": xrd_path,
                 "report_calibration_json": calibration_path,
             },
+            benchmark_context=bm_ctx_dict,
         )
         write_manifest(report_manifest, manifest_path)
 
@@ -1027,6 +1079,54 @@ def report_command(
             stage_paths=existing_stage_paths,
         )
         write_pipeline_manifest(pipeline_manifest, pipeline_manifest_path)
+
+        # Write dedicated benchmark-pack artifact
+        benchmark_pack_path = (
+            workspace_root() / "data" / "reports" / f"{system_slug}_benchmark_pack.json"
+        )
+        stage_manifest_refs: dict[str, str] = {
+            "report_manifest": str(manifest_path),
+            "pipeline_manifest": str(pipeline_manifest_path),
+            "report_calibration": str(calibration_path),
+        }
+        hifi_rank_manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_hifi_rank_manifest.json"
+        )
+        if hifi_rank_manifest_path.exists():
+            stage_manifest_refs["hifi_rank_manifest"] = str(hifi_rank_manifest_path)
+        ingest_manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_ingest_manifest.json"
+        )
+        if ingest_manifest_path.exists():
+            stage_manifest_refs["ingest_manifest"] = str(ingest_manifest_path)
+
+        report_gate = report.get("release_gate", {})
+        report_summary_slice = {
+            k: v
+            for k, v in (report.get("summary") or {}).items()
+            if k
+            in {
+                "synthesize_count",
+                "high_priority_count",
+                "medium_priority_count",
+                "stability_probability_mean",
+                "xrd_confidence_mean",
+            }
+        }
+        top_report_metrics = {
+            "report_fingerprint": report.get("report_fingerprint", ""),
+            "ranked_count": report.get("ranked_count", 0),
+            "reported_count": report.get("reported_count", 0),
+            "release_gate": report_gate,
+            "summary": report_summary_slice,
+        }
+        write_benchmark_pack(
+            config=system_config,
+            benchmark_context=benchmark_ctx,
+            stage_manifest_paths=stage_manifest_refs,
+            report_metrics=top_report_metrics,
+            output_path=benchmark_pack_path,
+        )
 
         summary = ReportSummary(
             ranked_count=len(ranked),

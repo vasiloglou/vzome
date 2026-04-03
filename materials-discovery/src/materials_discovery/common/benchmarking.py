@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import hashlib
+import json
+from dataclasses import dataclass, field
 from pathlib import Path
 from statistics import mean
+from typing import Any
 
-from materials_discovery.common.io import load_json_object, workspace_root
+from materials_discovery.common.io import ensure_parent, load_json_object, workspace_root
 from materials_discovery.common.schema import SystemConfig
 
 
@@ -31,6 +34,140 @@ class CalibrationProfile:
     report_distinctiveness_floor: float
     ood_ceiling: float
     active_learning_threshold: float
+
+
+@dataclass
+class BenchmarkRunContext:
+    """Additive run-context block that makes Phase 4 lanes comparable.
+
+    Assembled once in ``cli.py`` from config + ingest/reference-pack lineage
+    and then threaded forward to downstream stage manifests and the
+    benchmark-pack summary artifact.  All fields are optional to preserve
+    backward-compatibility when the context is absent.
+    """
+
+    reference_pack_id: str | None = None
+    reference_pack_fingerprint: str | None = None
+    source_keys: list[str] = field(default_factory=list)
+    benchmark_corpus: str | None = None
+    backend_mode: str | None = None
+    lane_id: str | None = None
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "reference_pack_id": self.reference_pack_id,
+            "reference_pack_fingerprint": self.reference_pack_fingerprint,
+            "source_keys": list(self.source_keys),
+            "benchmark_corpus": self.benchmark_corpus,
+            "backend_mode": self.backend_mode,
+            "lane_id": self.lane_id,
+        }
+
+
+def build_benchmark_run_context(
+    config: SystemConfig,
+    source_lineage: dict[str, Any] | None = None,
+) -> BenchmarkRunContext:
+    """Assemble a :class:`BenchmarkRunContext` from a system config and optional
+    ingest source-lineage dict.
+
+    The lineage dict is produced by ``_ingest_via_reference_pack`` or
+    ``_ingest_via_source_registry`` in ``cli.py`` and stored as
+    ``ArtifactManifest.source_lineage``.  When absent the context still records
+    the config-level fields (backend mode, benchmark corpus, reference-pack
+    config if present).
+    """
+    reference_pack_id: str | None = None
+    reference_pack_fingerprint: str | None = None
+    source_keys: list[str] = []
+
+    ingestion = config.ingestion
+    if ingestion is not None and ingestion.reference_pack is not None:
+        reference_pack_id = ingestion.reference_pack.pack_id
+        source_keys = [m.source_key for m in ingestion.reference_pack.members]
+
+    if source_lineage is not None:
+        # Lineage from _ingest_via_reference_pack path
+        if "pack_id" in source_lineage and reference_pack_id is None:
+            reference_pack_id = str(source_lineage["pack_id"])
+        if "pack_fingerprint" in source_lineage:
+            reference_pack_fingerprint = str(source_lineage["pack_fingerprint"])
+        if "member_sources" in source_lineage and not source_keys:
+            members = source_lineage.get("member_sources")
+            if isinstance(members, list):
+                source_keys = [
+                    str(m.get("source_key", ""))
+                    for m in members
+                    if isinstance(m, dict) and m.get("source_key")
+                ]
+        # Lineage from _ingest_via_source_registry path (single source)
+        if not source_keys and "source_key" in source_lineage:
+            source_keys = [str(source_lineage["source_key"])]
+
+    if not source_keys and ingestion is not None and ingestion.source_key:
+        source_keys = [ingestion.source_key]
+
+    benchmark_corpus = config.backend.benchmark_corpus
+    backend_mode = config.backend.mode
+
+    # Derive a lane identifier: pack_id:backend_mode or source_key:backend_mode
+    if reference_pack_id:
+        lane_id = f"{reference_pack_id}:{backend_mode}"
+    elif source_keys:
+        lane_id = f"{source_keys[0]}:{backend_mode}"
+    else:
+        lane_id = f"{config.system_name.lower().replace('-', '_')}:{backend_mode}"
+
+    return BenchmarkRunContext(
+        reference_pack_id=reference_pack_id,
+        reference_pack_fingerprint=reference_pack_fingerprint,
+        source_keys=source_keys,
+        benchmark_corpus=benchmark_corpus,
+        backend_mode=backend_mode,
+        lane_id=lane_id,
+    )
+
+
+def write_benchmark_pack(
+    config: SystemConfig,
+    benchmark_context: BenchmarkRunContext,
+    stage_manifest_paths: dict[str, str],
+    report_metrics: dict[str, Any],
+    output_path: Path,
+) -> None:
+    """Write the dedicated ``benchmark_pack.json`` output artifact.
+
+    The benchmark-pack artifact is a high-level index that references the key
+    stage manifests and calibration JSONs together with the benchmark/reference
+    metadata needed for operator comparison.  It deliberately does NOT
+    duplicate full payload content from those artifacts.
+
+    Parameters
+    ----------
+    config:
+        The active system config.
+    benchmark_context:
+        The assembled run context (reference-pack identity, sources, lane).
+    stage_manifest_paths:
+        Mapping of artifact role -> relative-or-absolute path string for key
+        stage manifests and calibration outputs.
+    report_metrics:
+        Top-level report metrics surfaced for comparison (e.g. release_gate,
+        summary slice).
+    output_path:
+        Where to write the artifact.
+    """
+    payload: dict[str, Any] = {
+        "schema_version": "benchmark-pack/v1",
+        "system": config.system_name,
+        "backend_mode": config.backend.mode,
+        "benchmark_context": benchmark_context.as_dict(),
+        "stage_manifest_paths": stage_manifest_paths,
+        "report_metrics": report_metrics,
+    }
+    content = json.dumps(payload, sort_keys=True)
+    ensure_parent(output_path)
+    output_path.write_text(content, encoding="utf-8")
 
 
 _DEFAULT_STABLE_FEATURES = {
