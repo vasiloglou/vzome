@@ -17,6 +17,7 @@ from materials_discovery.backends.validation_real_exec import (
     ExecPhononAdapter,
     ExecXrdAdapter,
 )
+from materials_discovery.data_sources.registry import SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY
 from materials_discovery.backends.validation_real_fixtures import (
     FixtureBackedCommitteeAdapter,
     FixtureBackedMdAdapter,
@@ -71,7 +72,9 @@ _DEFAULT_XRD_ADAPTERS: dict[str, str] = {
 }
 
 AdapterType = TypeVar("AdapterType")
-_SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY = "source_registry_v1"
+
+def is_source_runtime_ingest_adapter(adapter: str | None) -> bool:
+    return adapter == SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY
 
 
 def resolve_ingest_backend(mode: str, adapter: str | None = None) -> IngestBackend:
@@ -79,7 +82,7 @@ def resolve_ingest_backend(mode: str, adapter: str | None = None) -> IngestBacke
     if chosen_adapter is None:
         known_modes = ", ".join(sorted(_DEFAULT_ADAPTERS.keys()))
         raise ValueError(f"Unknown backend mode '{mode}'. Expected one of: {known_modes}")
-    if chosen_adapter == _SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY:
+    if is_source_runtime_ingest_adapter(chosen_adapter):
         raise ValueError(
             "The reserved ingest adapter 'source_registry_v1' is not wired into "
             "the legacy mdisc ingest path yet. Phase 3 will bridge the source "

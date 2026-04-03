@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from typer.testing import CliRunner
+
+from materials_discovery.cli import app
 from materials_discovery.common.io import load_yaml
 from materials_discovery.common.schema import SystemConfig
 from materials_discovery.generator.candidate_factory import generate_candidates
@@ -117,3 +120,30 @@ def test_system_anchored_generation_carries_prototype_metadata_and_shell_chemist
     ]
     assert len(sc_shell) == 24
     assert all(site["species"] == "Sc" for site in sc_shell)
+
+
+def test_generate_manifest_remains_valid_without_source_lineage(tmp_path: Path) -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    config_path = workspace / "configs" / "systems" / "al_cu_fe.yaml"
+    out_path = tmp_path / "generated.jsonl"
+
+    result = runner.invoke(
+        app,
+        [
+            "generate",
+            "--config",
+            str(config_path),
+            "--count",
+            "4",
+            "--seed",
+            "55",
+            "--out",
+            str(out_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    summary = json.loads(result.stdout)
+    manifest = json.loads(Path(summary["manifest_path"]).read_text(encoding="utf-8"))
+    assert "source_lineage" not in manifest or manifest["source_lineage"] is None

@@ -16,10 +16,14 @@ from materials_discovery.active_learning.train_surrogate import (
     train_surrogate_model,
 )
 from materials_discovery.backends.capabilities import load_capabilities_matrix
-from materials_discovery.backends.registry import resolve_ingest_backend
+from materials_discovery.backends.registry import (
+    is_source_runtime_ingest_adapter,
+    resolve_ingest_backend,
+)
 from materials_discovery.common.io import (
     append_jsonl,
     ensure_parent,
+    load_json_object,
     load_jsonl,
     load_yaml,
     workspace_root,
@@ -35,6 +39,7 @@ from materials_discovery.common.schema import (
     CandidateRecord,
     HifiRankSummary,
     HifiValidateSummary,
+    IngestSummary,
     ReportSummary,
     ScreenSummary,
     SystemConfig,
@@ -48,6 +53,16 @@ from materials_discovery.common.stage_metrics import (
     validation_calibration,
 )
 from materials_discovery.data.ingest_hypodx import ingest_rows
+from materials_discovery.data_sources.projection import project_snapshot_to_ingest_records
+from materials_discovery.data_sources.registry import (
+    SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY,
+    register_builtin_source_adapters,
+    resolve_source_adapter,
+)
+from materials_discovery.data_sources.runtime import (
+    load_cached_source_stage_summary,
+    stage_registered_source_snapshot,
+)
 from materials_discovery.diffraction.compare_patterns import compile_experiment_report
 from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_xrd_patterns
 from materials_discovery.generator.candidate_factory import generate_candidates
@@ -269,6 +284,92 @@ def _load_active_learning_pool(
     return [CandidateRecord.model_validate(row) for row in load_jsonl(candidates_path)]
 
 
+def _workspace_path(path_str: str) -> Path:
+    path = Path(path_str)
+    if path.is_absolute():
+        return path
+    return workspace_root() / path
+
+
+def _source_registry_snapshot_id(config: SystemConfig) -> tuple[str, str, str | None]:
+    ingestion = config.ingestion
+    if ingestion is None:
+        raise ValueError("source_registry_v1 ingest requires an ingestion block")
+
+    register_builtin_source_adapters()
+    adapter = resolve_source_adapter(ingestion.source_key, ingestion.adapter_key)
+    snapshot_id = ingestion.snapshot_id or adapter.default_snapshot_id(config)
+    return ingestion.source_key, snapshot_id, ingestion.adapter_key
+
+
+def _ingest_via_source_registry(
+    config: SystemConfig,
+    fixture: Path | None,
+    out_path: Path,
+) -> tuple[IngestSummary, dict[str, object]]:
+    ingestion = config.ingestion
+    if ingestion is None:
+        raise ValueError("source_registry_v1 ingest requires an ingestion block")
+
+    source_key, snapshot_id, adapter_key = _source_registry_snapshot_id(config)
+    if ingestion.use_cached_snapshot:
+        stage_summary = load_cached_source_stage_summary(config, source_key, snapshot_id)
+        if stage_summary is None:
+            stage_summary = stage_registered_source_snapshot(
+                config,
+                source_key,
+                adapter_key=adapter_key,
+                snapshot_path=fixture,
+            )
+    else:
+        stage_summary = stage_registered_source_snapshot(
+            config,
+            source_key,
+            adapter_key=adapter_key,
+            snapshot_path=fixture,
+        )
+
+    projected, projection_summary = project_snapshot_to_ingest_records(
+        _workspace_path(stage_summary.canonical_records_path),
+        config,
+    )
+    if not projected:
+        raise ValueError("source projection produced zero usable records")
+
+    write_jsonl([row.model_dump(mode="json") for row in projected], out_path)
+    snapshot_manifest = load_json_object(_workspace_path(stage_summary.snapshot_manifest_path))
+    summary = IngestSummary(
+        raw_count=stage_summary.raw_count,
+        matched_count=projection_summary.matched_system_count,
+        deduped_count=projection_summary.deduped_count,
+        output_path=str(out_path),
+        invalid_count=projection_summary.skipped_missing_composition_count,
+        backend_mode=config.backend.mode,
+        backend_adapter=SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY,
+        qa_metrics={
+            "passed": projection_summary.deduped_count > 0,
+            "input_count": projection_summary.input_count,
+            "matched_system_count": projection_summary.matched_system_count,
+            "projected_count": projection_summary.projected_count,
+            "deduped_count": projection_summary.deduped_count,
+            "skipped_system_mismatch_count": projection_summary.skipped_system_mismatch_count,
+            "skipped_missing_composition_count": projection_summary.skipped_missing_composition_count,
+            "duplicate_dropped_count": projection_summary.duplicate_dropped_count,
+        },
+    )
+    source_lineage: dict[str, object] = {
+        "source_key": source_key,
+        "snapshot_id": snapshot_id,
+        "adapter_key": snapshot_manifest.get("adapter_key"),
+        "adapter_version": snapshot_manifest.get("adapter_version"),
+        "snapshot_manifest_path": stage_summary.snapshot_manifest_path,
+        "canonical_records_path": stage_summary.canonical_records_path,
+        "qa_report_path": stage_summary.qa_report_path,
+        "projection_summary": projection_summary.model_dump(mode="json"),
+    }
+    return summary, source_lineage
+
+
 @app.command("ingest")
 def ingest_command(
     config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
@@ -278,13 +379,6 @@ def ingest_command(
     """Ingest and normalize fixture metadata into processed JSONL."""
     try:
         system_config = _load_system_config(config)
-        backend = resolve_ingest_backend(
-            system_config.backend.mode,
-            system_config.backend.ingest_adapter,
-        )
-        backend_info = backend.info()
-        raw_rows = backend.load_rows(system_config, fixture)
-
         default_out = (
             workspace_root()
             / "data"
@@ -292,27 +386,48 @@ def ingest_command(
             / f"{_system_slug(system_config.system_name)}_reference_phases.jsonl"
         )
         out_path = out or default_out
-
-        summary = ingest_rows(
-            system_config,
-            raw_rows,
-            out_path,
-            backend_mode=system_config.backend.mode,
-            backend_adapter=backend_info.name,
-        )
+        source_lineage: dict[str, object] | None = None
+        if is_source_runtime_ingest_adapter(system_config.backend.ingest_adapter):
+            summary, source_lineage = _ingest_via_source_registry(system_config, fixture, out_path)
+        else:
+            backend = resolve_ingest_backend(
+                system_config.backend.mode,
+                system_config.backend.ingest_adapter,
+            )
+            backend_info = backend.info()
+            raw_rows = backend.load_rows(system_config, fixture)
+            summary = ingest_rows(
+                system_config,
+                raw_rows,
+                out_path,
+                backend_mode=system_config.backend.mode,
+                backend_adapter=backend_info.name,
+            )
 
         system_slug = _system_slug(system_config.system_name)
         manifest_path = (
             workspace_root() / "data" / "manifests" / f"{system_slug}_ingest_manifest.json"
         )
         backend_versions = _backend_versions_for_stage(system_config, "ingest")
-        backend_versions[backend_info.name] = backend_info.version
+        if source_lineage is None:
+            backend_versions[summary.backend_adapter] = backend_versions.get(
+                summary.backend_adapter,
+                "builtin",
+            )
+        else:
+            adapter_key = source_lineage.get("adapter_key")
+            adapter_version = source_lineage.get("adapter_version")
+            if isinstance(adapter_key, str) and adapter_key:
+                backend_versions[adapter_key] = (
+                    str(adapter_version) if adapter_version is not None else "staged"
+                )
         manifest = build_manifest(
             stage="ingest",
             config=system_config,
             backend_mode=system_config.backend.mode,
             backend_versions=backend_versions,
             output_paths={"processed_jsonl": out_path},
+            source_lineage=source_lineage,
         )
         write_manifest(manifest, manifest_path)
         summary.manifest_path = str(manifest_path)

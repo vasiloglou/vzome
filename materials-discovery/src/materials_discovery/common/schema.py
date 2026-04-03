@@ -421,6 +421,7 @@ class ArtifactManifest(BaseModel):
     backend_versions: dict[str, str]
     output_hashes: dict[str, str]
     created_at_utc: str
+    source_lineage: dict[str, Any] | None = None
 
 
 def validate_unique_candidate_ids(candidates: Sequence[CandidateRecord]) -> None:

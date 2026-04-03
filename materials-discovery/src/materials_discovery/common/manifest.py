@@ -30,6 +30,7 @@ def build_manifest(
     backend_mode: Literal["mock", "real"],
     backend_versions: dict[str, str],
     output_paths: dict[str, Path],
+    source_lineage: dict[str, object] | None = None,
 ) -> ArtifactManifest:
     output_hashes = {key: file_sha256(path) for key, path in output_paths.items()}
 
@@ -42,6 +43,7 @@ def build_manifest(
         backend_versions=backend_versions,
         output_hashes=output_hashes,
         created_at_utc=datetime.now(UTC).isoformat(),
+        source_lineage=source_lineage,
     )
 
 

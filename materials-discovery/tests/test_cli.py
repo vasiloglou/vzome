@@ -56,6 +56,51 @@ def test_cli_legacy_config_without_ingestion_still_succeeds(tmp_path: Path) -> N
     assert out_file.exists()
 
 
+def test_cli_source_registry_config_succeeds(tmp_path: Path) -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    base_config = workspace / "configs" / "systems" / "al_cu_fe.yaml"
+    out_file = tmp_path / "source_registry_ingest.jsonl"
+
+    data = load_yaml(base_config)
+    data["backend"] = {"mode": "real", "ingest_adapter": "source_registry_v1"}
+    data["ingestion"] = {
+        "source_key": "materials_project",
+        "adapter_key": "direct_api_v1",
+        "snapshot_id": "cli_source_registry_v1",
+        "use_cached_snapshot": False,
+        "artifact_root": str(tmp_path / "source_cache"),
+        "query": {
+            "inline_rows": [
+                {
+                    "material_id": "mp-001",
+                    "formula_pretty": "Al7Cu2Fe",
+                    "chemsys": "Al-Cu-Fe",
+                    "composition_reduced": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+                    "symmetry": {"symbol": "Pm-3"},
+                    "structure": {"site_count": 36},
+                }
+            ]
+        },
+    }
+    config_path = tmp_path / "source_registry.yaml"
+    config_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+
+    result = runner.invoke(
+        app,
+        [
+            "ingest",
+            "--config",
+            str(config_path),
+            "--out",
+            str(out_file),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert out_file.exists()
+
+
 def test_cli_generate_success(tmp_path: Path) -> None:
     runner = CliRunner()
     workspace = Path(__file__).resolve().parents[1]

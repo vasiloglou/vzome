@@ -18,6 +18,7 @@
 | 2026-04-03 | Added HYPOD-X and COD source adapters | Implemented the first offline provider adapters on the new source runtime, including HYPOD-X fixture/pinned staging, CIF conversion, COD staging, and deterministic adapter tests |
 | 2026-04-03 | Added API and OPTIMADE source adapters | Implemented shared OPTIMADE normalization plus offline Materials Project, OQMD, and JARVIS adapters, with compatibility tests proving legacy CLI configs still work without `ingestion` |
 | 2026-04-03 | Added canonical source projection bridge core | Implemented `data_sources/projection.py`, deterministic system/phase/dedupe rules, a reusable `ProjectionSummary`, and focused tests proving projected rows remain consumable by downstream reference-phase logic |
+| 2026-04-03 | Wired source-registry ingest into the CLI | Turned `source_registry_v1` into a real `mdisc ingest` path with staged snapshot reuse, additive ingest-manifest lineage, and offline bridge/CLI regression coverage |
 
 ## Diary
 
@@ -84,3 +85,4 @@
 - 10:34 EDT — Added the first concrete `data_sources` adapters: HYPOD-X fixture/pinned staging on the new runtime plus a local CIF-to-canonical conversion path for COD, together with offline pytest coverage and a checked-in `cod_sample.cif` fixture.
 - 10:53 EDT — Added the Wave 3 adapter layer: a shared OPTIMADE adapter base, direct offline Materials Project and OQMD adapters, a dedicated `jarvis.py` OPTIMADE bridge, and test coverage that keeps the legacy `mdisc ingest` CLI path green without an `ingestion` block.
 - 09:58 EDT — Added the Phase 3 projection seam in `materials_discovery.data_sources.projection`, including deterministic system matching from canonical source hints, explicit phase-name fallback precedence, additive source provenance in processed `metadata`, a reusable `ProjectionSummary`, and focused pytest coverage plus a downstream `hull_proxy` compatibility check.
+- 10:08 EDT — Wired `source_registry_v1` into `mdisc ingest` by branching the CLI onto staged canonical source snapshots, adding cached-snapshot reuse rules, extending the standard ingest manifest with additive `source_lineage`, and covering the bridge path with offline source-registry, CLI, and non-ingest-manifest regression tests.

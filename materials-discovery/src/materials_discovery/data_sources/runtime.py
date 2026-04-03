@@ -4,7 +4,12 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from materials_discovery.common.io import ensure_parent, write_json_object, write_jsonl
+from materials_discovery.common.io import (
+    ensure_parent,
+    load_json_object,
+    write_json_object,
+    write_jsonl,
+)
 from materials_discovery.common.schema import SystemConfig
 from materials_discovery.data_sources.manifests import (
     build_source_snapshot_manifest,
@@ -116,3 +121,58 @@ def stage_registered_source_snapshot(
 ) -> SourceStageSummary:
     adapter = resolve_source_adapter(source_key, adapter_key)
     return stage_source_snapshot(config, adapter, snapshot_path=snapshot_path)
+
+
+def source_snapshot_artifact_paths(
+    source_key: str,
+    snapshot_id: str,
+    artifact_root: str | None = None,
+) -> dict[str, Path]:
+    return {
+        "output_dir": source_snapshot_dir(source_key, snapshot_id, artifact_root),
+        "raw_rows_path": raw_rows_path(source_key, snapshot_id, artifact_root),
+        "canonical_records_path": canonical_records_path(source_key, snapshot_id, artifact_root),
+        "qa_report_path": qa_report_path(source_key, snapshot_id, artifact_root),
+        "snapshot_manifest_path": snapshot_manifest_path(source_key, snapshot_id, artifact_root),
+    }
+
+
+def load_cached_source_stage_summary(
+    config: SystemConfig,
+    source_key: str,
+    snapshot_id: str,
+) -> SourceStageSummary | None:
+    settings = _ingestion_settings(config)
+    artifact_root = settings.get("artifact_root")
+    paths = source_snapshot_artifact_paths(source_key, snapshot_id, artifact_root)
+
+    output_dir = paths["output_dir"]
+    if not output_dir.exists():
+        return None
+
+    required = {
+        "canonical_records.jsonl": paths["canonical_records_path"],
+        "qa_report.json": paths["qa_report_path"],
+        "snapshot_manifest.json": paths["snapshot_manifest_path"],
+    }
+    missing = [name for name, path in required.items() if not path.exists()]
+    if missing:
+        missing_list = ", ".join(sorted(missing))
+        raise ValueError(
+            f"cached source snapshot is incomplete for {source_key}:{snapshot_id}: {missing_list}"
+        )
+
+    qa_report = load_json_object(paths["qa_report_path"])
+    raw_count = int(qa_report.get("raw_count", 0))
+    canonical_count = int(qa_report.get("canonical_count", 0))
+    return SourceStageSummary(
+        source_key=source_key,
+        snapshot_id=snapshot_id,
+        raw_count=raw_count,
+        canonical_count=canonical_count,
+        output_dir=workspace_relative(output_dir),
+        raw_rows_path=workspace_relative(paths["raw_rows_path"]),
+        canonical_records_path=workspace_relative(paths["canonical_records_path"]),
+        qa_report_path=workspace_relative(paths["qa_report_path"]),
+        snapshot_manifest_path=workspace_relative(paths["snapshot_manifest_path"]),
+    )
