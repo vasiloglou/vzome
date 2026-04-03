@@ -1,0 +1,23 @@
+build_id: zomic_corpus_v1
+systems:
+  - Al-Cu-Fe
+  - Sc-Zn
+  - Ti-Zr-Ni
+include_repo_regression: true
+include_repo_parts: true
+include_materials_designs: true
+include_candidate_records: true
+include_generated_exports: true
+include_canonical_sources: true
+include_reference_packs: true
+include_pyqcstrc_projection: true
+gold_min_sites: 4
+gold_max_sites: 200
+silver_max_sites: 400
+collision_threshold_angstrom: 0.1
+source_keys:
+  - hypodx
+  - cod
+reference_pack_ids:
+  - al_cu_fe_v1
+  - sc_zn_v1

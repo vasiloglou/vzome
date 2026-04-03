@@ -29,6 +29,7 @@
 | 2026-04-03 | Phase 5 Plan 03 Task 1: analytics notebooks and smoke tests | Three starter notebooks (source_contribution_analysis, cross_run_drift_detection, metric_distribution_deep_dive) under `notebooks/`; each uses workspace_root() and degrades gracefully when data is absent; `tests/test_notebooks.py` with 3 static + 3 conditional execution smoke tests |
 | 2026-04-03 | Phase 5 Plan 03 Task 2: unified operator RUNBOOK.md | 8-section runbook covering prerequisites, ingestion, reference-pack assembly, pipeline execution, benchmarking, data lake operations, analytics notebooks, and troubleshooting; 53+ code blocks; full mdisc command quick-reference table |
 | 2026-04-03 | Phase 5 complete: data lake and analysis layer | All 3 plans executed across 3 waves; verification passed 15/15 must-haves; 200 tests passing; all 6 cross-AI review concerns addressed; PIPE-04 and PIPE-05 satisfied |
+| 2026-04-03 | Phase 6 Plan 01 Task 1: LLM corpus contracts and config | Added the new `materials_discovery.llm` schema package, committed `configs/llm/corpus_v1.yaml`, and introduced schema-focused pytest coverage for corpus config, provenance, inventory rows, validation state, and build summaries |
 
 ## Diary
 
@@ -179,3 +180,10 @@
   - New CLI commands: `mdisc lake index`, `mdisc lake stats`, `mdisc lake compare`.
   - New artifacts: 3 analytics notebooks, RUNBOOK.md, `lake/` package (catalog.py, index.py, staleness.py, compare.py).
   - Next phase: Phase 6 (Zomic Training Corpus Pipeline).
+
+- Phase 6 Plan 01 Task 1 — Added the foundation corpus contracts and committed starter config:
+  - New package: `src/materials_discovery/llm/` with `schema.py` and `__init__.py`.
+  - `schema.py` defines `CorpusBuildConfig`, `CorpusInventoryRow`, `CorpusProvenance`, `CorpusValidationState`, `CorpusConversionTrace`, `CorpusExample`, `CorpusQaSummary`, `CorpusManifest`, and `CorpusBuildSummary`.
+  - Locked the review-driven contract updates up front: typed validation state, record-addressable inventory rows, and neutral `release_tier="pending"` before QA promotion.
+  - Added `configs/llm/corpus_v1.yaml` covering Phase 6 source-family toggles, systems, thresholds, source keys, and reference-pack IDs.
+  - Added `tests/test_llm_corpus_schema.py`; focused verification passed with `6 passed`.
