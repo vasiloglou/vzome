@@ -52,6 +52,7 @@ from materials_discovery.common.schema import (
 )
 from materials_discovery.common.stage_metrics import (
     generation_metrics,
+    llm_generation_metrics,
     ranking_calibration,
     report_calibration,
     screening_calibration,
@@ -100,6 +101,7 @@ from materials_discovery.lake.index import (
     write_lake_index,
 )
 from materials_discovery.llm.corpus_builder import build_llm_corpus
+from materials_discovery.llm.generate import generate_llm_candidates
 from materials_discovery.llm.schema import CorpusBuildConfig
 
 app = typer.Typer(add_completion=False, help="No-DFT materials discovery CLI scaffold")
@@ -616,6 +618,70 @@ def generate_command(
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"generate failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-generate")
+def llm_generate_command(
+    config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
+    count: int = typer.Option(..., "--count", min=1),
+    seed_zomic: Path | None = typer.Option(None, "--seed-zomic", exists=False, dir_okay=False),
+    temperature: float | None = typer.Option(None, "--temperature"),
+    out: Path | None = typer.Option(None, "--out", exists=False, dir_okay=False),
+) -> None:
+    """Generate candidate structures from LLM-produced Zomic text."""
+    try:
+        system_config = _load_system_config(config)
+        system_slug = _system_slug(system_config.system_name)
+
+        default_out = workspace_root() / "data" / "candidates" / f"{system_slug}_candidates.jsonl"
+        out_path = out or default_out
+        resolved_seed = None if seed_zomic is None else _workspace_path(str(seed_zomic))
+
+        summary = generate_llm_candidates(
+            system_config,
+            out_path,
+            count=count,
+            config_path=config,
+            seed_zomic_path=resolved_seed,
+            temperature_override=temperature,
+        )
+        metrics = llm_generation_metrics(
+            requested_count=summary.requested_count,
+            generated_count=summary.generated_count,
+            attempt_count=summary.attempt_count,
+            parse_pass_count=summary.parse_pass_count,
+            compile_pass_count=summary.compile_pass_count,
+        )
+
+        calibration_path = (
+            workspace_root() / "data" / "calibration" / f"{system_slug}_llm_generation_metrics.json"
+        )
+        ensure_parent(calibration_path)
+        calibration_path.write_text(json.dumps(metrics, sort_keys=True), encoding="utf-8")
+        summary.calibration_path = str(calibration_path)
+
+        manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_llm_generate_manifest.json"
+        )
+        output_paths = {
+            "candidates_jsonl": out_path,
+            "llm_generation_metrics_json": calibration_path,
+        }
+        if summary.run_manifest_path is not None:
+            output_paths["llm_run_manifest_json"] = Path(summary.run_manifest_path)
+        manifest = build_manifest(
+            stage="llm_generate",
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(system_config, "generate"),
+            output_paths=output_paths,
+        )
+        write_manifest(manifest, manifest_path)
+        summary.manifest_path = str(manifest_path)
+        typer.echo(summary.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
+        _emit_error(f"llm-generate failed: {exc}")
         raise typer.Exit(code=2)
 
 

@@ -34,6 +34,29 @@ def generation_metrics(
     }
 
 
+def llm_generation_metrics(
+    requested_count: int,
+    generated_count: int,
+    attempt_count: int,
+    parse_pass_count: int,
+    compile_pass_count: int,
+) -> dict[str, float | int | bool]:
+    parse_pass_rate = 0.0 if attempt_count == 0 else parse_pass_count / attempt_count
+    compile_pass_rate = 0.0 if attempt_count == 0 else compile_pass_count / attempt_count
+    generation_success_rate = 0.0 if requested_count == 0 else generated_count / requested_count
+    return {
+        "requested_count": requested_count,
+        "generated_count": generated_count,
+        "attempt_count": attempt_count,
+        "parse_pass_count": parse_pass_count,
+        "compile_pass_count": compile_pass_count,
+        "parse_pass_rate": round(parse_pass_rate, 6),
+        "compile_pass_rate": round(compile_pass_rate, 6),
+        "generation_success_rate": round(generation_success_rate, 6),
+        "passed": generated_count > 0,
+    }
+
+
 def screening_calibration(
     input_count: int,
     relaxed_count: int,

@@ -11,6 +11,8 @@ from materials_discovery.llm.manifests import (
     corpus_build_fingerprint,
     write_corpus_manifest,
 )
+from materials_discovery.llm.generate import generate_llm_candidates
+from materials_discovery.llm.prompting import build_generation_prompt, load_seed_zomic_text
 from materials_discovery.llm.qa import (
     dedupe_corpus_examples,
     grade_corpus_example,
@@ -74,6 +76,7 @@ __all__ = [
     "DEFAULT_BUILDER_VERSION",
     "DEFAULT_CORPUS_MANIFEST_VERSION",
     "DEFAULT_CORPUS_SCHEMA_VERSION",
+    "build_generation_prompt",
     "dedupe_corpus_examples",
     "CorpusBuildConfig",
     "CorpusBuildSummary",
@@ -89,11 +92,13 @@ __all__ = [
     "DEFAULT_LLM_RUN_MANIFEST_VERSION",
     "FidelityTier",
     "grade_corpus_example",
+    "generate_llm_candidates",
     "LlmAdapter",
     "LlmGenerationAttempt",
     "LlmGenerationRequest",
     "LlmGenerationResult",
     "LlmRunManifest",
+    "load_seed_zomic_text",
     "MockLlmAdapter",
     "AnthropicApiLlmAdapter",
     "materials_corpus_path",

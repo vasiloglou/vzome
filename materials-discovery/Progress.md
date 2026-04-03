@@ -40,6 +40,7 @@
 | 2026-04-03 | Phase 6 Plan 04 Task 3: end-to-end corpus builder | Added the inventory-driven corpus builder that routes all loader hints, validates/grades/dedupes examples, and writes syntax/materials/rejects/inventory/QA/manifest artifacts under `data/llm_corpus/{build_id}` |
 | 2026-04-03 | Phase 6 Plan 04 Task 4: llm-corpus CLI command | Added the `mdisc llm-corpus build` sub-application/command, JSON summary output, and focused CLI tests for success, invalid configs, and workspace-relative config paths |
 | 2026-04-03 | Phase 7 Plan 01: llm-generate contracts and runtime seam | Added additive `llm_generate` config/schema contracts, Phase 7 runtime request/attempt/run-manifest models, the `llm_fixture_v1` / `anthropic_api_v1` adapter seam, configuration docs, and focused schema/runtime pytest coverage |
+| 2026-04-03 | Phase 7 Plan 02: llm-generate core path | Added config-driven prompt assembly, bounded retry generation, compile-backed candidate conversion, the `mdisc llm-generate` CLI command, committed mock configs, and focused core/CLI pytest coverage |
 
 ## Diary
 
@@ -260,3 +261,13 @@
   - `llm/__init__.py` now exports the new Phase 7 runtime/schemas alongside the existing Phase 6 corpus surface.
   - `developers-docs/configuration-reference.md` now documents the `llm_generate:` block, mock-only defaulting, and the requirement that real hosted configs set `llm_provider` and `llm_model`.
   - Added focused coverage in `tests/test_llm_generate_schema.py` and `tests/test_llm_runtime.py` for config validation, schema typing, adapter resolution, missing secret handling, lazy imports, and API-base override behavior.
+
+### 2026-04-03 (Phase 7 Plan 02)
+
+- Implemented the first full `mdisc llm-generate` path:
+  - Added `llm/prompting.py` for config-driven prompt construction and optional seed-script loading.
+  - Added `llm/generate.py` for bounded retries, per-attempt raw completion persistence, compile-result tracking, run-manifest emission, and conversion of valid compiled orbit libraries into standard `CandidateRecord` JSONL.
+  - Extended `llm/compiler.py` so compile attempts now return explicit parse/compile status, stable error kinds, and persisted raw-export/orbit-library paths when the caller supplies an artifact root.
+  - Extended `generator/candidate_factory.py` with `build_candidate_from_prototype_library(...)` so compiled template geometry can become normal candidates without reusing the Z[phi] perturbation branch.
+  - Added `llm_generation_metrics(...)` and wired the new `llm-generate` Typer command into `cli.py`, including calibration JSON and stage-manifest output.
+  - Added committed mock configs for `Al-Cu-Fe` and `Sc-Zn`, plus focused tests in `tests/test_llm_generate_core.py`, `tests/test_llm_generate_cli.py`, and `tests/test_cli.py`.

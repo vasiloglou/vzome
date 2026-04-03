@@ -4,6 +4,10 @@ import hashlib
 import random
 from pathlib import Path
 
+from materials_discovery.common.coordinates import (
+    cartesian_positions_from_fractional,
+    cell_matrix_from_cell,
+)
 from materials_discovery.common.io import write_jsonl
 from materials_discovery.common.schema import (
     CandidateRecord,
@@ -23,12 +27,48 @@ from materials_discovery.generator.zphi_geometry import (
 )
 
 
-def _make_candidate(
+def _build_provenance(
+    *,
+    idx: int,
+    config: SystemConfig,
+    seed: int,
+    template_override_path: Path | None,
+    template_reference: str,
+    template_reference_url: str | None,
+    template_source_kind: str,
+    template_space_group: str | None,
+    template_prototype_key: str,
+    extra_provenance: dict[str, object] | None = None,
+) -> dict[str, object]:
+    digest = hashlib.sha256(f"{seed}:{idx}".encode()).hexdigest()
+    provenance: dict[str, object] = {
+        "generator_version": "0.1.0",
+        "seed": seed,
+        "config_hash": f"sha256:{digest[:16]}",
+        "prototype_key": template_prototype_key,
+        "prototype_reference": template_reference,
+        "prototype_reference_url": template_reference_url,
+        "prototype_source_kind": template_source_kind,
+        "prototype_space_group": template_space_group,
+    }
+    if template_override_path is not None:
+        provenance["prototype_library_path"] = str(template_override_path)
+    if config.zomic_design is not None:
+        provenance["zomic_design"] = config.zomic_design
+    if extra_provenance:
+        provenance.update(extra_provenance)
+    return provenance
+
+
+def _candidate_from_template(
+    *,
     idx: int,
     config: SystemConfig,
     seed: int,
     rng: random.Random,
     template_override_path: Path | None,
+    use_compiled_geometry: bool,
+    extra_provenance: dict[str, object] | None = None,
 ) -> CandidateRecord:
     template = (
         template_from_path(template_override_path)
@@ -42,37 +82,48 @@ def _make_candidate(
         site_preferences=[site.preferred_species for site in template.sites],
     )
 
-    min_coeff = config.coeff_bounds.min
-    max_coeff = config.coeff_bounds.max
-
-    qphi_coords: list[tuple[tuple[int, int], tuple[int, int], tuple[int, int]]] = []
-    for i, template_site in enumerate(template.sites):
-        qphi = construct_site_qphi(
-            template_site.base_qphi,
-            template_family=config.template_family,
-            candidate_index=idx,
-            site_index=i,
-            seed=seed,
-            min_coeff=min_coeff,
-            max_coeff=max_coeff,
+    if use_compiled_geometry:
+        qphi_coords = [template_site.base_qphi for template_site in template.sites]
+        cell = dict(template.base_cell)
+        fractional_positions = [
+            template_site.base_fractional_position for template_site in template.sites
+        ]
+        cell_matrix = cell_matrix_from_cell(cell)
+        cartesian_positions = cartesian_positions_from_fractional(
+            fractional_positions,
+            cell_matrix,
         )
-        qphi_coords.append(qphi)
+    else:
+        min_coeff = config.coeff_bounds.min
+        max_coeff = config.coeff_bounds.max
 
-    multiplier = cell_scale_multiplier(
-        seed,
-        idx,
-        template_source_kind=template.source_kind,
-    )
-    cell = {
-        axis: round(value * multiplier, 6) if axis in {"a", "b", "c"} else value
-        for axis, value in template.base_cell.items()
-    }
+        qphi_coords: list[tuple[tuple[int, int], tuple[int, int], tuple[int, int]]] = []
+        for i, template_site in enumerate(template.sites):
+            qphi = construct_site_qphi(
+                template_site.base_qphi,
+                template_family=config.template_family,
+                candidate_index=idx,
+                site_index=i,
+                seed=seed,
+                min_coeff=min_coeff,
+                max_coeff=max_coeff,
+            )
+            qphi_coords.append(qphi)
 
-    fractional_positions, cartesian_positions = site_positions_from_template(
-        template,
-        qphi_coords,
-        cell,
-    )
+        multiplier = cell_scale_multiplier(
+            seed,
+            idx,
+            template_source_kind=template.source_kind,
+        )
+        cell = {
+            axis: round(value * multiplier, 6) if axis in {"a", "b", "c"} else value
+            for axis, value in template.base_cell.items()
+        }
+        fractional_positions, cartesian_positions = site_positions_from_template(
+            template,
+            qphi_coords,
+            cell,
+        )
 
     sites: list[SiteRecord] = []
     for i, template_site in enumerate(template.sites):
@@ -87,21 +138,18 @@ def _make_candidate(
             )
         )
 
-    digest = hashlib.sha256(f"{seed}:{idx}".encode()).hexdigest()
-    provenance = {
-        "generator_version": "0.1.0",
-        "seed": seed,
-        "config_hash": f"sha256:{digest[:16]}",
-        "prototype_key": template.prototype_key,
-        "prototype_reference": template.reference,
-        "prototype_reference_url": template.reference_url,
-        "prototype_source_kind": template.source_kind,
-        "prototype_space_group": template.space_group,
-    }
-    if template_override_path is not None:
-        provenance["prototype_library_path"] = str(template_override_path)
-    if config.zomic_design is not None:
-        provenance["zomic_design"] = config.zomic_design
+    provenance = _build_provenance(
+        idx=idx,
+        config=config,
+        seed=seed,
+        template_override_path=template_override_path,
+        template_reference=template.reference,
+        template_reference_url=template.reference_url,
+        template_source_kind=template.source_kind,
+        template_space_group=template.space_group,
+        template_prototype_key=template.prototype_key,
+        extra_provenance=extra_provenance,
+    )
 
     return CandidateRecord(
         candidate_id=f"md_{idx:06d}",
@@ -113,6 +161,42 @@ def _make_candidate(
         screen={"model": "MACE", "energy_per_atom_ev": -3.0},
         digital_validation=DigitalValidationRecord(status="pending"),
         provenance=provenance,
+    )
+
+
+def _make_candidate(
+    idx: int,
+    config: SystemConfig,
+    seed: int,
+    rng: random.Random,
+    template_override_path: Path | None,
+) -> CandidateRecord:
+    return _candidate_from_template(
+        idx=idx,
+        config=config,
+        seed=seed,
+        rng=rng,
+        template_override_path=template_override_path,
+        use_compiled_geometry=False,
+    )
+
+def build_candidate_from_prototype_library(
+    config: SystemConfig,
+    *,
+    seed: int,
+    candidate_index: int,
+    template_override_path: Path,
+    extra_provenance: dict[str, object] | None = None,
+) -> CandidateRecord:
+    rng = random.Random(f"{seed}:{candidate_index}:{template_override_path.resolve()}")
+    return _candidate_from_template(
+        idx=candidate_index,
+        config=config,
+        seed=seed,
+        rng=rng,
+        template_override_path=template_override_path,
+        use_compiled_geometry=True,
+        extra_provenance=extra_provenance,
     )
 
 

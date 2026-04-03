@@ -1,0 +1,81 @@
+system_name: Al-Cu-Fe
+template_family: icosahedral_approximant_1_1
+species:
+  - Al
+  - Cu
+  - Fe
+composition_bounds:
+  Al:
+    min: 0.60
+    max: 0.80
+  Cu:
+    min: 0.10
+    max: 0.25
+  Fe:
+    min: 0.05
+    max: 0.20
+coeff_bounds:
+  min: -3
+  max: 3
+seed: 17
+default_count: 5
+backend:
+  mode: mock
+  llm_adapter: llm_fixture_v1
+  llm_provider: mock
+  llm_model: fixture-al-cu-fe-v1
+llm_generate:
+  prompt_template: zomic_generate_v1
+  temperature: 0.2
+  max_tokens: 1024
+  max_attempts: 2
+  fixture_outputs:
+    - |
+      size 7 purple +0
+
+      symmetry around blue +13
+      symmetry through +13
+      branch{
+
+      branch {
+
+      size 7 purple -0
+      from { yellow +0 red +0 }
+
+      label pent.top.center
+      short blue -12
+      label pent.top.left
+      short blue -10
+      label pent.bottom.left
+      short blue +13
+      label pent.bottom.right
+      short blue +11
+      label pent.top.right
+
+      green +3
+      label frustum.top.right
+      branch { repeat 2 short orange -2 short blue -6 }
+      short blue -13
+      label frustum.top.left
+      blue -5
+      label frustum.bottom.left
+      short blue +13
+      label frustum.bottom.right
+      branch green -33
+      blue -2
+      }
+
+      from short red +1
+      branch purple -0
+      label joint.top.right
+      from short blue -13
+      branch purple -0
+      label joint.top.left
+      from blue -5
+      branch purple -0
+      label joint.bottom.left
+      from short blue +13
+      branch purple -0
+      label joint.bottom.right
+
+      }

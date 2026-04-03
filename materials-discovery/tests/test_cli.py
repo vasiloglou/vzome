@@ -126,6 +126,27 @@ def test_cli_generate_success(tmp_path: Path) -> None:
     assert out_file.exists()
 
 
+def test_cli_llm_generate_missing_seed_returns_2() -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    config = workspace / "configs" / "systems" / "al_cu_fe_llm_mock.yaml"
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-generate",
+            "--config",
+            str(config),
+            "--count",
+            "1",
+            "--seed-zomic",
+            str(workspace / "does-not-exist.zomic"),
+        ],
+    )
+
+    assert result.exit_code == 2
+
+
 def test_cli_export_zomic_success(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     runner = CliRunner()
     design_path = tmp_path / "demo.yaml"
