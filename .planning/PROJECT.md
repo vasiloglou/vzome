@@ -35,6 +35,11 @@ instead of living in separate prototypes.
 - Phase 1 planning now defines the canonical raw-source contract, source
   registry, and integration boundary for the Material Design Data Ingestion
   project.
+- Validated in Phase 4: Reference-aware no-DFT discovery workflow is
+  operationally credible — deterministic reference-pack assembly, benchmark
+  configs for Al-Cu-Fe and Sc-Zn, output-side comparability (BenchmarkRunContext,
+  provenance in rank/report), operator-facing benchmark runner and runbook,
+  172 tests passing.
 
 ### Active
 
@@ -103,4 +108,4 @@ instead of living in separate prototypes.
 | Defer large-model training until corpus + evaluation are ready | Prevents premature spending and noisy benchmarks | ✓ Good |
 
 ---
-*Last updated: 2026-04-03 after Phase 1 contract, registry, and integration design execution*
+*Last updated: 2026-04-03 after Phase 4 reference-aware no-DFT materials discovery execution*
