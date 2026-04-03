@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 6
-current_phase_name: zomic training corpus pipeline
-current_plan: Not started
-status: ready_to_execute
-stopped_at: Phase 6 replanned with review feedback
-last_updated: "2026-04-03T20:06:26Z"
-last_activity: 2026-04-03
+current_phase: 07
+current_phase_name: llm-inference-mvp
+current_plan: 0
+status: ready_to_plan
+stopped_at: Phase 06 execution complete; ready to plan Phase 07
+last_updated: "2026-04-03T20:35:04Z"
+last_activity: 2026-04-03 -- Phase 06 execution completed
 progress:
   total_phases: 9
-  completed_phases: 5
-  total_plans: 13
-  completed_plans: 13
-  percent: 70
+  completed_phases: 6
+  total_plans: 17
+  completed_plans: 17
+  percent: 78
 ---
 
 # Project State
@@ -24,30 +24,30 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-02)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 06 — zomic-training-corpus-pipeline
+**Current focus:** Phase 07 — llm-inference-mvp
 
 ## Current Position
 
-Current Phase: 6
-Current Phase Name: zomic training corpus pipeline
+Current Phase: 07
+Current Phase Name: llm-inference-mvp
 Total Phases: 9
-Current Plan: Not started
-Total Plans in Phase: 4
-Phase: 06 (zomic-training-corpus-pipeline) — PLANNED
-Plan: 0 of 4
-Status: Phase planned — ready for execution
-Last activity: 2026-04-03
-Last Activity Description: Phase 6 replanned to incorporate cross-AI review feedback
+Current Plan: 0
+Total Plans in Phase: 0
+Phase: 07 (llm-inference-mvp) — READY TO PLAN
+Plan: not planned yet
+Status: Ready to plan Phase 07
+Last activity: 2026-04-03 -- Phase 06 execution completed
+Last Activity Description: Phase 06 execution completed with full verification green (`254 passed, 3 skipped`)
 
-Progress: [███████░░░] 70%
+Progress: [████████░░] 78%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 7
-- Average duration: 28 min
-- Total execution time: 3.3 hours
+- Total plans completed: 17
+- Average duration: 20 min
+- Total execution time: 5.7 hours
 
 **By Phase:**
 
@@ -56,11 +56,14 @@ Progress: [███████░░░] 70%
 | 1 | 1 | 9 min | 9 min |
 | 2 | 3 | 122 min | 41 min |
 | 3 | 3 | 63 min | 21 min |
+| 4 | 3 | 38 min | 13 min |
+| 5 | 3 | 38 min | 13 min |
+| 6 | 4 | 122 min | 30 min |
 
 **Recent Trend:**
 
-- Last 5 plans: P2.02=31min, P2.03=32min, P3.01=19min, P3.02=17min, P3.03=27min
-- Trend: improving
+- Last 5 plans: P5.03=8min, P6.01=24min, P6.02=32min, P6.03=36min, P6.04=54min
+- Trend: stable with deeper implementation phases
 
 | Phase 01-program-charter-and-canonical-data-model P01 | 9min | 3 tasks | 8 files |
 | Phase 02-ingestion-platform-mvp P01 | 59min | 3 tasks | 15 files |
@@ -76,6 +79,10 @@ Progress: [███████░░░] 70%
 | Phase 05 P02 | 5 | 2 tasks | 4 files |
 | Phase 05 P03 | 8 | 2 tasks | 6 files |
 | Phase 05 P03 | 8 | 3 tasks | 6 files |
+| Phase 06 P01 | 24 | 2 tasks | 9 files |
+| Phase 06 P02 | 32 | 2 tasks | 8 files |
+| Phase 06 P03 | 36 | 2 tasks | 8 files |
+| Phase 06 P04 | 54 | 4 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -116,6 +123,12 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 05]: RUNBOOK.md at materials-discovery root (per D-13); references developer-docs for deep-dive context rather than duplicating content
 - [Phase 05]: Static notebook tests separated from execution tests using pytest.mark.skipif so structural checks always run without nbformat/nbconvert
 - [Phase 05]: RUNBOOK.md at materials-discovery root (per D-13); references developer-docs for deep-dive context rather than duplicating content
+- [Phase 06-zomic-training-corpus-pipeline]: Inventory rows must stay record-addressable with explicit loader hints so the builder can reopen exact source artifacts without path guessing.
+- [Phase 06-zomic-training-corpus-pipeline]: Keep release-tier grading as a dedicated QA step (`pending -> gold/silver/reject`) rather than baking release decisions into converters.
+- [Phase 06-zomic-training-corpus-pipeline]: Reserve `exact` fidelity for native or exact-source paths; CandidateRecord conversion defaults to `anchored` unless later equivalence proves otherwise.
+- [Phase 06-zomic-training-corpus-pipeline]: Let thin offline CIF fixtures fall back to `parse_cif()` when symmetry metadata is absent instead of requiring richer crystallographic inputs.
+- [Phase 06-zomic-training-corpus-pipeline]: The corpus builder dispatches by `loader_hint` first and writes the full audit trail under `data/llm_corpus/{build_id}/`.
+- [Phase 06-zomic-training-corpus-pipeline]: Operators build the corpus through `mdisc llm-corpus build --config ...`, not via ad hoc scripts.
 
 ### Pending Todos
 
@@ -127,6 +140,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T19:35:36.236Z
-Stopped at: Phase 6 replanned with review feedback
-Resume file: .planning/phases/06-zomic-training-corpus-pipeline/06-01-PLAN.md
+Last session: 2026-04-03T20:35:04Z
+Stopped at: Phase 06 execution complete; ready to plan Phase 07
+Resume file: .planning/ROADMAP.md
