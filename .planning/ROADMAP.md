@@ -217,12 +217,12 @@ stronger benchmarks.
 
 - `PIPE-04`, `PIPE-05`
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 05-01-PLAN.md -- Catalog schema, per-directory catalog generator, staleness detection, mdisc lake index and stats CLI
 - [x] 05-02-PLAN.md -- Cross-lane comparison engine and mdisc lake compare CLI
-- [ ] 05-03-PLAN.md -- Analytics notebooks, RUNBOOK.md, and human verification
+- [x] 05-03-PLAN.md -- Analytics notebooks, RUNBOOK.md, and human verification
 
 **Notes**
 

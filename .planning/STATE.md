@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 05
 current_phase_name: candidate-reference-data-lake-and-analysis-layer
 current_plan: 3
-status: executing
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-04-03T18:22:31.277Z"
+status: verifying
+stopped_at: "Completed 05-03-PLAN.md (awaiting checkpoint:human-verify)"
+last_updated: "2026-04-03T18:32:24.310Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
   percent: 70
 ---
 
@@ -35,7 +35,7 @@ Current Plan: 3
 Total Plans in Phase: 3
 Phase: 05 (candidate-reference-data-lake-and-analysis-layer) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-03
 Last Activity Description: Phase 05 execution started
 
@@ -74,6 +74,7 @@ Progress: [███████░░░] 70%
 | Phase 04 P03 | 8 | 3 tasks | 8 files |
 | Phase 05 P01 | 25 | 2 tasks | 8 files |
 | Phase 05 P02 | 5 | 2 tasks | 4 files |
+| Phase 05 P03 | 8 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -110,6 +111,8 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 05]: All lineage paths are workspace-relative via workspace_relative() (review concern #5)
 - [Phase 05]: Lane-centric comparison model: system-vs-system is a preset view; same model supports source-vs-source and backend-vs-backend comparisons (addresses review concern #6)
 - [Phase 05]: Dereference benchmark-pack stage_manifest_paths[report] for entry-level metric distributions; graceful fallback to pack-embedded report_metrics when report file missing (addresses review concern #2)
+- [Phase 05]: Static notebook tests separated from execution tests using pytest.mark.skipif so structural checks always run without nbformat/nbconvert
+- [Phase 05]: RUNBOOK.md at materials-discovery root (per D-13); references developer-docs for deep-dive context rather than duplicating content
 
 ### Pending Todos
 
@@ -121,6 +124,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T18:22:31.275Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-04-03T18:32:24.308Z
+Stopped at: Completed 05-03-PLAN.md (awaiting checkpoint:human-verify)
 Resume file: None
