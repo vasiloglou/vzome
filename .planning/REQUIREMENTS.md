@@ -52,9 +52,9 @@ reinforce each other instead of living in separate prototypes.
 
 ### Operations and Governance
 
-- [ ] **OPS-01**: The roadmap explicitly distinguishes open-access, restricted,
+- [x] **OPS-01**: The roadmap explicitly distinguishes open-access, restricted,
   and subscription-only data sources.
-- [ ] **OPS-02**: Source adapters are prioritized by implementation cost,
+- [x] **OPS-02**: Source adapters are prioritized by implementation cost,
   scientific value, and licensing friction.
 - [ ] **OPS-03**: The system keeps the no-DFT boundary explicit in required
   execution paths.
@@ -113,8 +113,8 @@ reinforce each other instead of living in separate prototypes.
 | LLM-03 | Phase 8 | Pending |
 | LLM-04 | Phase 8 | Pending |
 | LLM-05 | Phase 9 | Pending |
-| OPS-01 | Phase 1 | Pending |
-| OPS-02 | Phase 1 | Pending |
+| OPS-01 | Phase 1 | Complete |
+| OPS-02 | Phase 1 | Complete |
 | OPS-03 | Phase 3 | Pending |
 | OPS-04 | Phase 2 | Pending |
 

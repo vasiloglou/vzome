@@ -108,6 +108,7 @@ Priority sources confirmed from current official docs/pages:
 
 **Deliverables**
 
+- expanded source and official-tooling inventory for the relevant materials-data ecosystem
 - canonical raw-source schema for external materials records
 - source registry with provider metadata, licensing, and snapshot/version fields
 - adapter classification: direct, OPTIMADE, CIF-conversion, curated-manual
@@ -122,6 +123,8 @@ Priority sources confirmed from current official docs/pages:
 - This is the point to decide which fields are mandatory for reference-phase
   ingestion versus optional for later enrichment.
 - Avoid overfitting the schema to HYPOD-X alone.
+- Capture a broader source and client/tooling landscape here so Phase 2 does
+  not start from an under-researched source list.
 
 ## Phase 2: Ingestion Platform MVP
 

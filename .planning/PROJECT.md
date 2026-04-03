@@ -32,6 +32,9 @@ instead of living in separate prototypes.
   `native` backend modes.
 - The docs already define a planned LLM path centered on Zomic rather than CIF
   text generation.
+- Phase 1 planning now defines the canonical raw-source contract, source
+  registry, and integration boundary for the Material Design Data Ingestion
+  project.
 
 ### Active
 
@@ -100,4 +103,4 @@ instead of living in separate prototypes.
 | Defer large-model training until corpus + evaluation are ready | Prevents premature spending and noisy benchmarks | ✓ Good |
 
 ---
-*Last updated: 2026-04-02 after roadmap synthesis from repo docs and external source research*
+*Last updated: 2026-04-03 after Phase 1 contract, registry, and integration design execution*
