@@ -1187,5 +1187,39 @@ def lake_stats_cmd(
     typer.echo(f"  Generated at:         {stats['generated_at_utc']}")
 
 
+@lake_app.command("compare")
+def lake_compare_cmd(
+    pack_a: Path = typer.Argument(..., help="Path to the first benchmark_pack.json"),
+    pack_b: Path = typer.Argument(..., help="Path to the second benchmark_pack.json"),
+    output_dir: Path = typer.Option(None, "--output-dir", help="Override comparison output directory"),
+    json_only: bool = typer.Option(False, "--json-only", help="Write JSON only, suppress CLI table"),
+) -> None:
+    """Compare two benchmark packs and produce gate-level deltas and metric summaries.
+
+    Accepts explicit benchmark-pack paths (D-08) and produces dual-format output:
+    a JSON file in data/comparisons/ and a human-readable terminal table (D-06).
+    """
+    from materials_discovery.lake.compare import (
+        compare_benchmark_packs,
+        format_comparison_table,
+        write_comparison,
+    )
+
+    if not pack_a.exists():
+        _emit_error(f"Pack A not found: {pack_a}")
+        raise typer.Exit(code=1)
+    if not pack_b.exists():
+        _emit_error(f"Pack B not found: {pack_b}")
+        raise typer.Exit(code=1)
+
+    result = compare_benchmark_packs(pack_a, pack_b)
+    out_path = write_comparison(result, output_dir=output_dir)
+
+    if not json_only:
+        typer.echo(format_comparison_table(result))
+
+    typer.echo(f"\nComparison JSON written to: {out_path}")
+
+
 if __name__ == "__main__":
     app()
