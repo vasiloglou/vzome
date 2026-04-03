@@ -4,16 +4,16 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 05
 current_phase_name: candidate-reference-data-lake-and-analysis-layer
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-04-03T18:15:44.305Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-04-03T18:22:31.277Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
   completed_phases: 4
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 70
 ---
 
@@ -31,10 +31,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-02)
 Current Phase: 05
 Current Phase Name: candidate-reference-data-lake-and-analysis-layer
 Total Phases: 9
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 3
 Phase: 05 (candidate-reference-data-lake-and-analysis-layer) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-03
 Last Activity Description: Phase 05 execution started
@@ -73,6 +73,7 @@ Progress: [███████░░░] 70%
 | Phase 04 P02 | 18 | 3 tasks | 9 files |
 | Phase 04 P03 | 8 | 3 tasks | 8 files |
 | Phase 05 P01 | 25 | 2 tasks | 8 files |
+| Phase 05 P02 | 5 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,8 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 05]: ARTIFACT_DIRECTORIES covers 17 entries for full artifact inventory completeness (review concern #3)
 - [Phase 05]: Hash-based staleness detection (manifest output_hashes) is authoritative; mtime is secondary hint (review concern #1)
 - [Phase 05]: All lineage paths are workspace-relative via workspace_relative() (review concern #5)
+- [Phase 05]: Lane-centric comparison model: system-vs-system is a preset view; same model supports source-vs-source and backend-vs-backend comparisons (addresses review concern #6)
+- [Phase 05]: Dereference benchmark-pack stage_manifest_paths[report] for entry-level metric distributions; graceful fallback to pack-embedded report_metrics when report file missing (addresses review concern #2)
 
 ### Pending Todos
 
@@ -118,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T18:15:44.303Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-04-03T18:22:31.275Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None

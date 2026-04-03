@@ -25,6 +25,7 @@
 | 2026-04-03 | Phase 4 Plan 02: comparable benchmark outputs across pipeline lanes | Added `BenchmarkRunContext` and `build_benchmark_run_context()` to `common/benchmarking.py`; `write_benchmark_pack()` emits a dedicated `benchmark_pack.json` artifact; additive `benchmark_context` field added to `ArtifactManifest`; `hifi-rank` and `report` CLI commands thread context into manifests and ranked/report outputs; `rank_validated_candidates()` embeds `calibration_provenance` and optional `benchmark_context` in candidate provenance; `compile_experiment_report()` surfaces context in evidence blocks and top-level report; 164 tests pass |
 
 | 2026-04-03 | Phase 5 Plan 01: data lake metadata layer | Added `lake` package with `catalog.py` (CatalogEntry, DirectoryCatalog, ARTIFACT_DIRECTORIES with 17 entries, build_directory_catalog, write_catalog), `staleness.py` (hash-based + mtime-hint staleness detection), and `index.py` (LakeIndex, build_lake_index, write_lake_index, lake_stats); wired `mdisc lake index` and `mdisc lake stats` CLI subcommands; 15 new tests pass, 187 total |
+| 2026-04-03 | Phase 5 Plan 02: cross-lane comparison engine | Added `lake/compare.py` with lane-centric model (LaneSnapshot, MetricDistribution, GateDelta, MetricDelta, ComparisonResult); dereferences benchmark-pack report paths to compute metric distributions (mean/min/max/std for 8 key metrics); wired `mdisc lake compare` CLI command with dual-format output (JSON + table); graceful fallback for missing report files; 10 new tests, 197 total |
 
 ## Diary
 
@@ -138,3 +139,15 @@
   - `data/external/sources/hypodx/hypodx_fixture_local/canonical_records.jsonl` (new): staged canonical records from the local HYPOD-X fixture for Sc-Zn.
   - `cli.py`: added `_ingest_via_reference_pack` function; updated ingest command to detect `ingestion.reference_pack` and route through the reference-pack assembly path.
   - `tests/test_benchmarking.py`: extended with 31 new deterministic tests asserting config validity, pack IDs, member source keys, snapshot IDs, priority ordering, benchmark corpus/validation-snapshot hooks, zomic-design preservation (Sc-Zn), and second-source fixture existence.
+
+### 2026-04-03 (Phase 5 Plan 02)
+
+- Phase 5 Plan 02 — Built cross-lane comparison engine and wired `mdisc lake compare` CLI command:
+  - `lake/compare.py` (new): lane-centric internal model with `MetricDistribution` (mean, min, max, std, count), `LaneSnapshot` (loads from benchmark_pack.json, dereferences stage_manifest_paths["report"] to read deeper report entries for per-candidate metric aggregation), `GateDelta` (with status: both_pass/both_fail/regression/improvement), `MetricDelta`, and `ComparisonResult` (schema_version "comparison/v1").
+  - `compare_benchmark_packs()`: builds LaneSnapshot for each pack, computes gate deltas and metric distribution diffs (8 key metrics: hifi_score, stability_probability, ood_score, xrd_confidence, xrd_distinctiveness, delta_e_proxy_hull_ev_per_atom, uncertainty_ev_per_atom, md_stability_score).
+  - `write_comparison()`: writes JSON to `data/comparisons/` with slugified filename (D-06).
+  - `format_comparison_table()`: produces dual-format terminal table with header, gate section, and metric section (D-06).
+  - Graceful fallback: if report file missing, warns and falls back to report_metrics embedded in benchmark pack (no crash).
+  - `cli.py`: added `@lake_app.command("compare")` with explicit pack_a/pack_b positional args (D-08), optional `--output-dir` and `--json-only` flags.
+  - `tests/test_lake_compare.py` (new): 10 tests covering all 7 planned behaviors plus CLI integration. 197 total tests passing.
+  - Addresses: PIPE-04, D-06, D-07, D-08, review concern #2 (data depth), review concern #6 (lane-centric model).
