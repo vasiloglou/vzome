@@ -2,6 +2,11 @@ from materials_discovery.data_sources.manifests import (
     build_source_snapshot_manifest,
     write_source_snapshot_manifest,
 )
+from materials_discovery.data_sources.projection import (
+    project_canonical_records,
+    project_snapshot_to_ingest_records,
+    projection_fingerprint,
+)
 from materials_discovery.data_sources.qa import (
     evaluate_source_qa,
     prepare_records_for_staging,
@@ -22,6 +27,7 @@ from materials_discovery.data_sources.schema import (
     CanonicalCommonFields,
     CanonicalQaState,
     CanonicalRawSourceRecord,
+    ProjectionSummary,
     SourceQaReport,
     SourceSnapshotManifest,
     SourceStageSummary,
@@ -41,6 +47,7 @@ __all__ = [
     "CanonicalCommonFields",
     "CanonicalQaState",
     "CanonicalRawSourceRecord",
+    "ProjectionSummary",
     "SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY",
     "SourceAdapter",
     "SourceAdapterInfo",
@@ -55,6 +62,9 @@ __all__ = [
     "evaluate_source_qa",
     "list_source_adapters",
     "prepare_records_for_staging",
+    "project_canonical_records",
+    "project_snapshot_to_ingest_records",
+    "projection_fingerprint",
     "qa_report_path",
     "raw_rows_path",
     "register_builtin_source_adapters",

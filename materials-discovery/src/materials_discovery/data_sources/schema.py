@@ -217,3 +217,13 @@ class SourceStageSummary(BaseModel):
     canonical_records_path: str
     qa_report_path: str
     snapshot_manifest_path: str
+
+
+class ProjectionSummary(BaseModel):
+    input_count: int = 0
+    matched_system_count: int = 0
+    projected_count: int = 0
+    deduped_count: int = 0
+    skipped_system_mismatch_count: int = 0
+    skipped_missing_composition_count: int = 0
+    duplicate_dropped_count: int = 0
