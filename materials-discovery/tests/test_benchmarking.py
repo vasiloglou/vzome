@@ -230,3 +230,116 @@ def test_hypodx_local_fixture_exists_for_sc_zn() -> None:
     workspace = Path(__file__).resolve().parents[1]
     fixture_path = workspace / "data" / "external" / "sources" / "hypodx" / "hypodx_fixture_local" / "canonical_records.jsonl"
     assert fixture_path.exists(), f"missing hypodx local fixture: {fixture_path}"
+
+
+# ---------------------------------------------------------------------------
+# Phase 4: BenchmarkRunContext — build_benchmark_run_context
+# ---------------------------------------------------------------------------
+
+
+class TestBuildBenchmarkRunContext:
+    """Unit tests for the BenchmarkRunContext assembly helper."""
+
+    def _al_cu_fe_reference_aware_config(self) -> SystemConfig:
+        workspace = Path(__file__).resolve().parents[1]
+        config_path = workspace / "configs" / "systems" / "al_cu_fe_reference_aware.yaml"
+        return SystemConfig.model_validate(load_yaml(config_path))
+
+    def _sc_zn_reference_aware_config(self) -> SystemConfig:
+        workspace = Path(__file__).resolve().parents[1]
+        config_path = workspace / "configs" / "systems" / "sc_zn_reference_aware.yaml"
+        return SystemConfig.model_validate(load_yaml(config_path))
+
+    def test_context_from_al_cu_fe_config_no_lineage(self) -> None:
+        from materials_discovery.common.benchmarking import build_benchmark_run_context
+        config = self._al_cu_fe_reference_aware_config()
+        ctx = build_benchmark_run_context(config, source_lineage=None)
+        assert ctx.reference_pack_id == "al_cu_fe_v1"
+        assert isinstance(ctx.source_keys, list)
+        assert "hypodx" in ctx.source_keys
+        assert "materials_project" in ctx.source_keys
+        assert ctx.backend_mode == "real"
+        assert ctx.lane_id is not None
+        assert "al_cu_fe_v1" in ctx.lane_id
+
+    def test_context_from_sc_zn_config_no_lineage(self) -> None:
+        from materials_discovery.common.benchmarking import build_benchmark_run_context
+        config = self._sc_zn_reference_aware_config()
+        ctx = build_benchmark_run_context(config, source_lineage=None)
+        assert ctx.reference_pack_id == "sc_zn_v1"
+        assert "hypodx" in ctx.source_keys
+        assert ctx.backend_mode == "real"
+        assert ctx.lane_id is not None
+
+    def test_context_as_dict_contains_required_keys(self) -> None:
+        from materials_discovery.common.benchmarking import build_benchmark_run_context
+        config = self._al_cu_fe_reference_aware_config()
+        ctx = build_benchmark_run_context(config, source_lineage=None)
+        d = ctx.as_dict()
+        assert "reference_pack_id" in d
+        assert "reference_pack_fingerprint" in d
+        assert "source_keys" in d
+        assert "benchmark_corpus" in d
+        assert "backend_mode" in d
+        assert "lane_id" in d
+
+    def test_context_with_pack_lineage(self) -> None:
+        from materials_discovery.common.benchmarking import build_benchmark_run_context
+        config = self._al_cu_fe_reference_aware_config()
+        lineage: dict = {
+            "pack_id": "al_cu_fe_v1",
+            "pack_fingerprint": "abc123",
+            "member_sources": [
+                {"source_key": "hypodx", "snapshot_id": "snap_v1"},
+                {"source_key": "materials_project", "snapshot_id": "mp_v1"},
+            ],
+        }
+        ctx = build_benchmark_run_context(config, source_lineage=lineage)
+        assert ctx.reference_pack_id == "al_cu_fe_v1"
+        assert ctx.reference_pack_fingerprint == "abc123"
+        assert "hypodx" in ctx.source_keys
+        assert "materials_project" in ctx.source_keys
+
+    def test_both_benchmark_systems_produce_valid_context(self) -> None:
+        """Both Phase 4 benchmark systems should yield complete, non-empty contexts."""
+        from materials_discovery.common.benchmarking import build_benchmark_run_context
+        for config in [
+            self._al_cu_fe_reference_aware_config(),
+            self._sc_zn_reference_aware_config(),
+        ]:
+            ctx = build_benchmark_run_context(config, source_lineage=None)
+            d = ctx.as_dict()
+            assert d["reference_pack_id"] is not None
+            assert len(d["source_keys"]) >= 2
+            assert d["backend_mode"] == "real"
+            assert d["lane_id"] is not None
+
+    def test_cross_lane_context_keys_are_structurally_comparable(self) -> None:
+        """Al-Cu-Fe and Sc-Zn benchmark contexts must have identical dict keys.
+
+        This is the comparability contract: operators can diff two benchmark
+        lanes by key-aligned inspection without reading docs.
+        """
+        from materials_discovery.common.benchmarking import build_benchmark_run_context
+        al_cu_fe_config = self._al_cu_fe_reference_aware_config()
+        sc_zn_config = self._sc_zn_reference_aware_config()
+
+        al_ctx = build_benchmark_run_context(al_cu_fe_config).as_dict()
+        sc_ctx = build_benchmark_run_context(sc_zn_config).as_dict()
+
+        assert set(al_ctx.keys()) == set(sc_ctx.keys()), (
+            f"Benchmark context key mismatch between Al-Cu-Fe and Sc-Zn lanes: "
+            f"Al-Cu-Fe={sorted(al_ctx)}, Sc-Zn={sorted(sc_ctx)}"
+        )
+        # Lane IDs must be distinct (different packs)
+        assert al_ctx["lane_id"] != sc_ctx["lane_id"]
+        # Both must record multiple source keys
+        assert len(al_ctx["source_keys"]) >= 2
+        assert len(sc_ctx["source_keys"]) >= 2
+
+    def test_benchmark_corpus_is_recorded_when_configured(self) -> None:
+        from materials_discovery.common.benchmarking import build_benchmark_run_context
+        config = self._al_cu_fe_reference_aware_config()
+        ctx = build_benchmark_run_context(config)
+        assert ctx.benchmark_corpus is not None
+        assert "al_cu_fe" in ctx.benchmark_corpus.lower()

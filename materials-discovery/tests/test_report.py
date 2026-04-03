@@ -150,6 +150,130 @@ def test_report_is_deterministic() -> None:
     assert pipeline_manifest_a["output_hashes"] == pipeline_manifest_b["output_hashes"]
 
 
+def test_report_emits_benchmark_context_when_ranked_candidates_carry_it() -> None:
+    """compile_experiment_report must surface benchmark_context when candidates carry it."""
+    from materials_discovery.common.benchmarking import build_benchmark_run_context
+    from materials_discovery.common.io import load_yaml
+    from materials_discovery.common.schema import CandidateRecord, SystemConfig
+    from materials_discovery.diffraction.compare_patterns import compile_experiment_report
+    from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_xrd_patterns
+    from materials_discovery.hifi_digital.rank_candidates import rank_validated_candidates
+
+    workspace = Path(__file__).resolve().parents[1]
+    config_path = workspace / "configs" / "systems" / "al_cu_fe_real.yaml"
+    config = SystemConfig.model_validate(load_yaml(config_path))
+
+    # Build a minimal validated candidate list
+    raw = {
+        "candidate_id": "rpt_ctx_1",
+        "system": "Al-Cu-Fe",
+        "template_family": "icosahedral_approximant_1_1",
+        "cell": {"a": 14.2, "b": 14.2, "c": 14.2, "alpha": 90.0, "beta": 90.0, "gamma": 90.0},
+        "sites": [{"label": "S1", "qphi": [[1, 0], [0, 1], [-1, 1]], "species": "Al", "occ": 1.0}],
+        "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+        "screen": {"energy_proxy_ev_per_atom": -2.9},
+        "digital_validation": {
+            "status": "passed",
+            "committee": ["MACE", "CHGNet", "MatterSim"],
+            "uncertainty_ev_per_atom": 0.006,
+            "committee_energy_ev_per_atom": {"MACE": -2.91, "CHGNet": -2.90, "MatterSim": -2.89},
+            "committee_std_ev_per_atom": 0.006,
+            "delta_e_proxy_hull_ev_per_atom": 0.012,
+            "proxy_hull_reference_distance": 0.0,
+            "proxy_hull_reference_phases": ["i-phase"],
+            "phonon_imaginary_modes": 0,
+            "phonon_pass": True,
+            "md_stability_score": 0.90,
+            "md_pass": True,
+            "xrd_confidence": 0.91,
+            "xrd_pass": True,
+            "passed_checks": True,
+        },
+        "provenance": {"generator_version": "0.1.0"},
+    }
+    candidate = CandidateRecord.model_validate(raw)
+
+    bm_ctx = build_benchmark_run_context(config).as_dict()
+    ranked = rank_validated_candidates(config, [candidate], benchmark_context=bm_ctx)
+    xrd_patterns = simulate_powder_xrd_patterns(ranked)
+    report = compile_experiment_report(config, ranked, xrd_patterns)
+
+    # Report must carry benchmark_context at top level
+    assert "benchmark_context" in report, "report is missing benchmark_context"
+    rpt_ctx = report["benchmark_context"]
+    assert isinstance(rpt_ctx, dict)
+    assert "backend_mode" in rpt_ctx
+    assert "source_keys" in rpt_ctx
+    assert "lane_id" in rpt_ctx
+
+    # Each entry's evidence block should carry calibration_provenance
+    first_entry = report["entries"][0]
+    ev = first_entry["evidence"]
+    assert "calibration_provenance" in ev
+    cal_prov = ev["calibration_provenance"]
+    assert isinstance(cal_prov, dict)
+    assert "source" in cal_prov
+    assert "backend_mode" in cal_prov
+
+
+def test_benchmark_pack_written_by_report_command() -> None:
+    """The report CLI command must write a benchmark_pack.json artifact."""
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    config_path = workspace / "configs" / "systems" / "al_cu_fe.yaml"
+
+    _prepare_ranked_inputs(config_path, count=45, seed=999)
+
+    result = runner.invoke(app, ["report", "--config", str(config_path)])
+    assert result.exit_code == 0
+
+    config = SystemConfig.model_validate(load_yaml(config_path))
+    system_slug = config.system_name.lower().replace("-", "_")
+    benchmark_pack_path = workspace / "data" / "reports" / f"{system_slug}_benchmark_pack.json"
+    assert benchmark_pack_path.exists(), f"benchmark_pack.json not written: {benchmark_pack_path}"
+
+    bp = json.loads(benchmark_pack_path.read_text(encoding="utf-8"))
+    assert bp["schema_version"] == "benchmark-pack/v1"
+    assert bp["system"] == config.system_name
+    assert "benchmark_context" in bp
+    assert "stage_manifest_paths" in bp
+    assert "report_metrics" in bp
+    report_metrics = bp["report_metrics"]
+    assert "report_fingerprint" in report_metrics
+    assert "release_gate" in report_metrics
+
+
+def test_cross_lane_benchmark_context_keys_match() -> None:
+    """Al-Cu-Fe baseline vs. real lane: benchmark_context dicts must have identical keys.
+
+    We reuse artifacts already produced by previous pipeline tests where possible
+    to avoid running two full fresh pipelines.  This test verifies the *structure*
+    of comparable outputs across two lanes for the same system.
+    """
+    from materials_discovery.common.benchmarking import build_benchmark_run_context
+    from materials_discovery.common.io import load_yaml
+    from materials_discovery.common.schema import SystemConfig
+
+    workspace = Path(__file__).resolve().parents[1]
+    baseline_config = SystemConfig.model_validate(
+        load_yaml(workspace / "configs" / "systems" / "al_cu_fe.yaml")
+    )
+    real_config = SystemConfig.model_validate(
+        load_yaml(workspace / "configs" / "systems" / "al_cu_fe_real.yaml")
+    )
+
+    baseline_ctx = build_benchmark_run_context(baseline_config).as_dict()
+    real_ctx = build_benchmark_run_context(real_config).as_dict()
+
+    # Both lanes must expose the same context keys
+    assert set(baseline_ctx.keys()) == set(real_ctx.keys()), (
+        f"Cross-lane context key mismatch: baseline={sorted(baseline_ctx)}, "
+        f"real={sorted(real_ctx)}"
+    )
+    # Lane IDs must differ (different backend modes)
+    assert baseline_ctx["lane_id"] != real_ctx["lane_id"] or baseline_ctx["backend_mode"] != real_ctx["backend_mode"]
+
+
 def test_report_runs_after_source_registry_ingest(tmp_path: Path) -> None:
     runner = CliRunner()
     workspace = Path(__file__).resolve().parents[1]

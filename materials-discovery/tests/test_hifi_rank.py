@@ -240,6 +240,90 @@ def test_real_mode_rank_is_input_order_invariant() -> None:
     ]
 
 
+def test_rank_embeds_calibration_provenance_in_hifi_rank_block() -> None:
+    """rank_validated_candidates must embed calibration_provenance in every ranked candidate."""
+    config = _real_config()
+    candidates = [
+        _validated_candidate(
+            "prov_a",
+            {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            uncertainty=0.006,
+            delta_hull=0.012,
+            md_score=0.90,
+            xrd_confidence=0.91,
+            reference_distance=0.0,
+            qphi_scale=1,
+            passed_checks=True,
+        ),
+    ]
+    ranked = rank_validated_candidates(config, candidates)
+    assert len(ranked) == 1
+    hifi_rank = ranked[0].provenance["hifi_rank"]
+    assert isinstance(hifi_rank, dict)
+    assert "calibration_provenance" in hifi_rank
+    cal_prov = hifi_rank["calibration_provenance"]
+    assert isinstance(cal_prov, dict)
+    assert "source" in cal_prov
+    assert "backend_mode" in cal_prov
+    assert cal_prov["backend_mode"] == "real"
+
+
+def test_rank_embeds_benchmark_context_when_supplied() -> None:
+    """rank_validated_candidates must embed the supplied benchmark_context in provenance."""
+    config = _real_config()
+    candidates = [
+        _validated_candidate(
+            "ctx_a",
+            {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            uncertainty=0.006,
+            delta_hull=0.012,
+            md_score=0.90,
+            xrd_confidence=0.91,
+            reference_distance=0.0,
+            qphi_scale=1,
+            passed_checks=True,
+        ),
+    ]
+    bm_ctx = {
+        "reference_pack_id": "al_cu_fe_v1",
+        "reference_pack_fingerprint": "fp123",
+        "source_keys": ["hypodx", "materials_project"],
+        "benchmark_corpus": "data/benchmarks/al_cu_fe_benchmark.json",
+        "backend_mode": "real",
+        "lane_id": "al_cu_fe_v1:real",
+    }
+    ranked = rank_validated_candidates(config, candidates, benchmark_context=bm_ctx)
+    assert len(ranked) == 1
+    hifi_rank = ranked[0].provenance["hifi_rank"]
+    assert "benchmark_context" in hifi_rank
+    embedded = hifi_rank["benchmark_context"]
+    assert embedded["reference_pack_id"] == "al_cu_fe_v1"
+    assert embedded["lane_id"] == "al_cu_fe_v1:real"
+    assert "hypodx" in embedded["source_keys"]
+
+
+def test_rank_without_benchmark_context_omits_benchmark_context_key() -> None:
+    """When no benchmark_context is supplied, the key must be absent from provenance."""
+    config = _real_config()
+    candidates = [
+        _validated_candidate(
+            "no_ctx",
+            {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            uncertainty=0.006,
+            delta_hull=0.012,
+            md_score=0.90,
+            xrd_confidence=0.91,
+            reference_distance=0.0,
+            qphi_scale=1,
+            passed_checks=True,
+        ),
+    ]
+    ranked = rank_validated_candidates(config, candidates)
+    hifi_rank = ranked[0].provenance["hifi_rank"]
+    # benchmark_context key should be absent when not supplied
+    assert "benchmark_context" not in hifi_rank
+
+
 def test_real_mode_rank_penalizes_ood_and_high_risk_candidates() -> None:
     config = _real_config()
     stable_reference = _validated_candidate(
