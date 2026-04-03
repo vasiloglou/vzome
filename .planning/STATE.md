@@ -5,9 +5,9 @@ milestone_name: milestone
 current_phase: 6
 current_phase_name: zomic training corpus pipeline
 current_plan: Not started
-status: verifying
-stopped_at: Phase 6 context gathered
-last_updated: "2026-04-03T19:35:36.239Z"
+status: ready_to_execute
+stopped_at: Phase 6 planned
+last_updated: "2026-04-03T19:50:42Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
@@ -24,7 +24,7 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-02)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 05 — candidate-reference-data-lake-and-analysis-layer
+**Current focus:** Phase 06 — zomic-training-corpus-pipeline
 
 ## Current Position
 
@@ -32,12 +32,12 @@ Current Phase: 6
 Current Phase Name: zomic training corpus pipeline
 Total Phases: 9
 Current Plan: Not started
-Total Plans in Phase: 3
-Phase: 05 (candidate-reference-data-lake-and-analysis-layer) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Total Plans in Phase: 4
+Phase: 06 (zomic-training-corpus-pipeline) — PLANNED
+Plan: 0 of 4
+Status: Phase planned — ready for execution
 Last activity: 2026-04-03
-Last Activity Description: Phase 05 complete, transitioned to Phase 6
+Last Activity Description: Phase 6 planned from discussed context and repo research
 
 Progress: [███████░░░] 70%
 
@@ -128,5 +128,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-03T19:35:36.236Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-zomic-training-corpus-pipeline/06-CONTEXT.md
+Stopped at: Phase 6 planned
+Resume file: .planning/phases/06-zomic-training-corpus-pipeline/06-01-PLAN.md
