@@ -22,7 +22,7 @@ created: 2026-04-03
 | **Quick run command** | `cd materials-discovery && uv run pytest tests/test_zomic_bridge.py tests/test_prototype_import.py tests/test_generate.py` |
 | **Corpus foundation command** | `cd materials-discovery && uv run pytest tests/test_llm_corpus_schema.py tests/test_llm_corpus_storage.py tests/test_llm_corpus_manifest.py` |
 | **Converter command** | `cd materials-discovery && uv run pytest tests/test_llm_record2zomic.py tests/test_llm_projection2zomic.py tests/test_llm_cif2zomic.py` |
-| **Builder command** | `cd materials-discovery && uv run pytest tests/test_llm_corpus_inventory.py tests/test_llm_corpus_qa.py tests/test_llm_corpus_builder.py tests/test_llm_corpus_cli.py` |
+| **Builder command** | `cd materials-discovery && uv run pytest tests/test_llm_native_sources.py tests/test_llm_corpus_inventory.py tests/test_llm_corpus_qa.py tests/test_llm_corpus_builder.py tests/test_llm_corpus_cli.py` |
 | **Full suite command** | `cd materials-discovery && uv run pytest` |
 | **Estimated runtime** | ~30-240 seconds depending on whether focused Phase 6 tests only or the full suite is run |
 
@@ -52,8 +52,9 @@ created: 2026-04-03
 | 06-03-01 | 03 | 2 | LLM-01 | unit | `cd materials-discovery && uv run pytest tests/test_llm_record2zomic.py` | ⬜ | ⬜ pending |
 | 06-03-02 | 03 | 2 | LLM-01 | integration | `cd materials-discovery && uv run pytest tests/test_llm_projection2zomic.py tests/test_zomic_bridge.py` | ✅ | ⬜ pending |
 | 06-04-01 | 04 | 3 | LLM-01 | unit/integration | `cd materials-discovery && uv run pytest tests/test_llm_cif2zomic.py tests/test_prototype_import.py tests/test_data_source_cod.py` | ✅ | ⬜ pending |
-| 06-04-02 | 04 | 3 | LLM-01 | integration | `cd materials-discovery && uv run pytest tests/test_llm_corpus_builder.py tests/test_llm_corpus_inventory.py tests/test_llm_corpus_qa.py` | ⬜ | ⬜ pending |
-| 06-04-03 | 04 | 3 | LLM-01 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_corpus_cli.py tests/test_cli.py` | ✅ | ⬜ pending |
+| 06-04-02 | 04 | 3 | LLM-01 | unit/integration | `cd materials-discovery && uv run pytest tests/test_llm_native_sources.py -x -v` | ⬜ | ⬜ pending |
+| 06-04-03 | 04 | 3 | LLM-01 | integration | `cd materials-discovery && uv run pytest tests/test_llm_corpus_builder.py tests/test_llm_corpus_inventory.py tests/test_llm_corpus_qa.py` | ⬜ | ⬜ pending |
+| 06-04-04 | 04 | 3 | LLM-01 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_corpus_cli.py tests/test_cli.py` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -78,6 +79,8 @@ created: 2026-04-03
   `PyQCstrc` projection fixture conversion and compile-validation wiring
 - [ ] `materials-discovery/tests/test_llm_cif2zomic.py` — COD/HYPOD-X-style CIF
   conversion coverage with lazy optional imports
+- [ ] `materials-discovery/tests/test_llm_native_sources.py` — native `.zomic`
+  and generated-export loader coverage for exact-source ingestion
 - [ ] `materials-discovery/tests/test_llm_corpus_builder.py` — end-to-end corpus
   build for syntax + materials outputs
 - [ ] `materials-discovery/tests/test_llm_corpus_cli.py` — `mdisc llm-corpus`
@@ -86,6 +89,8 @@ created: 2026-04-03
   committed thin projection fixture
 - [ ] `materials-discovery/tests/fixtures/hypodx_approximant_sample.cif` or an
   exact equivalent committed structure fixture for open-approximant coverage
+- [ ] Any Phase 6 execution that changes `materials-discovery/` must update
+  `materials-discovery/Progress.md` per repo policy
 - [ ] No Phase 6 verification may require live network access or a live
   `PyQCstrc` installation
 - [ ] Any `pymatgen` usage must remain behind lazy imports or fixture-backed
