@@ -5,6 +5,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from materials_discovery.common.schema import CompositionBound
+
 SourceFamily = Literal[
     "repo_regression",
     "repo_parts",
@@ -22,6 +24,9 @@ ValidationStatus = Literal["pending", "passed", "failed"]
 DEFAULT_CORPUS_SCHEMA_VERSION = "llm-corpus-example/v1"
 DEFAULT_CORPUS_MANIFEST_VERSION = "llm-corpus-manifest/v1"
 DEFAULT_BUILDER_VERSION = "phase6_v1"
+DEFAULT_LLM_ATTEMPT_SCHEMA_VERSION = "llm-generation-attempt/v1"
+DEFAULT_LLM_RESULT_SCHEMA_VERSION = "llm-generation-result/v1"
+DEFAULT_LLM_RUN_MANIFEST_VERSION = "llm-run-manifest/v1"
 
 
 def _normalize_string_list(values: Sequence[str]) -> list[str]:
@@ -341,4 +346,157 @@ class CorpusBuildSummary(BaseModel):
         for name in ("syntax_count", "materials_count", "reject_count", "inventory_count"):
             if getattr(self, name) < 0:
                 raise ValueError(f"{name} must be >= 0")
+        return self
+
+
+class LlmGenerationRequest(BaseModel):
+    system: str
+    template_family: str
+    composition_bounds: dict[str, CompositionBound]
+    prompt_text: str
+    temperature: float
+    max_tokens: int
+    seed_zomic_path: str | None = None
+
+    @field_validator("system", "template_family", "prompt_text")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @field_validator("seed_zomic_path")
+    @classmethod
+    def normalize_seed_path(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+    @model_validator(mode="after")
+    def validate_runtime_settings(self) -> LlmGenerationRequest:
+        if not self.composition_bounds:
+            raise ValueError("composition_bounds must not be empty")
+        if self.temperature < 0.0:
+            raise ValueError("temperature must be >= 0")
+        if self.max_tokens <= 0:
+            raise ValueError("max_tokens must be > 0")
+        return self
+
+
+class LlmGenerationAttempt(BaseModel):
+    schema_version: str = DEFAULT_LLM_ATTEMPT_SCHEMA_VERSION
+    attempt_id: str
+    adapter_key: str
+    provider: str
+    model: str
+    temperature: float
+    prompt_path: str
+    raw_completion_path: str
+    parse_status: ValidationStatus
+    compile_status: ValidationStatus
+    error_kind: str | None = None
+    error_message: str | None = None
+
+    @field_validator(
+        "schema_version",
+        "attempt_id",
+        "adapter_key",
+        "provider",
+        "model",
+        "prompt_path",
+        "raw_completion_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @field_validator("error_kind", "error_message")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+    @field_validator("temperature")
+    @classmethod
+    def validate_temperature(cls, value: float) -> float:
+        if value < 0.0:
+            raise ValueError("temperature must be >= 0")
+        return value
+
+
+class LlmGenerationResult(BaseModel):
+    schema_version: str = DEFAULT_LLM_RESULT_SCHEMA_VERSION
+    attempt_id: str
+    candidate_id: str | None = None
+    orbit_library_path: str | None = None
+    raw_export_path: str | None = None
+    parse_status: ValidationStatus
+    compile_status: ValidationStatus
+    passed: bool
+
+    @field_validator("schema_version", "attempt_id")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @field_validator("candidate_id", "orbit_library_path", "raw_export_path")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+
+class LlmRunManifest(BaseModel):
+    schema_version: str = DEFAULT_LLM_RUN_MANIFEST_VERSION
+    run_id: str
+    system: str
+    adapter_key: str
+    provider: str
+    model: str
+    prompt_template: str
+    attempt_count: int
+    requested_count: int
+    generated_count: int
+    prompt_path: str
+    attempts_path: str
+    compile_results_path: str
+    created_at_utc: str
+
+    @field_validator(
+        "schema_version",
+        "run_id",
+        "system",
+        "adapter_key",
+        "provider",
+        "model",
+        "prompt_template",
+        "prompt_path",
+        "attempts_path",
+        "compile_results_path",
+        "created_at_utc",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @model_validator(mode="after")
+    def validate_counts(self) -> LlmRunManifest:
+        for field_name in ("attempt_count", "requested_count", "generated_count"):
+            if getattr(self, field_name) < 0:
+                raise ValueError(f"{field_name} must be >= 0")
         return self

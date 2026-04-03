@@ -34,6 +34,7 @@ The repository ships seven config files that form a progression from minimal moc
 | `prototype_library` | `str \| None` | `None` | Optional workspace-root-relative path to an orbit-library JSON file. When set, generation uses this file instead of anchored template resolution. |
 | `zomic_design` | `str \| None` | `None` | Optional workspace-root-relative path to a `ZomicDesignConfig` YAML file. When set, `generate` exports the design and then loads the resulting orbit library automatically. |
 | `backend` | `BackendConfig` | mock-mode defaults | Backend configuration block. When omitted, defaults to mock mode with fixture adapters. See the BackendConfig section below. |
+| `llm_generate` | `LlmGenerateConfig \| None` | `None` | Optional Phase 7 inference block. When omitted, the config is not enabled for `mdisc llm-generate`. |
 
 ### Validation rules
 
@@ -46,6 +47,28 @@ The repository ships seven config files that form a progression from minimal moc
 
 - `prototype_library` and `zomic_design` are resolved relative to the materials-discovery workspace root.
 - Paths inside a Zomic design YAML (`zomic_file`, `export_path`, `raw_export_path`) are resolved relative to the design YAML file itself.
+- `llm_generate.seed_zomic` and `llm_generate.artifact_root` are resolved relative to the materials-discovery workspace root.
+
+### LlmGenerateConfig Reference
+
+`LlmGenerateConfig` is the additive Phase 7 runtime block used by
+`mdisc llm-generate`. It keeps generation behavior separate from provider
+selection in `BackendConfig`.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `prompt_template` | `str` | `"zomic_generate_v1"` | Prompt template identifier for constrained Zomic generation. Must not be blank. |
+| `temperature` | `float` | `0.7` | Sampling temperature for generation. Must be `>= 0`. |
+| `max_tokens` | `int` | `2048` | Maximum provider output tokens for a single attempt. Must be `> 0`. |
+| `max_attempts` | `int` | `3` | Retry budget multiplier used by `llm-generate`. Must be `>= 1`. |
+| `seed_zomic` | `str \| None` | `None` | Optional seed-script path for controlled variation runs. |
+| `artifact_root` | `str \| None` | `None` | Optional override for the run-artifact root. |
+| `persist_raw_completions` | `bool` | `True` | Whether raw model completions are retained in run artifacts. |
+| `fixture_outputs` | `list[str]` | `[]` | Deterministic mock outputs used by `llm_fixture_v1`. Blank entries are stripped. |
+
+If `llm_generate` is omitted or explicitly `null`, the system config remains
+valid but `mdisc llm-generate` should treat the config as not enabled for LLM
+generation.
 
 ---
 
@@ -103,16 +126,20 @@ materials generator.
 |---|---|---|---|---|
 | `mode` | `"mock"` \| `"real"` | `"mock"` | -- | -- |
 | `ingest_adapter` | `str \| None` | `None` | `"hypodx_fixture"` | `"hypodx_pinned_v2026_03_09"` |
+| `llm_adapter` | `str \| None` | `None` | `"llm_fixture_v1"` | *no auto-default* |
 | `committee_adapter` | `str \| None` | `None` | *unchanged (None)* | `"committee_fixture_fallback_v2026_03_09"` |
 | `phonon_adapter` | `str \| None` | `None` | *unchanged (None)* | `"phonon_fixture_fallback_v2026_03_09"` |
 | `md_adapter` | `str \| None` | `None` | *unchanged (None)* | `"md_fixture_fallback_v2026_03_09"` |
 | `xrd_adapter` | `str \| None` | `None` | *unchanged (None)* | `"xrd_fixture_fallback_v2026_03_09"` |
+| `llm_provider` | `str \| None` | `None` | `"mock"` | *no auto-default* |
 | `committee_provider` | `str \| None` | `None` | *unchanged (None)* | `"pinned"` |
 | `phonon_provider` | `str \| None` | `None` | *unchanged (None)* | `"pinned"` |
 | `md_provider` | `str \| None` | `None` | *unchanged (None)* | `"pinned"` |
 | `xrd_provider` | `str \| None` | `None` | *unchanged (None)* | `"pinned"` |
+| `llm_model` | `str \| None` | `None` | *unchanged (None)* | *no auto-default* |
+| `llm_api_base` | `str \| None` | `None` | *unchanged (None)* | *no auto-default* |
 
-Auto-defaulting is applied by a `model_validator` on `BackendConfig`. When a field is explicitly set in the YAML, the explicit value takes precedence over the auto-default. In mock mode only `ingest_adapter` is auto-defaulted; the four validation adapters and providers remain `None`. In real mode all nine fields are auto-defaulted if not explicitly provided.
+Auto-defaulting is applied by a `model_validator` on `BackendConfig`. When a field is explicitly set in the YAML, the explicit value takes precedence over the auto-default. In mock mode `ingest_adapter`, `llm_adapter`, and `llm_provider` are auto-defaulted. In real mode the Phase 7 hosted-provider lane does **not** auto-default `llm_provider` or `llm_model`; real hosted configs must set those fields explicitly.
 
 For a detailed explanation of adapters, providers, and the dispatch logic, see [backend-system.md](backend-system.md).
 

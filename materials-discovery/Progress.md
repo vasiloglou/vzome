@@ -39,6 +39,7 @@
 | 2026-04-03 | Phase 6 Plan 04 Task 2: native and generated source loaders | Added explicit loaders for repo-native `.zomic` files and generated raw export artifacts, with exact vs anchored fidelity handling and focused pytest coverage for loader-hint alignment |
 | 2026-04-03 | Phase 6 Plan 04 Task 3: end-to-end corpus builder | Added the inventory-driven corpus builder that routes all loader hints, validates/grades/dedupes examples, and writes syntax/materials/rejects/inventory/QA/manifest artifacts under `data/llm_corpus/{build_id}` |
 | 2026-04-03 | Phase 6 Plan 04 Task 4: llm-corpus CLI command | Added the `mdisc llm-corpus build` sub-application/command, JSON summary output, and focused CLI tests for success, invalid configs, and workspace-relative config paths |
+| 2026-04-03 | Phase 7 Plan 01: llm-generate contracts and runtime seam | Added additive `llm_generate` config/schema contracts, Phase 7 runtime request/attempt/run-manifest models, the `llm_fixture_v1` / `anthropic_api_v1` adapter seam, configuration docs, and focused schema/runtime pytest coverage |
 
 ## Diary
 
@@ -249,3 +250,13 @@
   - `cli.py` now mounts `llm_corpus_app` under `mdisc llm-corpus` and exposes `mdisc llm-corpus build --config ...`.
   - The new command validates the YAML as `CorpusBuildConfig`, calls `build_llm_corpus()`, prints `CorpusBuildSummary` as JSON, and follows the existing CLI error path with exit code 2 on invalid configs.
   - Added `tests/test_llm_corpus_cli.py`; focused verification passed with `11 passed` together with the existing `test_cli.py` contract suite.
+
+### 2026-04-03 (Phase 7 Plan 01)
+
+- Added the Phase 7 llm-generate contract layer:
+  - `common/schema.py` now includes additive `BackendConfig.llm_*` fields, optional `LlmGenerateConfig`, and `LlmGenerateSummary` without requiring existing system configs to change.
+  - `llm/schema.py` now defines `LlmGenerationRequest`, `LlmGenerationAttempt`, `LlmGenerationResult`, and `LlmRunManifest`, reusing `CompositionBound` and `ValidationStatus` instead of creating a parallel taxonomy.
+  - `llm/runtime.py` adds the provider-neutral adapter seam with deterministic `llm_fixture_v1` behavior and the first hosted adapter path, `anthropic_api_v1`, via lazy `httpx`.
+  - `llm/__init__.py` now exports the new Phase 7 runtime/schemas alongside the existing Phase 6 corpus surface.
+  - `developers-docs/configuration-reference.md` now documents the `llm_generate:` block, mock-only defaulting, and the requirement that real hosted configs set `llm_provider` and `llm_model`.
+  - Added focused coverage in `tests/test_llm_generate_schema.py` and `tests/test_llm_runtime.py` for config validation, schema typing, adapter resolution, missing secret handling, lazy imports, and API-base override behavior.

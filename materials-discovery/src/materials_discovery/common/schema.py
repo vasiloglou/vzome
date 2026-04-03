@@ -112,14 +112,18 @@ class CandidateRecord(BaseModel):
 class BackendConfig(BaseModel):
     mode: Literal["mock", "real"] = "mock"
     ingest_adapter: str | None = None
+    llm_adapter: str | None = None
     committee_adapter: str | None = None
     phonon_adapter: str | None = None
     md_adapter: str | None = None
     xrd_adapter: str | None = None
+    llm_provider: str | None = None
     committee_provider: str | None = None
     phonon_provider: str | None = None
     md_provider: str | None = None
     xrd_provider: str | None = None
+    llm_model: str | None = None
+    llm_api_base: str | None = None
     pinned_snapshot: str | None = None
     validation_snapshot: str | None = None
     validation_cache_dir: str | None = None
@@ -141,6 +145,11 @@ class BackendConfig(BaseModel):
             self.ingest_adapter = (
                 "hypodx_fixture" if self.mode == "mock" else "hypodx_pinned_v2026_03_09"
             )
+        if self.mode == "mock":
+            if self.llm_adapter is None:
+                self.llm_adapter = "llm_fixture_v1"
+            if self.llm_provider is None:
+                self.llm_provider = "mock"
         if self.mode == "real":
             if self.committee_adapter is None:
                 self.committee_adapter = "committee_fixture_fallback_v2026_03_09"
@@ -182,6 +191,25 @@ class BackendConfig(BaseModel):
             raise ValueError("backend.md_timestep_fs must be > 0")
         if self.md_steps <= 0:
             raise ValueError("backend.md_steps must be > 0")
+        for field_name in ("llm_adapter", "llm_provider", "llm_model", "llm_api_base"):
+            value = getattr(self, field_name)
+            if isinstance(value, str):
+                stripped = value.strip()
+                setattr(self, field_name, stripped or None)
+        llm_fields_configured = any(
+            value is not None
+            for value in (
+                self.llm_adapter,
+                self.llm_provider,
+                self.llm_model,
+                self.llm_api_base,
+            )
+        )
+        if self.mode == "real" and llm_fields_configured:
+            if self.llm_provider is None:
+                raise ValueError("backend.llm_provider must be set for real llm configs")
+            if self.llm_model is None:
+                raise ValueError("backend.llm_model must be set for real llm configs")
         return self
 
 
@@ -263,6 +291,48 @@ class IngestionConfig(BaseModel):
             self.snapshot_id = self.snapshot_id.strip() or None
         if self.artifact_root is not None:
             self.artifact_root = self.artifact_root.strip() or None
+        return self
+
+
+class LlmGenerateConfig(BaseModel):
+    prompt_template: str = "zomic_generate_v1"
+    temperature: float = 0.7
+    max_tokens: int = 2048
+    max_attempts: int = 3
+    seed_zomic: str | None = None
+    artifact_root: str | None = None
+    persist_raw_completions: bool = True
+    fixture_outputs: list[str] = Field(default_factory=list)
+
+    @field_validator("prompt_template")
+    @classmethod
+    def validate_prompt_template(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("llm_generate.prompt_template must not be blank")
+        return stripped
+
+    @field_validator("seed_zomic", "artifact_root")
+    @classmethod
+    def normalize_optional_paths(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+    @field_validator("fixture_outputs")
+    @classmethod
+    def normalize_fixture_outputs(cls, values: Sequence[str]) -> list[str]:
+        return [value for value in (item.strip() for item in values) if value]
+
+    @model_validator(mode="after")
+    def validate_runtime(self) -> LlmGenerateConfig:
+        if self.temperature < 0.0:
+            raise ValueError("llm_generate.temperature must be >= 0")
+        if self.max_tokens <= 0:
+            raise ValueError("llm_generate.max_tokens must be > 0")
+        if self.max_attempts < 1:
+            raise ValueError("llm_generate.max_attempts must be >= 1")
         return self
 
 
@@ -360,6 +430,7 @@ class SystemConfig(BaseModel):
     zomic_design: str | None = None
     backend: BackendConfig = Field(default_factory=BackendConfig)
     ingestion: IngestionConfig | None = None
+    llm_generate: LlmGenerateConfig | None = None
 
     @model_validator(mode="after")
     def validate_species(self) -> SystemConfig:
@@ -408,6 +479,46 @@ class GenerateSummary(BaseModel):
     qa_metrics: dict[str, float | int | bool] = Field(default_factory=dict)
     calibration_path: str | None = None
     manifest_path: str | None = None
+
+
+class LlmGenerateSummary(BaseModel):
+    requested_count: int
+    generated_count: int
+    attempt_count: int
+    parse_pass_count: int
+    compile_pass_count: int
+    output_path: str
+    calibration_path: str | None = None
+    manifest_path: str | None = None
+    run_manifest_path: str | None = None
+
+    @field_validator(
+        "output_path",
+        "calibration_path",
+        "manifest_path",
+        "run_manifest_path",
+    )
+    @classmethod
+    def validate_paths(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("summary paths must not be blank")
+        return stripped
+
+    @model_validator(mode="after")
+    def validate_counts(self) -> LlmGenerateSummary:
+        for field_name in (
+            "requested_count",
+            "generated_count",
+            "attempt_count",
+            "parse_pass_count",
+            "compile_pass_count",
+        ):
+            if getattr(self, field_name) < 0:
+                raise ValueError(f"{field_name} must be >= 0")
+        return self
 
 
 class ZomicExportSummary(BaseModel):
