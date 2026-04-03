@@ -30,6 +30,7 @@
 | 2026-04-03 | Phase 5 Plan 03 Task 2: unified operator RUNBOOK.md | 8-section runbook covering prerequisites, ingestion, reference-pack assembly, pipeline execution, benchmarking, data lake operations, analytics notebooks, and troubleshooting; 53+ code blocks; full mdisc command quick-reference table |
 | 2026-04-03 | Phase 5 complete: data lake and analysis layer | All 3 plans executed across 3 waves; verification passed 15/15 must-haves; 200 tests passing; all 6 cross-AI review concerns addressed; PIPE-04 and PIPE-05 satisfied |
 | 2026-04-03 | Phase 6 Plan 01 Task 1: LLM corpus contracts and config | Added the new `materials_discovery.llm` schema package, committed `configs/llm/corpus_v1.yaml`, and introduced schema-focused pytest coverage for corpus config, provenance, inventory rows, validation state, and build summaries |
+| 2026-04-03 | Phase 6 Plan 01 Task 2: LLM corpus storage and manifest helpers | Added deterministic `data/llm_corpus/{build_id}` path helpers, corpus fingerprint/manifest builders, and focused pytest coverage for workspace-relative manifest paths and persisted manifest JSON |
 
 ## Diary
 
@@ -187,3 +188,10 @@
   - Locked the review-driven contract updates up front: typed validation state, record-addressable inventory rows, and neutral `release_tier="pending"` before QA promotion.
   - Added `configs/llm/corpus_v1.yaml` covering Phase 6 source-family toggles, systems, thresholds, source keys, and reference-pack IDs.
   - Added `tests/test_llm_corpus_schema.py`; focused verification passed with `6 passed`.
+
+- Phase 6 Plan 01 Task 2 — Added deterministic corpus storage and manifest helpers:
+  - New modules: `llm/storage.py` and `llm/manifests.py`.
+  - Locked the on-disk artifact family under `data/llm_corpus/{build_id}/` with helpers for syntax/materials/rejects/inventory/qa/manifest paths.
+  - Added deterministic `corpus_build_fingerprint()`, `build_corpus_manifest()`, and `write_corpus_manifest()` using workspace-relative paths and output hashes.
+  - Extended `llm/__init__.py` to export the new helper surface.
+  - Added `tests/test_llm_corpus_storage.py` and `tests/test_llm_corpus_manifest.py`; combined `06-01` validation passed with `11 passed`.

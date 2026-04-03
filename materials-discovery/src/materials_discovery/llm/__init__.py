@@ -1,3 +1,8 @@
+from materials_discovery.llm.manifests import (
+    build_corpus_manifest,
+    corpus_build_fingerprint,
+    write_corpus_manifest,
+)
 from materials_discovery.llm.schema import (
     DEFAULT_BUILDER_VERSION,
     DEFAULT_CORPUS_MANIFEST_VERSION,
@@ -16,8 +21,24 @@ from materials_discovery.llm.schema import (
     SourceFamily,
     ValidationStatus,
 )
+from materials_discovery.llm.storage import (
+    corpus_build_dir,
+    corpus_inventory_path,
+    corpus_manifest_path,
+    corpus_qa_path,
+    corpus_rejects_path,
+    materials_corpus_path,
+    syntax_corpus_path,
+)
 
 __all__ = [
+    "build_corpus_manifest",
+    "corpus_build_dir",
+    "corpus_build_fingerprint",
+    "corpus_inventory_path",
+    "corpus_manifest_path",
+    "corpus_qa_path",
+    "corpus_rejects_path",
     "DEFAULT_BUILDER_VERSION",
     "DEFAULT_CORPUS_MANIFEST_VERSION",
     "DEFAULT_CORPUS_SCHEMA_VERSION",
@@ -31,7 +52,10 @@ __all__ = [
     "CorpusQaSummary",
     "CorpusValidationState",
     "FidelityTier",
+    "materials_corpus_path",
     "ReleaseTier",
     "SourceFamily",
+    "syntax_corpus_path",
     "ValidationStatus",
+    "write_corpus_manifest",
 ]
