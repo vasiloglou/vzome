@@ -36,6 +36,7 @@
 | 2026-04-03 | Phase 6 Plan 03 Task 1: deterministic record2zomic conversion | Added the shared axis-walk decomposition helper, deterministic `CandidateRecord -> Zomic` serialization with conversion traces, and focused pytest coverage for ordering, label preservation, and duplicate-label disambiguation |
 | 2026-04-03 | Phase 6 Plan 03 Task 2: compile helper and projection2zomic | Added a bridge-backed temporary compile helper, a PyQCstrc projection payload conversion path, and focused pytest coverage for compile success/failure reporting and deterministic cell scaling |
 | 2026-04-03 | Phase 6 Plan 04 Task 1: CIF/open approximant conversion | Added CIF-driven corpus conversion for COD and HYPOD-X-style fixtures, plus canonical-record fallback handling and focused pytest coverage that stays green with the existing prototype/COD tests |
+| 2026-04-03 | Phase 6 Plan 04 Task 2: native and generated source loaders | Added explicit loaders for repo-native `.zomic` files and generated raw export artifacts, with exact vs anchored fidelity handling and focused pytest coverage for loader-hint alignment |
 
 ## Diary
 
@@ -230,3 +231,9 @@
   - Added `tests/fixtures/hypodx_approximant_sample.cif` as the committed HYPOD-X-style approximant sample for offline coverage.
   - Added `canonical_record_to_zomic()` support for CIF-backed canonical source records plus a deterministic composition-only fallback for staged records that do not carry a structure representation.
   - Added `tests/test_llm_cif2zomic.py`; focused verification passed with `9 passed` together with `test_prototype_import.py` and `test_data_source_cod.py`.
+
+- Phase 6 Plan 04 Task 2 — Added native-Zomic and generated-export source loaders:
+  - New module: `llm/converters/native_zomic.py` with direct label extraction and exact-fidelity corpus examples for repo-native `.zomic` scripts.
+  - New module: `llm/converters/generated_export.py` for raw export artifacts, preserving direct source metadata and choosing `exact` only when a source `.zomic` file is available.
+  - Added loader-hint metadata (`native_zomic`, `generated_export`) so the final builder can dispatch from inventory rows without re-inferring source type.
+  - Added `tests/test_llm_native_sources.py`; focused verification passed with `5 passed`.
