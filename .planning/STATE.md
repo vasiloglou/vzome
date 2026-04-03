@@ -6,8 +6,8 @@ current_phase: 6
 current_phase_name: zomic training corpus pipeline
 current_plan: Not started
 status: verifying
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-04-03T19:07:43.293Z"
+stopped_at: Phase 6 context gathered
+last_updated: "2026-04-03T19:35:36.239Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
@@ -127,6 +127,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T19:02:52.609Z
-Stopped at: Completed 05-03-PLAN.md
-Resume file: None
+Last session: 2026-04-03T19:35:36.236Z
+Stopped at: Phase 6 context gathered
+Resume file: .planning/phases/06-zomic-training-corpus-pipeline/06-CONTEXT.md
