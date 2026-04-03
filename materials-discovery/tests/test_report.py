@@ -471,3 +471,159 @@ def test_both_phase4_benchmark_configs_report_context_keys_match() -> None:
     assert al_ctx["lane_id"] != sc_ctx["lane_id"], (
         "Al-Cu-Fe and Sc-Zn reference-aware lanes must have distinct lane_id values"
     )
+
+
+# ---------------------------------------------------------------------------
+# Phase 4: Cross-lane comparison story for Al-Cu-Fe
+#
+# This test asserts that the benchmark pack and report context produced by the
+# Al-Cu-Fe *baseline real* lane and the *reference-aware real* lane expose:
+#   1. Identical benchmark_context key sets (same schema across lanes)
+#   2. Visible differences in source_keys and lane_id (lane separation visible)
+#   3. The reference-aware lane surfaces both sources (hypodx + materials_project)
+#      while the baseline lane surfaces only the single legacy source
+#
+# These assertions protect the "final comparison story" required by Phase 4:
+# an operator can read two benchmark packs side by side and immediately see
+# which reference pack was used, which sources contributed, and which lane
+# produced the result.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.benchmark_lane
+def test_cross_lane_comparison_al_cu_fe_baseline_vs_reference_aware() -> None:
+    """Cross-lane comparison: Al-Cu-Fe baseline real vs reference-aware real.
+
+    Both lanes must expose the same benchmark_context key structure.
+    The lanes must differ in source_keys, lane_id, and reference_pack_id
+    so that an operator can unambiguously distinguish them.
+
+    This test uses build_benchmark_run_context() directly (no full pipeline
+    invocation) to stay fast and deterministic while asserting on structural
+    comparability rather than exact metric equality.
+    """
+    from materials_discovery.common.benchmarking import build_benchmark_run_context
+    from materials_discovery.common.schema import CandidateRecord
+    from materials_discovery.diffraction.compare_patterns import compile_experiment_report
+    from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_xrd_patterns
+    from materials_discovery.hifi_digital.rank_candidates import rank_validated_candidates
+
+    workspace = Path(__file__).resolve().parents[1]
+
+    # Two Al-Cu-Fe configs representing different lanes
+    baseline_config = SystemConfig.model_validate(
+        load_yaml(workspace / "configs" / "systems" / "al_cu_fe_real.yaml")
+    )
+    ref_aware_config = SystemConfig.model_validate(
+        load_yaml(workspace / "configs" / "systems" / "al_cu_fe_reference_aware.yaml")
+    )
+
+    baseline_ctx = build_benchmark_run_context(baseline_config).as_dict()
+    ref_aware_ctx = build_benchmark_run_context(ref_aware_config).as_dict()
+
+    # --- Structural comparability ---
+    assert set(baseline_ctx.keys()) == set(ref_aware_ctx.keys()), (
+        f"Cross-lane context key mismatch: baseline={sorted(baseline_ctx)}, "
+        f"ref_aware={sorted(ref_aware_ctx)}"
+    )
+
+    # --- Lane separation is visible in context ---
+    assert baseline_ctx["lane_id"] != ref_aware_ctx["lane_id"], (
+        "Baseline and reference-aware Al-Cu-Fe lanes must have distinct lane_ids"
+    )
+    # reference-aware lane must expose the multi-source reference pack
+    assert ref_aware_ctx["reference_pack_id"] == "al_cu_fe_v1"
+    assert "hypodx" in ref_aware_ctx["source_keys"]
+    assert "materials_project" in ref_aware_ctx["source_keys"]
+    # baseline lane must not carry a reference pack id
+    assert baseline_ctx["reference_pack_id"] is None
+
+    # --- Backend mode must be identical across these two real lanes ---
+    assert baseline_ctx["backend_mode"] == "real"
+    assert ref_aware_ctx["backend_mode"] == "real"
+
+    # --- Report-level comparison: build a minimal report for each lane ---
+    raw = {
+        "candidate_id": "cross_lane_cmp",
+        "system": "Al-Cu-Fe",
+        "template_family": "icosahedral_approximant_1_1",
+        "cell": {
+            "a": 14.2,
+            "b": 14.2,
+            "c": 14.2,
+            "alpha": 90.0,
+            "beta": 90.0,
+            "gamma": 90.0,
+        },
+        "sites": [
+            {"label": "S1", "qphi": [[1, 0], [0, 1], [-1, 1]], "species": "Al", "occ": 1.0}
+        ],
+        "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+        "screen": {"energy_proxy_ev_per_atom": -2.9},
+        "digital_validation": {
+            "status": "passed",
+            "committee": ["MACE", "CHGNet", "MatterSim"],
+            "uncertainty_ev_per_atom": 0.006,
+            "committee_energy_ev_per_atom": {
+                "MACE": -2.91,
+                "CHGNet": -2.90,
+                "MatterSim": -2.89,
+            },
+            "committee_std_ev_per_atom": 0.006,
+            "delta_e_proxy_hull_ev_per_atom": 0.012,
+            "proxy_hull_reference_distance": 0.0,
+            "proxy_hull_reference_phases": ["i-phase"],
+            "phonon_imaginary_modes": 0,
+            "phonon_pass": True,
+            "md_stability_score": 0.90,
+            "md_pass": True,
+            "xrd_confidence": 0.91,
+            "xrd_pass": True,
+            "passed_checks": True,
+        },
+        "provenance": {"generator_version": "0.1.0"},
+    }
+
+    # Build reports from the same candidate through both lane contexts
+    candidate_baseline = CandidateRecord.model_validate(raw)
+    candidate_ref_aware = CandidateRecord.model_validate(raw)
+
+    ranked_baseline = rank_validated_candidates(
+        baseline_config, [candidate_baseline], benchmark_context=baseline_ctx
+    )
+    ranked_ref_aware = rank_validated_candidates(
+        ref_aware_config, [candidate_ref_aware], benchmark_context=ref_aware_ctx
+    )
+
+    xrd_baseline = simulate_powder_xrd_patterns(ranked_baseline)
+    xrd_ref_aware = simulate_powder_xrd_patterns(ranked_ref_aware)
+
+    report_baseline = compile_experiment_report(baseline_config, ranked_baseline, xrd_baseline)
+    report_ref_aware = compile_experiment_report(ref_aware_config, ranked_ref_aware, xrd_ref_aware)
+
+    # Both reports must carry benchmark_context
+    assert "benchmark_context" in report_baseline
+    assert "benchmark_context" in report_ref_aware
+
+    # Both reports' benchmark_context must have identical key sets
+    b_ctx = report_baseline["benchmark_context"]
+    r_ctx = report_ref_aware["benchmark_context"]
+    assert set(b_ctx.keys()) == set(r_ctx.keys()), (
+        f"Report-level cross-lane context key mismatch: "
+        f"baseline={sorted(b_ctx)}, ref_aware={sorted(r_ctx)}"
+    )
+
+    # Source differences are visible in the report context
+    assert b_ctx["lane_id"] != r_ctx["lane_id"]
+    assert b_ctx["reference_pack_id"] is None
+    assert r_ctx["reference_pack_id"] == "al_cu_fe_v1"
+
+    # Per-entry evidence must carry calibration_provenance in both lanes
+    for report in (report_baseline, report_ref_aware):
+        first_entry = report["entries"][0]
+        ev = first_entry["evidence"]
+        assert "calibration_provenance" in ev
+        cal_prov = ev["calibration_provenance"]
+        assert "source" in cal_prov
+        assert "backend_mode" in cal_prov
+        assert cal_prov["backend_mode"] == "real"
