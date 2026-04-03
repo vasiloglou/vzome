@@ -28,11 +28,11 @@ reinforce each other instead of living in separate prototypes.
 - [x] **PIPE-02**: The reference-aware no-DFT discovery workflow can run a
   benchmarked end-to-end flow on at least two target systems using non-mock
   data inputs.
-- [ ] **PIPE-03**: The platform produces comparable manifests, calibration
+- [x] **PIPE-03**: The platform produces comparable manifests, calibration
   outputs, and benchmark packs across source adapters and backend modes.
-- [ ] **PIPE-04**: The system supports source-aware reference-phase enrichment
+- [x] **PIPE-04**: The system supports source-aware reference-phase enrichment
   for proxy hull, XRD matching, and report generation.
-- [ ] **PIPE-05**: The platform exposes one operator-facing runbook for
+- [x] **PIPE-05**: The platform exposes one operator-facing runbook for
   ingestion, execution, benchmarking, and result inspection.
 
 ### LLM Training and Inference
@@ -105,9 +105,9 @@ reinforce each other instead of living in separate prototypes.
 | DATA-05 | Phase 3 | Complete |
 | PIPE-01 | Phase 3 | Complete |
 | PIPE-02 | Phase 4 | Complete |
-| PIPE-03 | Phase 4 | Pending |
-| PIPE-04 | Phase 5 | Pending |
-| PIPE-05 | Phase 5 | Pending |
+| PIPE-03 | Phase 4 | Complete |
+| PIPE-04 | Phase 5 | Complete |
+| PIPE-05 | Phase 5 | Complete |
 | LLM-01 | Phase 6 | Pending |
 | LLM-02 | Phase 7 | Pending |
 | LLM-03 | Phase 8 | Pending |

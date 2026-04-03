@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 5
-current_phase_name: candidate/reference data lake and analysis layer
-current_plan: Not started
-status: verifying
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-04-03T16:02:30.913Z"
+current_phase: 05
+current_phase_name: candidate-reference-data-lake-and-analysis-layer
+current_plan: 2
+status: executing
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-04-03T18:15:44.305Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
   completed_phases: 4
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 13
+  completed_plans: 11
   percent: 70
 ---
 
@@ -24,20 +24,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-02)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 04 — reference-aware-no-dft-materials-discovery-v1
+**Current focus:** Phase 05 — candidate-reference-data-lake-and-analysis-layer
 
 ## Current Position
 
-Current Phase: 5
-Current Phase Name: candidate/reference data lake and analysis layer
+Current Phase: 05
+Current Phase Name: candidate-reference-data-lake-and-analysis-layer
 Total Phases: 9
-Current Plan: Not started
+Current Plan: 2
 Total Plans in Phase: 3
-Phase: 04 (reference-aware-no-dft-materials-discovery-v1) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Phase: 05 (candidate-reference-data-lake-and-analysis-layer) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-03
-Last Activity Description: Phase 04 complete, transitioned to Phase 5
+Last Activity Description: Phase 05 execution started
 
 Progress: [███████░░░] 70%
 
@@ -72,6 +72,7 @@ Progress: [███████░░░] 70%
 | Phase 04 P01 | 12 | 2 tasks | 15 files |
 | Phase 04 P02 | 18 | 3 tasks | 9 files |
 | Phase 04 P03 | 8 | 3 tasks | 8 files |
+| Phase 05 P01 | 25 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 04]: Keep benchmark runner as thin config-driven wrapper around mdisc stage commands (no new orchestration framework)
 - [Phase 04]: Use benchmark_lane pytest marker to isolate slower E2E tests as a clearly separate lane
 - [Phase 04]: Cross-lane comparison: Al-Cu-Fe real vs reference-aware real (same backend mode, different source pack) for maximal source-difference visibility
+- [Phase 05]: ARTIFACT_DIRECTORIES covers 17 entries for full artifact inventory completeness (review concern #3)
+- [Phase 05]: Hash-based staleness detection (manifest output_hashes) is authoritative; mtime is secondary hint (review concern #1)
+- [Phase 05]: All lineage paths are workspace-relative via workspace_relative() (review concern #5)
 
 ### Pending Todos
 
@@ -114,6 +118,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T15:57:26.681Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-04-03T18:15:44.303Z
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None
