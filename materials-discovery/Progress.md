@@ -24,6 +24,8 @@
 | 2026-04-03 | Phase 4: benchmark-ready reference-aware configs for Al-Cu-Fe and Sc-Zn | Added `al_cu_fe_reference_aware.yaml` and `sc_zn_reference_aware.yaml` with `source_registry_v1`, multi-source `reference_pack` blocks (HYPOD-X + MP for Al-Cu-Fe; HYPOD-X + COD for Sc-Zn), explicit priority ordering, benchmark corpus/validation snapshot hooks; staged thin second-source canonical fixtures; extended CLI to route `source_registry_v1` + `reference_pack` through `_ingest_via_reference_pack`; 31 deterministic benchmark/fixture tests |
 | 2026-04-03 | Phase 4 Plan 02: comparable benchmark outputs across pipeline lanes | Added `BenchmarkRunContext` and `build_benchmark_run_context()` to `common/benchmarking.py`; `write_benchmark_pack()` emits a dedicated `benchmark_pack.json` artifact; additive `benchmark_context` field added to `ArtifactManifest`; `hifi-rank` and `report` CLI commands thread context into manifests and ranked/report outputs; `rank_validated_candidates()` embeds `calibration_provenance` and optional `benchmark_context` in candidate provenance; `compile_experiment_report()` surfaces context in evidence blocks and top-level report; 164 tests pass |
 
+| 2026-04-03 | Phase 5 Plan 01: data lake metadata layer | Added `lake` package with `catalog.py` (CatalogEntry, DirectoryCatalog, ARTIFACT_DIRECTORIES with 17 entries, build_directory_catalog, write_catalog), `staleness.py` (hash-based + mtime-hint staleness detection), and `index.py` (LakeIndex, build_lake_index, write_lake_index, lake_stats); wired `mdisc lake index` and `mdisc lake stats` CLI subcommands; 15 new tests pass, 187 total |
+
 ## Diary
 
 ### 2026-03-22
@@ -118,6 +120,14 @@
   - `developers-docs/reference-aware-benchmarks.md` (new): operator runbook covering prerequisites (Python env, Java/Zomic dependency for Sc-Zn), full and smoke run commands, benchmark config descriptions, reference-pack input paths, benchmark-pack output structure, and regression test commands.
   - `README.md`: added Phase 4 benchmark runner quickstart section with link to runbook.
   - `developers-docs/index.md`: added runbook to Documentation Map and Phase 4 reference-aware configs to Chemical Systems table.
+
+- Phase 5 Plan 01 — Built data lake metadata layer (Phase 5, Plan 01):
+  - `lake/__init__.py` (new): package init.
+  - `lake/catalog.py` (new): `CatalogEntry` Pydantic model (artifact_type, directory_path, schema_version, record_count, last_modified_utc, lineage, size_bytes, is_stale, content_hash); `DirectoryCatalog` model; `ARTIFACT_DIRECTORIES` dict with 17 entries covering all artifact subdirectories (addresses review concern #3); `build_directory_catalog()` scanning JSONL lines and JSON files with workspace-relative paths (addresses review concern #5); `write_catalog()` writing `_catalog.json`.
+  - `lake/staleness.py` (new): `check_staleness()` with hash-based detection using manifest output_hashes plus mtime hint (addresses review concern #1).
+  - `lake/index.py` (new): `LakeIndex` Pydantic model; `build_lake_index()` iterating over all ARTIFACT_DIRECTORIES and building + writing per-directory catalogs; `write_lake_index()` writing `data/lake_index.json`; `lake_stats()` producing summary stats.
+  - `cli.py`: added `lake_app` Typer sub-application; `mdisc lake index` command running build+write; `mdisc lake stats` command loading or rebuilding the index and printing a summary table.
+  - Tests: `test_lake_catalog.py` (9 tests), `test_lake_index.py` (6 tests). Total: 187 tests passing.
 
 - Phase 4 Plan 01 Task 2 — Added benchmark-ready reference-aware configs and second-source fixtures:
   - `configs/systems/al_cu_fe_reference_aware.yaml` (new): source_registry_v1, real mode, HYPOD-X + Materials Project reference pack (priority order: hypodx > materials_project), benchmark corpus and validation snapshot wired.

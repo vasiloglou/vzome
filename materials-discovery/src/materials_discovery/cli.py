@@ -94,7 +94,17 @@ from materials_discovery.screen.filter_thresholds import (
 from materials_discovery.screen.rank_shortlist import rank_screen_shortlist
 from materials_discovery.screen.relax_fast import run_fast_relaxation
 
+from materials_discovery.lake.index import (
+    build_lake_index,
+    lake_stats,
+    write_lake_index,
+)
+
 app = typer.Typer(add_completion=False, help="No-DFT materials discovery CLI scaffold")
+
+# --- Lake sub-application (D-10: lake catalog and analysis commands) ---
+lake_app = typer.Typer(help="Data lake catalog and analysis commands")
+app.add_typer(lake_app, name="lake")
 
 
 def _emit_error(message: str) -> None:
@@ -796,21 +806,13 @@ def hifi_rank_command(
         system_slug = _system_slug(system_config.system_name)
 
         benchmark_ctx = _load_benchmark_context(system_config, system_slug)
+        bm_ctx_dict = benchmark_ctx.as_dict()
 
         validated = _load_validated_candidates(system_slug)
-        ranked = rank_validated_candidates(system_config, validated)
-
-        # Embed benchmark/reference provenance into ranked candidate provenance blocks.
-        bm_ctx_dict = benchmark_ctx.as_dict()
-        enriched_ranked = []
-        for candidate in ranked:
-            copied = candidate.model_copy(deep=True)
-            provenance = dict(copied.provenance)
-            hifi_rank = dict(provenance.get("hifi_rank") or {})
-            hifi_rank["benchmark_context"] = bm_ctx_dict
-            provenance["hifi_rank"] = hifi_rank
-            copied.provenance = provenance
-            enriched_ranked.append(copied)
+        # Pass benchmark context so it is embedded in every ranked candidate's provenance.
+        enriched_ranked = rank_validated_candidates(
+            system_config, validated, benchmark_context=bm_ctx_dict
+        )
 
         output_path = workspace_root() / "data" / "ranked" / f"{system_slug}_ranked.jsonl"
         write_jsonl([candidate.model_dump() for candidate in enriched_ranked], output_path)
@@ -1142,6 +1144,47 @@ def report_command(
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"report failed: {exc}")
         raise typer.Exit(code=2)
+
+
+@lake_app.command("index")
+def lake_index_cmd(
+    root: Path = typer.Option(None, "--root", help="Workspace root override"),
+) -> None:
+    """Scan all artifact directories and write data/lake_index.json."""
+    index = build_lake_index(root=root)
+    output_path = write_lake_index(index, output_path=(root / "data" / "lake_index.json") if root else None)
+    typer.echo(f"Lake index written to: {output_path}")
+    typer.echo(f"  Artifact directories scanned: {index.artifact_directories}")
+    typer.echo(f"  Total entries: {index.total_entries}")
+    typer.echo(f"  Stale entries: {index.stale_count}")
+
+
+@lake_app.command("stats")
+def lake_stats_cmd(
+    root: Path = typer.Option(None, "--root", help="Workspace root override"),
+) -> None:
+    """Print a summary table of the current lake index (rebuilds if missing)."""
+    from materials_discovery.common.io import workspace_root as _ws_root
+    ws = root or _ws_root()
+    index_path = ws / "data" / "lake_index.json"
+    if index_path.exists():
+        import json as _json
+        from materials_discovery.lake.index import LakeIndex
+        data = _json.loads(index_path.read_text(encoding="utf-8"))
+        index = LakeIndex.model_validate(data)
+    else:
+        typer.echo("lake_index.json not found — rebuilding...")
+        index = build_lake_index(root=root)
+        write_lake_index(index, output_path=index_path)
+
+    stats = lake_stats(index)
+    typer.echo("=== Lake Stats ===")
+    typer.echo(f"  Workspace:            {stats['workspace_root']}")
+    typer.echo(f"  Artifact directories: {stats['artifact_directories']}")
+    typer.echo(f"  Total entries:        {stats['total_entries']}")
+    typer.echo(f"  Stale entries:        {stats['stale_count']}")
+    typer.echo(f"  Latest run:           {stats.get('latest_run_utc', 'n/a')}")
+    typer.echo(f"  Generated at:         {stats['generated_at_utc']}")
 
 
 if __name__ == "__main__":
