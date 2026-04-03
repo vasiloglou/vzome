@@ -34,6 +34,7 @@
 | 2026-04-03 | Phase 6 Plan 02 Task 1: LLM corpus inventory layer | Added offline inventory collectors for repo Zomic scripts, candidate JSONL records, generated raw exports, canonical source/reference-pack records, and a committed PyQCstrc projection fixture, with deterministic sorting and focused pytest coverage |
 | 2026-04-03 | Phase 6 Plan 02 Task 2: LLM corpus QA grading and dedupe | Added typed gold/silver/reject grading, deterministic duplicate resolution, QA summaries, and focused pytest coverage for release-tier promotion, label validation, and issue tallies |
 | 2026-04-03 | Phase 6 Plan 03 Task 1: deterministic record2zomic conversion | Added the shared axis-walk decomposition helper, deterministic `CandidateRecord -> Zomic` serialization with conversion traces, and focused pytest coverage for ordering, label preservation, and duplicate-label disambiguation |
+| 2026-04-03 | Phase 6 Plan 03 Task 2: compile helper and projection2zomic | Added a bridge-backed temporary compile helper, a PyQCstrc projection payload conversion path, and focused pytest coverage for compile success/failure reporting and deterministic cell scaling |
 
 ## Diary
 
@@ -216,3 +217,9 @@
   - Added a bounded, auditable qphi axis-walk decomposition strategy with explicit `direct_basis`, `bounded_search`, `anchored_fallback`, and `heuristic_fallback` trace labels.
   - Added deterministic `CandidateRecord -> CorpusExample` serialization with orbit-grouped branch blocks, comment preambles, preserved `source_label_map`, and anchored/approximate/heuristic fidelity visibility through `CorpusConversionTrace`.
   - Added `tests/test_llm_record2zomic.py`; focused verification passed with `12 passed` alongside the companion projection/compiler slice.
+
+- Phase 6 Plan 03 Task 2 — Added the compile helper and PyQCstrc projection path:
+  - New module: `llm/compiler.py` for temporary `.zomic` + design-YAML generation and bridge-backed compile validation with deterministic cell scaling from qphi bounds.
+  - New module: `llm/converters/projection2zomic.py` for committed PyQCstrc-style projection payload conversion into `CorpusExample` records without a live PyQCstrc dependency.
+  - Restored `projection_payload_to_zomic` to the public `llm/converters/__init__.py` exports for later builder dispatch.
+  - Added `tests/test_llm_projection2zomic.py`; focused verification passed with `12 passed` alongside the companion record2zomic slice.
