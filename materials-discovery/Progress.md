@@ -9,6 +9,7 @@
 | 2026-03-23 | Added LLM-quasicrystal landscape doc | New developer doc covering how LLMs and AI models interact with quasicrystals: challenges, workflows, MLIP simulation, diffusion models, TSAI, and LLM-QC analogy |
 | 2026-03-23 | Ran ingest for Ti-Zr-Ni | 3 reference phases ingested (i-phase, approximant, C14-Laves); QA passed; fixture updated with Ti-Zr-Ni rows |
 | 2026-03-23 | Executed Ti-Zr-Ni export-zomic | Zomic design compiled to orbit library: 22 sites (10 icosa, 8 shell, 4 bridge) across 3 orbits |
+| 2026-04-02 | Moved materials discovery docs into workspace | Relocated `developer-docs/materials_discovery` to `materials-discovery/developers-docs` and updated links/references |
 
 ## Diary
 
@@ -31,10 +32,10 @@
 ### 2026-03-23
 
 - **Added LLM & quasicrystal landscape documentation.**
-  - New file: `developer-docs/materials_discovery/llm-quasicrystal-landscape.md`.
+  - New file: `materials-discovery/developers-docs/llm-quasicrystal-landscape.md`.
   - Covers: the fundamental challenge of LLMs with aperiodic structures (CIF periodicity assumption), how LLMs are used in QC workflows (CSLLM synthesizability, data interpretation), AI models that simulate/generate QCs (MLIPs, SCIGEN diffusion, NN-VMC electronic QCs, TSAI random forest), and the LLM-quasicrystal analogy.
   - Includes a section connecting the landscape to our pipeline's hybrid approach (Zomic representation, MLIP validation, planned LLM stages).
-  - Linked from `developer-docs/materials_discovery/index.md` documentation map.
+  - Linked from `materials-discovery/developers-docs/index.md` documentation map.
   - Also updated index.md Chemical Systems table to include Ti-Zr-Ni.
 
 - **Executed Stage 1 (ingest) for Ti-Zr-Ni.**
@@ -57,3 +58,8 @@
     - **shell**: 8 sites (preferred: Ni, Ti) — outer/inner shell positions
     - **bridge**: 4 sites (preferred: Ni) — connector positions
   - Raw export: `data/prototypes/generated/ti_zr_ni_tsai_bridge.raw.json`.
+
+### 2026-04-02
+
+- 19:10 EDT — Moved the materials discovery developer documentation from `developer-docs/materials_discovery/` to `materials-discovery/developers-docs/`.
+- Updated internal references in `materials-discovery/README.md`, the moved documentation set, and this progress log to point at the new location.

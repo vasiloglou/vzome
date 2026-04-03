@@ -2,7 +2,7 @@
 
 No-DFT materials discovery pipeline for quasicrystal-compatible structures.
 
-For full documentation, see **[developer-docs/materials_discovery/](../developer-docs/materials_discovery/index.md)**.
+For full documentation, see **[developers-docs/](./developers-docs/index.md)**.
 
 ## Quickstart
 
@@ -69,10 +69,10 @@ All M1-M6 milestones and RM0-RM6 real-mode execution phases. Eight CLI commands
 `export-zomic` and Zomic-backed generation invoke `vZome core` through
 `./gradlew :core:zomicExport`, so they require a local Java runtime.
 
-See the [pipeline stages reference](../developer-docs/materials_discovery/pipeline-stages.md)
-for per-command details and the [backend system docs](../developer-docs/materials_discovery/backend-system.md)
+See the [pipeline stages reference](./developers-docs/pipeline-stages.md)
+for per-command details and the [backend system docs](./developers-docs/backend-system.md)
 for adapter architecture. The Zomic authoring path is documented in
-[zomic-design-workflow.md](../developer-docs/materials_discovery/zomic-design-workflow.md).
+[zomic-design-workflow.md](./developers-docs/zomic-design-workflow.md).
 
 ## Exit Codes
 

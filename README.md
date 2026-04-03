@@ -23,8 +23,8 @@ for desktop vZome.
 The `docs` folder contains source for a GitHub Pages site that
 provides the [user documentation for vZome](https://docs.vzome.com).
 
-The `developer-docs` folder has a few things captured for developer use,
-though they are probably not very current.
+Developer-oriented notes are sparse at the repo root. The materials discovery
+subproject keeps its own docs under `materials-discovery/developers-docs/`.
 
 ## Other Subprojects
 
