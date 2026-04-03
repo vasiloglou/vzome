@@ -40,6 +40,12 @@ def stage_source_snapshot(
     settings = _ingestion_settings(config)
     adapter_info = adapter.info()
     source_key = str(settings.get("source_key") or adapter_info.source_key)
+    configured_adapter_key = settings.get("adapter_key")
+    if configured_adapter_key is not None and str(configured_adapter_key) != adapter_info.adapter_key:
+        raise ValueError(
+            "ingestion.adapter_key does not match the supplied adapter: "
+            f"{configured_adapter_key} != {adapter_info.adapter_key}"
+        )
     snapshot_id = str(settings.get("snapshot_id") or adapter.default_snapshot_id(config))
     artifact_root = settings.get("artifact_root")
 

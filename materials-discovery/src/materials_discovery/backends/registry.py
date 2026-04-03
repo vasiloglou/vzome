@@ -71,6 +71,7 @@ _DEFAULT_XRD_ADAPTERS: dict[str, str] = {
 }
 
 AdapterType = TypeVar("AdapterType")
+_SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY = "source_registry_v1"
 
 
 def resolve_ingest_backend(mode: str, adapter: str | None = None) -> IngestBackend:
@@ -78,6 +79,12 @@ def resolve_ingest_backend(mode: str, adapter: str | None = None) -> IngestBacke
     if chosen_adapter is None:
         known_modes = ", ".join(sorted(_DEFAULT_ADAPTERS.keys()))
         raise ValueError(f"Unknown backend mode '{mode}'. Expected one of: {known_modes}")
+    if chosen_adapter == _SOURCE_RUNTIME_BRIDGE_ADAPTER_KEY:
+        raise ValueError(
+            "The reserved ingest adapter 'source_registry_v1' is not wired into "
+            "the legacy mdisc ingest path yet. Phase 3 will bridge the source "
+            "runtime into the CLI."
+        )
 
     try:
         return _INGEST_BACKENDS[(mode, chosen_adapter)]

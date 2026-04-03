@@ -185,6 +185,28 @@ class BackendConfig(BaseModel):
         return self
 
 
+class IngestionConfig(BaseModel):
+    source_key: str
+    adapter_key: str | None = None
+    snapshot_id: str | None = None
+    use_cached_snapshot: bool = True
+    query: dict[str, Any] = Field(default_factory=dict)
+    artifact_root: str | None = None
+
+    @model_validator(mode="after")
+    def validate_ingestion(self) -> IngestionConfig:
+        self.source_key = self.source_key.strip()
+        if not self.source_key:
+            raise ValueError("ingestion.source_key must not be empty")
+        if self.adapter_key is not None:
+            self.adapter_key = self.adapter_key.strip() or None
+        if self.snapshot_id is not None:
+            self.snapshot_id = self.snapshot_id.strip() or None
+        if self.artifact_root is not None:
+            self.artifact_root = self.artifact_root.strip() or None
+        return self
+
+
 class ZomicOrbitConfig(BaseModel):
     preferred_species: list[str] | None = None
     wyckoff: str | None = None
@@ -278,6 +300,7 @@ class SystemConfig(BaseModel):
     prototype_library: str | None = None
     zomic_design: str | None = None
     backend: BackendConfig = Field(default_factory=BackendConfig)
+    ingestion: IngestionConfig | None = None
 
     @model_validator(mode="after")
     def validate_species(self) -> SystemConfig:
