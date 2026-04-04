@@ -6,9 +6,9 @@ current_phase: 12
 current_phase_name: replay-comparison-and-operator-workflow
 current_plan: 0
 status: ready_to_plan
-stopped_at: Phase 11 execution completed
-last_updated: "2026-04-04T16:58:13Z"
-last_activity: 2026-04-04 -- Phase 11 completed; Phase 12 ready to plan
+stopped_at: Phase 12 context captured
+last_updated: "2026-04-04T17:06:49Z"
+last_activity: 2026-04-04 -- Phase 12 context captured; ready to plan
 progress:
   total_phases: 3
   completed_phases: 2
@@ -35,9 +35,9 @@ Current Plan: 0
 Total Plans in Phase: 0
 Phase: 12 (replay-comparison-and-operator-workflow) — READY TO PLAN
 Plan: 0 of 0
-Status: Phase 11 complete; Phase 12 ready for discussion/planning
-Last activity: 2026-04-04 -- Phase 11 completed; Phase 12 ready to plan
-Last Activity Description: Closed-loop campaign execution bridge completed with downstream lineage propagation and docs
+Status: Phase 12 context captured; ready to plan
+Last activity: 2026-04-04 -- Phase 12 context captured; ready to plan
+Last Activity Description: Replay/comparison decisions captured for planning handoff
 
 Progress: [███████░░░] 67%
 
@@ -172,6 +172,10 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 11-closed-loop-campaign-execution-bridge]: Treat the 10 percent composition-window shrink as a deliberate v1.1 heuristic and record whether lane resolution used a configured match or baseline fallback.
 - [Phase 11-closed-loop-campaign-execution-bridge]: Normalize downstream campaign lineage as additive `source_lineage.llm_campaign` rather than inventing per-stage payloads.
 - [Phase 11-closed-loop-campaign-execution-bridge]: Keep post-launch continuation manual in v1.1 while ensuring downstream manifests and the pipeline manifest preserve campaign lineage.
+- [Phase 12-replay-comparison-and-operator-workflow]: Replay should use the recorded launch artifact as authority, with the campaign spec retained as provenance context.
+- [Phase 12-replay-comparison-and-operator-workflow]: Comparison should evaluate outcomes against both the originating acceptance pack and the most recent prior launch when available.
+- [Phase 12-replay-comparison-and-operator-workflow]: Add separate `llm-replay` and `llm-compare` commands, emit typed JSON plus operator-readable summaries, and keep replay strict with no behavioral overrides in Phase 12.
+- [Phase 12-replay-comparison-and-operator-workflow]: Ship a real runbook covering suggest, approve, launch, replay, compare, and interpretation with safe defaults.
 
 ### Pending Todos
 
@@ -183,6 +187,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T16:58:13Z
-Stopped at: Phase 11 execution completed
-Resume file: .planning/phases/11-closed-loop-campaign-execution-bridge/11-03-SUMMARY.md
+Last session: 2026-04-04T17:06:49Z
+Stopped at: Phase 12 context captured
+Resume file: .planning/phases/12-replay-comparison-and-operator-workflow/12-CONTEXT.md
