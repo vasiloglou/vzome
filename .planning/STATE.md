@@ -5,14 +5,14 @@ milestone_name: milestone
 current_phase: 10
 current_phase_name: Closed-Loop Campaign Contract and Governance
 current_plan: None
-status: Defining milestone v1.1 implementation plan
-stopped_at: Phase 10 context gathered
-last_updated: "2026-04-04T05:05:34.876Z"
-last_activity: 2026-04-03 -- Milestone v1.1 started
+status: Ready to execute Phase 10 plan set
+stopped_at: Phase 10 planned
+last_updated: "2026-04-04T05:11:12.000Z"
+last_activity: 2026-04-04 -- Phase 10 planned
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
+  total_plans: 3
   completed_plans: 0
   percent: 0
 ---
@@ -32,12 +32,12 @@ Current Phase: 10
 Current Phase Name: Closed-Loop Campaign Contract and Governance
 Total Phases: 3
 Current Plan: None
-Total Plans in Phase: 0
+Total Plans in Phase: 3
 Phase: 10
-Plan: Not started
-Status: Defining milestone v1.1 implementation plan
-Last activity: 2026-04-03 -- Milestone v1.1 started
-Last Activity Description: Project 3 re-opened as a new milestone focused on closed-loop campaign execution before local serving
+Plan: Ready to execute
+Status: Ready to execute Phase 10 plan set
+Last activity: 2026-04-04 -- Phase 10 planned
+Last Activity Description: Phase 10 research, validation, and three-wave execution plans created for proposal, approval, and campaign-spec governance
 
 Progress: [----------] 0%
 
@@ -104,6 +104,9 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Milestone v1.1]: Start Project 3's next cycle with closed-loop campaign execution rather than local or fine-tuned model serving.
 - [Milestone v1.1]: Keep the new campaign workflow operator-governed, approval-gated, and file-backed.
 - [Milestone v1.1]: Continue phase numbering from `v1.0`, so the new roadmap begins at Phase 10.
+- [Phase 10]: Keep proposals system-scoped, typed over three action families, and dry-run by default.
+- [Phase 10]: Support both general-purpose and specialized-materials model lanes in proposal/spec metadata without hard-coding one vendor.
+- [Phase 10]: Require a separate approval artifact and a self-contained campaign spec rooted in acceptance-pack, approval, eval-set, and config lineage.
 - Phase 1 is contract-design, not adapter implementation.
 - The new ingestion layer should live under `materials_discovery/data_sources/`.
 - Keep `mdisc ingest` as the stable operator-facing entrypoint while the new source layer integrates behind it.
@@ -165,5 +168,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-04T05:05:34.870Z
-Stopped at: Phase 10 context gathered
-Resume file: .planning/phases/10-closed-loop-campaign-contract-and-governance/10-CONTEXT.md
+Stopped at: Phase 10 planned
+Resume file: .planning/phases/10-closed-loop-campaign-contract-and-governance/10-01-PLAN.md
