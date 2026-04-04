@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 11 Plan 02 Task 2 RED tests | Added `tests/test_llm_launch_cli.py` and a shared `test_cli.py` smoke case to lock `llm-launch` success and config-drift failure behavior before wiring the CLI |
 | 2026-04-04 | Phase 11 Plan 02 Task 1 campaign-aware llm-generate | Added prompt instruction deltas and campaign launch metadata to the LLM generation request/run-manifest flow while keeping manual `llm-generate` behavior unchanged |
 | 2026-04-04 | Phase 11 Plan 02 Task 1 RED tests | Extended `tests/test_llm_generate_core.py` to lock prompt instruction deltas and campaign-aware run/provenance metadata before modifying `llm-generate` |
 | 2026-04-04 | Phase 11 Plan 01 Task 2 launch resolution | Added `llm/launch.py` with deterministic lane selection, prompt/composition overlays, eval-set seed materialization, and exported campaign launch helpers |
@@ -341,6 +342,9 @@
 
 ### 2026-04-04
 
+- 12:52 EDT — Started Phase 11 Plan 02 Task 2 in TDD RED mode by adding `tests/test_llm_launch_cli.py` and a shared `tests/test_cli.py` smoke case.
+- The new failing coverage locks successful `llm-launch` artifact writing, config-drift failure messaging, and the requirement that generation must not start when the pinned config hash no longer matches.
+- Open item: add the `llm-launch` command, write resolved/summary artifacts, and preserve partial-failure auditability without reusing `llm-approve`.
 - 12:47 EDT — Implemented the Phase 11 Plan 02 Task 1 additive `llm-generate` bridge.
 - Threaded prompt instruction deltas through `build_generation_prompt()` and `LlmGenerationRequest`, added campaign-aware fields to `LlmRunManifest`, and recorded additive `llm_campaign` provenance on launched candidates.
 - Also widened the run hash so campaign launches with different overlays do not silently collide with otherwise identical manual generation runs.

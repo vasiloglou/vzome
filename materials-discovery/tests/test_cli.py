@@ -148,6 +148,23 @@ def test_cli_llm_generate_missing_seed_returns_2() -> None:
     assert result.exit_code == 2
 
 
+def test_cli_llm_launch_missing_spec_returns_2() -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    spec = workspace / "does-not-exist-campaign-spec.json"
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-launch",
+            "--campaign-spec",
+            str(spec),
+        ],
+    )
+
+    assert result.exit_code == 2
+
+
 def test_cli_export_zomic_success(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     runner = CliRunner()
     design_path = tmp_path / "demo.yaml"
