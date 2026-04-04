@@ -87,6 +87,42 @@ def test_prompt_builder_can_include_conditioning_examples() -> None:
     assert "label demo.site" in prompt
 
 
+def test_prompt_builder_places_instruction_deltas_before_seed_and_examples() -> None:
+    config = SystemConfig.model_validate(_config_data("al_cu_fe_llm_mock.yaml"))
+    examples = [
+        LlmEvalSetExample(
+            example_id="eval_001",
+            system="Al-Cu-Fe",
+            release_tier="gold",
+            fidelity_tier="exact",
+            source_family="materials_design",
+            source_record_id="eval_001",
+            composition={"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            labels=["demo"],
+            orbit_names=["orbit.demo"],
+            tags=["gold"],
+            properties={"template_family": "icosahedral_approximant_1_1"},
+            zomic_text="label demo.site\n",
+        )
+    ]
+
+    prompt = build_generation_prompt(
+        config,
+        count=1,
+        seed_zomic_text="label seed.demo\n",
+        conditioning_examples=examples,
+        instruction_deltas=[
+            "Prefer parser-safe symmetry annotations.",
+            "Keep motifs benchmark-aligned.",
+        ],
+    )
+
+    assert prompt.index("Prefer parser-safe symmetry annotations.") < prompt.index("SEED_ZOMIC")
+    assert prompt.index("Keep motifs benchmark-aligned.") < prompt.index(
+        "CONDITIONING_EXAMPLES"
+    )
+
+
 def test_generate_llm_candidates_writes_run_artifacts_and_candidate_records(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -141,6 +177,85 @@ def test_generate_llm_candidates_writes_run_artifacts_and_candidate_records(
     assert candidates[0].provenance["source"] == "llm"
     assert candidates[0].provenance["llm_adapter"] == "llm_fixture_v1"
     assert candidates[0].provenance["llm_provider"] == "mock"
+
+
+def test_generate_llm_candidates_records_campaign_metadata_in_run_manifest_and_provenance(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    config = SystemConfig.model_validate(_config_data("al_cu_fe_llm_mock.yaml"))
+    workspace = tmp_path / "workspace"
+    output_path = workspace / "data" / "candidates" / "al_cu_fe_campaign_candidates.jsonl"
+
+    monkeypatch.setattr("materials_discovery.llm.generate.workspace_root", lambda: workspace)
+
+    def _fake_compile(
+        zomic_text: str,
+        *,
+        artifact_root: Path | None = None,
+        **_: object,
+    ) -> dict[str, object]:
+        assert zomic_text.strip()
+        assert artifact_root is not None
+        raw_export_path, orbit_library_path = _write_compile_outputs(
+            artifact_root,
+            "al_cu_fe_mackay_1_1.json",
+        )
+        return {
+            "parse_status": "passed",
+            "compile_status": "passed",
+            "error_kind": None,
+            "error_message": None,
+            "raw_export_path": raw_export_path,
+            "orbit_library_path": orbit_library_path,
+            "cell_scale_used": 10.0,
+            "geometry_equivalence": None,
+            "geometry_error": None,
+        }
+
+    monkeypatch.setattr("materials_discovery.llm.generate.compile_zomic_script", _fake_compile)
+
+    summary = generate_llm_candidates(
+        config,
+        output_path,
+        count=1,
+        prompt_instruction_deltas=[
+            "Prefer parser-safe symmetry annotations.",
+            "Keep motifs benchmark-aligned.",
+        ],
+        campaign_metadata={
+            "campaign_id": "campaign-001",
+            "launch_id": "launch-001",
+            "campaign_spec_path": "data/llm_campaigns/campaign-001/campaign_spec.json",
+            "proposal_id": "proposal-001",
+            "approval_id": "approval-001",
+            "requested_model_lanes": ["general_purpose"],
+            "resolved_model_lane": "general_purpose",
+            "resolved_model_lane_source": "configured_lane",
+            "launch_summary_path": "data/llm_campaigns/campaign-001/launches/launch-001/launch_summary.json",
+        },
+    )
+
+    run_manifest = load_json_object(Path(summary.run_manifest_path))
+    assert run_manifest["campaign_id"] == "campaign-001"
+    assert run_manifest["launch_id"] == "launch-001"
+    assert run_manifest["resolved_model_lane_source"] == "configured_lane"
+    assert run_manifest["conditioning_example_ids"] == []
+
+    prompt_payload = load_json_object(Path(summary.run_manifest_path).parent / "prompt.json")
+    assert prompt_payload["request"]["prompt_instruction_deltas"] == [
+        "Prefer parser-safe symmetry annotations.",
+        "Keep motifs benchmark-aligned.",
+    ]
+
+    candidates = [CandidateRecord.model_validate(row) for row in load_jsonl(output_path)]
+    assert candidates[0].provenance["llm_campaign"] == {
+        "campaign_id": "campaign-001",
+        "launch_id": "launch-001",
+        "proposal_id": "proposal-001",
+        "approval_id": "approval-001",
+        "campaign_spec_path": "data/llm_campaigns/campaign-001/campaign_spec.json",
+    }
 
 
 def test_generate_llm_candidates_records_conditioning_example_ids(

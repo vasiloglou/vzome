@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 11 Plan 02 Task 1 RED tests | Extended `tests/test_llm_generate_core.py` to lock prompt instruction deltas and campaign-aware run/provenance metadata before modifying `llm-generate` |
 | 2026-04-04 | Phase 11 Plan 01 Task 2 launch resolution | Added `llm/launch.py` with deterministic lane selection, prompt/composition overlays, eval-set seed materialization, and exported campaign launch helpers |
 | 2026-04-04 | Phase 11 Plan 01 Task 2 RED tests | Added `tests/test_llm_launch_core.py` to lock deterministic lane, prompt, composition, and seed resolution behavior before implementing `llm/launch.py` |
 | 2026-04-04 | Phase 11 Plan 01 Task 1 launch contracts | Added lane-aware `llm_generate.model_lanes`, typed launch summary models, and deterministic campaign launch storage helpers |
@@ -339,6 +340,9 @@
 
 ### 2026-04-04
 
+- 12:42 EDT — Started Phase 11 Plan 02 Task 1 in TDD RED mode by extending `tests/test_llm_generate_core.py`.
+- The new failing coverage locks prompt instruction-delta placement plus campaign-aware run-manifest and candidate-provenance fields before changing the existing `llm-generate` runtime.
+- Open item: thread additive prompt/campaign launch metadata through `llm_generate` without disturbing the manual path.
 - 13:12 EDT — Implemented the Phase 11 Plan 01 Task 2 launch resolution layer.
 - Added `materials_discovery.llm.launch` with deterministic action ordering, configured-lane vs baseline-fallback resolution, heuristic composition-window shrinking, and eval-set-backed seed materialization into the campaign launch directory.
 - Exported `resolve_campaign_launch()`, `resolve_campaign_model_lane()`, and `materialize_campaign_seed()` from `materials_discovery.llm` so later CLI and runtime work can use a single additive launch overlay surface.
