@@ -165,6 +165,40 @@ def test_cli_llm_launch_missing_spec_returns_2() -> None:
     assert result.exit_code == 2
 
 
+def test_cli_llm_replay_missing_summary_returns_2() -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    launch_summary = workspace / "does-not-exist-launch-summary.json"
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-replay",
+            "--launch-summary",
+            str(launch_summary),
+        ],
+    )
+
+    assert result.exit_code == 2
+
+
+def test_cli_llm_compare_missing_summary_returns_2() -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    launch_summary = workspace / "does-not-exist-launch-summary.json"
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-compare",
+            "--launch-summary",
+            str(launch_summary),
+        ],
+    )
+
+    assert result.exit_code == 2
+
+
 def test_cli_export_zomic_success(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     runner = CliRunner()
     design_path = tmp_path / "demo.yaml"

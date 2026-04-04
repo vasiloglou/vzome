@@ -270,6 +270,8 @@ def generate_llm_candidates(
                                             "proposal_id",
                                             "approval_id",
                                             "campaign_spec_path",
+                                            "replay_of_launch_id",
+                                            "replay_of_launch_summary_path",
                                         )
                                         if campaign_metadata.get(key) is not None
                                     }
@@ -362,6 +364,18 @@ def generate_llm_candidates(
         ),
         launch_summary_path=(
             None if campaign_metadata is None else campaign_metadata.get("launch_summary_path")
+        ),
+        temperature=effective_temperature,
+        max_tokens=llm_config.max_tokens,
+        max_attempts=llm_config.max_attempts,
+        seed_zomic_path=request.seed_zomic_path,
+        replay_of_launch_id=(
+            None if campaign_metadata is None else campaign_metadata.get("replay_of_launch_id")
+        ),
+        replay_of_launch_summary_path=(
+            None
+            if campaign_metadata is None
+            else campaign_metadata.get("replay_of_launch_summary_path")
         ),
     )
     write_json_object(run_manifest.model_dump(mode="json"), run_manifest_path)

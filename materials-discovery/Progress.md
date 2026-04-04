@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 12 Plan 02 replay and compare CLI | Added strict `mdisc llm-replay --launch-summary ...`, `mdisc llm-compare --launch-summary ...`, replay-aware `llm-generate` lineage, and focused replay/compare CLI coverage while keeping the shared CLI suite green |
 | 2026-04-04 | Phase 12 Plan 01 replay and comparison foundation | Added strict replay bundle loading, replay-config reconstruction helpers, typed outcome/comparison artifacts, deterministic campaign comparison paths, and focused replay/compare core regression coverage |
 | 2026-04-04 | Phase 11 Plan 03 launch continuation docs | Documented `mdisc llm-launch`, launch wrapper artifacts, manual downstream continuation, failure posture, and a lineage-audit path in the LLM and pipeline developer docs |
 | 2026-04-04 | Phase 11 Plan 03 campaign lineage propagation | Threaded additive `llm_campaign` lineage into launched `llm_generate` manifests, downstream stage manifests, and pipeline manifests, with focused downstream-lineage and mock continuation regression coverage |
@@ -347,6 +348,9 @@
 
 ### 2026-04-04
 
+- 13:35 EDT — Implemented the Phase 12 Plan 02 replay and compare CLI layer.
+- Added strict `mdisc llm-replay --launch-summary ...` and `mdisc llm-compare --launch-summary ...`, updated `llm-generate` so replay lineage flows additively into run manifests and candidate provenance, and kept replay outputs on deterministic standard-root candidate paths.
+- Added `tests/test_llm_replay_cli.py`, `tests/test_llm_compare_cli.py`, and extended `tests/test_cli.py`; focused verification passed with `17 passed`.
 - 13:29 EDT — Implemented the Phase 12 Plan 01 replay/comparison contract foundation.
 - Added `llm/replay.py` and `llm/compare.py`, extended `llm/schema.py` with replay lineage plus typed `LlmCampaignOutcomeSnapshot` and `LlmCampaignComparisonResult` models, added deterministic campaign comparison storage helpers, and exported the new replay/compare surface from `materials_discovery.llm`.
 - Added `tests/test_llm_replay_core.py` and `tests/test_llm_compare_core.py`; focused verification passed with `10 passed`.

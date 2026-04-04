@@ -110,6 +110,15 @@ from materials_discovery.llm.campaigns import (
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
 from materials_discovery.llm.launch import resolve_campaign_launch
+from materials_discovery.llm.compare import (
+    build_campaign_comparison,
+    build_campaign_outcome_snapshot,
+)
+from materials_discovery.llm.replay import (
+    build_replay_campaign_metadata,
+    build_replay_config,
+    load_campaign_launch_bundle,
+)
 from materials_discovery.llm.schema import (
     CorpusBuildConfig,
     LlmAcceptancePack,
@@ -120,7 +129,9 @@ from materials_discovery.llm.schema import (
 from materials_discovery.llm.storage import (
     llm_acceptance_approval_path,
     llm_artifact_root_from_acceptance_pack_path,
+    llm_campaign_comparison_path,
     llm_campaign_launch_summary_path,
+    llm_campaign_outcome_snapshot_path,
     llm_campaign_resolved_launch_path,
     llm_campaign_spec_path,
 )
@@ -531,6 +542,8 @@ _CAMPAIGN_LINEAGE_KEYS = (
     "campaign_spec_path",
     "launch_summary_path",
     "resolved_launch_path",
+    "replay_of_launch_id",
+    "replay_of_launch_summary_path",
     "requested_model_lanes",
     "resolved_model_lane",
     "resolved_model_lane_source",
@@ -1191,6 +1204,226 @@ def llm_launch_command(
                 ),
             )
         _emit_error(f"llm-launch failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-replay")
+def llm_replay_command(
+    launch_summary: Path = typer.Option(..., "--launch-summary", exists=False, dir_okay=False),
+) -> None:
+    """Replay a saved LLM campaign launch strictly from its recorded launch bundle."""
+    try:
+        source_bundle = load_campaign_launch_bundle(launch_summary, root=workspace_root())
+        config_path = _workspace_path(source_bundle.campaign_spec.launch_baseline.system_config_path)
+        current_config = _load_system_config(config_path)
+        current_hash = config_sha256(current_config)
+        replay_config = build_replay_config(source_bundle, current_config)
+
+        launch_id = _new_launch_id()
+        _emit_error(f"llm-replay starting: {launch_id}")
+
+        system_slug = _system_slug(replay_config.system_name)
+        out_path = (
+            workspace_root() / "data" / "candidates" / f"{system_slug}_replay_{launch_id}.jsonl"
+        )
+
+        resolved_launch = source_bundle.resolved_launch.model_copy(deep=True)
+        resolved_launch.launch_id = launch_id
+        resolved_launch.campaign_spec_path = str(source_bundle.campaign_spec_path)
+        resolved_launch.system_config_path = str(config_path)
+        resolved_launch.system_config_hash = source_bundle.campaign_spec.launch_baseline.system_config_hash
+        resolved_launch.requested_model_lanes = list(source_bundle.launch_summary.requested_model_lanes)
+        resolved_launch.resolved_model_lane = source_bundle.launch_summary.resolved_model_lane
+        resolved_launch.resolved_model_lane_source = (
+            source_bundle.launch_summary.resolved_model_lane_source
+        )
+        resolved_launch.resolved_adapter = replay_config.backend.llm_adapter or ""
+        resolved_launch.resolved_provider = replay_config.backend.llm_provider or ""
+        resolved_launch.resolved_model = replay_config.backend.llm_model or ""
+        resolved_launch.prompt_instruction_deltas = list(
+            source_bundle.run_manifest.prompt_instruction_deltas
+        )
+        resolved_launch.resolved_composition_bounds = {
+            species: bound.model_copy(deep=True)
+            for species, bound in replay_config.composition_bounds.items()
+        }
+        resolved_launch.resolved_example_pack_path = replay_config.llm_generate.example_pack_path
+        resolved_launch.resolved_seed_zomic_path = replay_config.llm_generate.seed_zomic
+        resolved_launch.effective_candidates_path = str(out_path)
+        resolved_launch.output_override_used = False
+        resolved_launch.replay_of_launch_id = source_bundle.launch_summary.launch_id
+        resolved_launch.replay_of_launch_summary_path = str(source_bundle.launch_summary_path)
+        resolved_launch.current_system_config_hash = current_hash
+
+        resolved_launch_path = llm_campaign_resolved_launch_path(
+            source_bundle.campaign_spec.campaign_id,
+            launch_id,
+            root=workspace_root(),
+        )
+        write_json_object(resolved_launch.model_dump(mode="json"), resolved_launch_path)
+
+        replay_launch_summary_path = llm_campaign_launch_summary_path(
+            source_bundle.campaign_spec.campaign_id,
+            launch_id,
+            root=workspace_root(),
+        )
+        campaign_metadata = build_replay_campaign_metadata(source_bundle)
+        campaign_metadata.update(
+            {
+                "launch_id": launch_id,
+                "launch_summary_path": str(replay_launch_summary_path),
+            }
+        )
+        replay_source_lineage = _normalize_campaign_lineage(
+            {
+                "llm_campaign": {
+                    **campaign_metadata,
+                    "resolved_launch_path": str(resolved_launch_path),
+                }
+            }
+        )
+
+        summary = generate_llm_candidates(
+            replay_config,
+            out_path,
+            count=source_bundle.launch_summary.requested_count,
+            config_path=config_path,
+            prompt_instruction_deltas=list(source_bundle.run_manifest.prompt_instruction_deltas),
+            campaign_metadata=campaign_metadata,
+        )
+
+        metrics = llm_generation_metrics(
+            requested_count=summary.requested_count,
+            generated_count=summary.generated_count,
+            attempt_count=summary.attempt_count,
+            parse_pass_count=summary.parse_pass_count,
+            compile_pass_count=summary.compile_pass_count,
+        )
+        calibration_path = (
+            workspace_root() / "data" / "calibration" / f"{system_slug}_llm_generation_metrics.json"
+        )
+        ensure_parent(calibration_path)
+        calibration_path.write_text(json.dumps(metrics, sort_keys=True), encoding="utf-8")
+
+        llm_generate_manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_llm_generate_manifest.json"
+        )
+        output_paths = {
+            "candidates_jsonl": out_path,
+            "llm_generation_metrics_json": calibration_path,
+        }
+        if summary.run_manifest_path is not None:
+            output_paths["llm_run_manifest_json"] = Path(summary.run_manifest_path)
+        manifest = build_manifest(
+            stage="llm_generate",
+            config=replay_config,
+            backend_mode=replay_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(replay_config, "generate"),
+            output_paths=output_paths,
+            source_lineage=replay_source_lineage,
+        )
+        write_manifest(manifest, llm_generate_manifest_path)
+
+        replay_summary = LlmCampaignLaunchSummary(
+            launch_id=launch_id,
+            campaign_id=source_bundle.campaign_spec.campaign_id,
+            campaign_spec_path=str(source_bundle.campaign_spec_path),
+            proposal_id=source_bundle.campaign_spec.proposal_id,
+            approval_id=source_bundle.campaign_spec.approval_id,
+            system=source_bundle.campaign_spec.system,
+            status="succeeded",
+            created_at_utc=datetime.now(UTC).isoformat(),
+            requested_count=source_bundle.launch_summary.requested_count,
+            requested_model_lanes=list(source_bundle.launch_summary.requested_model_lanes),
+            resolved_model_lane=source_bundle.launch_summary.resolved_model_lane,
+            resolved_model_lane_source=source_bundle.launch_summary.resolved_model_lane_source,
+            resolved_launch_path=str(resolved_launch_path),
+            run_manifest_path=summary.run_manifest_path,
+            llm_generate_manifest_path=str(llm_generate_manifest_path),
+            candidates_path=str(out_path),
+            replay_of_launch_id=source_bundle.launch_summary.launch_id,
+            replay_of_launch_summary_path=str(source_bundle.launch_summary_path),
+            current_system_config_hash=current_hash,
+        )
+        write_json_object(replay_summary.model_dump(mode="json"), replay_launch_summary_path)
+        typer.echo(replay_summary.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
+        if "source_bundle" in locals() and "launch_id" in locals():
+            resolved_launch_path = llm_campaign_resolved_launch_path(
+                source_bundle.campaign_spec.campaign_id,
+                launch_id,
+                root=workspace_root(),
+            )
+            failed_summary = LlmCampaignLaunchSummary(
+                launch_id=launch_id,
+                campaign_id=source_bundle.campaign_spec.campaign_id,
+                campaign_spec_path=str(source_bundle.campaign_spec_path),
+                proposal_id=source_bundle.campaign_spec.proposal_id,
+                approval_id=source_bundle.campaign_spec.approval_id,
+                system=source_bundle.campaign_spec.system,
+                status="failed",
+                created_at_utc=datetime.now(UTC).isoformat(),
+                requested_count=source_bundle.launch_summary.requested_count,
+                requested_model_lanes=list(source_bundle.launch_summary.requested_model_lanes),
+                resolved_model_lane=source_bundle.launch_summary.resolved_model_lane,
+                resolved_model_lane_source=source_bundle.launch_summary.resolved_model_lane_source,
+                resolved_launch_path=str(resolved_launch_path),
+                run_manifest_path=(None if "summary" not in locals() else summary.run_manifest_path),
+                llm_generate_manifest_path=(
+                    None
+                    if "llm_generate_manifest_path" not in locals()
+                    else str(llm_generate_manifest_path)
+                ),
+                candidates_path=(str(out_path) if "out_path" in locals() else None),
+                error_kind=type(exc).__name__,
+                error_message=str(exc),
+                replay_of_launch_id=source_bundle.launch_summary.launch_id,
+                replay_of_launch_summary_path=str(source_bundle.launch_summary_path),
+                current_system_config_hash=(
+                    None if "current_hash" not in locals() else current_hash
+                ),
+            )
+            write_json_object(
+                failed_summary.model_dump(mode="json"),
+                llm_campaign_launch_summary_path(
+                    source_bundle.campaign_spec.campaign_id,
+                    launch_id,
+                    root=workspace_root(),
+                ),
+            )
+        _emit_error(f"llm-replay failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-compare")
+def llm_compare_command(
+    launch_summary: Path = typer.Option(..., "--launch-summary", exists=False, dir_okay=False),
+) -> None:
+    """Compare a launch against its acceptance-pack baseline and prior launch when available."""
+    try:
+        bundle = load_campaign_launch_bundle(launch_summary, root=workspace_root())
+        current_outcome = build_campaign_outcome_snapshot(bundle, root=workspace_root())
+        comparison = build_campaign_comparison(
+            bundle,
+            current_outcome=current_outcome,
+            root=workspace_root(),
+        )
+        comparison_path = llm_campaign_comparison_path(
+            comparison.campaign_id,
+            comparison.comparison_id,
+            root=workspace_root(),
+        )
+        outcome_snapshot_path = llm_campaign_outcome_snapshot_path(
+            comparison.campaign_id,
+            comparison.launch_id,
+            root=workspace_root(),
+        )
+        for line in comparison.summary_lines:
+            typer.echo(line)
+        typer.echo(f"Outcome snapshot: {outcome_snapshot_path}")
+        typer.echo(f"Comparison artifact: {comparison_path}")
+    except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
+        _emit_error(f"llm-compare failed: {exc}")
         raise typer.Exit(code=2)
 
 
