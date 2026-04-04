@@ -1,9 +1,9 @@
 ---
 phase: 10
 slug: closed-loop-campaign-contract-and-governance
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: automated_complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-04
 ---
 
@@ -19,7 +19,7 @@ created: 2026-04-04
 |----------|-------|
 | **Framework** | pytest |
 | **Config file** | `materials-discovery/pyproject.toml` |
-| **Quick run command** | `cd materials-discovery && uv run pytest tests/test_llm_campaign_schema.py tests/test_llm_campaign_storage.py tests/test_llm_suggest_core.py tests/test_llm_suggest_cli.py tests/test_llm_campaign_spec.py tests/test_llm_approve_cli.py -x -v` |
+| **Quick run command** | `cd materials-discovery && uv run pytest tests/test_llm_campaign_schema.py tests/test_llm_campaign_storage.py tests/test_llm_suggest_core.py tests/test_llm_suggest_cli.py tests/test_llm_campaign_spec.py tests/test_llm_approve_cli.py tests/test_cli.py -x -v` |
 | **Full suite command** | `cd materials-discovery && uv run pytest` |
 | **Estimated runtime** | ~30-180 seconds depending on focused wave vs full suite |
 
@@ -39,12 +39,12 @@ created: 2026-04-04
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 10-01-01 | 01 | 1 | LLM-06 | schema | `cd materials-discovery && uv run pytest tests/test_llm_campaign_schema.py -x -v` | ⬜ | ⬜ pending |
-| 10-01-02 | 01 | 1 | OPS-05 | unit/storage | `cd materials-discovery && uv run pytest tests/test_llm_campaign_storage.py -x -v` | ⬜ | ⬜ pending |
-| 10-02-01 | 02 | 2 | LLM-06 | unit | `cd materials-discovery && uv run pytest tests/test_llm_suggest_core.py -x -v` | ⬜ | ⬜ pending |
-| 10-02-02 | 02 | 2 | OPS-05 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_suggest_cli.py tests/test_cli.py -x -v` | ⬜ | ⬜ pending |
-| 10-03-01 | 03 | 3 | OPS-05 | unit/integration | `cd materials-discovery && uv run pytest tests/test_llm_campaign_spec.py -x -v` | ⬜ | ⬜ pending |
-| 10-03-02 | 03 | 3 | LLM-06, OPS-05 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_approve_cli.py tests/test_cli.py -x -v` | ⬜ | ⬜ pending |
+| 10-01-01 | 01 | 1 | LLM-06 | schema | `cd materials-discovery && uv run pytest tests/test_llm_campaign_schema.py -x -v` | ✅ | ✅ green |
+| 10-01-02 | 01 | 1 | OPS-05 | unit/storage | `cd materials-discovery && uv run pytest tests/test_llm_campaign_storage.py -x -v` | ✅ | ✅ green |
+| 10-02-01 | 02 | 2 | LLM-06 | unit | `cd materials-discovery && uv run pytest tests/test_llm_suggest_core.py -x -v` | ✅ | ✅ green |
+| 10-02-02 | 02 | 2 | OPS-05 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_suggest_cli.py tests/test_cli.py -x -v` | ✅ | ✅ green |
+| 10-03-01 | 03 | 3 | OPS-05 | unit/integration | `cd materials-discovery && uv run pytest tests/test_llm_campaign_spec.py -x -v` | ✅ | ✅ green |
+| 10-03-02 | 03 | 3 | LLM-06, OPS-05 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_approve_cli.py tests/test_cli.py -x -v` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,27 +52,27 @@ created: 2026-04-04
 
 ## Wave 0 Requirements
 
-- [ ] `materials-discovery/tests/test_llm_campaign_schema.py` — typed proposal,
+- [x] `materials-discovery/tests/test_llm_campaign_schema.py` — typed proposal,
   approval, spec, action-family, and lineage contract coverage
-- [ ] `materials-discovery/tests/test_llm_campaign_storage.py` — deterministic
+- [x] `materials-discovery/tests/test_llm_campaign_storage.py` — deterministic
   artifact-path coverage for suggestion/proposal/approval/spec roots
-- [ ] `materials-discovery/tests/test_llm_suggest_core.py` — acceptance-pack to
+- [x] `materials-discovery/tests/test_llm_suggest_core.py` — acceptance-pack to
   proposal mapping coverage across all major failing-metric branches
-- [ ] `materials-discovery/tests/test_llm_suggest_cli.py` — dry-run CLI
+- [x] `materials-discovery/tests/test_llm_suggest_cli.py` — dry-run CLI
   contract coverage for bundle/proposal outputs
-- [ ] `materials-discovery/tests/test_cli.py` — shared CLI regression coverage
+- [x] `materials-discovery/tests/test_cli.py` — shared CLI regression coverage
   for the typed `llm-suggest` migration in Wave 2 and the new approval command
-- [ ] `materials-discovery/tests/test_llm_campaign_spec.py` — approval decision
+- [x] `materials-discovery/tests/test_llm_campaign_spec.py` — approval decision
   and self-contained spec materialization coverage
-- [ ] `materials-discovery/tests/test_llm_approve_cli.py` — approval CLI
+- [x] `materials-discovery/tests/test_llm_approve_cli.py` — approval CLI
   contract coverage proving approval writes artifacts but does not launch runs
-- [ ] Any Phase 10 execution that changes `materials-discovery/` must update
+- [x] Any Phase 10 execution that changes `materials-discovery/` must update
   `materials-discovery/Progress.md` per repo policy
-- [ ] Any approval/spec tests must avoid live provider calls and must not depend
+- [x] Any approval/spec tests must avoid live provider calls and must not depend
   on Java export availability unless explicitly monkeypatched
-- [ ] Any CLI regression that touches shared LLM command routing should keep
+- [x] Any CLI regression that touches shared LLM command routing should keep
   `materials-discovery/tests/test_cli.py` green
-- [ ] Any campaign-spec tests must cover deterministic `campaign_id` behavior
+- [x] Any campaign-spec tests must cover deterministic `campaign_id` behavior
   and the repo’s chosen re-approval policy
 
 *Existing pytest infrastructure already covers the project. Wave 0 is about new
@@ -91,13 +91,28 @@ installation.*
 
 ---
 
+## Verification Results
+
+- Focused governance rerun performed during Phase 13 audit closure:
+  - `cd materials-discovery && uv run pytest tests/test_llm_campaign_schema.py tests/test_llm_campaign_storage.py tests/test_llm_suggest_core.py tests/test_llm_suggest_cli.py tests/test_llm_campaign_spec.py tests/test_llm_approve_cli.py tests/test_cli.py -x -v`
+  - Result: `47 passed in 0.71s`
+- Existing full-suite evidence from
+  [10-03-SUMMARY.md](/Users/nikolaosvasiloglou/github-repos/vzome/.planning/phases/10-closed-loop-campaign-contract-and-governance/10-03-SUMMARY.md):
+  - `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest`
+  - Result: `332 passed, 3 skipped, 1 warning`
+
+This validation artifact was finalized retroactively in Phase 13 to close the
+v1.1 milestone audit gap for Phase 10.
+
+---
+
 ## Validation Sign-Off
 
-- [ ] All tasks have focused automated verify commands or explicit Wave 0 prerequisites
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all new Phase 10 seams
-- [ ] No watch-mode or long-running background commands are required
-- [ ] Feedback latency < 180s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have focused automated verify commands or explicit Wave 0 prerequisites
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all new Phase 10 seams
+- [x] No watch-mode or long-running background commands are required
+- [x] Feedback latency < 180s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** automated verification complete
