@@ -336,6 +336,44 @@ class LlmGenerateConfig(BaseModel):
         return self
 
 
+class LlmEvaluateConfig(BaseModel):
+    prompt_template: str = "materials_assess_v1"
+    temperature: float = 0.2
+    max_tokens: int = 1024
+    artifact_root: str | None = None
+    persist_raw_responses: bool = True
+    fixture_outputs: list[str] = Field(default_factory=list)
+
+    @field_validator("prompt_template")
+    @classmethod
+    def validate_prompt_template(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("llm_evaluate.prompt_template must not be blank")
+        return stripped
+
+    @field_validator("artifact_root")
+    @classmethod
+    def normalize_optional_paths(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+    @field_validator("fixture_outputs")
+    @classmethod
+    def normalize_fixture_outputs(cls, values: Sequence[str]) -> list[str]:
+        return [value for value in (item.strip() for item in values) if value]
+
+    @model_validator(mode="after")
+    def validate_runtime(self) -> LlmEvaluateConfig:
+        if self.temperature < 0.0:
+            raise ValueError("llm_evaluate.temperature must be >= 0")
+        if self.max_tokens <= 0:
+            raise ValueError("llm_evaluate.max_tokens must be > 0")
+        return self
+
+
 class ZomicOrbitConfig(BaseModel):
     preferred_species: list[str] | None = None
     wyckoff: str | None = None
@@ -431,6 +469,7 @@ class SystemConfig(BaseModel):
     backend: BackendConfig = Field(default_factory=BackendConfig)
     ingestion: IngestionConfig | None = None
     llm_generate: LlmGenerateConfig | None = None
+    llm_evaluate: LlmEvaluateConfig | None = None
 
     @model_validator(mode="after")
     def validate_species(self) -> SystemConfig:
@@ -516,6 +555,38 @@ class LlmGenerateSummary(BaseModel):
             "parse_pass_count",
             "compile_pass_count",
         ):
+            if getattr(self, field_name) < 0:
+                raise ValueError(f"{field_name} must be >= 0")
+        return self
+
+
+class LlmEvaluateSummary(BaseModel):
+    input_count: int
+    assessed_count: int
+    failed_count: int
+    output_path: str
+    calibration_path: str | None = None
+    manifest_path: str | None = None
+    run_manifest_path: str | None = None
+
+    @field_validator(
+        "output_path",
+        "calibration_path",
+        "manifest_path",
+        "run_manifest_path",
+    )
+    @classmethod
+    def validate_paths(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("summary paths must not be blank")
+        return stripped
+
+    @model_validator(mode="after")
+    def validate_counts(self) -> LlmEvaluateSummary:
+        for field_name in ("input_count", "assessed_count", "failed_count"):
             if getattr(self, field_name) < 0:
                 raise ValueError(f"{field_name} must be >= 0")
         return self

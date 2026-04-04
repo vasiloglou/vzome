@@ -27,6 +27,9 @@ DEFAULT_BUILDER_VERSION = "phase6_v1"
 DEFAULT_LLM_ATTEMPT_SCHEMA_VERSION = "llm-generation-attempt/v1"
 DEFAULT_LLM_RESULT_SCHEMA_VERSION = "llm-generation-result/v1"
 DEFAULT_LLM_RUN_MANIFEST_VERSION = "llm-run-manifest/v1"
+DEFAULT_LLM_ASSESSMENT_SCHEMA_VERSION = "llm-assessment/v1"
+DEFAULT_LLM_EVALUATION_REQUEST_SCHEMA_VERSION = "llm-evaluation-request/v1"
+DEFAULT_LLM_EVALUATION_RUN_MANIFEST_VERSION = "llm-evaluation-run-manifest/v1"
 
 
 def _normalize_string_list(values: Sequence[str]) -> list[str]:
@@ -497,6 +500,136 @@ class LlmRunManifest(BaseModel):
     @model_validator(mode="after")
     def validate_counts(self) -> LlmRunManifest:
         for field_name in ("attempt_count", "requested_count", "generated_count"):
+            if getattr(self, field_name) < 0:
+                raise ValueError(f"{field_name} must be >= 0")
+        return self
+
+
+class LlmEvaluationRequest(BaseModel):
+    schema_version: str = DEFAULT_LLM_EVALUATION_REQUEST_SCHEMA_VERSION
+    candidate_id: str
+    system: str
+    template_family: str
+    composition: dict[str, float]
+    digital_validation: dict[str, Any]
+    prompt_text: str
+    temperature: float
+    max_tokens: int
+
+    @field_validator("schema_version", "candidate_id", "system", "template_family", "prompt_text")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @model_validator(mode="after")
+    def validate_runtime_settings(self) -> LlmEvaluationRequest:
+        if not self.composition:
+            raise ValueError("composition must not be empty")
+        if self.temperature < 0.0:
+            raise ValueError("temperature must be >= 0")
+        if self.max_tokens <= 0:
+            raise ValueError("max_tokens must be > 0")
+        return self
+
+
+class LlmAssessment(BaseModel):
+    schema_version: str = DEFAULT_LLM_ASSESSMENT_SCHEMA_VERSION
+    candidate_id: str
+    adapter_key: str
+    provider: str
+    model: str
+    status: ValidationStatus
+    raw_response_path: str
+    synthesizability_score: float | None = None
+    precursor_hints: list[str] = Field(default_factory=list)
+    anomaly_flags: list[str] = Field(default_factory=list)
+    literature_context: str | None = None
+    rationale: str | None = None
+    error_kind: str | None = None
+    error_message: str | None = None
+
+    @field_validator(
+        "schema_version",
+        "candidate_id",
+        "adapter_key",
+        "provider",
+        "model",
+        "raw_response_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @field_validator("precursor_hints", "anomaly_flags")
+    @classmethod
+    def normalize_lists(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("literature_context", "rationale", "error_kind", "error_message")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+    @field_validator("synthesizability_score")
+    @classmethod
+    def validate_score(cls, value: float | None) -> float | None:
+        if value is None:
+            return None
+        if value < 0.0 or value > 1.0:
+            raise ValueError("synthesizability_score must be in [0, 1]")
+        return value
+
+
+class LlmEvaluationRunManifest(BaseModel):
+    schema_version: str = DEFAULT_LLM_EVALUATION_RUN_MANIFEST_VERSION
+    run_id: str
+    system: str
+    adapter_key: str
+    provider: str
+    model: str
+    prompt_template: str
+    input_path: str
+    output_path: str
+    requests_path: str
+    assessments_path: str
+    requested_count: int
+    assessed_count: int
+    failed_count: int
+    created_at_utc: str
+
+    @field_validator(
+        "schema_version",
+        "run_id",
+        "system",
+        "adapter_key",
+        "provider",
+        "model",
+        "prompt_template",
+        "input_path",
+        "output_path",
+        "requests_path",
+        "assessments_path",
+        "created_at_utc",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @model_validator(mode="after")
+    def validate_counts(self) -> LlmEvaluationRunManifest:
+        for field_name in ("requested_count", "assessed_count", "failed_count"):
             if getattr(self, field_name) < 0:
                 raise ValueError(f"{field_name} must be >= 0")
         return self

@@ -45,6 +45,7 @@ from materials_discovery.common.schema import (
     HifiRankSummary,
     HifiValidateSummary,
     IngestSummary,
+    LlmEvaluateSummary,
     ReportSummary,
     ScreenSummary,
     SystemConfig,
@@ -101,6 +102,7 @@ from materials_discovery.lake.index import (
     write_lake_index,
 )
 from materials_discovery.llm.corpus_builder import build_llm_corpus
+from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
 from materials_discovery.llm.schema import CorpusBuildConfig
 
@@ -682,6 +684,75 @@ def llm_generate_command(
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
         _emit_error(f"llm-generate failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-evaluate")
+def llm_evaluate_command(
+    config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
+    batch: str = typer.Option("all", "--batch"),
+    out: Path | None = typer.Option(None, "--out", exists=False, dir_okay=False),
+) -> None:
+    """Assess ranked candidates with the LLM provider seam and write additive artifacts."""
+    try:
+        system_config = _load_system_config(config)
+        system_slug = _system_slug(system_config.system_name)
+        out_path = (
+            out
+            or workspace_root()
+            / "data"
+            / "llm_evaluated"
+            / f"{system_slug}_{_batch_slug(batch)}_llm_evaluated.jsonl"
+        )
+
+        summary: LlmEvaluateSummary = evaluate_llm_candidates(
+            system_config,
+            out_path,
+            batch=batch,
+        )
+        metrics = {
+            "input_count": summary.input_count,
+            "assessed_count": summary.assessed_count,
+            "failed_count": summary.failed_count,
+            "assessment_success_rate": (
+                0.0 if summary.input_count == 0 else summary.assessed_count / summary.input_count
+            ),
+            "passed": summary.assessed_count > 0,
+        }
+        calibration_path = (
+            workspace_root()
+            / "data"
+            / "calibration"
+            / f"{system_slug}_{_batch_slug(batch)}_llm_evaluation_metrics.json"
+        )
+        ensure_parent(calibration_path)
+        calibration_path.write_text(json.dumps(metrics, sort_keys=True), encoding="utf-8")
+        summary.calibration_path = str(calibration_path)
+
+        manifest_path = (
+            workspace_root()
+            / "data"
+            / "manifests"
+            / f"{system_slug}_{_batch_slug(batch)}_llm_evaluate_manifest.json"
+        )
+        output_paths = {
+            "llm_evaluated_jsonl": out_path,
+            "llm_evaluation_metrics_json": calibration_path,
+        }
+        if summary.run_manifest_path is not None:
+            output_paths["llm_evaluation_run_manifest_json"] = Path(summary.run_manifest_path)
+        manifest = build_manifest(
+            stage="llm_evaluate",
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(system_config, "generate"),
+            output_paths=output_paths,
+        )
+        write_manifest(manifest, manifest_path)
+        summary.manifest_path = str(manifest_path)
+        typer.echo(summary.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
+        _emit_error(f"llm-evaluate failed: {exc}")
         raise typer.Exit(code=2)
 
 
