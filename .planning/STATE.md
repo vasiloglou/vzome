@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-current_phase: 10
-current_phase_name: closed-loop-campaign-contract-and-governance
-current_plan: 3
-status: verifying
-stopped_at: Phase 11 context gathered
-last_updated: "2026-04-04T15:56:58.811Z"
+current_phase: 11
+current_phase_name: closed-loop-campaign-execution-bridge
+current_plan: 0
+status: ready_to_execute
+stopped_at: Plans created and verified for Phase 11
+last_updated: "2026-04-04T16:12:23Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 3
-  completed_plans: 3
-  percent: 100
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-03)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 10 — closed-loop-campaign-contract-and-governance
+**Current focus:** Phase 11 — closed-loop-campaign-execution-bridge
 
 ## Current Position
 
-Current Phase: 10
-Current Phase Name: closed-loop-campaign-contract-and-governance
+Current Phase: 11
+Current Phase Name: closed-loop-campaign-execution-bridge
 Total Phases: 3
-Current Plan: 3
+Current Plan: 0
 Total Plans in Phase: 3
-Phase: 10 (closed-loop-campaign-contract-and-governance) — READY FOR VERIFICATION
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Phase: 11 (closed-loop-campaign-execution-bridge) — READY TO EXECUTE
+Plan: 0 of 3
+Status: Plans created and verified — ready for execution
 Last activity: 2026-04-04
-Last Activity Description: Phase 10 execution complete — awaiting transition to Phase 11
+Last Activity Description: Phase 11 planning complete — awaiting execution
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -161,6 +161,9 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 10-closed-loop-campaign-contract-and-governance]: Validate campaign-action payload matching with an explicit model_validator rather than a discriminated-union refactor.
 - [Phase 10-closed-loop-campaign-contract-and-governance]: Keep proposals and approvals under the acceptance-pack root while campaign specs live under data/llm_campaigns/{campaign_id}.
 - [Phase 10-closed-loop-campaign-contract-and-governance]: Make blank artifact identifiers fail fast in storage helpers instead of normalizing into malformed paths.
+- [Phase 11-closed-loop-campaign-execution-bridge]: Launch through a dedicated `mdisc llm-launch --campaign-spec ...` command rather than folding execution into `llm-approve`.
+- [Phase 11-closed-loop-campaign-execution-bridge]: Resolve approved campaign actions through an in-memory runtime overlay over the existing `llm-generate` path rather than rewriting YAML configs.
+- [Phase 11-closed-loop-campaign-execution-bridge]: Keep standard artifact roots primary, add campaign launch wrapper artifacts under `data/llm_campaigns/{campaign_id}/launches/{launch_id}/`, and preserve partial artifacts on failure without resume support.
 
 ### Pending Todos
 
@@ -172,6 +175,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T15:56:58.806Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-closed-loop-campaign-execution-bridge/11-CONTEXT.md
+Last session: 2026-04-04T16:12:23Z
+Stopped at: Plans created and verified for Phase 11
+Resume file: .planning/phases/11-closed-loop-campaign-execution-bridge/11-01-PLAN.md
