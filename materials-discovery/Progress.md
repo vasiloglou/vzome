@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 11 Plan 02 Task 2 llm-launch CLI | Added the new `mdisc llm-launch --campaign-spec ...` command, wrote resolved/summary launch artifacts, validated config-hash drift before runtime execution, and preserved partial-failure auditability |
 | 2026-04-04 | Phase 11 Plan 02 Task 2 RED tests | Added `tests/test_llm_launch_cli.py` and a shared `test_cli.py` smoke case to lock `llm-launch` success and config-drift failure behavior before wiring the CLI |
 | 2026-04-04 | Phase 11 Plan 02 Task 1 campaign-aware llm-generate | Added prompt instruction deltas and campaign launch metadata to the LLM generation request/run-manifest flow while keeping manual `llm-generate` behavior unchanged |
 | 2026-04-04 | Phase 11 Plan 02 Task 1 RED tests | Extended `tests/test_llm_generate_core.py` to lock prompt instruction deltas and campaign-aware run/provenance metadata before modifying `llm-generate` |
@@ -342,6 +343,9 @@
 
 ### 2026-04-04
 
+- 12:47 EDT — Implemented the Phase 11 Plan 02 Task 2 `llm-launch` CLI bridge.
+- Added `mdisc llm-launch --campaign-spec ...`, config-hash drift validation with pinned/current hash detail, early `launch_id` visibility, `resolved_launch.json` / `launch_summary.json` writing, and additive execution through the existing `generate_llm_candidates()` path.
+- Focused verification passed with `13 passed` across `tests/test_llm_launch_cli.py` and `tests/test_cli.py`.
 - 12:52 EDT — Started Phase 11 Plan 02 Task 2 in TDD RED mode by adding `tests/test_llm_launch_cli.py` and a shared `tests/test_cli.py` smoke case.
 - The new failing coverage locks successful `llm-launch` artifact writing, config-drift failure messaging, and the requirement that generation must not start when the pinned config hash no longer matches.
 - Open item: add the `llm-launch` command, write resolved/summary artifacts, and preserve partial-failure auditability without reusing `llm-approve`.

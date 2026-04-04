@@ -27,6 +27,7 @@ from materials_discovery.common.io import (
     load_jsonl,
     load_yaml,
     workspace_root,
+    write_json_object,
     write_jsonl,
 )
 from materials_discovery.common.benchmarking import (
@@ -34,7 +35,7 @@ from materials_discovery.common.benchmarking import (
     build_benchmark_run_context,
     write_benchmark_pack,
 )
-from materials_discovery.common.manifest import build_manifest, write_manifest
+from materials_discovery.common.manifest import build_manifest, config_sha256, write_manifest
 from materials_discovery.common.pipeline_manifest import (
     build_pipeline_manifest,
     write_pipeline_manifest,
@@ -108,14 +109,19 @@ from materials_discovery.llm.campaigns import (
 )
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
+from materials_discovery.llm.launch import resolve_campaign_launch
 from materials_discovery.llm.schema import (
     CorpusBuildConfig,
     LlmAcceptancePack,
+    LlmCampaignLaunchSummary,
     LlmCampaignProposal,
+    LlmCampaignSpec,
 )
 from materials_discovery.llm.storage import (
     llm_acceptance_approval_path,
     llm_artifact_root_from_acceptance_pack_path,
+    llm_campaign_launch_summary_path,
+    llm_campaign_resolved_launch_path,
     llm_campaign_spec_path,
 )
 from materials_discovery.llm.suggest import write_llm_suggestions
@@ -349,6 +355,10 @@ def _workspace_path(path_str: str) -> Path:
     if path.is_absolute():
         return path
     return workspace_root() / path
+
+
+def _new_launch_id() -> str:
+    return f"launch_{datetime.now(UTC).strftime('%Y%m%dT%H%M%S%fZ')}"
 
 
 def _ingest_via_reference_pack(
@@ -872,6 +882,186 @@ def llm_approve_command(
         )
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"llm-approve failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-launch")
+def llm_launch_command(
+    campaign_spec: Path = typer.Option(..., "--campaign-spec", exists=False, dir_okay=False),
+    out: Path | None = typer.Option(None, "--out", exists=False, dir_okay=False),
+) -> None:
+    """Launch an approved campaign spec through the existing llm-generate runtime."""
+    try:
+        typed_spec = LlmCampaignSpec.model_validate(load_json_object(campaign_spec))
+        config_path = _workspace_path(typed_spec.launch_baseline.system_config_path)
+        system_config = _load_system_config(config_path)
+        current_hash = config_sha256(system_config)
+        if current_hash != typed_spec.launch_baseline.system_config_hash:
+            raise ValueError(
+                "campaign spec config hash does not match current config: "
+                f"{config_path} changed since approval; "
+                f"pinned={typed_spec.launch_baseline.system_config_hash}; "
+                f"current={current_hash}; re-approval may be required"
+            )
+
+        launch_id = _new_launch_id()
+        _emit_error(f"llm-launch starting: {launch_id}")
+
+        system_slug = _system_slug(system_config.system_name)
+        out_path = out or (
+            workspace_root() / "data" / "candidates" / f"{system_slug}_candidates.jsonl"
+        )
+
+        resolved_config, resolved_launch = resolve_campaign_launch(
+            typed_spec,
+            system_config,
+            campaign_spec_path=campaign_spec,
+            launch_id=launch_id,
+            artifact_root=workspace_root(),
+        )
+        resolved_launch.effective_candidates_path = str(out_path)
+        resolved_launch.output_override_used = out is not None
+
+        resolved_launch_path = llm_campaign_resolved_launch_path(
+            typed_spec.campaign_id,
+            launch_id,
+            root=workspace_root(),
+        )
+        write_json_object(resolved_launch.model_dump(mode="json"), resolved_launch_path)
+
+        launch_summary_path = llm_campaign_launch_summary_path(
+            typed_spec.campaign_id,
+            launch_id,
+            root=workspace_root(),
+        )
+        campaign_metadata = {
+            "campaign_id": typed_spec.campaign_id,
+            "launch_id": launch_id,
+            "campaign_spec_path": str(campaign_spec),
+            "proposal_id": typed_spec.proposal_id,
+            "approval_id": typed_spec.approval_id,
+            "requested_model_lanes": resolved_launch.requested_model_lanes,
+            "resolved_model_lane": resolved_launch.resolved_model_lane,
+            "resolved_model_lane_source": resolved_launch.resolved_model_lane_source,
+            "launch_summary_path": str(launch_summary_path),
+        }
+
+        summary = generate_llm_candidates(
+            resolved_config,
+            out_path,
+            count=typed_spec.launch_baseline.default_count,
+            config_path=config_path,
+            prompt_instruction_deltas=resolved_launch.prompt_instruction_deltas,
+            campaign_metadata=campaign_metadata,
+        )
+
+        metrics = llm_generation_metrics(
+            requested_count=summary.requested_count,
+            generated_count=summary.generated_count,
+            attempt_count=summary.attempt_count,
+            parse_pass_count=summary.parse_pass_count,
+            compile_pass_count=summary.compile_pass_count,
+        )
+        calibration_path = (
+            workspace_root() / "data" / "calibration" / f"{system_slug}_llm_generation_metrics.json"
+        )
+        ensure_parent(calibration_path)
+        calibration_path.write_text(json.dumps(metrics, sort_keys=True), encoding="utf-8")
+
+        llm_generate_manifest_path = (
+            workspace_root() / "data" / "manifests" / f"{system_slug}_llm_generate_manifest.json"
+        )
+        output_paths = {
+            "candidates_jsonl": out_path,
+            "llm_generation_metrics_json": calibration_path,
+        }
+        if summary.run_manifest_path is not None:
+            output_paths["llm_run_manifest_json"] = Path(summary.run_manifest_path)
+        manifest = build_manifest(
+            stage="llm_generate",
+            config=resolved_config,
+            backend_mode=resolved_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(resolved_config, "generate"),
+            output_paths=output_paths,
+        )
+        write_manifest(manifest, llm_generate_manifest_path)
+
+        launch_summary = LlmCampaignLaunchSummary(
+            launch_id=launch_id,
+            campaign_id=typed_spec.campaign_id,
+            campaign_spec_path=str(campaign_spec),
+            proposal_id=typed_spec.proposal_id,
+            approval_id=typed_spec.approval_id,
+            system=typed_spec.system,
+            status="succeeded",
+            created_at_utc=datetime.now(UTC).isoformat(),
+            requested_count=typed_spec.launch_baseline.default_count,
+            requested_model_lanes=resolved_launch.requested_model_lanes,
+            resolved_model_lane=resolved_launch.resolved_model_lane,
+            resolved_model_lane_source=resolved_launch.resolved_model_lane_source,
+            resolved_launch_path=str(resolved_launch_path),
+            run_manifest_path=summary.run_manifest_path,
+            llm_generate_manifest_path=str(llm_generate_manifest_path),
+            candidates_path=str(out_path),
+        )
+        write_json_object(launch_summary.model_dump(mode="json"), launch_summary_path)
+        typer.echo(launch_summary.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
+        if "typed_spec" in locals() and "launch_id" in locals():
+            resolved_launch_path = llm_campaign_resolved_launch_path(
+                typed_spec.campaign_id,
+                launch_id,
+                root=workspace_root(),
+            )
+            failed_summary = LlmCampaignLaunchSummary(
+                launch_id=launch_id,
+                campaign_id=typed_spec.campaign_id,
+                campaign_spec_path=str(campaign_spec),
+                proposal_id=typed_spec.proposal_id,
+                approval_id=typed_spec.approval_id,
+                system=typed_spec.system,
+                status="failed",
+                created_at_utc=datetime.now(UTC).isoformat(),
+                requested_count=typed_spec.launch_baseline.default_count,
+                requested_model_lanes=(
+                    [] if "resolved_launch" not in locals() else resolved_launch.requested_model_lanes
+                ),
+                resolved_model_lane=(
+                    "general_purpose"
+                    if "resolved_launch" not in locals()
+                    else resolved_launch.resolved_model_lane
+                ),
+                resolved_model_lane_source=(
+                    "baseline_fallback"
+                    if "resolved_launch" not in locals()
+                    else resolved_launch.resolved_model_lane_source
+                ),
+                resolved_launch_path=str(resolved_launch_path),
+                run_manifest_path=(
+                    None if "summary" not in locals() else summary.run_manifest_path
+                ),
+                llm_generate_manifest_path=(
+                    None
+                    if "llm_generate_manifest_path" not in locals()
+                    else str(llm_generate_manifest_path)
+                ),
+                candidates_path=(
+                    str(out_path)
+                    if "out_path" in locals() and Path(out_path).exists()
+                    else None
+                ),
+                error_kind=type(exc).__name__,
+                error_message=str(exc),
+            )
+            write_json_object(
+                failed_summary.model_dump(mode="json"),
+                llm_campaign_launch_summary_path(
+                    typed_spec.campaign_id,
+                    launch_id,
+                    root=workspace_root(),
+                ),
+            )
+        _emit_error(f"llm-launch failed: {exc}")
         raise typer.Exit(code=2)
 
 

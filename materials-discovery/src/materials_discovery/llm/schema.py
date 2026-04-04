@@ -1351,6 +1351,8 @@ class LlmCampaignResolvedLaunch(BaseModel):
     resolved_composition_bounds: dict[str, CompositionBound]
     resolved_example_pack_path: str | None = None
     resolved_seed_zomic_path: str | None = None
+    effective_candidates_path: str | None = None
+    output_override_used: bool = False
 
     @field_validator(
         "launch_id",
@@ -1372,7 +1374,11 @@ class LlmCampaignResolvedLaunch(BaseModel):
     def normalize_string_lists(cls, values: Sequence[str]) -> list[str]:
         return _normalize_string_list(values)
 
-    @field_validator("resolved_example_pack_path", "resolved_seed_zomic_path")
+    @field_validator(
+        "resolved_example_pack_path",
+        "resolved_seed_zomic_path",
+        "effective_candidates_path",
+    )
     @classmethod
     def normalize_optional_paths(cls, value: str | None) -> str | None:
         return _normalize_optional_string(value)
