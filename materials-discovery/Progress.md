@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 11 Plan 01 Task 1 RED tests | Added `tests/test_llm_launch_schema.py` to lock lane-aware config validation, launch summary contracts, and campaign launch storage paths before implementation |
 | 2026-03-22 | Initial Progress.md created | Tracking document for experiments and actions |
 | 2026-03-22 | Added Ti-Zr-Ni system | New ternary icosahedral quasicrystal target; element priors, pair enthalpies, mock config, template path, execution plan updated |
 | 2026-03-23 | Added LLM-quasicrystal landscape doc | New developer doc covering how LLMs and AI models interact with quasicrystals: challenges, workflows, MLIP simulation, diffusion models, TSAI, and LLM-QC analogy |
@@ -335,6 +336,9 @@
 
 ### 2026-04-04
 
+- 12:27 EDT — Started Phase 11 Plan 01 Task 1 in TDD RED mode by adding `tests/test_llm_launch_schema.py`.
+- The new failing coverage locks the additive `model_lanes` config seam, typed launch-summary/resolved-launch artifacts, and deterministic `data/llm_campaigns/{campaign_id}/launches/{launch_id}/` path helpers before touching the implementation.
+- Open item: add the lane-aware schema fields, launch artifact models, storage helpers, and exports without breaking legacy `llm-generate` configs.
 - 01:28 EDT — Started Phase 10 Plan 01 Task 1 in TDD RED mode by adding `tests/test_llm_campaign_schema.py`.
 - The new failing coverage locks the intended governance contract for typed campaign actions, system-scoped proposals, separate approval artifacts, and self-contained campaign specs before touching `llm/schema.py`.
 - Open item: implement the additive Phase 10 schema models in `materials_discovery.llm.schema` and export them without disturbing the existing Phase 6-9 contracts.
