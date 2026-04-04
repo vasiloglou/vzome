@@ -113,17 +113,120 @@ regular operator use.
 - Local or fine-tuned inference serving stays out of scope until this workflow
   is stable and useful.
 
+## Phase 13: Phase 10 Verification and Governance Audit Closure
+
+**Goal:** close the audit gaps left after Phase 10 by producing the missing
+verification chain, finalizing validation status, and restoring requirement
+traceability for the closed-loop governance boundary.
+
+**Deliverables**
+
+- `10-VERIFICATION.md` with requirement-level proof for campaign proposal,
+  approval, and governance behavior
+- finalized `10-VALIDATION.md` with explicit Nyquist/verification status
+- refreshed traceability and requirement state for `LLM-06` and `OPS-05`
+- audit-ready evidence map back to Phase 10 summaries and tests
+
+**Primary requirements**
+
+- `LLM-06`, `OPS-05`
+
+**Success criteria**
+
+1. Phase 10 has a formal verification artifact that closes the missing-proof gap
+   identified in the v1.1 audit.
+2. Requirement traceability no longer claims Phase 10 is complete without
+   verification evidence.
+3. The dry-run versus approval governance boundary is proven in an audit-ready
+   form.
+4. The audit can consume the Phase 10 evidence without relying on manual
+   interpretation of summaries alone.
+
+**Notes**
+
+- This is a gap-closure phase created directly from the v1.1 milestone audit.
+
+## Phase 14: Phase 11 Launch and Lineage Audit Closure
+
+**Goal:** close the audit gaps left after Phase 11 by formalizing launch,
+lineage, and downstream-continuation verification for approved campaign specs.
+
+**Deliverables**
+
+- `11-VERIFICATION.md` with requirement-level proof for launch, lineage, and
+  downstream artifact continuity
+- finalized `11-VALIDATION.md` with explicit Nyquist/verification status
+- refreshed traceability and requirement state for `LLM-08`, `LLM-10`, and
+  `OPS-06`
+- audit-ready evidence map back to Phase 11 summaries and launch-lineage tests
+
+**Primary requirements**
+
+- `LLM-08`, `LLM-10`, `OPS-06`
+
+**Success criteria**
+
+1. Phase 11 has a formal verification artifact that proves approved campaign
+   specs launch reproducibly.
+2. Lineage from acceptance pack through downstream manifests is documented in an
+   audit-ready form.
+3. Requirement traceability reflects the audit-closure work instead of stale
+   pending or partially proven status.
+4. The audit can verify Phase 11 without re-deriving evidence from multiple
+   summaries by hand.
+
+**Notes**
+
+- This is a gap-closure phase created directly from the v1.1 milestone audit.
+
+## Phase 15: Phase 12 Replay and Operator Workflow Audit Closure
+
+**Goal:** close the audit gaps left after Phase 12 by formalizing replay,
+comparison, and operator-workflow verification, including any missing
+supporting summary artifacts the audit expects.
+
+**Deliverables**
+
+- `12-VERIFICATION.md` with requirement-level proof for replay, comparison, and
+  operator workflow safety
+- any missing summary or validation artifacts required to make Phase 12
+  audit-ready
+- refreshed traceability and requirement state for `LLM-09`, `LLM-11`, and
+  `OPS-07`
+- audit-ready evidence map back to replay/compare tests and runbook coverage
+
+**Primary requirements**
+
+- `LLM-09`, `LLM-11`, `OPS-07`
+
+**Success criteria**
+
+1. Phase 12 has a formal verification artifact that proves replay and
+   comparison behavior in an audit-ready form.
+2. The operator workflow is supported by explicit evidence, not only docs and a
+   late summary.
+3. Requirement traceability reflects the closure work and removes the current
+   partial-proof state.
+4. The milestone can be rerun through audit without the current Phase 12
+   verification gap.
+
+**Notes**
+
+- This is a gap-closure phase created directly from the v1.1 milestone audit.
+
 ## Workstream View
 
 ### Project C: Material Design Based on LLM Training and Inference
 
-Owns Phases 10-12 in `v1.1`.
+Owns Phases 10-15 in `v1.1`.
 
 Success condition:
 
 - the shipped dry-run suggestion surface becomes an operator-governed,
   reproducible, replayable campaign workflow that can drive new LLM generation
-  runs and measure whether they improve downstream discovery outcomes.
+  runs and measure whether they improve downstream discovery outcomes
+- the full v1.1 closed-loop workflow is also formally audit-ready, with phase
+  verification and requirement traceability aligned to the delivered behavior
 
 ## Archive References
 
@@ -133,10 +236,9 @@ Success condition:
 
 ## Recommended Immediate Start
 
-1. **Phase 10**
-   Lock campaign proposal contracts, approval states, and manifest boundaries.
-2. **Phase 11**
-   Wire approved campaign specs into `llm-generate` without changing the
-   existing manual path.
-3. **Phase 12**
-   Make the loop replayable and comparable before considering more autonomy.
+1. **Phase 13**
+   Close the missing Phase 10 verification and governance-proof gap.
+2. **Phase 14**
+   Close the missing Phase 11 launch and lineage verification gap.
+3. **Phase 15**
+   Close the missing Phase 12 replay and operator-workflow verification gap.

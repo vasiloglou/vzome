@@ -9,7 +9,7 @@ reinforce each other instead of living in separate prototypes.
 
 ### Closed-Loop Suggestions
 
-- [x] **LLM-06**: The platform can turn an acceptance-pack analysis into a
+- [ ] **LLM-06**: The platform can turn an acceptance-pack analysis into a
   structured campaign proposal over composition regions and/or Zomic motif
   edits.
 - [ ] **LLM-08**: An operator can approve a proposal and materialize it into a
@@ -28,7 +28,7 @@ reinforce each other instead of living in separate prototypes.
 
 ### Operations and Governance
 
-- [x] **OPS-05**: No suggestion mutates generation inputs, campaign state, or
+- [ ] **OPS-05**: No suggestion mutates generation inputs, campaign state, or
   active-learning artifacts without an explicit operator approval step.
 - [ ] **OPS-06**: Every campaign records lineage from acceptance pack and eval
   set through approved suggestion, generation run, downstream artifacts, and
@@ -65,14 +65,14 @@ reinforce each other instead of living in separate prototypes.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LLM-06 | Phase 10 | Complete |
-| OPS-05 | Phase 10 | Complete |
-| LLM-08 | Phase 11 | Pending |
-| LLM-10 | Phase 11 | Pending |
-| OPS-06 | Phase 11 | Pending |
-| LLM-09 | Phase 12 | Pending |
-| LLM-11 | Phase 12 | Pending |
-| OPS-07 | Phase 12 | Pending |
+| LLM-06 | Phase 13 | Pending |
+| OPS-05 | Phase 13 | Pending |
+| LLM-08 | Phase 14 | Pending |
+| LLM-10 | Phase 14 | Pending |
+| OPS-06 | Phase 14 | Pending |
+| LLM-09 | Phase 15 | Pending |
+| LLM-11 | Phase 15 | Pending |
+| OPS-07 | Phase 15 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 8 total
@@ -81,4 +81,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-03 after starting milestone v1.1*
+*Last updated: 2026-04-04 after planning v1.1 audit gap-closure phases*

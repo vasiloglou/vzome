@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-current_phase: 0
-current_phase_name: milestone-audit
+current_phase: 13
+current_phase_name: phase-13-verification-and-governance-audit-closure
 current_plan: 0
-status: ready_for_milestone_audit
-stopped_at: Phase 12 complete
-last_updated: "2026-04-04T17:43:00Z"
-last_activity: 2026-04-04 -- Phase 12 complete; milestone v1.1 ready for audit
+status: ready_to_plan
+stopped_at: Gap-closure phases created from v1.1 audit
+last_updated: "2026-04-04T18:20:26Z"
+last_activity: 2026-04-04 -- Created Phases 13-15 to close v1.1 audit gaps
 progress:
-  total_phases: 3
+  total_phases: 6
   completed_phases: 3
   total_plans: 9
   completed_plans: 9
-  percent: 100
+  percent: 50
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-03)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Milestone v1.1 audit and closeout
+**Current focus:** Milestone v1.1 audit gap closure
 
 ## Current Position
 
-Current Phase: none
-Current Phase Name: milestone-audit
-Total Phases: 3
+Current Phase: 13
+Current Phase Name: phase-13-verification-and-governance-audit-closure
+Total Phases: 6
 Current Plan: 0
 Total Plans in Phase: 0
-Phase: milestone v1.1 — READY FOR AUDIT
+Phase: 13 of 15
 Plan: 0 of 0
-Status: Phase 12 complete; milestone ready for audit
-Last activity: 2026-04-04 -- Phase 12 complete; milestone v1.1 ready for audit
-Last Activity Description: Replay/comparison workflow delivered, verified, and summarized
+Status: Gap-closure phases created; Phase 13 ready to plan
+Last activity: 2026-04-04 -- Created Phases 13-15 to close v1.1 audit gaps
+Last Activity Description: Roadmap and traceability updated to route audit closure through focused follow-up phases
 
-Progress: [██████████] 100%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -177,6 +177,7 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 12-replay-comparison-and-operator-workflow]: Comparison should evaluate outcomes against both the originating acceptance pack and the most recent prior launch when available.
 - [Phase 12-replay-comparison-and-operator-workflow]: Add separate `llm-replay` and `llm-compare` commands, emit typed JSON plus operator-readable summaries, and keep replay strict with no behavioral overrides in Phase 12.
 - [Phase 12-replay-comparison-and-operator-workflow]: Ship a real runbook covering suggest, approve, launch, replay, compare, and interpretation with safe defaults.
+- [Milestone v1.1 audit closure]: Close formal audit gaps through three focused phases instead of re-opening implementation phases 10-12 directly.
 
 ### Pending Todos
 
