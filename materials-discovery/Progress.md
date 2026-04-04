@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 12 Plan 01 replay and comparison foundation | Added strict replay bundle loading, replay-config reconstruction helpers, typed outcome/comparison artifacts, deterministic campaign comparison paths, and focused replay/compare core regression coverage |
 | 2026-04-04 | Phase 11 Plan 03 launch continuation docs | Documented `mdisc llm-launch`, launch wrapper artifacts, manual downstream continuation, failure posture, and a lineage-audit path in the LLM and pipeline developer docs |
 | 2026-04-04 | Phase 11 Plan 03 campaign lineage propagation | Threaded additive `llm_campaign` lineage into launched `llm_generate` manifests, downstream stage manifests, and pipeline manifests, with focused downstream-lineage and mock continuation regression coverage |
 | 2026-04-04 | Phase 11 Plan 03 RED tests | Added failing downstream-lineage and mock end-to-end launch regressions in `test_llm_campaign_lineage.py`, `test_report.py`, and `test_real_mode_pipeline.py` before wiring campaign lineage through later pipeline stages |
@@ -346,6 +347,9 @@
 
 ### 2026-04-04
 
+- 13:29 EDT — Implemented the Phase 12 Plan 01 replay/comparison contract foundation.
+- Added `llm/replay.py` and `llm/compare.py`, extended `llm/schema.py` with replay lineage plus typed `LlmCampaignOutcomeSnapshot` and `LlmCampaignComparisonResult` models, added deterministic campaign comparison storage helpers, and exported the new replay/compare surface from `materials_discovery.llm`.
+- Added `tests/test_llm_replay_core.py` and `tests/test_llm_compare_core.py`; focused verification passed with `10 passed`.
 - 12:47 EDT — Completed the Phase 11 Plan 03 lineage propagation and launch-continuation docs pass.
 - Normalized additive `llm_campaign` lineage once, wrote it into launched `llm_generate` manifests, reused it across `screen`, `hifi-validate`, `hifi-rank`, `active-learn`, `report`, and the pipeline manifest, and documented the `llm-launch` wrapper plus manual continuation flow in the developer docs.
 - Focused verification passed with `16 passed` across `tests/test_llm_campaign_lineage.py` and `tests/test_report.py`, plus `1 passed` for the offline `tests/test_real_mode_pipeline.py -k "campaign or llm_launch"` slice.

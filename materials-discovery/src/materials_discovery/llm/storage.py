@@ -144,6 +144,27 @@ def llm_campaign_resolved_launch_path(
     return llm_campaign_launch_dir(campaign_id, launch_id, root) / "resolved_launch.json"
 
 
+def llm_campaign_outcome_snapshot_path(
+    campaign_id: str,
+    launch_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_campaign_launch_dir(campaign_id, launch_id, root) / "outcome_snapshot.json"
+
+
+def llm_campaign_comparisons_dir(campaign_id: str, root: Path | None = None) -> Path:
+    return llm_campaign_dir(campaign_id, root) / "comparisons"
+
+
+def llm_campaign_comparison_path(
+    campaign_id: str,
+    comparison_id: str,
+    root: Path | None = None,
+) -> Path:
+    normalized_comparison_id = _require_artifact_id(comparison_id, "comparison_id")
+    return llm_campaign_comparisons_dir(campaign_id, root) / f"{normalized_comparison_id}.json"
+
+
 def llm_campaign_materialized_seed_path(
     campaign_id: str,
     launch_id: str,

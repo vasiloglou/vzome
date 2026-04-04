@@ -38,6 +38,8 @@ DEFAULT_LLM_CAMPAIGN_SUGGESTION_VERSION = "llm-campaign-suggestion/v1"
 DEFAULT_LLM_CAMPAIGN_PROPOSAL_VERSION = "llm-campaign-proposal/v1"
 DEFAULT_LLM_CAMPAIGN_APPROVAL_VERSION = "llm-campaign-approval/v1"
 DEFAULT_LLM_CAMPAIGN_SPEC_VERSION = "llm-campaign-spec/v1"
+DEFAULT_LLM_OUTCOME_SNAPSHOT_VERSION = "llm-campaign-outcome-snapshot/v1"
+DEFAULT_LLM_CAMPAIGN_COMPARISON_VERSION = "llm-campaign-comparison/v1"
 
 CampaignActionFamily = Literal[
     "prompt_conditioning",
@@ -49,6 +51,17 @@ CampaignDecision = Literal["approved", "rejected"]
 CampaignPriority = Literal["high", "medium", "low"]
 CampaignOverallStatus = Literal["ready", "needs_improvement"]
 CampaignLaunchStatus = Literal["running", "succeeded", "failed"]
+
+OUTCOME_METRIC_KEYS = (
+    "parse_success_rate",
+    "compile_success_rate",
+    "generation_success_rate",
+    "shortlist_pass_rate",
+    "validation_pass_rate",
+    "novelty_score_mean",
+    "synthesizability_mean",
+    "report_release_gate_ready",
+)
 
 
 def _normalize_string_list(values: Sequence[str]) -> list[str]:
@@ -529,6 +542,12 @@ class LlmRunManifest(BaseModel):
     resolved_model_lane: str | None = None
     resolved_model_lane_source: str | None = None
     launch_summary_path: str | None = None
+    temperature: float | None = None
+    max_tokens: int | None = None
+    max_attempts: int | None = None
+    seed_zomic_path: str | None = None
+    replay_of_launch_id: str | None = None
+    replay_of_launch_summary_path: str | None = None
 
     @field_validator(
         "schema_version",
@@ -560,6 +579,9 @@ class LlmRunManifest(BaseModel):
         "resolved_model_lane",
         "resolved_model_lane_source",
         "launch_summary_path",
+        "seed_zomic_path",
+        "replay_of_launch_id",
+        "replay_of_launch_summary_path",
     )
     @classmethod
     def normalize_example_pack_path(cls, value: str | None) -> str | None:
@@ -582,6 +604,12 @@ class LlmRunManifest(BaseModel):
         for field_name in ("attempt_count", "requested_count", "generated_count"):
             if getattr(self, field_name) < 0:
                 raise ValueError(f"{field_name} must be >= 0")
+        if self.temperature is not None and self.temperature < 0.0:
+            raise ValueError("temperature must be >= 0")
+        if self.max_tokens is not None and self.max_tokens <= 0:
+            raise ValueError("max_tokens must be > 0")
+        if self.max_attempts is not None and self.max_attempts <= 0:
+            raise ValueError("max_attempts must be > 0")
         return self
 
 
@@ -1353,6 +1381,9 @@ class LlmCampaignResolvedLaunch(BaseModel):
     resolved_seed_zomic_path: str | None = None
     effective_candidates_path: str | None = None
     output_override_used: bool = False
+    replay_of_launch_id: str | None = None
+    replay_of_launch_summary_path: str | None = None
+    current_system_config_hash: str | None = None
 
     @field_validator(
         "launch_id",
@@ -1378,9 +1409,16 @@ class LlmCampaignResolvedLaunch(BaseModel):
         "resolved_example_pack_path",
         "resolved_seed_zomic_path",
         "effective_candidates_path",
+        "replay_of_launch_summary_path",
+        "current_system_config_hash",
     )
     @classmethod
     def normalize_optional_paths(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("replay_of_launch_id")
+    @classmethod
+    def normalize_optional_replay_launch_id(cls, value: str | None) -> str | None:
         return _normalize_optional_string(value)
 
     @model_validator(mode="after")
@@ -1409,6 +1447,9 @@ class LlmCampaignLaunchSummary(BaseModel):
     candidates_path: str | None = None
     error_kind: str | None = None
     error_message: str | None = None
+    replay_of_launch_id: str | None = None
+    replay_of_launch_summary_path: str | None = None
+    current_system_config_hash: str | None = None
 
     @field_validator(
         "launch_id",
@@ -1436,6 +1477,9 @@ class LlmCampaignLaunchSummary(BaseModel):
         "candidates_path",
         "error_kind",
         "error_message",
+        "replay_of_launch_id",
+        "replay_of_launch_summary_path",
+        "current_system_config_hash",
     )
     @classmethod
     def normalize_optional_strings(cls, value: str | None) -> str | None:
@@ -1447,3 +1491,134 @@ class LlmCampaignLaunchSummary(BaseModel):
         if value < 0:
             raise ValueError("requested_count must be >= 0")
         return value
+
+
+class LlmCampaignOutcomeSnapshot(BaseModel):
+    schema_version: str = DEFAULT_LLM_OUTCOME_SNAPSHOT_VERSION
+    campaign_id: str
+    launch_id: str
+    system: str
+    launch_summary_path: str
+    campaign_spec_path: str
+    acceptance_pack_path: str
+    requested_model_lanes: list[str] = Field(default_factory=list)
+    resolved_model_lane: str
+    resolved_model_lane_source: str
+    parse_success_rate: float
+    compile_success_rate: float
+    generation_success_rate: float
+    shortlist_pass_rate: float | None = None
+    validation_pass_rate: float | None = None
+    novelty_score_mean: float | None = None
+    synthesizability_mean: float | None = None
+    report_release_gate_ready: bool | None = None
+    missing_metrics: list[str] = Field(default_factory=list)
+    stage_manifest_paths: dict[str, str] = Field(default_factory=dict)
+
+    @field_validator(
+        "schema_version",
+        "campaign_id",
+        "launch_id",
+        "system",
+        "launch_summary_path",
+        "campaign_spec_path",
+        "acceptance_pack_path",
+        "resolved_model_lane",
+        "resolved_model_lane_source",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("requested_model_lanes")
+    @classmethod
+    def normalize_requested_model_lanes(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("missing_metrics")
+    @classmethod
+    def normalize_missing_metrics(cls, values: Sequence[str]) -> list[str]:
+        normalized = _normalize_string_list(values)
+        invalid = [value for value in normalized if value not in OUTCOME_METRIC_KEYS]
+        if invalid:
+            raise ValueError(f"unsupported missing_metrics keys: {', '.join(invalid)}")
+        return normalized
+
+    @field_validator("stage_manifest_paths")
+    @classmethod
+    def validate_stage_manifest_paths(cls, value: dict[str, str]) -> dict[str, str]:
+        out: dict[str, str] = {}
+        for key, path in value.items():
+            normalized_key = _require_non_blank_string(key)
+            normalized_path = _require_non_blank_string(path)
+            out[normalized_key] = normalized_path
+        return out
+
+    @model_validator(mode="after")
+    def validate_metrics(self) -> LlmCampaignOutcomeSnapshot:
+        for field_name in (
+            "parse_success_rate",
+            "compile_success_rate",
+            "generation_success_rate",
+            "shortlist_pass_rate",
+            "validation_pass_rate",
+            "novelty_score_mean",
+            "synthesizability_mean",
+        ):
+            value = getattr(self, field_name)
+            if value is not None and value < 0.0:
+                raise ValueError(f"{field_name} must be >= 0")
+        return self
+
+
+class LlmCampaignComparisonResult(BaseModel):
+    schema_version: str = DEFAULT_LLM_CAMPAIGN_COMPARISON_VERSION
+    comparison_id: str
+    campaign_id: str
+    launch_id: str
+    system: str
+    generated_at_utc: str
+    current_outcome: LlmCampaignOutcomeSnapshot
+    acceptance_baseline: LlmAcceptanceSystemMetrics
+    prior_outcome: LlmCampaignOutcomeSnapshot | None = None
+    delta_vs_acceptance: dict[str, float] = Field(default_factory=dict)
+    delta_vs_prior: dict[str, float] = Field(default_factory=dict)
+    summary_lines: list[str] = Field(default_factory=list)
+
+    @field_validator(
+        "schema_version",
+        "comparison_id",
+        "campaign_id",
+        "launch_id",
+        "system",
+        "generated_at_utc",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("summary_lines")
+    @classmethod
+    def normalize_summary_lines(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("delta_vs_acceptance", "delta_vs_prior")
+    @classmethod
+    def validate_delta_maps(cls, value: dict[str, float]) -> dict[str, float]:
+        out: dict[str, float] = {}
+        for key, metric in value.items():
+            normalized_key = _require_non_blank_string(key)
+            if normalized_key not in OUTCOME_METRIC_KEYS:
+                raise ValueError(f"unsupported delta metric key: {normalized_key}")
+            out[normalized_key] = float(metric)
+        return out
+
+    @model_validator(mode="after")
+    def validate_system_alignment(self) -> LlmCampaignComparisonResult:
+        if self.current_outcome.system != self.system:
+            raise ValueError("current_outcome system must match comparison system")
+        if self.acceptance_baseline.system != self.system:
+            raise ValueError("acceptance_baseline system must match comparison system")
+        if self.prior_outcome is not None and self.prior_outcome.system != self.system:
+            raise ValueError("prior_outcome system must match comparison system")
+        return self
