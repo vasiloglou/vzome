@@ -14,14 +14,28 @@ Archive references:
 - `.planning/milestones/v1.0-REQUIREMENTS.md`
 - `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 
-## Next Milestone Goals
+## Current Milestone: v1.1 Closed-Loop LLM Campaign MVP
 
-No next milestone has been defined yet.
+**Goal:** turn the shipped dry-run `llm-suggest` surface into an
+operator-governed, replayable closed-loop campaign workflow that can launch and
+compare LLM discovery runs without bypassing existing acceptance and no-DFT
+guardrails.
 
-Likely directions for the next cycle:
+**Target features:**
+- materialize acceptance-pack-driven suggestions into typed campaign proposals
+  and reproducible campaign specs
+- require explicit operator approval before any suggestion launches a new LLM
+  generation campaign
+- replay and compare campaign outcomes against the originating acceptance pack
+  and downstream benchmark artifacts
+
+## Later Milestone Candidates
+
 - broaden source coverage or deepen source QA
-- connect `llm-suggest` to a real closed-loop campaign surface
-- add local or fine-tuned model serving only after the acceptance workflow is stable
+- add local or fine-tuned model serving only after the closed-loop campaign
+  workflow is stable
+- expand campaign automation only after operator-governed replay and comparison
+  are proven useful
 
 ## What This Is
 
@@ -67,11 +81,18 @@ instead of living in separate prototypes.
   with per-directory catalogs and hash-based staleness detection, lane-centric
   cross-system comparison engine with benchmark-pack dereferencing, three
   analytics notebooks, unified operator RUNBOOK.md, 200 tests passing.
+- Validated in Phases 6-9: The LLM ladder is now complete through corpus
+  building, constrained generation, additive evaluation, acceptance packs, and
+  a dry-run `llm-suggest` advisory surface.
 
 ### Active
 
-- No active milestone is open right now.
-- Use `$gsd-new-milestone` to define the next requirement set.
+- Turn `llm-suggest` into an operator-approved closed-loop campaign surface over
+  composition regions and Zomic motif edits.
+- Preserve file-backed reproducibility, provenance, and explicit approval before
+  any suggestion mutates generation inputs or campaign state.
+- Benchmark campaign outcomes against the originating acceptance pack and
+  existing downstream discovery artifacts.
 
 ### Out of Scope
 
@@ -128,6 +149,25 @@ instead of living in separate prototypes.
 | Use OPTIMADE where possible | Reduces custom connector work across multiple materials databases | ✓ Good |
 | Treat Zomic as the core LLM generation format | Best fit for quasicrystal-compatible structure generation | ✓ Good |
 | Defer large-model training until corpus + evaluation are ready | Prevents premature spending and noisy benchmarks | ✓ Good |
+| Start Project 3 v1.1 with closed-loop campaign execution instead of local serving | The dry-run suggestion surface is already shipped, and a governed execution loop is the next leverage point | ✓ Good |
+| Keep the next milestone operator-governed and file-backed | Approval, replay, and provenance matter more right now than additional infrastructure | ✓ Good |
+
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `$gsd-transition`):
+1. Requirements invalidated? -> Move to Out of Scope with reason
+2. Requirements validated? -> Move to Validated with phase reference
+3. New requirements emerged? -> Add to Active
+4. Decisions to log? -> Add to Key Decisions
+5. "What This Is" still accurate? -> Update if drifted
+
+**After each milestone** (via `$gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check - still the right priority?
+3. Audit Out of Scope - reasons still valid?
+4. Update Context with current state
 
 ---
-*Last updated: 2026-04-04 after v1.0 milestone archive*
+*Last updated: 2026-04-03 after starting milestone v1.1*

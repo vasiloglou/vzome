@@ -1,45 +1,45 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-current_phase: null
-current_phase_name: null
+milestone: v1.1
+milestone_name: closed-loop llm campaign mvp
+current_phase: "10"
+current_phase_name: closed-loop-campaign-contract-and-governance
 current_plan: null
-status: milestone_archived
-stopped_at: v1.0 archived; no active milestone
-last_updated: "2026-04-04T00:29:37Z"
-last_activity: 2026-04-03 -- v1.0 archived
+status: ready_to_discuss
+stopped_at: null
+last_updated: "2026-04-04T02:24:59Z"
+last_activity: 2026-04-03 -- Milestone v1.1 started
 progress:
-  total_phases: 9
-  completed_phases: 9
-  total_plans: 26
-  completed_plans: 26
-  percent: 100
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-02)
+See: `.planning/PROJECT.md` (updated 2026-04-03)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** No active milestone
+**Current focus:** Phase 10: Closed-Loop Campaign Contract and Governance
 
 ## Current Position
 
-Current Phase: None
-Current Phase Name: None
-Total Phases: 9
+Current Phase: 10
+Current Phase Name: Closed-Loop Campaign Contract and Governance
+Total Phases: 3
 Current Plan: None
 Total Plans in Phase: 0
-Phase: None
-Plan: Archived
-Status: v1.0 archived; waiting for next milestone definition
-Last activity: 2026-04-03 -- v1.0 archived
-Last Activity Description: v1.0 roadmap, requirements, and audit were archived after all 9 phases completed
+Phase: 10
+Plan: Not started
+Status: Defining milestone v1.1 implementation plan
+Last activity: 2026-04-03 -- Milestone v1.1 started
+Last Activity Description: Project 3 re-opened as a new milestone focused on closed-loop campaign execution before local serving
 
-Progress: [██████████] 100%
+Progress: [----------] 0%
 
 ## Performance Metrics
 
@@ -101,6 +101,9 @@ Progress: [██████████] 100%
 
 Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decisions affecting current work:
 
+- [Milestone v1.1]: Start Project 3's next cycle with closed-loop campaign execution rather than local or fine-tuned model serving.
+- [Milestone v1.1]: Keep the new campaign workflow operator-governed, approval-gated, and file-backed.
+- [Milestone v1.1]: Continue phase numbering from `v1.0`, so the new roadmap begins at Phase 10.
 - Phase 1 is contract-design, not adapter implementation.
 - The new ingestion layer should live under `materials_discovery/data_sources/`.
 - Keep `mdisc ingest` as the stable operator-facing entrypoint while the new source layer integrates behind it.
@@ -162,5 +165,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-04T00:29:37Z
-Stopped at: v1.0 archived; no active milestone
-Resume file: .planning/MILESTONES.md
+Stopped at: milestone v1.1 initialized; ready for Phase 10 discussion
+Resume file: .planning/ROADMAP.md
