@@ -34,6 +34,20 @@ DEFAULT_LLM_EVAL_SET_SCHEMA_VERSION = "llm-eval-set-example/v1"
 DEFAULT_LLM_EVAL_SET_MANIFEST_VERSION = "llm-eval-set-manifest/v1"
 DEFAULT_LLM_ACCEPTANCE_PACK_VERSION = "llm-acceptance-pack/v1"
 DEFAULT_LLM_SUGGESTION_SCHEMA_VERSION = "llm-suggestion/v1"
+DEFAULT_LLM_CAMPAIGN_SUGGESTION_VERSION = "llm-campaign-suggestion/v1"
+DEFAULT_LLM_CAMPAIGN_PROPOSAL_VERSION = "llm-campaign-proposal/v1"
+DEFAULT_LLM_CAMPAIGN_APPROVAL_VERSION = "llm-campaign-approval/v1"
+DEFAULT_LLM_CAMPAIGN_SPEC_VERSION = "llm-campaign-spec/v1"
+
+CampaignActionFamily = Literal[
+    "prompt_conditioning",
+    "composition_window",
+    "seed_motif_variation",
+]
+CampaignModelLane = Literal["general_purpose", "specialized_materials"]
+CampaignDecision = Literal["approved", "rejected"]
+CampaignPriority = Literal["high", "medium", "low"]
+CampaignOverallStatus = Literal["ready", "needs_improvement"]
 
 
 def _normalize_string_list(values: Sequence[str]) -> list[str]:
@@ -43,6 +57,20 @@ def _normalize_string_list(values: Sequence[str]) -> list[str]:
         if stripped and stripped not in normalized:
             normalized.append(stripped)
     return normalized
+
+
+def _require_non_blank_string(value: str) -> str:
+    stripped = value.strip()
+    if not stripped:
+        raise ValueError("field must not be blank")
+    return stripped
+
+
+def _normalize_optional_string(value: str | None) -> str | None:
+    if value is None:
+        return None
+    stripped = value.strip()
+    return stripped or None
 
 
 class CorpusBuildConfig(BaseModel):
@@ -925,3 +953,357 @@ class LlmSuggestion(BaseModel):
         if not stripped:
             raise ValueError("field must not be blank")
         return stripped
+
+
+class LlmPromptConditioningActionData(BaseModel):
+    instruction_delta: str
+    conditioning_strategy: str
+    target_example_family: str | None = None
+    preferred_max_conditioning_examples: int | None = None
+
+    @field_validator("instruction_delta", "conditioning_strategy")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("target_example_family")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("preferred_max_conditioning_examples")
+    @classmethod
+    def validate_optional_count(cls, value: int | None) -> int | None:
+        if value is None:
+            return None
+        if value < 1:
+            raise ValueError("preferred_max_conditioning_examples must be >= 1")
+        return value
+
+
+class LlmCompositionWindowActionData(BaseModel):
+    window_strategy: str
+    focus_species: list[str]
+    target_bounds: dict[str, CompositionBound] | None = None
+
+    @field_validator("window_strategy")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("focus_species")
+    @classmethod
+    def normalize_focus_species(cls, values: Sequence[str]) -> list[str]:
+        normalized = _normalize_string_list(values)
+        if not normalized:
+            raise ValueError("focus_species must not be empty")
+        return normalized
+
+
+class LlmSeedMotifVariationActionData(BaseModel):
+    variation_strategy: str
+    seed_source_hint: str | None = None
+    motif_tags: list[str] = Field(default_factory=list)
+
+    @field_validator("variation_strategy")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("seed_source_hint")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("motif_tags")
+    @classmethod
+    def normalize_motif_tags(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+
+class LlmCampaignAction(BaseModel):
+    action_id: str
+    family: CampaignActionFamily
+    title: str
+    rationale: str
+    priority: CampaignPriority
+    evidence_metrics: list[str] = Field(default_factory=list)
+    preferred_model_lane: CampaignModelLane
+    preferred_provider: str | None = None
+    preferred_model: str | None = None
+    specialized_model_family: str | None = None
+    prompt_conditioning: LlmPromptConditioningActionData | None = None
+    composition_window: LlmCompositionWindowActionData | None = None
+    seed_motif_variation: LlmSeedMotifVariationActionData | None = None
+
+    @field_validator("action_id", "title", "rationale")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("evidence_metrics")
+    @classmethod
+    def normalize_metrics(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("preferred_provider", "preferred_model", "specialized_model_family")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @model_validator(mode="after")
+    def validate_family_payload(self) -> LlmCampaignAction:
+        payload_by_family = {
+            "prompt_conditioning": self.prompt_conditioning,
+            "composition_window": self.composition_window,
+            "seed_motif_variation": self.seed_motif_variation,
+        }
+        if payload_by_family[self.family] is None:
+            raise ValueError(f"{self.family} payload is required")
+        for family, payload in payload_by_family.items():
+            if family != self.family and payload is not None:
+                raise ValueError(f"{family} payload must be omitted for {self.family} actions")
+        return self
+
+
+class LlmCampaignProposal(BaseModel):
+    schema_version: str = DEFAULT_LLM_CAMPAIGN_PROPOSAL_VERSION
+    proposal_id: str
+    pack_id: str
+    system: str
+    generated_at_utc: str
+    acceptance_pack_path: str
+    eval_set_manifest_path: str | None = None
+    generate_comparison_path: str
+    pipeline_comparison_path: str
+    overall_status: CampaignOverallStatus
+    priority: CampaignPriority
+    failing_metrics: list[str] = Field(default_factory=list)
+    actions: list[LlmCampaignAction] = Field(default_factory=list)
+
+    @field_validator(
+        "schema_version",
+        "proposal_id",
+        "pack_id",
+        "system",
+        "generated_at_utc",
+        "acceptance_pack_path",
+        "generate_comparison_path",
+        "pipeline_comparison_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("eval_set_manifest_path")
+    @classmethod
+    def normalize_optional_path(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("failing_metrics")
+    @classmethod
+    def normalize_failing_metrics(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @model_validator(mode="after")
+    def validate_actions(self) -> LlmCampaignProposal:
+        if not self.actions:
+            raise ValueError("campaign proposals must contain at least one action")
+        return self
+
+
+class LlmCampaignProposalSummary(BaseModel):
+    proposal_id: str
+    system: str
+    priority: CampaignPriority
+    failing_metrics: list[str] = Field(default_factory=list)
+    action_families: list[CampaignActionFamily] = Field(default_factory=list)
+    proposal_path: str
+
+    @field_validator("proposal_id", "system", "proposal_path")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("failing_metrics")
+    @classmethod
+    def normalize_failing_metrics(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("action_families")
+    @classmethod
+    def normalize_action_families(
+        cls,
+        values: Sequence[CampaignActionFamily],
+    ) -> list[CampaignActionFamily]:
+        normalized: list[CampaignActionFamily] = []
+        for value in values:
+            if value not in normalized:
+                normalized.append(value)
+        return normalized
+
+
+class LlmCampaignSuggestion(BaseModel):
+    schema_version: str = DEFAULT_LLM_CAMPAIGN_SUGGESTION_VERSION
+    pack_id: str
+    overall_status: CampaignOverallStatus
+    generated_at_utc: str
+    proposal_count: int
+    proposals: list[LlmCampaignProposalSummary] = Field(default_factory=list)
+
+    @field_validator("schema_version", "pack_id", "generated_at_utc")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("proposal_count")
+    @classmethod
+    def validate_proposal_count(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("proposal_count must be >= 0")
+        return value
+
+    @model_validator(mode="after")
+    def validate_summary_count(self) -> LlmCampaignSuggestion:
+        if self.proposal_count != len(self.proposals):
+            raise ValueError("proposal_count must equal the number of proposals")
+        return self
+
+
+class LlmCampaignApproval(BaseModel):
+    schema_version: str = DEFAULT_LLM_CAMPAIGN_APPROVAL_VERSION
+    approval_id: str
+    proposal_id: str
+    proposal_path: str
+    decision: CampaignDecision
+    operator: str
+    decided_at_utc: str
+    notes: str | None = None
+    campaign_id: str | None = None
+
+    @field_validator(
+        "schema_version",
+        "approval_id",
+        "proposal_id",
+        "proposal_path",
+        "operator",
+        "decided_at_utc",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("notes", "campaign_id")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @model_validator(mode="after")
+    def validate_campaign_decision(self) -> LlmCampaignApproval:
+        if self.decision == "approved" and self.campaign_id is None:
+            raise ValueError("approved decisions require a campaign_id")
+        if self.decision == "rejected" and self.campaign_id is not None:
+            raise ValueError("rejected decisions must not set campaign_id")
+        return self
+
+
+class LlmCampaignLaunchBaseline(BaseModel):
+    system_config_path: str
+    system_config_hash: str
+    system: str
+    template_family: str
+    default_count: int
+    composition_bounds: dict[str, CompositionBound]
+    prompt_template: str | None = None
+    example_pack_path: str | None = None
+    max_conditioning_examples: int | None = None
+    seed_zomic_path: str | None = None
+
+    @field_validator("system_config_path", "system_config_hash", "system", "template_family")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("prompt_template", "example_pack_path", "seed_zomic_path")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("default_count")
+    @classmethod
+    def validate_default_count(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("default_count must be >= 1")
+        return value
+
+    @field_validator("max_conditioning_examples")
+    @classmethod
+    def validate_max_conditioning_examples(cls, value: int | None) -> int | None:
+        if value is None:
+            return None
+        if value < 1:
+            raise ValueError("max_conditioning_examples must be >= 1")
+        return value
+
+    @model_validator(mode="after")
+    def validate_composition_bounds(self) -> LlmCampaignLaunchBaseline:
+        if not self.composition_bounds:
+            raise ValueError("composition_bounds must not be empty")
+        return self
+
+
+class LlmCampaignLineage(BaseModel):
+    acceptance_pack_path: str
+    eval_set_manifest_path: str | None = None
+    proposal_path: str
+    approval_path: str
+    source_system_config_path: str
+    source_system_config_hash: str
+
+    @field_validator(
+        "acceptance_pack_path",
+        "proposal_path",
+        "approval_path",
+        "source_system_config_path",
+        "source_system_config_hash",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("eval_set_manifest_path")
+    @classmethod
+    def normalize_optional_path(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+
+class LlmCampaignSpec(BaseModel):
+    schema_version: str = DEFAULT_LLM_CAMPAIGN_SPEC_VERSION
+    campaign_id: str
+    proposal_id: str
+    approval_id: str
+    system: str
+    created_at_utc: str
+    actions: list[LlmCampaignAction] = Field(default_factory=list)
+    launch_baseline: LlmCampaignLaunchBaseline
+    lineage: LlmCampaignLineage
+
+    @field_validator(
+        "schema_version",
+        "campaign_id",
+        "proposal_id",
+        "approval_id",
+        "system",
+        "created_at_utc",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @model_validator(mode="after")
+    def validate_spec(self) -> LlmCampaignSpec:
+        if not self.actions:
+            raise ValueError("campaign specs must contain at least one action")
+        if self.system != self.launch_baseline.system:
+            raise ValueError("campaign spec system must match launch baseline system")
+        return self
