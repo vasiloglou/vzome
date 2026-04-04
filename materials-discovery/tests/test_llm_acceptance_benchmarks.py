@@ -52,12 +52,15 @@ def test_build_acceptance_pack_and_suggestions_round_trip(tmp_path: Path) -> Non
     )
 
     assert pack_path.exists()
-    suggestions = build_llm_suggestions(pack)
-    suggestion_path = write_llm_suggestions(suggestions, pack_path.with_name("suggestions.json"))
+    suggestions = build_llm_suggestions(pack, acceptance_pack_path=pack_path)
+    suggestion_path = write_llm_suggestions(pack, acceptance_pack_path=pack_path)
     assert suggestion_path.exists()
     loaded = load_json_object(suggestion_path)
     assert loaded["overall_status"] == "ready"
-    assert loaded["items"][0]["priority"] == "low"
+    assert loaded["proposal_count"] == 1
+    assert loaded["proposals"][0]["priority"] == "low"
+    proposal_path = Path(loaded["proposals"][0]["proposal_path"])
+    assert proposal_path.exists()
 
 
 def test_build_acceptance_pack_flags_validation_shortfalls() -> None:
@@ -88,7 +91,10 @@ def test_build_acceptance_pack_flags_validation_shortfalls() -> None:
         thresholds=LlmAcceptanceThresholds(min_shortlist_pass_rate=0.05, min_validation_pass_rate=0.01),
     )
 
-    suggestions = build_llm_suggestions(pack)
+    suggestions = build_llm_suggestions(
+        pack,
+        acceptance_pack_path=Path("data/benchmarks/llm_acceptance/acceptance_gap/acceptance_pack.json"),
+    )
     assert pack.overall_passed is False
     assert suggestions.overall_status == "needs_improvement"
-    assert suggestions.items[0].priority == "high"
+    assert suggestions.proposals[0].priority == "high"

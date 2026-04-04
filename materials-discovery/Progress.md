@@ -53,6 +53,7 @@
 | 2026-04-04 | Phase 10 Plan 01 Task 2 RED: campaign storage tests | Added failing pytest coverage for deterministic suggestion, proposal, approval, and campaign-spec artifact paths plus blank-ID rejection before implementing the new storage helpers |
 | 2026-04-04 | Phase 10 Plan 01 Task 2 GREEN: campaign storage helpers | Added deterministic acceptance-pack and campaign artifact path helpers in `llm/storage.py`, exported them from `llm/__init__.py`, and made blank artifact IDs fail fast instead of producing malformed paths |
 | 2026-04-04 | Phase 10 Plan 02 Task 1 RED: typed llm-suggest core tests | Added failing pytest coverage for acceptance-pack to typed campaign-proposal mapping, deterministic action IDs, release-gate handling, and proposal-summary path emission before migrating `llm-suggest` off the legacy suggestion model |
+| 2026-04-04 | Phase 10 Plan 02 Task 1 GREEN: typed proposal mapping and writer | Added `llm/campaigns.py`, migrated `llm-suggest` to typed campaign suggestions plus per-proposal artifact writing, exported the new helpers, and updated the acceptance-benchmark caller to the new contract |
 
 ## Diary
 
@@ -345,3 +346,7 @@
 - 01:42 EDT — Started Phase 10 Plan 02 Task 1 in TDD RED mode by adding `tests/test_llm_suggest_core.py`.
 - The new failing coverage locks the acceptance-pack to typed-campaign-proposal mapping rules, deterministic action IDs, release-gate posture, specialized-materials routing, and summary path emission before touching the implementation.
 - Open item: add `llm/campaigns.py`, migrate `llm/suggest.py` to the typed campaign bundle, and update in-repo callers away from the legacy `LlmSuggestion` contract.
+- 01:47 EDT — Implemented the Phase 10 Plan 02 Task 1 typed suggestion mapping layer.
+- Added `llm/campaigns.py` with deterministic system-scoped proposal IDs, stable per-proposal action IDs, heuristic-to-action-family mapping, and acceptance-pack to proposal-summary helpers.
+- Migrated `llm/suggest.py` so it now builds `LlmCampaignSuggestion`, writes sibling `proposals/{proposal_id}.json` artifacts under the acceptance-pack root, and keeps directory creation/writing out of the CLI.
+- Updated `llm/__init__.py` exports and `tests/test_llm_acceptance_benchmarks.py` so in-repo callers move with the contract instead of silently expecting the legacy `LlmSuggestion` surface.

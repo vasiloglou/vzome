@@ -19,6 +19,10 @@ from materials_discovery.llm.acceptance import (
     load_acceptance_benchmark_input,
     write_llm_acceptance_pack,
 )
+from materials_discovery.llm.campaigns import (
+    build_campaign_proposals,
+    summarize_campaign_proposals,
+)
 from materials_discovery.llm.suggest import build_llm_suggestions, write_llm_suggestions
 from materials_discovery.llm.benchmark import (
     build_llm_generate_comparison,
@@ -157,6 +161,7 @@ __all__ = [
     "DEFAULT_LLM_EVAL_SET_SCHEMA_VERSION",
     "build_llm_generate_comparison",
     "build_llm_pipeline_comparison",
+    "build_campaign_proposals",
     "build_generation_prompt",
     "build_llm_suggestions",
     "dedupe_corpus_examples",
@@ -228,6 +233,7 @@ __all__ = [
     "resolve_llm_adapter",
     "SourceFamily",
     "summarize_corpus_quality",
+    "summarize_campaign_proposals",
     "syntax_corpus_path",
     "ValidationStatus",
     "write_llm_acceptance_pack",

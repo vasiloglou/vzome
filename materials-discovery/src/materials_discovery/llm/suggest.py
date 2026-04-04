@@ -1,81 +1,64 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from pathlib import Path
 
 from materials_discovery.common.io import write_json_object
-from materials_discovery.llm.schema import (
-    LlmAcceptancePack,
-    LlmSuggestion,
-    LlmSuggestionItem,
+from materials_discovery.llm.campaigns import (
+    build_campaign_proposals,
+    summarize_campaign_proposals,
 )
+from materials_discovery.llm.schema import LlmAcceptancePack, LlmCampaignProposal, LlmCampaignSuggestion
 
 
-def build_llm_suggestions(pack: LlmAcceptancePack) -> LlmSuggestion:
-    items: list[LlmSuggestionItem] = []
+def _proposal_path(acceptance_pack_path: Path, proposal_id: str) -> Path:
+    return acceptance_pack_path.parent / "proposals" / f"{proposal_id}.json"
 
-    for system in pack.systems:
-        if "parse_success_rate" in system.failing_metrics or "compile_success_rate" in system.failing_metrics:
-            items.append(
-                LlmSuggestionItem(
-                    system=system.system,
-                    priority="high",
-                    action="Tighten prompt constraints and expand exact system-matched examples.",
-                    rationale="Validity metrics are below acceptance thresholds, so the next iteration should improve parse and compile reliability before widening search.",
-                )
-            )
-            continue
 
-        if "validation_pass_rate" in system.failing_metrics or "shortlist_pass_rate" in system.failing_metrics:
-            items.append(
-                LlmSuggestionItem(
-                    system=system.system,
-                    priority="high",
-                    action="Bias conditioning toward higher-quality accepted examples near the target composition window.",
-                    rationale="The lane is generating candidates, but too few survive screening or digital validation for this system.",
-                )
-            )
-            continue
-
-        if "synthesizability_mean" in system.failing_metrics:
-            items.append(
-                LlmSuggestionItem(
-                    system=system.system,
-                    priority="medium",
-                    action="Expand the materials-conditioned eval set and refine evaluation prompts for precursor realism.",
-                    rationale="The candidates are structurally valid, but the LLM assessment still sees weak synthesis readiness.",
-                )
-            )
-            continue
-
-        if not system.report_release_gate_ready:
-            items.append(
-                LlmSuggestionItem(
-                    system=system.system,
-                    priority="medium",
-                    action="Keep the LLM lane in audit mode and collect one more benchmark pack before promotion.",
-                    rationale="Core metrics look acceptable, but the report release gate is not yet ready for this system.",
-                )
-            )
-            continue
-
-        items.append(
-            LlmSuggestionItem(
-                system=system.system,
-                priority="low",
-                action="Promote this system to broader provider comparisons or a hosted-model bakeoff.",
-                rationale="Acceptance metrics and release-gate posture look strong enough for the next evaluation round.",
-            )
-        )
-
-    return LlmSuggestion(
-        pack_id=pack.pack_id,
-        overall_status="ready" if pack.overall_passed else "needs_improvement",
-        generated_at_utc=datetime.now(UTC).isoformat(),
-        items=items,
+def _prepare_suggestion_bundle(
+    pack: LlmAcceptancePack,
+    *,
+    acceptance_pack_path: Path,
+) -> tuple[LlmCampaignSuggestion, list[LlmCampaignProposal], dict[str, Path]]:
+    proposals = build_campaign_proposals(pack, acceptance_pack_path=acceptance_pack_path)
+    proposal_paths = {
+        proposal.proposal_id: _proposal_path(acceptance_pack_path, proposal.proposal_id)
+        for proposal in proposals
+    }
+    suggestions = summarize_campaign_proposals(
+        pack,
+        proposals,
+        proposal_paths=proposal_paths,
     )
+    return suggestions, proposals, proposal_paths
 
 
-def write_llm_suggestions(suggestions: LlmSuggestion, path: Path) -> Path:
-    write_json_object(suggestions.model_dump(mode="json"), path)
-    return path
+def build_llm_suggestions(
+    pack: LlmAcceptancePack,
+    *,
+    acceptance_pack_path: Path,
+) -> LlmCampaignSuggestion:
+    suggestions, _, _ = _prepare_suggestion_bundle(
+        pack,
+        acceptance_pack_path=acceptance_pack_path,
+    )
+    return suggestions
+
+
+def write_llm_suggestions(
+    pack: LlmAcceptancePack,
+    *,
+    acceptance_pack_path: Path,
+    out_path: Path | None = None,
+) -> Path:
+    suggestions, proposals, proposal_paths = _prepare_suggestion_bundle(
+        pack,
+        acceptance_pack_path=acceptance_pack_path,
+    )
+    for proposal in proposals:
+        write_json_object(
+            proposal.model_dump(mode="json"),
+            proposal_paths[proposal.proposal_id],
+        )
+    resolved_out_path = out_path or acceptance_pack_path.with_name("suggestions.json")
+    write_json_object(suggestions.model_dump(mode="json"), resolved_out_path)
+    return resolved_out_path
