@@ -50,6 +50,7 @@
 | 2026-04-03 | Phase 9 Plan 03: acceptance benchmark and llm-suggest | Added the operator acceptance benchmark script, the dry-run `mdisc llm-suggest` command, refreshed LLM docs, and closed the full suite at 297 passed |
 | 2026-04-04 | Phase 10 Plan 01 Task 1 RED: campaign schema tests | Added failing pytest coverage for typed campaign proposals, action-family payload validation, separate approvals, and campaign-spec lineage before implementing the new governance contract |
 | 2026-04-04 | Phase 10 Plan 01 Task 1 GREEN: campaign governance schema | Added the additive Phase 10 proposal, approval, launch-baseline, lineage, and campaign-spec models in `llm/schema.py`, exported them from `llm/__init__.py`, and aligned them with the new focused schema tests |
+| 2026-04-04 | Phase 10 Plan 01 Task 2 RED: campaign storage tests | Added failing pytest coverage for deterministic suggestion, proposal, approval, and campaign-spec artifact paths plus blank-ID rejection before implementing the new storage helpers |
 
 ## Diary
 
@@ -333,3 +334,6 @@
 - 01:29 EDT — Implemented the Phase 10 campaign governance schema in `materials_discovery.llm.schema` and exported the new models and constants from `materials_discovery.llm`.
 - Added typed payloads for the three action families, proposal and suggestion contracts, separate approval artifacts, and self-contained campaign specs with pinned launch baselines and lineage.
 - Validators now reject blank IDs and paths, require the payload that matches each action family, reject non-matching payloads, normalize evidence/failing-metric lists, and enforce `default_count >= 1` for launch baselines.
+- 01:30 EDT — Started Phase 10 Plan 01 Task 2 in TDD RED mode by adding `tests/test_llm_campaign_storage.py`.
+- The new failing storage tests lock the deterministic artifact layout for acceptance-pack-rooted suggestions, proposals, approvals, and dedicated `data/llm_campaigns/{campaign_id}/campaign_spec.json` outputs.
+- Open item: add the new storage helpers to `materials_discovery.llm.storage`, reject blank artifact IDs, and export the helper surface from `materials_discovery.llm`.
