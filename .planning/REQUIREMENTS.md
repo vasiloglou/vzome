@@ -9,7 +9,7 @@ reinforce each other instead of living in separate prototypes.
 
 ### Closed-Loop Suggestions
 
-- [ ] **LLM-06**: The platform can turn an acceptance-pack analysis into a
+- [x] **LLM-06**: The platform can turn an acceptance-pack analysis into a
   structured campaign proposal over composition regions and/or Zomic motif
   edits.
 - [ ] **LLM-08**: An operator can approve a proposal and materialize it into a
@@ -28,7 +28,7 @@ reinforce each other instead of living in separate prototypes.
 
 ### Operations and Governance
 
-- [ ] **OPS-05**: No suggestion mutates generation inputs, campaign state, or
+- [x] **OPS-05**: No suggestion mutates generation inputs, campaign state, or
   active-learning artifacts without an explicit operator approval step.
 - [ ] **OPS-06**: Every campaign records lineage from acceptance pack and eval
   set through approved suggestion, generation run, downstream artifacts, and
@@ -65,8 +65,8 @@ reinforce each other instead of living in separate prototypes.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LLM-06 | Phase 10 | Pending |
-| OPS-05 | Phase 10 | Pending |
+| LLM-06 | Phase 10 | Complete |
+| OPS-05 | Phase 10 | Complete |
 | LLM-08 | Phase 11 | Pending |
 | LLM-10 | Phase 11 | Pending |
 | OPS-06 | Phase 11 | Pending |

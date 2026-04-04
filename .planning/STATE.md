@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
 current_phase: 10
-current_phase_name: Closed-Loop Campaign Contract and Governance
-current_plan: None
-status: Ready to execute Phase 10 plan set
-stopped_at: Phase 10 replanned with review feedback
-last_updated: "2026-04-04T05:23:42.000Z"
-last_activity: 2026-04-04 -- Phase 10 replanned
+current_phase_name: closed-loop-campaign-contract-and-governance
+current_plan: 2
+status: executing
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-04-04T05:38:20.392Z"
+last_activity: 2026-04-04
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -24,20 +24,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-03)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 10: Closed-Loop Campaign Contract and Governance
+**Current focus:** Phase 10 — closed-loop-campaign-contract-and-governance
 
 ## Current Position
 
 Current Phase: 10
-Current Phase Name: Closed-Loop Campaign Contract and Governance
+Current Phase Name: closed-loop-campaign-contract-and-governance
 Total Phases: 3
-Current Plan: None
+Current Plan: 2
 Total Plans in Phase: 3
-Phase: 10
-Plan: Ready to execute
-Status: Ready to execute Phase 10 plan set
-Last activity: 2026-04-04 -- Phase 10 replanned
-Last Activity Description: Phase 10 plans tightened after cross-AI review, especially around llm-suggest migration coverage, required action payloads, and deterministic campaign/spec identity
+Phase: 10 (closed-loop-campaign-contract-and-governance) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-04
+Last Activity Description: Phase 10 execution started
 
 Progress: [----------] 0%
 
@@ -94,6 +94,7 @@ Progress: [----------] 0%
 | Phase 09 P01 | 12 | 3 tasks | 9 files |
 | Phase 09 P02 | 15 | 3 tasks | 8 files |
 | Phase 09 P03 | 5 | 3 tasks | 8 files |
+| Phase 10-closed-loop-campaign-contract-and-governance P01 | 8min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -156,6 +157,10 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 09-fine-tuned-zomic-model-and-closed-loop-design]: Acceptance metrics are file-backed and computed from the existing Phase 7/8 benchmark artifacts instead of ad hoc notebook logic.
 - [Phase 09-fine-tuned-zomic-model-and-closed-loop-design]: `llm-generate` conditioning remains optional and reproducible through eval-set files plus recorded `conditioning_example_ids`.
 - [Phase 09-fine-tuned-zomic-model-and-closed-loop-design]: `llm-suggest` is a dry-run advisory command in v1; it does not mutate the active-learning loop automatically.
+- [Phase 10-closed-loop-campaign-contract-and-governance]: Keep the Phase 10 campaign contracts additive inside llm/schema.py instead of splitting files during this phase.
+- [Phase 10-closed-loop-campaign-contract-and-governance]: Validate campaign-action payload matching with an explicit model_validator rather than a discriminated-union refactor.
+- [Phase 10-closed-loop-campaign-contract-and-governance]: Keep proposals and approvals under the acceptance-pack root while campaign specs live under data/llm_campaigns/{campaign_id}.
+- [Phase 10-closed-loop-campaign-contract-and-governance]: Make blank artifact identifiers fail fast in storage helpers instead of normalizing into malformed paths.
 
 ### Pending Todos
 
@@ -167,6 +172,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T05:05:34.870Z
-Stopped at: Phase 10 planned
-Resume file: .planning/phases/10-closed-loop-campaign-contract-and-governance/10-02-PLAN.md
+Last session: 2026-04-04T05:38:20.388Z
+Stopped at: Completed 10-01-PLAN.md
+Resume file: None
