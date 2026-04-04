@@ -30,6 +30,10 @@ DEFAULT_LLM_RUN_MANIFEST_VERSION = "llm-run-manifest/v1"
 DEFAULT_LLM_ASSESSMENT_SCHEMA_VERSION = "llm-assessment/v1"
 DEFAULT_LLM_EVALUATION_REQUEST_SCHEMA_VERSION = "llm-evaluation-request/v1"
 DEFAULT_LLM_EVALUATION_RUN_MANIFEST_VERSION = "llm-evaluation-run-manifest/v1"
+DEFAULT_LLM_EVAL_SET_SCHEMA_VERSION = "llm-eval-set-example/v1"
+DEFAULT_LLM_EVAL_SET_MANIFEST_VERSION = "llm-eval-set-manifest/v1"
+DEFAULT_LLM_ACCEPTANCE_PACK_VERSION = "llm-acceptance-pack/v1"
+DEFAULT_LLM_SUGGESTION_SCHEMA_VERSION = "llm-suggestion/v1"
 
 
 def _normalize_string_list(values: Sequence[str]) -> list[str]:
@@ -360,6 +364,8 @@ class LlmGenerationRequest(BaseModel):
     temperature: float
     max_tokens: int
     seed_zomic_path: str | None = None
+    example_pack_path: str | None = None
+    conditioning_example_ids: list[str] = Field(default_factory=list)
 
     @field_validator("system", "template_family", "prompt_text")
     @classmethod
@@ -369,13 +375,18 @@ class LlmGenerationRequest(BaseModel):
             raise ValueError("field must not be blank")
         return stripped
 
-    @field_validator("seed_zomic_path")
+    @field_validator("seed_zomic_path", "example_pack_path")
     @classmethod
     def normalize_seed_path(cls, value: str | None) -> str | None:
         if value is None:
             return None
         stripped = value.strip()
         return stripped or None
+
+    @field_validator("conditioning_example_ids")
+    @classmethod
+    def normalize_conditioning_ids(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
 
     @model_validator(mode="after")
     def validate_runtime_settings(self) -> LlmGenerationRequest:
@@ -476,6 +487,8 @@ class LlmRunManifest(BaseModel):
     attempts_path: str
     compile_results_path: str
     created_at_utc: str
+    example_pack_path: str | None = None
+    conditioning_example_ids: list[str] = Field(default_factory=list)
 
     @field_validator(
         "schema_version",
@@ -496,6 +509,19 @@ class LlmRunManifest(BaseModel):
         if not stripped:
             raise ValueError("field must not be blank")
         return stripped
+
+    @field_validator("example_pack_path")
+    @classmethod
+    def normalize_example_pack_path(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+    @field_validator("conditioning_example_ids")
+    @classmethod
+    def normalize_conditioning_ids(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
 
     @model_validator(mode="after")
     def validate_counts(self) -> LlmRunManifest:
@@ -633,3 +659,269 @@ class LlmEvaluationRunManifest(BaseModel):
             if getattr(self, field_name) < 0:
                 raise ValueError(f"{field_name} must be >= 0")
         return self
+
+
+class LlmEvalSetExample(BaseModel):
+    schema_version: str = DEFAULT_LLM_EVAL_SET_SCHEMA_VERSION
+    example_id: str
+    system: str
+    release_tier: ReleaseTier
+    fidelity_tier: FidelityTier
+    source_family: SourceFamily
+    source_record_id: str
+    composition: dict[str, float]
+    labels: list[str] = Field(default_factory=list)
+    orbit_names: list[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
+    properties: dict[str, Any] = Field(default_factory=dict)
+    zomic_text: str
+
+    @field_validator(
+        "schema_version",
+        "example_id",
+        "system",
+        "source_record_id",
+        "zomic_text",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @field_validator("labels", "orbit_names", "tags")
+    @classmethod
+    def normalize_lists(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @model_validator(mode="after")
+    def validate_composition(self) -> LlmEvalSetExample:
+        if not self.composition:
+            raise ValueError("composition must not be empty")
+        total = sum(self.composition.values())
+        if total <= 0.0:
+            raise ValueError("composition must have a positive total")
+        self.composition = {
+            key: value / total for key, value in sorted(self.composition.items())
+        }
+        return self
+
+
+class LlmEvalSetManifest(BaseModel):
+    schema_version: str = DEFAULT_LLM_EVAL_SET_MANIFEST_VERSION
+    export_id: str
+    build_id: str
+    created_at_utc: str
+    corpus_manifest_path: str
+    eval_set_path: str
+    systems: list[str] = Field(default_factory=list)
+    release_tiers: list[ReleaseTier] = Field(default_factory=list)
+    example_count: int
+    max_examples_per_system: int | None = None
+    output_hashes: dict[str, str] = Field(default_factory=dict)
+
+    @field_validator(
+        "schema_version",
+        "export_id",
+        "build_id",
+        "created_at_utc",
+        "corpus_manifest_path",
+        "eval_set_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @field_validator("systems")
+    @classmethod
+    def normalize_systems(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("example_count", "max_examples_per_system")
+    @classmethod
+    def validate_non_negative_counts(cls, value: int | None) -> int | None:
+        if value is None:
+            return None
+        if value < 0:
+            raise ValueError("count fields must be >= 0")
+        return value
+
+
+class LlmEvalSetSummary(BaseModel):
+    export_id: str
+    example_count: int
+    eval_set_path: str
+    manifest_path: str
+
+    @field_validator("export_id", "eval_set_path", "manifest_path")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @field_validator("example_count")
+    @classmethod
+    def validate_example_count(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("example_count must be >= 0")
+        return value
+
+
+class LlmAcceptanceThresholds(BaseModel):
+    min_parse_success_rate: float = 0.8
+    min_compile_success_rate: float = 0.8
+    min_generation_success_rate: float = 0.3
+    min_shortlist_pass_rate: float = 0.05
+    min_validation_pass_rate: float = 0.02
+    min_novelty_score_mean: float = 0.0
+    min_synthesizability_mean: float = 0.5
+
+    @field_validator(
+        "min_parse_success_rate",
+        "min_compile_success_rate",
+        "min_generation_success_rate",
+        "min_shortlist_pass_rate",
+        "min_validation_pass_rate",
+        "min_synthesizability_mean",
+    )
+    @classmethod
+    def validate_rate(cls, value: float) -> float:
+        if value < 0.0 or value > 1.0:
+            raise ValueError("rate thresholds must be in [0, 1]")
+        return value
+
+    @field_validator("min_novelty_score_mean")
+    @classmethod
+    def validate_novelty(cls, value: float) -> float:
+        if value < 0.0:
+            raise ValueError("min_novelty_score_mean must be >= 0")
+        return value
+
+
+class LlmAcceptanceBenchmarkInput(BaseModel):
+    system: str
+    generate_comparison_path: str
+    pipeline_comparison_path: str
+    generate_comparison: dict[str, Any]
+    pipeline_comparison: dict[str, Any]
+
+    @field_validator("system", "generate_comparison_path", "pipeline_comparison_path")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+
+class LlmAcceptanceSystemMetrics(BaseModel):
+    system: str
+    generate_comparison_path: str
+    pipeline_comparison_path: str
+    parse_success_rate: float
+    compile_success_rate: float
+    generation_success_rate: float
+    shortlist_pass_rate: float
+    validation_pass_rate: float
+    novelty_score_mean: float
+    synthesizability_mean: float
+    report_release_gate_ready: bool
+    failing_metrics: list[str] = Field(default_factory=list)
+    passed: bool
+
+    @field_validator("system", "generate_comparison_path", "pipeline_comparison_path")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @field_validator("failing_metrics")
+    @classmethod
+    def normalize_failing_metrics(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator(
+        "parse_success_rate",
+        "compile_success_rate",
+        "generation_success_rate",
+        "shortlist_pass_rate",
+        "validation_pass_rate",
+        "synthesizability_mean",
+    )
+    @classmethod
+    def validate_unit_interval(cls, value: float) -> float:
+        if value < 0.0 or value > 1.0:
+            raise ValueError("rate metrics must be in [0, 1]")
+        return value
+
+    @field_validator("novelty_score_mean")
+    @classmethod
+    def validate_novelty_score(cls, value: float) -> float:
+        if value < 0.0:
+            raise ValueError("novelty_score_mean must be >= 0")
+        return value
+
+
+class LlmAcceptancePack(BaseModel):
+    schema_version: str = DEFAULT_LLM_ACCEPTANCE_PACK_VERSION
+    pack_id: str
+    created_at_utc: str
+    eval_set_manifest_path: str | None = None
+    thresholds: LlmAcceptanceThresholds = Field(default_factory=LlmAcceptanceThresholds)
+    systems: list[LlmAcceptanceSystemMetrics] = Field(default_factory=list)
+    overall_passed: bool
+
+    @field_validator("schema_version", "pack_id", "created_at_utc")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+    @field_validator("eval_set_manifest_path")
+    @classmethod
+    def normalize_eval_set_path(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+
+class LlmSuggestionItem(BaseModel):
+    system: str
+    priority: Literal["high", "medium", "low"]
+    action: str
+    rationale: str
+
+    @field_validator("system", "action", "rationale")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped
+
+
+class LlmSuggestion(BaseModel):
+    schema_version: str = DEFAULT_LLM_SUGGESTION_SCHEMA_VERSION
+    pack_id: str
+    overall_status: Literal["ready", "needs_improvement"]
+    generated_at_utc: str
+    items: list[LlmSuggestionItem] = Field(default_factory=list)
+
+    @field_validator("schema_version", "pack_id", "generated_at_utc")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        return stripped

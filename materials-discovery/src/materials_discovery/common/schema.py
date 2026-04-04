@@ -300,6 +300,8 @@ class LlmGenerateConfig(BaseModel):
     max_tokens: int = 2048
     max_attempts: int = 3
     seed_zomic: str | None = None
+    example_pack_path: str | None = None
+    max_conditioning_examples: int = 3
     artifact_root: str | None = None
     persist_raw_completions: bool = True
     fixture_outputs: list[str] = Field(default_factory=list)
@@ -312,7 +314,7 @@ class LlmGenerateConfig(BaseModel):
             raise ValueError("llm_generate.prompt_template must not be blank")
         return stripped
 
-    @field_validator("seed_zomic", "artifact_root")
+    @field_validator("seed_zomic", "example_pack_path", "artifact_root")
     @classmethod
     def normalize_optional_paths(cls, value: str | None) -> str | None:
         if value is None:
@@ -333,6 +335,8 @@ class LlmGenerateConfig(BaseModel):
             raise ValueError("llm_generate.max_tokens must be > 0")
         if self.max_attempts < 1:
             raise ValueError("llm_generate.max_attempts must be >= 1")
+        if self.max_conditioning_examples < 1:
+            raise ValueError("llm_generate.max_conditioning_examples must be >= 1")
         return self
 
 

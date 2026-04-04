@@ -35,3 +35,23 @@ def corpus_qa_path(build_id: str, root: Path | None = None) -> Path:
 
 def corpus_manifest_path(build_id: str, root: Path | None = None) -> Path:
     return corpus_build_dir(build_id, root) / "manifest.json"
+
+
+def llm_eval_set_dir(export_id: str, root: Path | None = None) -> Path:
+    return _artifact_root(root) / "data" / "llm_eval_sets" / export_id
+
+
+def llm_eval_set_path(export_id: str, root: Path | None = None) -> Path:
+    return llm_eval_set_dir(export_id, root) / "eval_set.jsonl"
+
+
+def llm_eval_set_manifest_path(export_id: str, root: Path | None = None) -> Path:
+    return llm_eval_set_dir(export_id, root) / "manifest.json"
+
+
+def llm_acceptance_dir(pack_id: str, root: Path | None = None) -> Path:
+    return _artifact_root(root) / "data" / "benchmarks" / "llm_acceptance" / pack_id
+
+
+def llm_acceptance_pack_path(pack_id: str, root: Path | None = None) -> Path:
+    return llm_acceptance_dir(pack_id, root) / "acceptance_pack.json"

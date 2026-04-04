@@ -45,6 +45,7 @@
 | 2026-04-03 | Phase 8 Plan 01: llm-evaluate contracts and CLI path | Added additive `llm_evaluate` config/summary contracts, typed evaluation request/assessment/run-manifest models, the `llm/evaluate.py` engine, the `mdisc llm-evaluate` CLI command, and focused schema/CLI pytest coverage |
 | 2026-04-03 | Phase 8 Plan 02: report and rank LLM-assessment integration | Taught `report` to prefer `*_all_llm_evaluated.jsonl`, surfaced additive `llm_assessment` context in report entries/calibration, and added regressions proving `hifi-rank` preserves but does not reweight that context |
 | 2026-04-03 | Phase 8 Plan 03: downstream LLM pipeline benchmarks | Added the downstream deterministic-vs-LLM benchmark helper, the `run_llm_pipeline_benchmarks.sh` operator script, refreshed LLM docs, and added offline Al-Cu-Fe/Sc-Zn benchmark regression coverage |
+| 2026-04-03 | Phase 9 Plan 01: eval-set and acceptance-pack contracts | Added typed eval-set and acceptance-pack models, new storage/helpers for exporting eval sets from the Phase 6 corpus, and focused acceptance-schema pytest coverage |
 
 ## Diary
 
@@ -278,9 +279,13 @@
 - Added `scripts/run_llm_pipeline_benchmarks.sh`, which injects temporary offline `llm_evaluate` configs, runs both deterministic and LLM lanes, snapshots calibration JSON per stage, and writes `data/benchmarks/llm_pipeline/{system}_comparison.json`.
 - Added `tests/test_llm_pipeline_benchmarks.py` with helper-level coverage plus offline two-system end-to-end benchmark proofs for `Al-Cu-Fe` and `Sc-Zn`.
 - Refreshed `README.md`, `developers-docs/index.md`, `developers-docs/llm-integration.md`, and `developers-docs/pipeline-stages.md` so Phase 8 is documented as implemented and the new pipeline benchmark workflow is discoverable.
-  - `llm/runtime.py` adds the provider-neutral adapter seam with deterministic `llm_fixture_v1` behavior and the first hosted adapter path, `anthropic_api_v1`, via lazy `httpx`.
-  - `llm/__init__.py` now exports the new Phase 7 runtime/schemas alongside the existing Phase 6 corpus surface.
-  - `developers-docs/configuration-reference.md` now documents the `llm_generate:` block, mock-only defaulting, and the requirement that real hosted configs set `llm_provider` and `llm_model`.
+- 21:08 EDT — Started Phase 9 by adding the formal eval-set and acceptance-pack artifact layer.
+- Added `llm/eval_set.py` and `llm/acceptance.py` so Phase 6 corpus artifacts can be exported into deterministic eval sets and Phase 7/8 benchmark outputs can be summarized into a typed acceptance pack.
+- Extended `llm/schema.py`, `llm/storage.py`, and `llm/__init__.py` with Phase 9 eval-set, acceptance-threshold, and suggestion-facing models and artifact paths.
+- Added `tests/test_llm_acceptance_schema.py`; focused verification passed with `2 passed`.
+- `llm/runtime.py` adds the provider-neutral adapter seam with deterministic `llm_fixture_v1` behavior and the first hosted adapter path, `anthropic_api_v1`, via lazy `httpx`.
+- `llm/__init__.py` now exports the new Phase 7 runtime/schemas alongside the existing Phase 6 corpus surface.
+- `developers-docs/configuration-reference.md` now documents the `llm_generate:` block, mock-only defaulting, and the requirement that real hosted configs set `llm_provider` and `llm_model`.
   - Added focused coverage in `tests/test_llm_generate_schema.py` and `tests/test_llm_runtime.py` for config validation, schema typing, adapter resolution, missing secret handling, lazy imports, and API-base override behavior.
 
 ### 2026-04-03 (Phase 7 Plan 02)
