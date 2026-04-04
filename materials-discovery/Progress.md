@@ -54,6 +54,7 @@
 | 2026-04-04 | Phase 10 Plan 01 Task 2 GREEN: campaign storage helpers | Added deterministic acceptance-pack and campaign artifact path helpers in `llm/storage.py`, exported them from `llm/__init__.py`, and made blank artifact IDs fail fast instead of producing malformed paths |
 | 2026-04-04 | Phase 10 Plan 02 Task 1 RED: typed llm-suggest core tests | Added failing pytest coverage for acceptance-pack to typed campaign-proposal mapping, deterministic action IDs, release-gate handling, and proposal-summary path emission before migrating `llm-suggest` off the legacy suggestion model |
 | 2026-04-04 | Phase 10 Plan 02 Task 1 GREEN: typed proposal mapping and writer | Added `llm/campaigns.py`, migrated `llm-suggest` to typed campaign suggestions plus per-proposal artifact writing, exported the new helpers, and updated the acceptance-benchmark caller to the new contract |
+| 2026-04-04 | Phase 10 Plan 02 Task 2 RED: llm-suggest CLI bundle tests | Added failing CLI coverage for typed stdout, default `suggestions.json`, per-system `proposals/` writing, invalid-input exit handling, and the shared `test_cli.py` migration to the new bundle contract |
 
 ## Diary
 
@@ -350,3 +351,6 @@
 - Added `llm/campaigns.py` with deterministic system-scoped proposal IDs, stable per-proposal action IDs, heuristic-to-action-family mapping, and acceptance-pack to proposal-summary helpers.
 - Migrated `llm/suggest.py` so it now builds `LlmCampaignSuggestion`, writes sibling `proposals/{proposal_id}.json` artifacts under the acceptance-pack root, and keeps directory creation/writing out of the CLI.
 - Updated `llm/__init__.py` exports and `tests/test_llm_acceptance_benchmarks.py` so in-repo callers move with the contract instead of silently expecting the legacy `LlmSuggestion` surface.
+- 01:48 EDT — Started Phase 10 Plan 02 Task 2 in TDD RED mode by adding `tests/test_llm_suggest_cli.py` and updating the shared `tests/test_cli.py` llm-suggest coverage.
+- The new failing CLI tests lock the typed stdout contract, default `suggestions.json` writing, sibling `proposals/{proposal_id}.json` artifact creation, and the requirement that shared CLI callers move with the Wave 2 migration instead of expecting legacy plain-language items.
+- Open item: update `cli.py` to call the new typed suggestion writer and keep `mdisc llm-suggest` dry-run with clear exit-2 handling on invalid input.

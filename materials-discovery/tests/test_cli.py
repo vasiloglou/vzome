@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import yaml
@@ -257,7 +258,7 @@ def test_cli_llm_suggest_success(tmp_path: Path) -> None:
 """.strip(),
         encoding="utf-8",
     )
-    out_path = tmp_path / "suggestions.json"
+    out_path = tmp_path / "custom" / "typed_suggestions.json"
 
     result = runner.invoke(
         app,
@@ -272,4 +273,12 @@ def test_cli_llm_suggest_success(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     assert out_path.exists()
-    assert '"overall_status":"ready"' in result.stdout
+    stdout_payload = json.loads(result.stdout)
+    written_payload = json.loads(out_path.read_text(encoding="utf-8"))
+    assert stdout_payload == written_payload
+    assert stdout_payload["schema_version"] == "llm-campaign-suggestion/v1"
+    assert stdout_payload["proposal_count"] == 1
+    assert "items" not in stdout_payload
+    proposal_path = Path(stdout_payload["proposals"][0]["proposal_path"])
+    assert proposal_path.parent == tmp_path / "proposals"
+    assert proposal_path.exists()
