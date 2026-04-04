@@ -1,5 +1,28 @@
 # Materials Design Program
 
+## Current State
+
+`v1.0` is shipped.
+
+The shipped milestone delivered all three linked workstreams:
+- multi-source materials ingestion
+- reference-aware no-DFT materials discovery
+- the first complete Zomic-centered LLM ladder from corpus through acceptance
+
+Archive references:
+- `.planning/milestones/v1.0-ROADMAP.md`
+- `.planning/milestones/v1.0-REQUIREMENTS.md`
+- `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
+
+## Next Milestone Goals
+
+No next milestone has been defined yet.
+
+Likely directions for the next cycle:
+- broaden source coverage or deepen source QA
+- connect `llm-suggest` to a real closed-loop campaign surface
+- add local or fine-tuned model serving only after the acceptance workflow is stable
+
 ## What This Is
 
 This is a three-track program built on top of `materials-discovery/` in the
@@ -47,13 +70,8 @@ instead of living in separate prototypes.
 
 ### Active
 
-- [ ] Build a multi-source ingestion layer for open materials datasets relevant
-  to quasicrystals, approximants, and materials design.
-- [ ] Turn the current pipeline into a robust reference-aware no-DFT materials
-  discovery product with better source coverage, provenance, analytics, and
-  benchmarked execution paths.
-- [ ] Add an LLM training and inference path that uses Zomic as the native
-  generation representation and integrates with the existing pipeline.
+- No active milestone is open right now.
+- Use `$gsd-new-milestone` to define the next requirement set.
 
 ### Out of Scope
 
@@ -112,4 +130,4 @@ instead of living in separate prototypes.
 | Defer large-model training until corpus + evaluation are ready | Prevents premature spending and noisy benchmarks | ✓ Good |
 
 ---
-*Last updated: 2026-04-03 after Phase 5 candidate/reference data lake and analysis layer execution*
+*Last updated: 2026-04-04 after v1.0 milestone archive*

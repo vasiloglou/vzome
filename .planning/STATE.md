@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 09
-current_phase_name: fine-tuned-zomic-model-and-closed-loop-design
-current_plan: 3
-status: complete
-stopped_at: Phase 09 complete; ready for milestone lifecycle
+current_phase: null
+current_phase_name: null
+current_plan: null
+status: milestone_archived
+stopped_at: v1.0 archived; no active milestone
 last_updated: "2026-04-04T00:29:37Z"
-last_activity: 2026-04-03 -- Phase 09 execution complete
+last_activity: 2026-04-03 -- v1.0 archived
 progress:
   total_phases: 9
   completed_phases: 9
@@ -24,20 +24,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-02)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Milestone lifecycle after Phase 09 completion
+**Current focus:** No active milestone
 
 ## Current Position
 
-Current Phase: 09
-Current Phase Name: fine-tuned-zomic-model-and-closed-loop-design
+Current Phase: None
+Current Phase Name: None
 Total Phases: 9
-Current Plan: 3
-Total Plans in Phase: 3
-Phase: 09 (fine-tuned-zomic-model-and-closed-loop-design) — COMPLETE
-Plan: 3 plans executed
-Status: Phase 09 complete; milestone ready for lifecycle
-Last activity: 2026-04-03 -- Phase 09 execution complete
-Last Activity Description: Acceptance packs, dry-run llm-suggest, docs refresh, and full-suite verification are complete
+Current Plan: None
+Total Plans in Phase: 0
+Phase: None
+Plan: Archived
+Status: v1.0 archived; waiting for next milestone definition
+Last activity: 2026-04-03 -- v1.0 archived
+Last Activity Description: v1.0 roadmap, requirements, and audit were archived after all 9 phases completed
 
 Progress: [██████████] 100%
 
@@ -157,10 +157,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+- Cleanup of `.planning/phases/` was intentionally deferred because `.planning/phases/05-candidate-reference-data-lake-and-analysis-layer/05-CONTEXT.md` is an unrelated local untracked file that should not be moved automatically.
 
 ## Session Continuity
 
 Last session: 2026-04-04T00:29:37Z
-Stopped at: Phase 09 complete; ready for milestone lifecycle
-Resume file: .planning/phases/09-fine-tuned-zomic-model-and-closed-loop-design/09-03-SUMMARY.md
+Stopped at: v1.0 archived; no active milestone
+Resume file: .planning/MILESTONES.md
