@@ -48,6 +48,7 @@
 | 2026-04-03 | Phase 9 Plan 01: eval-set and acceptance-pack contracts | Added typed eval-set and acceptance-pack models, new storage/helpers for exporting eval sets from the Phase 6 corpus, and focused acceptance-schema pytest coverage |
 | 2026-04-03 | Phase 9 Plan 02: conditioned llm-generate prompts | Added optional eval-set-backed example conditioning for `llm-generate`, prompt/run-manifest lineage for selected examples, and focused core/CLI regressions proving the path remains optional |
 | 2026-04-03 | Phase 9 Plan 03: acceptance benchmark and llm-suggest | Added the operator acceptance benchmark script, the dry-run `mdisc llm-suggest` command, refreshed LLM docs, and closed the full suite at 297 passed |
+| 2026-04-04 | Phase 10 Plan 01 Task 1 RED: campaign schema tests | Added failing pytest coverage for typed campaign proposals, action-family payload validation, separate approvals, and campaign-spec lineage before implementing the new governance contract |
 
 ## Diary
 
@@ -322,3 +323,9 @@
   - `developers-docs/pipeline-stages.md`
   - `developers-docs/llm-integration.md`
 - Re-verified the whole `materials-discovery` suite after landing the benchmark layer to keep Phase 7 closed with a project-wide green state.
+
+### 2026-04-04
+
+- 01:28 EDT — Started Phase 10 Plan 01 Task 1 in TDD RED mode by adding `tests/test_llm_campaign_schema.py`.
+- The new failing coverage locks the intended governance contract for typed campaign actions, system-scoped proposals, separate approval artifacts, and self-contained campaign specs before touching `llm/schema.py`.
+- Open item: implement the additive Phase 10 schema models in `materials_discovery.llm.schema` and export them without disturbing the existing Phase 6-9 contracts.
