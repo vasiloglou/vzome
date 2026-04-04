@@ -69,12 +69,17 @@ def _request_hash(
     count: int,
     temperature: float,
     seed_path: Path | None,
+    prompt_instruction_deltas: list[str] | None = None,
+    campaign_metadata: dict[str, object] | None = None,
 ) -> str:
     payload = {
         "config_hash": config_sha256(config),
         "requested_count": count,
         "temperature": temperature,
         "seed_path": "" if seed_path is None else str(seed_path),
+        "prompt_instruction_deltas": list(prompt_instruction_deltas or []),
+        "campaign_id": None if campaign_metadata is None else campaign_metadata.get("campaign_id"),
+        "launch_id": None if campaign_metadata is None else campaign_metadata.get("launch_id"),
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:12]
 
@@ -99,6 +104,8 @@ def generate_llm_candidates(
     config_path: Path | None = None,
     seed_zomic_path: Path | None = None,
     temperature_override: float | None = None,
+    prompt_instruction_deltas: list[str] | None = None,
+    campaign_metadata: dict[str, object] | None = None,
 ) -> LlmGenerateSummary:
     if config.llm_generate is None:
         raise ValueError("config.llm_generate must be configured for llm-generate")
@@ -136,12 +143,15 @@ def generate_llm_candidates(
         count=count,
         seed_zomic_text=seed_text,
         conditioning_examples=conditioning_examples,
+        instruction_deltas=prompt_instruction_deltas,
     )
     request_hash = _request_hash(
         config,
         count=count,
         temperature=effective_temperature,
         seed_path=effective_seed_path,
+        prompt_instruction_deltas=prompt_instruction_deltas,
+        campaign_metadata=campaign_metadata,
     )
     run_dir = _run_root(config, request_hash=request_hash)
     if run_dir.exists():
@@ -158,6 +168,7 @@ def generate_llm_candidates(
         max_tokens=llm_config.max_tokens,
         seed_zomic_path=None if effective_seed_path is None else str(effective_seed_path),
         example_pack_path=None if example_pack_path is None else str(example_pack_path),
+        prompt_instruction_deltas=list(prompt_instruction_deltas or []),
         conditioning_example_ids=[example.example_id for example in conditioning_examples],
     )
     prompt_path = run_dir / "prompt.json"
@@ -249,6 +260,23 @@ def generate_llm_candidates(
                             "seed_zomic_path": (
                                 None if effective_seed_path is None else str(effective_seed_path)
                             ),
+                            **(
+                                {
+                                    "llm_campaign": {
+                                        key: campaign_metadata[key]
+                                        for key in (
+                                            "campaign_id",
+                                            "launch_id",
+                                            "proposal_id",
+                                            "approval_id",
+                                            "campaign_spec_path",
+                                        )
+                                        if campaign_metadata.get(key) is not None
+                                    }
+                                }
+                                if campaign_metadata is not None
+                                else {}
+                            ),
                         },
                     )
                 except Exception as exc:  # pragma: no cover - exercised via tests
@@ -312,7 +340,29 @@ def generate_llm_candidates(
         compile_results_path=str(compile_results_path),
         created_at_utc=datetime.now(UTC).isoformat(),
         example_pack_path=request.example_pack_path,
+        prompt_instruction_deltas=request.prompt_instruction_deltas,
         conditioning_example_ids=request.conditioning_example_ids,
+        campaign_id=None if campaign_metadata is None else campaign_metadata.get("campaign_id"),
+        launch_id=None if campaign_metadata is None else campaign_metadata.get("launch_id"),
+        campaign_spec_path=(
+            None if campaign_metadata is None else campaign_metadata.get("campaign_spec_path")
+        ),
+        proposal_id=None if campaign_metadata is None else campaign_metadata.get("proposal_id"),
+        approval_id=None if campaign_metadata is None else campaign_metadata.get("approval_id"),
+        requested_model_lanes=(
+            [] if campaign_metadata is None else list(campaign_metadata.get("requested_model_lanes", []))
+        ),
+        resolved_model_lane=(
+            None if campaign_metadata is None else campaign_metadata.get("resolved_model_lane")
+        ),
+        resolved_model_lane_source=(
+            None
+            if campaign_metadata is None
+            else campaign_metadata.get("resolved_model_lane_source")
+        ),
+        launch_summary_path=(
+            None if campaign_metadata is None else campaign_metadata.get("launch_summary_path")
+        ),
     )
     write_json_object(run_manifest.model_dump(mode="json"), run_manifest_path)
 

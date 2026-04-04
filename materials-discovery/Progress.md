@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 11 Plan 02 Task 1 campaign-aware llm-generate | Added prompt instruction deltas and campaign launch metadata to the LLM generation request/run-manifest flow while keeping manual `llm-generate` behavior unchanged |
 | 2026-04-04 | Phase 11 Plan 02 Task 1 RED tests | Extended `tests/test_llm_generate_core.py` to lock prompt instruction deltas and campaign-aware run/provenance metadata before modifying `llm-generate` |
 | 2026-04-04 | Phase 11 Plan 01 Task 2 launch resolution | Added `llm/launch.py` with deterministic lane selection, prompt/composition overlays, eval-set seed materialization, and exported campaign launch helpers |
 | 2026-04-04 | Phase 11 Plan 01 Task 2 RED tests | Added `tests/test_llm_launch_core.py` to lock deterministic lane, prompt, composition, and seed resolution behavior before implementing `llm/launch.py` |
@@ -340,6 +341,9 @@
 
 ### 2026-04-04
 
+- 12:47 EDT — Implemented the Phase 11 Plan 02 Task 1 additive `llm-generate` bridge.
+- Threaded prompt instruction deltas through `build_generation_prompt()` and `LlmGenerationRequest`, added campaign-aware fields to `LlmRunManifest`, and recorded additive `llm_campaign` provenance on launched candidates.
+- Also widened the run hash so campaign launches with different overlays do not silently collide with otherwise identical manual generation runs.
 - 12:42 EDT — Started Phase 11 Plan 02 Task 1 in TDD RED mode by extending `tests/test_llm_generate_core.py`.
 - The new failing coverage locks prompt instruction-delta placement plus campaign-aware run-manifest and candidate-provenance fields before changing the existing `llm-generate` runtime.
 - Open item: thread additive prompt/campaign launch metadata through `llm_generate` without disturbing the manual path.

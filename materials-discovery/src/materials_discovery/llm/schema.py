@@ -394,6 +394,7 @@ class LlmGenerationRequest(BaseModel):
     max_tokens: int
     seed_zomic_path: str | None = None
     example_pack_path: str | None = None
+    prompt_instruction_deltas: list[str] = Field(default_factory=list)
     conditioning_example_ids: list[str] = Field(default_factory=list)
 
     @field_validator("system", "template_family", "prompt_text")
@@ -412,7 +413,7 @@ class LlmGenerationRequest(BaseModel):
         stripped = value.strip()
         return stripped or None
 
-    @field_validator("conditioning_example_ids")
+    @field_validator("conditioning_example_ids", "prompt_instruction_deltas")
     @classmethod
     def normalize_conditioning_ids(cls, values: Sequence[str]) -> list[str]:
         return _normalize_string_list(values)
@@ -517,7 +518,17 @@ class LlmRunManifest(BaseModel):
     compile_results_path: str
     created_at_utc: str
     example_pack_path: str | None = None
+    prompt_instruction_deltas: list[str] = Field(default_factory=list)
     conditioning_example_ids: list[str] = Field(default_factory=list)
+    campaign_id: str | None = None
+    launch_id: str | None = None
+    campaign_spec_path: str | None = None
+    proposal_id: str | None = None
+    approval_id: str | None = None
+    requested_model_lanes: list[str] = Field(default_factory=list)
+    resolved_model_lane: str | None = None
+    resolved_model_lane_source: str | None = None
+    launch_summary_path: str | None = None
 
     @field_validator(
         "schema_version",
@@ -539,7 +550,17 @@ class LlmRunManifest(BaseModel):
             raise ValueError("field must not be blank")
         return stripped
 
-    @field_validator("example_pack_path")
+    @field_validator(
+        "example_pack_path",
+        "campaign_id",
+        "launch_id",
+        "campaign_spec_path",
+        "proposal_id",
+        "approval_id",
+        "resolved_model_lane",
+        "resolved_model_lane_source",
+        "launch_summary_path",
+    )
     @classmethod
     def normalize_example_pack_path(cls, value: str | None) -> str | None:
         if value is None:
@@ -547,7 +568,11 @@ class LlmRunManifest(BaseModel):
         stripped = value.strip()
         return stripped or None
 
-    @field_validator("conditioning_example_ids")
+    @field_validator(
+        "conditioning_example_ids",
+        "requested_model_lanes",
+        "prompt_instruction_deltas",
+    )
     @classmethod
     def normalize_conditioning_ids(cls, values: Sequence[str]) -> list[str]:
         return _normalize_string_list(values)

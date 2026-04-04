@@ -60,6 +60,7 @@ def build_generation_prompt(
     count: int,
     seed_zomic_text: str | None,
     conditioning_examples: list[LlmEvalSetExample] | None = None,
+    instruction_deltas: list[str] | None = None,
 ) -> str:
     prompt_template = (
         config.llm_generate.prompt_template
@@ -85,6 +86,10 @@ def build_generation_prompt(
             "Use labels where appropriate and keep the script self-contained.",
         ]
     )
+    if instruction_deltas:
+        lines.extend(["", "INSTRUCTION_DELTAS"])
+        for delta in instruction_deltas:
+            lines.append(f"- {delta}")
     if seed_zomic_text is not None:
         lines.extend(
             [
