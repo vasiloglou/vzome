@@ -16,9 +16,10 @@ runtime in the native phonon backend.
 
 All milestones (M1-M6) and real-mode execution phases (RM0-RM6) are implemented.
 The codebase contains ~60 Python modules (7200+ LOC) with unit, integration,
-and end-to-end scenarios. The first LLM inference path and additive LLM
-evaluation/reporting path are now implemented; closed-loop fine-tuning remains
-a future phase.
+and end-to-end scenarios. The first LLM inference path, additive LLM
+evaluation/reporting path, and the Phase 9 acceptance-pack plus dry-run
+suggestion workflow are now implemented; closed-loop fine-tuning remains a
+future phase.
 
 | Stage | CLI Command | Module | Status |
 |-------|-------------|--------|--------|
@@ -32,7 +33,7 @@ a future phase.
 | Experiment report | `mdisc report` | `diffraction/` | Implemented |
 | LLM-powered generation | `mdisc llm-generate` | `llm/` | Implemented (Phase 7 MVP) |
 | LLM-powered evaluation | `mdisc llm-evaluate` | `llm/` | Implemented (Phase 8 MVP) |
-| LLM-guided suggestions | `mdisc llm-suggest` | `llm/` | Planned |
+| LLM-guided suggestions | `mdisc llm-suggest` | `llm/` | Implemented (Phase 9 dry-run MVP) |
 
 ## Quickstart
 
@@ -76,6 +77,7 @@ uv run mdisc hifi-rank --config configs/systems/sc_zn_real.yaml
 | How do I run the Phase 4 benchmark workflow? | [Reference-Aware Benchmark Runbook](reference-aware-benchmarks.md) |
 | How do I compare deterministic vs LLM generation offline? | [LLM Integration](llm-integration.md) |
 | How do I benchmark deterministic vs LLM lanes through report? | [LLM Integration](llm-integration.md) |
+| How do I compute an acceptance pack and get dry-run next steps? | [LLM Integration](llm-integration.md) |
 
 ## Scope
 

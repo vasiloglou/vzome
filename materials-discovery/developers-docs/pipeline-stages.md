@@ -659,6 +659,50 @@ mdisc llm-evaluate --config PATH [--batch BATCH]
 
 ---
 
+## 11. `mdisc llm-suggest`
+
+Emit dry-run next-step suggestions from a typed acceptance pack.
+
+### CLI syntax
+
+```
+mdisc llm-suggest --acceptance-pack PATH [--out PATH]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--acceptance-pack` | PATH | Yes | -- | Path to the typed acceptance pack JSON |
+| `--out` | PATH | No | sibling file | Output JSON override for the dry-run suggestions |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Acceptance pack JSON | `{workspace}/data/benchmarks/llm_acceptance/{pack_id}/acceptance_pack.json` | `./scripts/run_llm_acceptance_benchmarks.sh` |
+
+### Internal steps
+
+1. **Load acceptance pack.** Parse the typed per-system benchmark summary.
+2. **Assess weak spots.** Check validity, generation success, shortlist/validation pass-through, synthesizability, and release-gate readiness.
+3. **Emit dry-run suggestions.** Produce structured recommendations for the next model-improvement pass without launching a search loop.
+4. **Write suggestion artifact.** Persist the dry-run JSON next to the acceptance pack by default.
+5. **Emit summary.** Print the typed `LlmSuggestion` JSON to stdout.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Acceptance pack | `{workspace}/data/benchmarks/llm_acceptance/{pack_id}/acceptance_pack.json` |
+| Suggestion JSON | `{workspace}/data/benchmarks/llm_acceptance/{pack_id}/suggestions.json` |
+
+### Return type
+
+`LlmSuggestion` (JSON to stdout).
+
+---
+
 ## Pipeline data flow
 
 The commands are designed to run in sequence. Each stage reads the output of a
@@ -694,5 +738,6 @@ alongside `generate`. Both produce CandidateRecord JSONL that feeds into
 `screen`. The implemented `llm-evaluate` command enriches ranked candidates with
 synthesizability and precursor information before reporting, and `report`
 prefers the additive `*_all_llm_evaluated.jsonl` artifact when it exists. The
-planned `llm-suggest` command can replace or augment `active-learn` with
-LLM-guided exploration.
+implemented dry-run `llm-suggest` command now reads typed acceptance packs and
+emits structured next-step suggestions without replacing the existing
+`active-learn` loop.

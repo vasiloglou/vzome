@@ -19,6 +19,7 @@ from materials_discovery.llm.acceptance import (
     load_acceptance_benchmark_input,
     write_llm_acceptance_pack,
 )
+from materials_discovery.llm.suggest import build_llm_suggestions, write_llm_suggestions
 from materials_discovery.llm.benchmark import (
     build_llm_generate_comparison,
     write_llm_generate_comparison,
@@ -125,6 +126,7 @@ __all__ = [
     "build_llm_generate_comparison",
     "build_llm_pipeline_comparison",
     "build_generation_prompt",
+    "build_llm_suggestions",
     "dedupe_corpus_examples",
     "CorpusBuildConfig",
     "CorpusBuildSummary",
@@ -181,5 +183,6 @@ __all__ = [
     "write_llm_acceptance_pack",
     "write_llm_generate_comparison",
     "write_llm_pipeline_comparison",
+    "write_llm_suggestions",
     "write_corpus_manifest",
 ]

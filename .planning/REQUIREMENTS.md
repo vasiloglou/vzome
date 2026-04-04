@@ -37,17 +37,17 @@ reinforce each other instead of living in separate prototypes.
 
 ### LLM Training and Inference
 
-- [ ] **LLM-01**: The project can build a Zomic-centered training corpus from
+- [x] **LLM-01**: The project can build a Zomic-centered training corpus from
   existing Zomic scripts plus converted external structures.
-- [ ] **LLM-02**: The project provides a constrained inference path that
+- [x] **LLM-02**: The project provides a constrained inference path that
   generates Zomic, validates syntax/compileability, and converts valid outputs
   into standard `CandidateRecord` artifacts.
-- [ ] **LLM-03**: The project supports an `llm-evaluate` path for
+- [x] **LLM-03**: The project supports an `llm-evaluate` path for
   synthesizability, precursor hints, anomaly checks, or literature-style
   contextual assessment.
-- [ ] **LLM-04**: The LLM path is benchmarked against the existing generator and
+- [x] **LLM-04**: The LLM path is benchmarked against the existing generator and
   uses the same downstream screen/validate/rank/report pipeline.
-- [ ] **LLM-05**: The project defines acceptance metrics for validity,
+- [x] **LLM-05**: The project defines acceptance metrics for validity,
   novelty, synthesizability quality, and downstream pass-through rate.
 
 ### Operations and Governance
@@ -112,7 +112,7 @@ reinforce each other instead of living in separate prototypes.
 | LLM-02 | Phase 7 | Complete |
 | LLM-03 | Phase 8 | Complete |
 | LLM-04 | Phase 8 | Complete |
-| LLM-05 | Phase 9 | Pending |
+| LLM-05 | Phase 9 | Complete |
 | OPS-01 | Phase 1 | Complete |
 | OPS-02 | Phase 1 | Complete |
 | OPS-03 | Phase 3 | Complete |
@@ -125,4 +125,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-04 after Phase 08 execution completed LLM-01 through LLM-04* 
+*Last updated: 2026-04-04 after Phase 09 execution completed LLM-05 and closed the v1 LLM milestone surface*

@@ -104,7 +104,8 @@ from materials_discovery.lake.index import (
 from materials_discovery.llm.corpus_builder import build_llm_corpus
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
-from materials_discovery.llm.schema import CorpusBuildConfig
+from materials_discovery.llm.schema import CorpusBuildConfig, LlmAcceptancePack
+from materials_discovery.llm.suggest import build_llm_suggestions, write_llm_suggestions
 
 app = typer.Typer(add_completion=False, help="No-DFT materials discovery CLI scaffold")
 
@@ -768,6 +769,23 @@ def llm_evaluate_command(
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
         _emit_error(f"llm-evaluate failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-suggest")
+def llm_suggest_command(
+    acceptance_pack: Path = typer.Option(..., "--acceptance-pack", exists=True, dir_okay=False),
+    out: Path | None = typer.Option(None, "--out", dir_okay=False),
+) -> None:
+    """Emit a dry-run suggestion set from a typed acceptance pack."""
+    try:
+        pack = LlmAcceptancePack.model_validate(load_json_object(acceptance_pack))
+        suggestions = build_llm_suggestions(pack)
+        out_path = out or acceptance_pack.with_name("suggestions.json")
+        write_llm_suggestions(suggestions, out_path)
+        typer.echo(suggestions.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-suggest failed: {exc}")
         raise typer.Exit(code=2)
 
 

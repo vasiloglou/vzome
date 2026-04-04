@@ -47,6 +47,7 @@
 | 2026-04-03 | Phase 8 Plan 03: downstream LLM pipeline benchmarks | Added the downstream deterministic-vs-LLM benchmark helper, the `run_llm_pipeline_benchmarks.sh` operator script, refreshed LLM docs, and added offline Al-Cu-Fe/Sc-Zn benchmark regression coverage |
 | 2026-04-03 | Phase 9 Plan 01: eval-set and acceptance-pack contracts | Added typed eval-set and acceptance-pack models, new storage/helpers for exporting eval sets from the Phase 6 corpus, and focused acceptance-schema pytest coverage |
 | 2026-04-03 | Phase 9 Plan 02: conditioned llm-generate prompts | Added optional eval-set-backed example conditioning for `llm-generate`, prompt/run-manifest lineage for selected examples, and focused core/CLI regressions proving the path remains optional |
+| 2026-04-03 | Phase 9 Plan 03: acceptance benchmark and llm-suggest | Added the operator acceptance benchmark script, the dry-run `mdisc llm-suggest` command, refreshed LLM docs, and closed the full suite at 297 passed |
 
 ## Diary
 
@@ -289,6 +290,11 @@
 - `llm/prompting.py` now selects same-system examples by composition distance and injects them into the prompt in a reproducible block.
 - `llm/generate.py` now records `example_pack_path` and `conditioning_example_ids` in both `prompt.json` and the run manifest.
 - Added Plan 02 regressions in `tests/test_llm_generate_core.py` and `tests/test_llm_generate_cli.py`; focused verification passed with `12 passed`.
+- 21:46 EDT — Closed Phase 9 with the operator acceptance benchmark and dry-run suggestion workflow.
+- Added `llm/suggest.py` plus the `mdisc llm-suggest --acceptance-pack ...` CLI command so typed acceptance packs now produce structured next-step recommendations without launching an autonomous loop.
+- Added `scripts/run_llm_acceptance_benchmarks.sh`, which composes the Phase 7 and Phase 8 benchmark lanes into a typed acceptance pack under `data/benchmarks/llm_acceptance/{pack_id}/acceptance_pack.json`.
+- Added `tests/test_llm_acceptance_benchmarks.py` and extended `tests/test_cli.py`; focused verification passed with `11 passed`, and the full `materials-discovery` suite closed at `297 passed, 3 skipped, 1 warning`.
+- Refreshed `README.md`, `developers-docs/index.md`, `developers-docs/llm-integration.md`, and `developers-docs/pipeline-stages.md` so the Phase 9 acceptance-pack and dry-run suggestion workflow is documented as implemented.
 - `llm/runtime.py` adds the provider-neutral adapter seam with deterministic `llm_fixture_v1` behavior and the first hosted adapter path, `anthropic_api_v1`, via lazy `httpx`.
 - `llm/__init__.py` now exports the new Phase 7 runtime/schemas alongside the existing Phase 6 corpus surface.
 - `developers-docs/configuration-reference.md` now documents the `llm_generate:` block, mock-only defaulting, and the requirement that real hosted configs set `llm_provider` and `llm_model`.

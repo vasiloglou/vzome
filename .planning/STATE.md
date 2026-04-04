@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 09
 current_phase_name: fine-tuned-zomic-model-and-closed-loop-design
-current_plan: 1
-status: ready_to_execute
-stopped_at: Phase 09 planning complete; ready to execute
-last_updated: "2026-04-04T01:12:00Z"
-last_activity: 2026-04-03 -- Phase 09 autonomous planning complete
+current_plan: 3
+status: complete
+stopped_at: Phase 09 complete; ready for milestone lifecycle
+last_updated: "2026-04-04T00:29:37Z"
+last_activity: 2026-04-03 -- Phase 09 execution complete
 progress:
   total_phases: 9
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 26
-  completed_plans: 23
-  percent: 89
+  completed_plans: 26
+  percent: 100
 ---
 
 # Project State
@@ -24,28 +24,28 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-02)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 09 — fine-tuned-zomic-model-and-closed-loop-design
+**Current focus:** Milestone lifecycle after Phase 09 completion
 
 ## Current Position
 
 Current Phase: 09
 Current Phase Name: fine-tuned-zomic-model-and-closed-loop-design
 Total Phases: 9
-Current Plan: 1
+Current Plan: 3
 Total Plans in Phase: 3
-Phase: 09 (fine-tuned-zomic-model-and-closed-loop-design) — READY TO EXECUTE
-Plan: 3 plans created
-Status: Ready to execute Phase 09
-Last activity: 2026-04-03 -- Phase 09 autonomous planning complete
-Last Activity Description: Phase 08 is complete and Phase 09 now has context, research, validation, and a three-plan execution set
+Phase: 09 (fine-tuned-zomic-model-and-closed-loop-design) — COMPLETE
+Plan: 3 plans executed
+Status: Phase 09 complete; milestone ready for lifecycle
+Last activity: 2026-04-03 -- Phase 09 execution complete
+Last Activity Description: Acceptance packs, dry-run llm-suggest, docs refresh, and full-suite verification are complete
 
-Progress: [█████████░] 89%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 23
+- Total plans completed: 26
 - Average duration: 20 min
 - Total execution time: 5.7 hours
 
@@ -61,11 +61,12 @@ Progress: [█████████░] 89%
 | 6 | 4 | 122 min | 30 min |
 | 7 | 3 | 69 min | 23 min |
 | 8 | 3 | 56 min | 19 min |
+| 9 | 3 | 32 min | 11 min |
 
 **Recent Trend:**
 
-- Last 5 plans: P7.02=35min, P7.03=34min, P8.01=18min, P8.02=16min, P8.03=22min
-- Trend: stable with faster incremental LLM integration phases
+- Last 5 plans: P8.02=16min, P8.03=22min, P9.01=12min, P9.02=15min, P9.03=5min
+- Trend: stable with quick finishing work on the typed LLM acceptance layer
 
 | Phase 01-program-charter-and-canonical-data-model P01 | 9min | 3 tasks | 8 files |
 | Phase 02-ingestion-platform-mvp P01 | 59min | 3 tasks | 15 files |
@@ -90,6 +91,9 @@ Progress: [█████████░] 89%
 | Phase 08 P01 | 18 | 3 tasks | 9 files |
 | Phase 08 P02 | 16 | 3 tasks | 7 files |
 | Phase 08 P03 | 22 | 3 tasks | 9 files |
+| Phase 09 P01 | 12 | 3 tasks | 9 files |
+| Phase 09 P02 | 15 | 3 tasks | 8 files |
+| Phase 09 P03 | 5 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -143,6 +147,9 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 08-llm-evaluation-and-pipeline-integration]: `llm-evaluate` is additive and report-oriented; it does not rerank candidates in this milestone.
 - [Phase 08-llm-evaluation-and-pipeline-integration]: `report` prefers `*_all_llm_evaluated.jsonl` when present, while partial evaluation artifacts do not override the default ranked lane.
 - [Phase 08-llm-evaluation-and-pipeline-integration]: The downstream deterministic-vs-LLM benchmark lane is now real and should be reused as the acceptance surface for Phase 9.
+- [Phase 09-fine-tuned-zomic-model-and-closed-loop-design]: Acceptance metrics are file-backed and computed from the existing Phase 7/8 benchmark artifacts instead of ad hoc notebook logic.
+- [Phase 09-fine-tuned-zomic-model-and-closed-loop-design]: `llm-generate` conditioning remains optional and reproducible through eval-set files plus recorded `conditioning_example_ids`.
+- [Phase 09-fine-tuned-zomic-model-and-closed-loop-design]: `llm-suggest` is a dry-run advisory command in v1; it does not mutate the active-learning loop automatically.
 
 ### Pending Todos
 
@@ -154,6 +161,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T01:12:00Z
-Stopped at: Phase 09 planning complete; ready to execute
-Resume file: .planning/phases/09-fine-tuned-zomic-model-and-closed-loop-design/09-01-PLAN.md
+Last session: 2026-04-04T00:29:37Z
+Stopped at: Phase 09 complete; ready for milestone lifecycle
+Resume file: .planning/phases/09-fine-tuned-zomic-model-and-closed-loop-design/09-03-SUMMARY.md

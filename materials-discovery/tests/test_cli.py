@@ -214,3 +214,62 @@ def test_cli_invalid_backend_mode_returns_2(tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 2
+
+
+def test_cli_llm_suggest_success(tmp_path: Path) -> None:
+    runner = CliRunner()
+    acceptance_pack = tmp_path / "acceptance_pack.json"
+    acceptance_pack.write_text(
+        """
+{
+  "schema_version": "llm-acceptance-pack/v1",
+  "pack_id": "acceptance_demo",
+  "created_at_utc": "2026-04-03T00:00:00Z",
+  "eval_set_manifest_path": null,
+  "thresholds": {
+    "min_parse_success_rate": 0.8,
+    "min_compile_success_rate": 0.8,
+    "min_generation_success_rate": 0.3,
+    "min_shortlist_pass_rate": 0.05,
+    "min_validation_pass_rate": 0.02,
+    "min_novelty_score_mean": 0.0,
+    "min_synthesizability_mean": 0.5
+  },
+  "systems": [
+    {
+      "system": "Al-Cu-Fe",
+      "generate_comparison_path": "data/benchmarks/llm_generate/al_cu_fe_comparison.json",
+      "pipeline_comparison_path": "data/benchmarks/llm_pipeline/al_cu_fe_comparison.json",
+      "parse_success_rate": 0.95,
+      "compile_success_rate": 0.92,
+      "generation_success_rate": 0.4,
+      "shortlist_pass_rate": 0.12,
+      "validation_pass_rate": 0.08,
+      "novelty_score_mean": 0.2,
+      "synthesizability_mean": 0.71,
+      "report_release_gate_ready": true,
+      "failing_metrics": [],
+      "passed": true
+    }
+  ],
+  "overall_passed": true
+}
+""".strip(),
+        encoding="utf-8",
+    )
+    out_path = tmp_path / "suggestions.json"
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-suggest",
+            "--acceptance-pack",
+            str(acceptance_pack),
+            "--out",
+            str(out_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert out_path.exists()
+    assert '"overall_status":"ready"' in result.stdout

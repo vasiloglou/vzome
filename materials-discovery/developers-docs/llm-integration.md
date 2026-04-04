@@ -140,7 +140,8 @@ The pipeline gains LLM-powered stages that sit alongside (not replacing) the
 existing generation and evaluation paths. Phase 7 implements the first
 `mdisc llm-generate` MVP with mock coverage plus one hosted-provider seam.
 Phase 8 adds `mdisc llm-evaluate`, additive report integration, and an offline
-downstream benchmark lane. `llm-suggest` remains future work.
+downstream benchmark lane. Phase 9 adds typed eval sets, acceptance packs, and
+a dry-run `mdisc llm-suggest` surface.
 
 #### `mdisc llm-generate` — LLM-Powered Candidate Generation
 
@@ -195,13 +196,18 @@ is no "approximately right" failure mode that could poison the pipeline.
 with prompt engineering rather than a fine-tuned model, since it needs broad chemistry
 knowledge rather than Zomic-specific generation ability.
 
-#### `mdisc llm-suggest` — LLM-Guided Active Learning (Future)
+#### `mdisc llm-suggest` — LLM-Guided Acceptance Suggestions (Phase 9 Dry Run)
 
-A third stage that replaces or augments the current `active-learn` surrogate:
-- LLM analyzes the full set of validated candidates and their properties
-- Proposes new composition regions to explore (outside the current bounds)
-- Suggests structural motifs (in Zomic) that might stabilize failing candidates
-- Feeds back into `llm-generate` for the next exploration cycle
+The current Phase 9 surface is intentionally lightweight and operator-facing:
+- `run_llm_acceptance_benchmarks.sh` computes a typed acceptance pack from the
+  Phase 7 and Phase 8 benchmark artifacts
+- `mdisc llm-suggest --acceptance-pack ...` reads that pack and emits structured
+  next-step suggestions without executing a new search loop
+- Suggestions are aligned to existing workflow concepts: prompt validity,
+  composition-conditioned example quality, downstream pass-through, and release
+  readiness
+
+This is a dry-run decision aid, not yet a fully autonomous closed loop.
 
 ### 3.2 Backend Adapter for LLM
 
@@ -430,7 +436,7 @@ Detailed in [Zomic LLM Data Plan](zomic-llm-data-plan.md). Summary:
 - [x] Integrate LLM assessment into report stage
 
 ### Phase 4 — Active Learning Loop
-- [ ] Implement `mdisc llm-suggest` CLI command
+- [x] Implement `mdisc llm-suggest` dry-run CLI command
 - [ ] Connect LLM suggestions to `llm-generate` for closed-loop exploration
 - [ ] Benchmark against traditional `active-learn` surrogate
 
