@@ -48,6 +48,7 @@ CampaignModelLane = Literal["general_purpose", "specialized_materials"]
 CampaignDecision = Literal["approved", "rejected"]
 CampaignPriority = Literal["high", "medium", "low"]
 CampaignOverallStatus = Literal["ready", "needs_improvement"]
+CampaignLaunchStatus = Literal["running", "succeeded", "failed"]
 
 
 def _normalize_string_list(values: Sequence[str]) -> list[str]:
@@ -1307,3 +1308,111 @@ class LlmCampaignSpec(BaseModel):
         if self.system != self.launch_baseline.system:
             raise ValueError("campaign spec system must match launch baseline system")
         return self
+
+
+class LlmCampaignResolvedLaunch(BaseModel):
+    launch_id: str
+    campaign_id: str
+    campaign_spec_path: str
+    system_config_path: str
+    system_config_hash: str
+    requested_model_lanes: list[str] = Field(default_factory=list)
+    resolved_model_lane: str
+    resolved_model_lane_source: Literal["configured_lane", "baseline_fallback"]
+    resolved_adapter: str
+    resolved_provider: str
+    resolved_model: str
+    prompt_instruction_deltas: list[str] = Field(default_factory=list)
+    resolved_composition_bounds: dict[str, CompositionBound]
+    resolved_example_pack_path: str | None = None
+    resolved_seed_zomic_path: str | None = None
+
+    @field_validator(
+        "launch_id",
+        "campaign_id",
+        "campaign_spec_path",
+        "system_config_path",
+        "system_config_hash",
+        "resolved_model_lane",
+        "resolved_adapter",
+        "resolved_provider",
+        "resolved_model",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("requested_model_lanes", "prompt_instruction_deltas")
+    @classmethod
+    def normalize_string_lists(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("resolved_example_pack_path", "resolved_seed_zomic_path")
+    @classmethod
+    def normalize_optional_paths(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @model_validator(mode="after")
+    def validate_composition_bounds(self) -> LlmCampaignResolvedLaunch:
+        if not self.resolved_composition_bounds:
+            raise ValueError("resolved_composition_bounds must not be empty")
+        return self
+
+
+class LlmCampaignLaunchSummary(BaseModel):
+    launch_id: str
+    campaign_id: str
+    campaign_spec_path: str
+    proposal_id: str
+    approval_id: str
+    system: str
+    status: CampaignLaunchStatus
+    created_at_utc: str
+    requested_count: int
+    requested_model_lanes: list[str] = Field(default_factory=list)
+    resolved_model_lane: str
+    resolved_model_lane_source: Literal["configured_lane", "baseline_fallback"]
+    resolved_launch_path: str
+    run_manifest_path: str | None = None
+    llm_generate_manifest_path: str | None = None
+    candidates_path: str | None = None
+    error_kind: str | None = None
+    error_message: str | None = None
+
+    @field_validator(
+        "launch_id",
+        "campaign_id",
+        "campaign_spec_path",
+        "proposal_id",
+        "approval_id",
+        "system",
+        "created_at_utc",
+        "resolved_model_lane",
+        "resolved_launch_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("requested_model_lanes")
+    @classmethod
+    def normalize_requested_model_lanes(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator(
+        "run_manifest_path",
+        "llm_generate_manifest_path",
+        "candidates_path",
+        "error_kind",
+        "error_message",
+    )
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("requested_count")
+    @classmethod
+    def validate_requested_count(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("requested_count must be >= 0")
+        return value

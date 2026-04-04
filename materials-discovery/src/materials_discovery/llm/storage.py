@@ -113,3 +113,40 @@ def llm_campaign_dir(campaign_id: str, root: Path | None = None) -> Path:
 
 def llm_campaign_spec_path(campaign_id: str, root: Path | None = None) -> Path:
     return llm_campaign_dir(campaign_id, root) / "campaign_spec.json"
+
+
+def llm_campaign_launches_dir(campaign_id: str, root: Path | None = None) -> Path:
+    return llm_campaign_dir(campaign_id, root) / "launches"
+
+
+def llm_campaign_launch_dir(
+    campaign_id: str,
+    launch_id: str,
+    root: Path | None = None,
+) -> Path:
+    normalized_launch_id = _require_artifact_id(launch_id, "launch_id")
+    return llm_campaign_launches_dir(campaign_id, root) / normalized_launch_id
+
+
+def llm_campaign_launch_summary_path(
+    campaign_id: str,
+    launch_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_campaign_launch_dir(campaign_id, launch_id, root) / "launch_summary.json"
+
+
+def llm_campaign_resolved_launch_path(
+    campaign_id: str,
+    launch_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_campaign_launch_dir(campaign_id, launch_id, root) / "resolved_launch.json"
+
+
+def llm_campaign_materialized_seed_path(
+    campaign_id: str,
+    launch_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_campaign_launch_dir(campaign_id, launch_id, root) / "seed_from_evalset.zomic"

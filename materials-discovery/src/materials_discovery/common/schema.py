@@ -294,6 +294,29 @@ class IngestionConfig(BaseModel):
         return self
 
 
+class LlmModelLaneConfig(BaseModel):
+    adapter: str
+    provider: str
+    model: str
+    api_base: str | None = None
+
+    @field_validator("adapter", "provider", "model")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("llm model lane fields must not be blank")
+        return stripped
+
+    @field_validator("api_base")
+    @classmethod
+    def normalize_optional_api_base(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
+
+
 class LlmGenerateConfig(BaseModel):
     prompt_template: str = "zomic_generate_v1"
     temperature: float = 0.7
@@ -305,6 +328,9 @@ class LlmGenerateConfig(BaseModel):
     artifact_root: str | None = None
     persist_raw_completions: bool = True
     fixture_outputs: list[str] = Field(default_factory=list)
+    model_lanes: dict[Literal["general_purpose", "specialized_materials"], LlmModelLaneConfig] = (
+        Field(default_factory=dict)
+    )
 
     @field_validator("prompt_template")
     @classmethod
