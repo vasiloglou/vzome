@@ -96,4 +96,4 @@ def test_llm_suggest_invalid_input_exits_2_with_clear_error(tmp_path: Path) -> N
     )
 
     assert result.exit_code == 2
-    assert "llm-suggest failed" in result.stdout
+    assert "llm-suggest failed" in result.output

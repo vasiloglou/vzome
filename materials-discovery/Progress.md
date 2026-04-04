@@ -55,6 +55,7 @@
 | 2026-04-04 | Phase 10 Plan 02 Task 1 RED: typed llm-suggest core tests | Added failing pytest coverage for acceptance-pack to typed campaign-proposal mapping, deterministic action IDs, release-gate handling, and proposal-summary path emission before migrating `llm-suggest` off the legacy suggestion model |
 | 2026-04-04 | Phase 10 Plan 02 Task 1 GREEN: typed proposal mapping and writer | Added `llm/campaigns.py`, migrated `llm-suggest` to typed campaign suggestions plus per-proposal artifact writing, exported the new helpers, and updated the acceptance-benchmark caller to the new contract |
 | 2026-04-04 | Phase 10 Plan 02 Task 2 RED: llm-suggest CLI bundle tests | Added failing CLI coverage for typed stdout, default `suggestions.json`, per-system `proposals/` writing, invalid-input exit handling, and the shared `test_cli.py` migration to the new bundle contract |
+| 2026-04-04 | Phase 10 Plan 02 Task 2 GREEN: llm-suggest typed CLI contract | Updated `mdisc llm-suggest` to write the typed suggestion bundle plus proposal artifacts through `suggest.py`, print the persisted typed JSON contract, and pass the focused CLI regression slice |
 
 ## Diary
 
@@ -354,3 +355,6 @@
 - 01:48 EDT — Started Phase 10 Plan 02 Task 2 in TDD RED mode by adding `tests/test_llm_suggest_cli.py` and updating the shared `tests/test_cli.py` llm-suggest coverage.
 - The new failing CLI tests lock the typed stdout contract, default `suggestions.json` writing, sibling `proposals/{proposal_id}.json` artifact creation, and the requirement that shared CLI callers move with the Wave 2 migration instead of expecting legacy plain-language items.
 - Open item: update `cli.py` to call the new typed suggestion writer and keep `mdisc llm-suggest` dry-run with clear exit-2 handling on invalid input.
+- 01:50 EDT — Implemented the Phase 10 Plan 02 Task 2 CLI migration.
+- `cli.py` now sends `mdisc llm-suggest` through the typed suggestion writer, preserves dry-run behavior, and prints the persisted campaign-bundle JSON instead of the legacy plain-language suggestion surface.
+- Added `tests/test_llm_suggest_cli.py`, updated the shared `tests/test_cli.py` contract, and confirmed the focused CLI slice passes with proposal artifacts written under the acceptance-pack root.
