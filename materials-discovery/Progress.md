@@ -52,6 +52,7 @@
 | 2026-04-04 | Phase 10 Plan 01 Task 1 GREEN: campaign governance schema | Added the additive Phase 10 proposal, approval, launch-baseline, lineage, and campaign-spec models in `llm/schema.py`, exported them from `llm/__init__.py`, and aligned them with the new focused schema tests |
 | 2026-04-04 | Phase 10 Plan 01 Task 2 RED: campaign storage tests | Added failing pytest coverage for deterministic suggestion, proposal, approval, and campaign-spec artifact paths plus blank-ID rejection before implementing the new storage helpers |
 | 2026-04-04 | Phase 10 Plan 01 Task 2 GREEN: campaign storage helpers | Added deterministic acceptance-pack and campaign artifact path helpers in `llm/storage.py`, exported them from `llm/__init__.py`, and made blank artifact IDs fail fast instead of producing malformed paths |
+| 2026-04-04 | Phase 10 Plan 02 Task 1 RED: typed llm-suggest core tests | Added failing pytest coverage for acceptance-pack to typed campaign-proposal mapping, deterministic action IDs, release-gate handling, and proposal-summary path emission before migrating `llm-suggest` off the legacy suggestion model |
 
 ## Diary
 
@@ -341,3 +342,6 @@
 - 01:31 EDT — Implemented the Phase 10 storage helpers in `materials_discovery.llm.storage` and exported them from `materials_discovery.llm`.
 - Added deterministic helpers for `suggestions.json`, `proposals/{proposal_id}.json`, `approvals/{approval_id}.json`, and `data/llm_campaigns/{campaign_id}/campaign_spec.json`.
 - Blank `pack_id`, `proposal_id`, `approval_id`, and `campaign_id` inputs now raise immediately so the storage layer cannot quietly point at malformed artifact roots.
+- 01:42 EDT — Started Phase 10 Plan 02 Task 1 in TDD RED mode by adding `tests/test_llm_suggest_core.py`.
+- The new failing coverage locks the acceptance-pack to typed-campaign-proposal mapping rules, deterministic action IDs, release-gate posture, specialized-materials routing, and summary path emission before touching the implementation.
+- Open item: add `llm/campaigns.py`, migrate `llm/suggest.py` to the typed campaign bundle, and update in-repo callers away from the legacy `LlmSuggestion` contract.
