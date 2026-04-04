@@ -34,6 +34,8 @@ created: 2026-04-04
 - **After verification/traceability doc work:** Run `git diff --check`.
 - **Before Phase 14 closeout:** Ensure both the focused launch/lineage rerun and
   the focused downstream compatibility rerun are green and recorded.
+- **Before Phase 14 closeout:** Ensure the final `11-VERIFICATION.md` caveats
+  do not contradict the final state recorded in `11-VALIDATION.md`.
 - **Max feedback latency:** 240 seconds
 
 ---
@@ -58,6 +60,8 @@ created: 2026-04-04
 
 - [ ] `11-VERIFICATION.md` does not exist yet and must be created by this phase
 - [ ] `11-VALIDATION.md` must move from `status: draft` to an audit-ready state
+- [ ] `11-VALIDATION.md` should include a short retroactive-finalization note so
+  future readers understand why the file changed during Phase 14
 - [ ] `REQUIREMENTS.md` currently maps `LLM-08`, `LLM-10`, and `OPS-06` to
   Phase 14 as pending closure work; those rows should only flip after proof exists
 - [ ] Any Phase 14 execution that unexpectedly edits `materials-discovery/`
@@ -84,6 +88,7 @@ created: 2026-04-04
 - [ ] All tasks have focused automated verification or doc-hygiene checks
 - [ ] Sampling continuity: no 2 consecutive evidence updates without either pytest or doc-hygiene verification
 - [ ] Wave 0 captures the actual Phase 11 audit gap, not unrelated implementation work
+- [ ] `11-VALIDATION.md` and `11-VERIFICATION.md` tell the same success or blocked story
 - [ ] No watch-mode or long-running background commands are required
 - [ ] Feedback latency < 240s
 - [ ] `nyquist_compliant: true` set in frontmatter by the end of execution
