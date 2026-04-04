@@ -5,14 +5,14 @@ milestone_name: milestone
 current_phase: 12
 current_phase_name: replay-comparison-and-operator-workflow
 current_plan: 0
-status: ready_to_plan
-stopped_at: Phase 12 context captured
-last_updated: "2026-04-04T17:06:49Z"
-last_activity: 2026-04-04 -- Phase 12 context captured; ready to plan
+status: ready_to_execute
+stopped_at: Phase 12 planned
+last_updated: "2026-04-04T17:17:38Z"
+last_activity: 2026-04-04 -- Phase 12 planned; ready to execute
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 6
+  total_plans: 9
   completed_plans: 6
   percent: 67
 ---
@@ -32,12 +32,12 @@ Current Phase: 12
 Current Phase Name: replay-comparison-and-operator-workflow
 Total Phases: 3
 Current Plan: 0
-Total Plans in Phase: 0
-Phase: 12 (replay-comparison-and-operator-workflow) — READY TO PLAN
-Plan: 0 of 0
-Status: Phase 12 context captured; ready to plan
-Last activity: 2026-04-04 -- Phase 12 context captured; ready to plan
-Last Activity Description: Replay/comparison decisions captured for planning handoff
+Total Plans in Phase: 3
+Phase: 12 (replay-comparison-and-operator-workflow) — READY TO EXECUTE
+Plan: 0 of 3
+Status: Phase 12 planned; ready to execute
+Last activity: 2026-04-04 -- Phase 12 planned; ready to execute
+Last Activity Description: Replay/comparison execution plans created and validated
 
 Progress: [███████░░░] 67%
 
@@ -188,5 +188,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-04T17:06:49Z
-Stopped at: Phase 12 context captured
-Resume file: .planning/phases/12-replay-comparison-and-operator-workflow/12-CONTEXT.md
+Stopped at: Phase 12 planned
+Resume file: .planning/phases/12-replay-comparison-and-operator-workflow/12-01-PLAN.md
