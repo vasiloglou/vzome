@@ -11,7 +11,12 @@ from materials_discovery.common.manifest import config_sha256
 from materials_discovery.common.schema import CandidateRecord, LlmGenerateSummary, SystemConfig
 from materials_discovery.generator.candidate_factory import build_candidate_from_prototype_library
 from materials_discovery.llm.compiler import compile_zomic_script
-from materials_discovery.llm.prompting import build_generation_prompt, load_seed_zomic_text
+from materials_discovery.llm.eval_set import load_eval_set
+from materials_discovery.llm.prompting import (
+    build_generation_prompt,
+    load_seed_zomic_text,
+    select_conditioning_examples,
+)
 from materials_discovery.llm.runtime import resolve_llm_adapter
 from materials_discovery.llm.schema import (
     LlmGenerationAttempt,
@@ -46,6 +51,16 @@ def _effective_seed_path(
     if config.llm_generate is None or config.llm_generate.seed_zomic is None:
         return None
     return _resolve_relative_path(config.llm_generate.seed_zomic, config_path=None)
+
+
+def _effective_example_pack_path(
+    config: SystemConfig,
+    *,
+    config_path: Path | None,
+) -> Path | None:
+    if config.llm_generate is None or config.llm_generate.example_pack_path is None:
+        return None
+    return _resolve_relative_path(config.llm_generate.example_pack_path, config_path=config_path)
 
 
 def _request_hash(
@@ -97,7 +112,15 @@ def generate_llm_candidates(
         seed_zomic_path,
         config_path=config_path,
     )
+    example_pack_path = _effective_example_pack_path(config, config_path=config_path)
     seed_text = load_seed_zomic_text(effective_seed_path)
+    conditioning_examples = []
+    if example_pack_path is not None:
+        conditioning_examples = select_conditioning_examples(
+            config,
+            load_eval_set(example_pack_path),
+            max_examples=llm_config.max_conditioning_examples,
+        )
     if seed_text is not None:
         seed_result = compile_zomic_script(
             seed_text,
@@ -108,7 +131,12 @@ def generate_llm_candidates(
         if seed_result["parse_status"] != "passed" or seed_result["compile_status"] != "passed":
             raise _seed_validation_error(seed_result)
 
-    prompt_text = build_generation_prompt(config, count=count, seed_zomic_text=seed_text)
+    prompt_text = build_generation_prompt(
+        config,
+        count=count,
+        seed_zomic_text=seed_text,
+        conditioning_examples=conditioning_examples,
+    )
     request_hash = _request_hash(
         config,
         count=count,
@@ -129,6 +157,8 @@ def generate_llm_candidates(
         temperature=effective_temperature,
         max_tokens=llm_config.max_tokens,
         seed_zomic_path=None if effective_seed_path is None else str(effective_seed_path),
+        example_pack_path=None if example_pack_path is None else str(example_pack_path),
+        conditioning_example_ids=[example.example_id for example in conditioning_examples],
     )
     prompt_path = run_dir / "prompt.json"
     write_json_object(
@@ -137,6 +167,7 @@ def generate_llm_candidates(
             "prompt_template": llm_config.prompt_template,
             "request": request.model_dump(mode="json"),
             "prompt_text": prompt_text,
+            "conditioning_example_ids": request.conditioning_example_ids,
         },
         prompt_path,
     )
@@ -280,6 +311,8 @@ def generate_llm_candidates(
         attempts_path=str(attempts_path),
         compile_results_path=str(compile_results_path),
         created_at_utc=datetime.now(UTC).isoformat(),
+        example_pack_path=request.example_pack_path,
+        conditioning_example_ids=request.conditioning_example_ids,
     )
     write_json_object(run_manifest.model_dump(mode="json"), run_manifest_path)
 

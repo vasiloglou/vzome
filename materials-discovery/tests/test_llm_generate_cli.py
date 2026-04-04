@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import yaml
 from typer.testing import CliRunner
 
 from materials_discovery.cli import app
-from materials_discovery.common.io import write_jsonl
+from materials_discovery.common.io import load_yaml, write_jsonl
 from materials_discovery.common.schema import (
     CandidateRecord,
     DigitalValidationRecord,
@@ -103,3 +104,51 @@ def test_cli_llm_generate_returns_code_2_when_config_is_missing_llm_section() ->
     )
 
     assert result.exit_code == 2
+
+
+def test_cli_llm_generate_passes_optional_example_pack_config(monkeypatch, tmp_path: Path) -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    base_config = workspace / "configs" / "systems" / "al_cu_fe_llm_mock.yaml"
+    config_data = load_yaml(base_config)
+    config_data["llm_generate"]["example_pack_path"] = "data/llm_eval_sets/demo/eval_set.jsonl"
+    config_path = tmp_path / "al_cu_fe_llm_conditioned.yaml"
+    config_path.write_text(yaml.safe_dump(config_data, sort_keys=False), encoding="utf-8")
+
+    out_file = tmp_path / "llm_conditioned.jsonl"
+    run_manifest = tmp_path / "run_manifest.json"
+    run_manifest.write_text("{}", encoding="utf-8")
+
+    def _fake_generate(system_config, output_path, count, **kwargs):
+        del count
+        assert system_config.llm_generate is not None
+        assert system_config.llm_generate.example_pack_path == "data/llm_eval_sets/demo/eval_set.jsonl"
+        assert kwargs["config_path"] == config_path
+        write_jsonl([_candidate().model_dump(mode="json")], output_path)
+        return LlmGenerateSummary(
+            requested_count=1,
+            generated_count=1,
+            attempt_count=1,
+            parse_pass_count=1,
+            compile_pass_count=1,
+            output_path=str(output_path),
+            run_manifest_path=str(run_manifest),
+        )
+
+    monkeypatch.setattr("materials_discovery.cli.generate_llm_candidates", _fake_generate)
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-generate",
+            "--config",
+            str(config_path),
+            "--count",
+            "1",
+            "--out",
+            str(out_file),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert out_file.exists()

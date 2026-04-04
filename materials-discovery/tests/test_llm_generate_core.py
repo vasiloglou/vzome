@@ -4,11 +4,17 @@ from pathlib import Path
 
 import pytest
 
-from materials_discovery.common.io import load_jsonl, load_yaml
+from materials_discovery.common.io import load_json_object, load_jsonl, load_yaml, write_jsonl
 from materials_discovery.common.schema import CandidateRecord, SystemConfig
 from materials_discovery.common.stage_metrics import llm_generation_metrics
+from materials_discovery.llm.eval_set import load_eval_set
 from materials_discovery.llm.generate import generate_llm_candidates
-from materials_discovery.llm.prompting import build_generation_prompt, load_seed_zomic_text
+from materials_discovery.llm.prompting import (
+    build_generation_prompt,
+    load_seed_zomic_text,
+    select_conditioning_examples,
+)
+from materials_discovery.llm.schema import LlmEvalSetExample
 
 
 def _workspace() -> Path:
@@ -48,6 +54,37 @@ def test_prompt_builder_and_seed_loader_include_expected_context(tmp_path: Path)
     assert "- Al: min=0.6000, max=0.8000" in prompt
     assert "SEED_ZOMIC" in prompt
     assert "label seed.demo" in prompt
+
+
+def test_prompt_builder_can_include_conditioning_examples() -> None:
+    config = SystemConfig.model_validate(_config_data("al_cu_fe_llm_mock.yaml"))
+    examples = [
+        LlmEvalSetExample(
+            example_id="eval_001",
+            system="Al-Cu-Fe",
+            release_tier="gold",
+            fidelity_tier="exact",
+            source_family="materials_design",
+            source_record_id="eval_001",
+            composition={"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            labels=["demo"],
+            orbit_names=["orbit.demo"],
+            tags=["gold"],
+            properties={"template_family": "icosahedral_approximant_1_1"},
+            zomic_text="label demo.site\n",
+        )
+    ]
+
+    prompt = build_generation_prompt(
+        config,
+        count=2,
+        seed_zomic_text=None,
+        conditioning_examples=examples,
+    )
+
+    assert "CONDITIONING_EXAMPLES" in prompt
+    assert "EXAMPLE_ID: eval_001" in prompt
+    assert "label demo.site" in prompt
 
 
 def test_generate_llm_candidates_writes_run_artifacts_and_candidate_records(
@@ -104,6 +141,82 @@ def test_generate_llm_candidates_writes_run_artifacts_and_candidate_records(
     assert candidates[0].provenance["source"] == "llm"
     assert candidates[0].provenance["llm_adapter"] == "llm_fixture_v1"
     assert candidates[0].provenance["llm_provider"] == "mock"
+
+
+def test_generate_llm_candidates_records_conditioning_example_ids(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    data = _config_data("al_cu_fe_llm_mock.yaml")
+    data["llm_generate"]["example_pack_path"] = "eval_set.jsonl"
+    data["llm_generate"]["max_conditioning_examples"] = 1
+    config = SystemConfig.model_validate(data)
+    workspace = tmp_path / "workspace"
+    output_path = workspace / "data" / "candidates" / "al_cu_fe_candidates.jsonl"
+    eval_set_path = tmp_path / "eval_set.jsonl"
+    write_jsonl(
+        [
+            LlmEvalSetExample(
+                example_id="eval_001",
+                system="Al-Cu-Fe",
+                release_tier="gold",
+                fidelity_tier="exact",
+                source_family="materials_design",
+                source_record_id="eval_001",
+                composition={"Al": 0.71, "Cu": 0.19, "Fe": 0.1},
+                labels=["demo"],
+                orbit_names=["orbit.demo"],
+                tags=["gold"],
+                properties={"template_family": "icosahedral_approximant_1_1"},
+                zomic_text="label conditioning.site\n",
+            ).model_dump(mode="json")
+        ],
+        eval_set_path,
+    )
+    assert load_eval_set(eval_set_path)[0].example_id == "eval_001"
+
+    monkeypatch.setattr("materials_discovery.llm.generate.workspace_root", lambda: workspace)
+
+    def _fake_compile(
+        zomic_text: str,
+        *,
+        artifact_root: Path | None = None,
+        **_: object,
+    ) -> dict[str, object]:
+        assert zomic_text.strip()
+        assert artifact_root is not None
+        raw_export_path, orbit_library_path = _write_compile_outputs(
+            artifact_root,
+            "al_cu_fe_mackay_1_1.json",
+        )
+        return {
+            "parse_status": "passed",
+            "compile_status": "passed",
+            "error_kind": None,
+            "error_message": None,
+            "raw_export_path": raw_export_path,
+            "orbit_library_path": orbit_library_path,
+            "cell_scale_used": 10.0,
+            "geometry_equivalence": None,
+            "geometry_error": None,
+        }
+
+    monkeypatch.setattr("materials_discovery.llm.generate.compile_zomic_script", _fake_compile)
+
+    summary = generate_llm_candidates(
+        config,
+        output_path,
+        count=1,
+        config_path=tmp_path / "al_cu_fe_llm_mock.yaml",
+    )
+
+    run_dir = Path(summary.run_manifest_path).parent
+    prompt_payload = load_json_object(run_dir / "prompt.json")
+    assert prompt_payload["conditioning_example_ids"] == ["eval_001"]
+
+    manifest_payload = load_json_object(run_dir / "run_manifest.json")
+    assert manifest_payload["conditioning_example_ids"] == ["eval_001"]
+    assert manifest_payload["example_pack_path"] == str(eval_set_path)
 
 
 def test_generate_llm_candidates_preserves_failed_attempts_and_retry_cap(
@@ -239,3 +352,54 @@ def test_llm_generation_metrics_capture_parse_compile_and_success_rates() -> Non
     assert metrics["parse_pass_rate"] == 0.8
     assert metrics["compile_pass_rate"] == 0.6
     assert metrics["generation_success_rate"] == 0.5
+
+
+def test_select_conditioning_examples_prefers_same_system_and_nearest_composition() -> None:
+    config = SystemConfig.model_validate(_config_data("al_cu_fe_llm_mock.yaml"))
+    examples = [
+        LlmEvalSetExample(
+            example_id="far_match",
+            system="Al-Cu-Fe",
+            release_tier="gold",
+            fidelity_tier="exact",
+            source_family="materials_design",
+            source_record_id="far_match",
+            composition={"Al": 0.6, "Cu": 0.3, "Fe": 0.1},
+            labels=["far"],
+            orbit_names=[],
+            tags=[],
+            properties={},
+            zomic_text="label far\n",
+        ),
+        LlmEvalSetExample(
+            example_id="near_match",
+            system="Al-Cu-Fe",
+            release_tier="gold",
+            fidelity_tier="exact",
+            source_family="materials_design",
+            source_record_id="near_match",
+            composition={"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            labels=["near"],
+            orbit_names=[],
+            tags=[],
+            properties={},
+            zomic_text="label near\n",
+        ),
+        LlmEvalSetExample(
+            example_id="other_system",
+            system="Sc-Zn",
+            release_tier="gold",
+            fidelity_tier="exact",
+            source_family="materials_design",
+            source_record_id="other_system",
+            composition={"Sc": 0.3, "Zn": 0.7},
+            labels=["other"],
+            orbit_names=[],
+            tags=[],
+            properties={},
+            zomic_text="label other\n",
+        ),
+    ]
+
+    selected = select_conditioning_examples(config, examples, max_examples=1)
+    assert [example.example_id for example in selected] == ["near_match"]

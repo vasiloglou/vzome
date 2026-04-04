@@ -46,6 +46,7 @@
 | 2026-04-03 | Phase 8 Plan 02: report and rank LLM-assessment integration | Taught `report` to prefer `*_all_llm_evaluated.jsonl`, surfaced additive `llm_assessment` context in report entries/calibration, and added regressions proving `hifi-rank` preserves but does not reweight that context |
 | 2026-04-03 | Phase 8 Plan 03: downstream LLM pipeline benchmarks | Added the downstream deterministic-vs-LLM benchmark helper, the `run_llm_pipeline_benchmarks.sh` operator script, refreshed LLM docs, and added offline Al-Cu-Fe/Sc-Zn benchmark regression coverage |
 | 2026-04-03 | Phase 9 Plan 01: eval-set and acceptance-pack contracts | Added typed eval-set and acceptance-pack models, new storage/helpers for exporting eval sets from the Phase 6 corpus, and focused acceptance-schema pytest coverage |
+| 2026-04-03 | Phase 9 Plan 02: conditioned llm-generate prompts | Added optional eval-set-backed example conditioning for `llm-generate`, prompt/run-manifest lineage for selected examples, and focused core/CLI regressions proving the path remains optional |
 
 ## Diary
 
@@ -283,6 +284,11 @@
 - Added `llm/eval_set.py` and `llm/acceptance.py` so Phase 6 corpus artifacts can be exported into deterministic eval sets and Phase 7/8 benchmark outputs can be summarized into a typed acceptance pack.
 - Extended `llm/schema.py`, `llm/storage.py`, and `llm/__init__.py` with Phase 9 eval-set, acceptance-threshold, and suggestion-facing models and artifact paths.
 - Added `tests/test_llm_acceptance_schema.py`; focused verification passed with `2 passed`.
+- 21:24 EDT — Landed Phase 9 Plan 02 to make `llm-generate` example-conditioned without changing its default path.
+- `common/schema.py` now lets `llm_generate` point at an eval-set file plus a deterministic maximum number of conditioning examples.
+- `llm/prompting.py` now selects same-system examples by composition distance and injects them into the prompt in a reproducible block.
+- `llm/generate.py` now records `example_pack_path` and `conditioning_example_ids` in both `prompt.json` and the run manifest.
+- Added Plan 02 regressions in `tests/test_llm_generate_core.py` and `tests/test_llm_generate_cli.py`; focused verification passed with `12 passed`.
 - `llm/runtime.py` adds the provider-neutral adapter seam with deterministic `llm_fixture_v1` behavior and the first hosted adapter path, `anthropic_api_v1`, via lazy `httpx`.
 - `llm/__init__.py` now exports the new Phase 7 runtime/schemas alongside the existing Phase 6 corpus surface.
 - `developers-docs/configuration-reference.md` now documents the `llm_generate:` block, mock-only defaulting, and the requirement that real hosted configs set `llm_provider` and `llm_model`.
