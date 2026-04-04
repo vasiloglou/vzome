@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-current_phase: 11
-current_phase_name: closed-loop-campaign-execution-bridge
+current_phase: 12
+current_phase_name: replay-comparison-and-operator-workflow
 current_plan: 0
-status: ready_to_execute
-stopped_at: Review feedback incorporated for Phase 11
-last_updated: "2026-04-04T16:40:00Z"
-last_activity: 2026-04-04
+status: ready_to_plan
+stopped_at: Phase 11 execution completed
+last_updated: "2026-04-04T16:58:13Z"
+last_activity: 2026-04-04 -- Phase 11 completed; Phase 12 ready to plan
 progress:
   total_phases: 3
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 6
+  percent: 67
 ---
 
 # Project State
@@ -24,30 +24,30 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-03)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 11 — closed-loop-campaign-execution-bridge
+**Current focus:** Phase 12 — replay-comparison-and-operator-workflow
 
 ## Current Position
 
-Current Phase: 11
-Current Phase Name: closed-loop-campaign-execution-bridge
+Current Phase: 12
+Current Phase Name: replay-comparison-and-operator-workflow
 Total Phases: 3
 Current Plan: 0
-Total Plans in Phase: 3
-Phase: 11 (closed-loop-campaign-execution-bridge) — READY TO EXECUTE
-Plan: 0 of 3
-Status: Plans created and verified — ready for execution
-Last activity: 2026-04-04
-Last Activity Description: Phase 11 replanned after review feedback — awaiting execution
+Total Plans in Phase: 0
+Phase: 12 (replay-comparison-and-operator-workflow) — READY TO PLAN
+Plan: 0 of 0
+Status: Phase 11 complete; Phase 12 ready for discussion/planning
+Last activity: 2026-04-04 -- Phase 11 completed; Phase 12 ready to plan
+Last Activity Description: Closed-loop campaign execution bridge completed with downstream lineage propagation and docs
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 26
-- Average duration: 20 min
-- Total execution time: 5.7 hours
+- Total plans completed: 29
+- Average duration: 13 min
+- Total execution time: 6.2 hours
 
 **By Phase:**
 
@@ -62,11 +62,13 @@ Progress: [░░░░░░░░░░] 0%
 | 7 | 3 | 69 min | 23 min |
 | 8 | 3 | 56 min | 19 min |
 | 9 | 3 | 32 min | 11 min |
+| 10 | 3 | 27 min | 9 min |
+| 11 | 3 | 29 min | 10 min |
 
 **Recent Trend:**
 
-- Last 5 plans: P8.02=16min, P8.03=22min, P9.01=12min, P9.02=15min, P9.03=5min
-- Trend: stable with quick finishing work on the typed LLM acceptance layer
+- Last 5 plans: P10.02=8min, P10.03=5min, P11.01=12min, P11.02=6min, P11.03=11min
+- Trend: stable, with Phase 11 landing as a short bridge-and-hardening cycle
 
 | Phase 01-program-charter-and-canonical-data-model P01 | 9min | 3 tasks | 8 files |
 | Phase 02-ingestion-platform-mvp P01 | 59min | 3 tasks | 15 files |
@@ -95,6 +97,9 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 09 P02 | 15 | 3 tasks | 8 files |
 | Phase 09 P03 | 5 | 3 tasks | 8 files |
 | Phase 10-closed-loop-campaign-contract-and-governance P01 | 8min | 2 tasks | 6 files |
+| Phase 11-closed-loop-campaign-execution-bridge P01 | 12min | 2 tasks | 8 files |
+| Phase 11-closed-loop-campaign-execution-bridge P02 | 6min | 2 tasks | 8 files |
+| Phase 11-closed-loop-campaign-execution-bridge P03 | 11min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -165,6 +170,8 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 11-closed-loop-campaign-execution-bridge]: Resolve approved campaign actions through an in-memory runtime overlay over the existing `llm-generate` path rather than rewriting YAML configs.
 - [Phase 11-closed-loop-campaign-execution-bridge]: Keep standard artifact roots primary, add campaign launch wrapper artifacts under `data/llm_campaigns/{campaign_id}/launches/{launch_id}/`, and preserve partial artifacts on failure without resume support.
 - [Phase 11-closed-loop-campaign-execution-bridge]: Treat the 10 percent composition-window shrink as a deliberate v1.1 heuristic and record whether lane resolution used a configured match or baseline fallback.
+- [Phase 11-closed-loop-campaign-execution-bridge]: Normalize downstream campaign lineage as additive `source_lineage.llm_campaign` rather than inventing per-stage payloads.
+- [Phase 11-closed-loop-campaign-execution-bridge]: Keep post-launch continuation manual in v1.1 while ensuring downstream manifests and the pipeline manifest preserve campaign lineage.
 
 ### Pending Todos
 
@@ -176,6 +183,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T16:40:00Z
-Stopped at: Review feedback incorporated for Phase 11
-Resume file: .planning/phases/11-closed-loop-campaign-execution-bridge/11-01-PLAN.md
+Last session: 2026-04-04T16:58:13Z
+Stopped at: Phase 11 execution completed
+Resume file: .planning/phases/11-closed-loop-campaign-execution-bridge/11-03-SUMMARY.md
