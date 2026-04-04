@@ -225,6 +225,45 @@ any future closed-loop launch path:
 This keeps the workflow file-backed and operator-governed while still giving
 Phase 11 a durable contract to launch and replay later.
 
+#### `mdisc llm-launch` — Campaign Execution Bridge (Phase 11)
+
+Phase 11 turns approved campaign specs into a real launch path without adding a
+second candidate-generation engine:
+- `mdisc llm-launch --campaign-spec ...` validates the pinned system-config hash
+  before any provider execution begins
+- the command writes `resolved_launch.json` and `launch_summary.json` under
+  `data/llm_campaigns/{campaign_id}/launches/{launch_id}/`
+- launch resolution stays additive: prompt deltas, composition-window changes,
+  seed handling, and lane selection are resolved in memory and then passed into
+  the existing `generate_llm_candidates()` runtime
+- launched runs still write the standard candidate JSONL, standard
+  `llm_generate` manifest, and standard run-level artifacts under
+  `data/llm_runs/`
+
+Phase 11 deliberately keeps later stages manual:
+- `llm-launch` produces standard candidates and launch wrapper artifacts
+- operators then continue with the existing commands such as `mdisc screen`,
+  `mdisc hifi-validate`, `mdisc hifi-rank`, and `mdisc report`
+- downstream stage manifests now preserve additive `source_lineage.llm_campaign`
+  data so launched runs remain traceable after they enter the normal pipeline
+
+Failure posture in Phase 11:
+- partial launch artifacts are preserved
+- failed launches still write `launch_summary.json` with status `failed`
+- there is no resume path yet; retries are explicit fresh launches
+
+**Lineage Audit**
+
+For any launched run, the trace path is:
+1. downstream manifest or pipeline manifest `source_lineage.llm_campaign`
+2. `launch_summary_path`
+3. `resolved_launch_path`
+4. `campaign_spec_path`
+5. approval artifact and acceptance-pack lineage referenced by the campaign spec
+
+This gives operators a file-backed audit chain from a later pipeline stage back
+to the approved proposal and benchmark context that triggered the launch.
+
 ### 3.2 Backend Adapter for LLM
 
 Following the existing adapter pattern:
@@ -454,7 +493,8 @@ Detailed in [Zomic LLM Data Plan](zomic-llm-data-plan.md). Summary:
 ### Phase 4 — Active Learning Loop
 - [x] Implement `mdisc llm-suggest` dry-run CLI command
 - [x] Implement `mdisc llm-approve` approval/spec governance command
-- [ ] Connect LLM suggestions to `llm-generate` for closed-loop exploration
+- [x] Implement `mdisc llm-launch` as the approved-spec execution bridge
+- [ ] Connect campaign launches to a fuller closed-loop exploration workflow
 - [ ] Benchmark against traditional `active-learn` surrogate
 
 ---

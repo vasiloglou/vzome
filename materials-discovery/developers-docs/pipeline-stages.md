@@ -754,6 +754,88 @@ JSON summary with `proposal_id`, `decision`, `approval_id`, `approval_path`, opt
 
 ---
 
+## 13. `mdisc llm-launch`
+
+Launch an approved campaign spec through the existing `llm-generate` runtime.
+
+### CLI syntax
+
+```
+mdisc llm-launch --campaign-spec PATH [--out PATH]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--campaign-spec` | PATH | Yes | -- | Path to a typed campaign spec JSON created by `mdisc llm-approve` |
+| `--out` | PATH | No | `{workspace}/data/candidates/{slug}_candidates.jsonl` | Optional override for the launched candidate JSONL |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Campaign spec JSON | `{workspace}/data/llm_campaigns/{campaign_id}/campaign_spec.json` | `mdisc llm-approve --decision approved --config ...` |
+| System config YAML | pinned inside the campaign spec | must still match the stored config hash |
+
+### Internal steps
+
+1. **Load campaign spec.** Parse the typed `LlmCampaignSpec`.
+2. **Load pinned config.** Resolve `launch_baseline.system_config_path`, load `SystemConfig`, and recompute its hash.
+3. **Reject config drift before execution.** If the current hash differs from the pinned hash, exit with code 2 and an operator-facing message that includes the config path, the pinned hash, the current hash, and re-approval guidance.
+4. **Create launch wrapper.** Allocate a new `launch_id`, print it immediately to stderr, and resolve the launch artifact directory under `data/llm_campaigns/{campaign_id}/launches/{launch_id}/`.
+5. **Resolve additive overlay.** Call `resolve_campaign_launch(...)` to derive prompt deltas, lane selection, composition-window changes, seed handling, and the resolved provider/model lane without mutating the source YAML.
+6. **Write `resolved_launch.json`.** Persist the resolved overlay before any provider call begins.
+7. **Launch through the existing runtime.** Call `generate_llm_candidates(...)` with the copied config, the resolved additive prompt/campaign metadata, and the requested candidate count from the campaign spec.
+8. **Write standard stage artifacts.** Persist the standard candidate JSONL, calibration JSON, `llm_generate` stage manifest, and the run-level artifacts already produced by `llm-generate`.
+9. **Write `launch_summary.json`.** Record success or failure in the launch wrapper summary and print the typed `LlmCampaignLaunchSummary` JSON to stdout on success.
+10. **Preserve partial artifacts on failure.** If launch fails after wrapper creation, keep any partial outputs and still write a failed launch summary. Phase 11 does not implement `--resume`.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Campaign spec JSON | `{workspace}/data/llm_campaigns/{campaign_id}/campaign_spec.json` |
+| Resolved launch JSON | `{workspace}/data/llm_campaigns/{campaign_id}/launches/{launch_id}/resolved_launch.json` |
+| Launch summary JSON | `{workspace}/data/llm_campaigns/{campaign_id}/launches/{launch_id}/launch_summary.json` |
+| Candidates JSONL | `{workspace}/data/candidates/{slug}_candidates.jsonl` unless `--out` is supplied |
+| LLM generation metrics | `{workspace}/data/calibration/{slug}_llm_generation_metrics.json` |
+| LLM generate stage manifest | `{workspace}/data/manifests/{slug}_llm_generate_manifest.json` |
+| LLM run artifacts | `{workspace}/data/llm_runs/{run_id}/...` |
+
+### Return type
+
+`LlmCampaignLaunchSummary` (JSON to stdout).
+
+### Manual downstream continuation
+
+Phase 11 keeps downstream execution operator-driven. After `llm-launch`
+succeeds, continue with the standard commands:
+
+```
+mdisc screen --config PATH
+mdisc hifi-validate --config PATH --batch all
+mdisc hifi-rank --config PATH
+mdisc report --config PATH
+```
+
+Those later stages read the standard JSONL artifacts and preserve additive
+campaign lineage in their manifests rather than requiring a campaign-specific
+execution mode.
+
+### Lineage Audit
+
+To trace a downstream result back to the governing campaign:
+1. inspect a downstream stage manifest or pipeline manifest for `source_lineage.llm_campaign`
+2. open the referenced `launch_summary.json`
+3. follow `resolved_launch_path` and `campaign_spec_path`
+4. inspect the approval and acceptance-pack paths referenced by the campaign spec
+
+This audit path is additive: non-campaign runs continue to emit manifests with
+`source_lineage = null`.
+
+---
+
 ## Pipeline data flow
 
 The commands are designed to run in sequence. Each stage reads the output of a
@@ -790,6 +872,7 @@ alongside `generate`. Both produce CandidateRecord JSONL that feeds into
 synthesizability and precursor information before reporting, and `report`
 prefers the additive `*_all_llm_evaluated.jsonl` artifact when it exists. The
 implemented `llm-suggest` command now reads typed acceptance packs and emits
-dry-run proposal bundles, while `llm-approve` materializes separate approval
-artifacts and self-contained campaign specs without replacing the existing
-`active-learn` loop or launching a closed-loop search yet.
+dry-run proposal bundles, `llm-approve` materializes separate approval
+artifacts and self-contained campaign specs, and `llm-launch` executes those
+approved specs through the existing `llm-generate` runtime while keeping later
+pipeline stages manual/operator-driven in Phase 11.

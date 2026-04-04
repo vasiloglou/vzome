@@ -300,6 +300,143 @@ def test_report_command_prefers_all_llm_evaluated_artifact_when_present() -> Non
         llm_evaluated_path.unlink(missing_ok=True)
 
 
+def test_report_manifest_and_pipeline_manifest_carry_campaign_lineage(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    from materials_discovery.common.io import write_json_object, write_jsonl
+    from materials_discovery.common.schema import CandidateRecord
+
+    runner = CliRunner()
+    repo_workspace = Path(__file__).resolve().parents[1]
+    workspace = tmp_path / "workspace"
+    config_path = repo_workspace / "configs" / "systems" / "al_cu_fe.yaml"
+
+    ranked_candidate = CandidateRecord.model_validate(
+        {
+            "candidate_id": "llm_lineage_0001",
+            "system": "Al-Cu-Fe",
+            "template_family": "icosahedral_approximant_1_1",
+            "cell": {
+                "a": 14.2,
+                "b": 14.2,
+                "c": 14.2,
+                "alpha": 90.0,
+                "beta": 90.0,
+                "gamma": 90.0,
+            },
+            "sites": [
+                {
+                    "label": "S1",
+                    "qphi": [[1, 0], [0, 1], [-1, 1]],
+                    "species": "Al",
+                    "occ": 1.0,
+                }
+            ],
+            "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            "screen": {"energy_proxy_ev_per_atom": -2.9, "min_distance_proxy": 2.4},
+            "digital_validation": {
+                "status": "ranked",
+                "committee": ["MACE", "CHGNet", "MatterSim"],
+                "uncertainty_ev_per_atom": 0.01,
+                "committee_energy_ev_per_atom": {
+                    "MACE": -2.91,
+                    "CHGNet": -2.90,
+                    "MatterSim": -2.89,
+                },
+                "committee_std_ev_per_atom": 0.01,
+                "delta_e_proxy_hull_ev_per_atom": 0.02,
+                "proxy_hull_reference_distance": 0.01,
+                "proxy_hull_reference_phases": ["i-phase"],
+                "phonon_imaginary_modes": 0,
+                "phonon_pass": True,
+                "md_stability_score": 0.82,
+                "md_pass": True,
+                "xrd_confidence": 0.91,
+                "xrd_pass": True,
+                "passed_checks": True,
+            },
+            "provenance": {
+                "hifi_rank": {
+                    "rank": 1,
+                    "score": 0.81,
+                    "decision_score": 0.81,
+                    "stability_probability": 0.84,
+                    "ood_score": 0.12,
+                    "novelty_score": 0.41,
+                    "reference_distance": 0.02,
+                    "benchmark_alignment": 0.3,
+                    "uncertainty_penalty": 0.1,
+                    "hull_penalty": 0.1,
+                    "calibration_provenance": {"source": "fixture", "backend_mode": "mock"},
+                },
+                "llm_campaign": {
+                    "campaign_id": "campaign-001",
+                    "launch_id": "launch-001",
+                    "proposal_id": "proposal-001",
+                    "approval_id": "approval-001",
+                    "campaign_spec_path": "data/llm_campaigns/campaign-001/campaign_spec.json",
+                },
+            },
+        }
+    )
+
+    system_slug = "al_cu_fe"
+    ranked_path = workspace / "data" / "ranked" / f"{system_slug}_ranked.jsonl"
+    candidates_path = workspace / "data" / "candidates" / f"{system_slug}_candidates.jsonl"
+    screened_path = workspace / "data" / "screened" / f"{system_slug}_screened.jsonl"
+    write_jsonl([ranked_candidate.model_dump(mode="json")], ranked_path)
+    write_jsonl([ranked_candidate.model_dump(mode="json")], candidates_path)
+    write_jsonl([ranked_candidate.model_dump(mode="json")], screened_path)
+    write_json_object(
+        {
+            "source_lineage": {
+                "llm_campaign": {
+                    "campaign_id": "campaign-001",
+                    "launch_id": "launch-001",
+                    "proposal_id": "proposal-001",
+                    "approval_id": "approval-001",
+                    "campaign_spec_path": "data/llm_campaigns/campaign-001/campaign_spec.json",
+                    "launch_summary_path": (
+                        "data/llm_campaigns/campaign-001/launches/launch-001/launch_summary.json"
+                    ),
+                    "resolved_launch_path": (
+                        "data/llm_campaigns/campaign-001/launches/launch-001/resolved_launch.json"
+                    ),
+                }
+            }
+        },
+        workspace / "data" / "manifests" / f"{system_slug}_llm_generate_manifest.json",
+    )
+
+    monkeypatch.setattr("materials_discovery.cli.workspace_root", lambda: workspace)
+
+    result = runner.invoke(app, ["report", "--config", str(config_path)])
+
+    assert result.exit_code == 0
+    summary = json.loads(result.stdout)
+    report_manifest = json.loads(Path(summary["manifest_path"]).read_text(encoding="utf-8"))
+    pipeline_manifest = json.loads(
+        Path(summary["pipeline_manifest_path"]).read_text(encoding="utf-8")
+    )
+    expected_lineage = {
+        "campaign_id": "campaign-001",
+        "launch_id": "launch-001",
+        "proposal_id": "proposal-001",
+        "approval_id": "approval-001",
+        "campaign_spec_path": "data/llm_campaigns/campaign-001/campaign_spec.json",
+        "launch_summary_path": (
+            "data/llm_campaigns/campaign-001/launches/launch-001/launch_summary.json"
+        ),
+        "resolved_launch_path": (
+            "data/llm_campaigns/campaign-001/launches/launch-001/resolved_launch.json"
+        ),
+    }
+    assert report_manifest["source_lineage"]["llm_campaign"] == expected_lineage
+    assert pipeline_manifest["source_lineage"]["llm_campaign"] == expected_lineage
+    assert "llm_campaign" not in report_manifest["source_lineage"]["llm_campaign"]
+
+
 def test_report_emits_benchmark_context_when_ranked_candidates_carry_it() -> None:
     """compile_experiment_report must surface benchmark_context when candidates carry it."""
     from materials_discovery.common.benchmarking import build_benchmark_run_context

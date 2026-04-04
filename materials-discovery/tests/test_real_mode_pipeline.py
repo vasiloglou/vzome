@@ -10,6 +10,8 @@ from typer.testing import CliRunner
 
 from materials_discovery.cli import app
 from materials_discovery.common.io import load_yaml
+from materials_discovery.common.manifest import config_sha256
+from materials_discovery.common.schema import SystemConfig
 
 
 @pytest.mark.integration
@@ -113,6 +115,114 @@ def _write_source_registry_real_config(tmp_path: Path) -> Path:
     config_path = tmp_path / "al_cu_fe_source_registry_real.yaml"
     config_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
     return config_path
+
+
+def _write_llm_campaign_spec(tmp_path: Path, config_path: Path) -> Path:
+    config = SystemConfig.model_validate(load_yaml(config_path))
+    spec_path = tmp_path / "campaign_spec.json"
+    spec_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "llm-campaign-spec/v1",
+                "campaign_id": "campaign-001",
+                "proposal_id": "proposal-001",
+                "approval_id": "approval-001",
+                "system": "Al-Cu-Fe",
+                "created_at_utc": "2026-04-04T16:00:00Z",
+                "actions": [
+                    {
+                        "action_id": "proposal-001_action_01",
+                        "family": "prompt_conditioning",
+                        "title": "Tighten prompt validity conditioning",
+                        "rationale": "Parse reliability is below target.",
+                        "priority": "high",
+                        "evidence_metrics": ["parse_success_rate"],
+                        "preferred_model_lane": "general_purpose",
+                        "prompt_conditioning": {
+                            "instruction_delta": "Prefer parser-safe symmetry annotations.",
+                            "conditioning_strategy": "increase_exact_system_examples",
+                            "target_example_family": "acceptance_pack_exact_matches",
+                            "preferred_max_conditioning_examples": 4,
+                        },
+                    }
+                ],
+                "launch_baseline": {
+                    "system_config_path": str(config_path),
+                    "system_config_hash": config_sha256(config),
+                    "system": "Al-Cu-Fe",
+                    "template_family": "icosahedral_approximant_1_1",
+                    "default_count": 2,
+                    "composition_bounds": {
+                        "Al": {"min": 0.6, "max": 0.8},
+                        "Cu": {"min": 0.1, "max": 0.25},
+                        "Fe": {"min": 0.05, "max": 0.2},
+                    },
+                    "prompt_template": "zomic_generate_v1",
+                    "example_pack_path": None,
+                    "max_conditioning_examples": 3,
+                    "seed_zomic_path": None,
+                },
+                "lineage": {
+                    "acceptance_pack_path": (
+                        "data/benchmarks/llm_acceptance/pack_v1/acceptance_pack.json"
+                    ),
+                    "eval_set_manifest_path": None,
+                    "proposal_path": (
+                        "data/benchmarks/llm_acceptance/pack_v1/proposals/proposal-001.json"
+                    ),
+                    "approval_path": (
+                        "data/benchmarks/llm_acceptance/pack_v1/approvals/approval-001.json"
+                    ),
+                    "source_system_config_path": str(config_path),
+                    "source_system_config_hash": config_sha256(config),
+                },
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    return spec_path
+
+
+@pytest.mark.integration
+def test_real_mode_llm_launch_candidates_continue_through_screen_with_lineage(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    runner = CliRunner()
+    repo_workspace = Path(__file__).resolve().parents[1]
+    artifact_workspace = tmp_path / "workspace"
+    config_path = repo_workspace / "configs" / "systems" / "al_cu_fe_llm_mock.yaml"
+    spec_path = _write_llm_campaign_spec(tmp_path, config_path)
+
+    monkeypatch.setattr("materials_discovery.cli.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr("materials_discovery.llm.generate.workspace_root", lambda: artifact_workspace)
+
+    launch = runner.invoke(app, ["llm-launch", "--campaign-spec", str(spec_path)])
+    assert launch.exit_code == 0, f"llm-launch failed:\n{launch.stdout}\n{launch.stderr}"
+    launch_summary = json.loads(launch.stdout)
+    candidates_path = Path(launch_summary["candidates_path"])
+    assert candidates_path.exists()
+
+    candidate_rows = [
+        json.loads(line)
+        for line in candidates_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert candidate_rows
+    assert candidate_rows[0]["provenance"]["llm_campaign"]["campaign_id"] == "campaign-001"
+
+    screen = runner.invoke(app, ["screen", "--config", str(config_path)])
+    assert screen.exit_code == 0, f"screen failed:\n{screen.stdout}\n{screen.stderr}"
+    screen_summary = json.loads(screen.stdout)
+    screen_manifest = json.loads(
+        Path(screen_summary["manifest_path"]).read_text(encoding="utf-8")
+    )
+    assert screen_manifest["source_lineage"]["llm_campaign"]["campaign_id"] == "campaign-001"
+    assert screen_manifest["source_lineage"]["llm_campaign"]["campaign_spec_path"] == str(spec_path)
+    assert screen_manifest["source_lineage"]["llm_campaign"]["launch_summary_path"].endswith(
+        "launch_summary.json"
+    )
 
 
 @pytest.mark.integration
@@ -228,14 +338,12 @@ def test_al_cu_fe_reference_aware_benchmark_e2e() -> None:
     workspace = Path(__file__).resolve().parents[1]
     config_path = workspace / "configs" / "systems" / "al_cu_fe_reference_aware.yaml"
 
-    # --- ingest ----------------------------------------------------------
     ingest = runner.invoke(app, ["ingest", "--config", str(config_path)])
     assert ingest.exit_code == 0, f"ingest failed:\n{ingest.stdout}\n{ingest.exception}"
     ingest_summary = json.loads(ingest.stdout)
     ingest_manifest_path = Path(ingest_summary["manifest_path"])
     assert ingest_manifest_path.exists()
 
-    # Verify reference-pack lineage in the ingest manifest
     ingest_manifest = json.loads(ingest_manifest_path.read_text(encoding="utf-8"))
     source_lineage = ingest_manifest.get("source_lineage", {})
     assert source_lineage.get("pack_id") == "al_cu_fe_v1", (
@@ -246,7 +354,6 @@ def test_al_cu_fe_reference_aware_benchmark_e2e() -> None:
     assert "hypodx" in member_source_keys
     assert "materials_project" in member_source_keys
 
-    # --- generate -------------------------------------------------------
     generate = runner.invoke(
         app,
         ["generate", "--config", str(config_path), "--count", "35", "--seed", "4001"],
@@ -256,13 +363,11 @@ def test_al_cu_fe_reference_aware_benchmark_e2e() -> None:
     assert Path(generate_summary["manifest_path"]).exists()
     assert Path(generate_summary["calibration_path"]).exists()
 
-    # --- screen ---------------------------------------------------------
     screen = runner.invoke(app, ["screen", "--config", str(config_path)])
     assert screen.exit_code == 0, f"screen failed:\n{screen.stdout}\n{screen.exception}"
     screen_summary = json.loads(screen.stdout)
     assert Path(screen_summary["manifest_path"]).exists()
 
-    # --- hifi-validate --------------------------------------------------
     validate = runner.invoke(
         app, ["hifi-validate", "--config", str(config_path), "--batch", "all"]
     )
@@ -270,17 +375,14 @@ def test_al_cu_fe_reference_aware_benchmark_e2e() -> None:
     validate_summary = json.loads(validate.stdout)
     assert Path(validate_summary["manifest_path"]).exists()
 
-    # --- hifi-rank ------------------------------------------------------
     rank = runner.invoke(app, ["hifi-rank", "--config", str(config_path)])
     assert rank.exit_code == 0, f"hifi-rank failed:\n{rank.stdout}\n{rank.exception}"
     rank_summary = json.loads(rank.stdout)
     assert Path(rank_summary["manifest_path"]).exists()
 
-    # --- active-learn ---------------------------------------------------
     active = runner.invoke(app, ["active-learn", "--config", str(config_path)])
     assert active.exit_code == 0, f"active-learn failed:\n{active.stdout}\n{active.exception}"
 
-    # --- report ---------------------------------------------------------
     report = runner.invoke(app, ["report", "--config", str(config_path)])
     assert report.exit_code == 0, f"report failed:\n{report.stdout}\n{report.exception}"
     report_summary = json.loads(report.stdout)
@@ -291,8 +393,6 @@ def test_al_cu_fe_reference_aware_benchmark_e2e() -> None:
     assert pipeline_manifest["stage"] == "pipeline"
     assert "report_json" in pipeline_manifest["output_hashes"]
 
-    # --- benchmark-pack artifact ----------------------------------------
-    # benchmark_pack path is based on system_name slug (al_cu_fe), not config filename
     system_slug = "al_cu_fe"
     benchmark_pack_path = workspace / "data" / "reports" / f"{system_slug}_benchmark_pack.json"
     assert benchmark_pack_path.exists(), (
@@ -337,14 +437,12 @@ def test_sc_zn_reference_aware_benchmark_e2e() -> None:
     workspace = Path(__file__).resolve().parents[1]
     config_path = workspace / "configs" / "systems" / "sc_zn_reference_aware.yaml"
 
-    # --- ingest ----------------------------------------------------------
     ingest = runner.invoke(app, ["ingest", "--config", str(config_path)])
     assert ingest.exit_code == 0, f"ingest failed:\n{ingest.stdout}\n{ingest.exception}"
     ingest_summary = json.loads(ingest.stdout)
     ingest_manifest_path = Path(ingest_summary["manifest_path"])
     assert ingest_manifest_path.exists()
 
-    # Verify reference-pack lineage in the ingest manifest
     ingest_manifest = json.loads(ingest_manifest_path.read_text(encoding="utf-8"))
     source_lineage = ingest_manifest.get("source_lineage", {})
     assert source_lineage.get("pack_id") == "sc_zn_v1", (
@@ -355,11 +453,6 @@ def test_sc_zn_reference_aware_benchmark_e2e() -> None:
     assert "hypodx" in member_source_keys
     assert "cod" in member_source_keys
 
-    # --- generate -------------------------------------------------------
-    # Note: sc_zn_reference_aware.yaml has zomic_design set, so generate will
-    # attempt to invoke Java/Gradle.  When Java is absent the Zomic export
-    # step raises but the pipeline should still produce candidates from the
-    # pre-staged prototype fixture.  We check for a successful exit code.
     generate = runner.invoke(
         app,
         ["generate", "--config", str(config_path), "--count", "30", "--seed", "4002"],
@@ -373,25 +466,20 @@ def test_sc_zn_reference_aware_benchmark_e2e() -> None:
     generate_summary = json.loads(generate.stdout)
     assert Path(generate_summary["manifest_path"]).exists()
 
-    # --- screen ---------------------------------------------------------
     screen = runner.invoke(app, ["screen", "--config", str(config_path)])
     assert screen.exit_code == 0, f"screen failed:\n{screen.stdout}\n{screen.exception}"
 
-    # --- hifi-validate --------------------------------------------------
     validate = runner.invoke(
         app, ["hifi-validate", "--config", str(config_path), "--batch", "all"]
     )
     assert validate.exit_code == 0, f"hifi-validate failed:\n{validate.stdout}\n{validate.exception}"
 
-    # --- hifi-rank ------------------------------------------------------
     rank = runner.invoke(app, ["hifi-rank", "--config", str(config_path)])
     assert rank.exit_code == 0, f"hifi-rank failed:\n{rank.stdout}\n{rank.exception}"
 
-    # --- active-learn ---------------------------------------------------
     active = runner.invoke(app, ["active-learn", "--config", str(config_path)])
     assert active.exit_code == 0, f"active-learn failed:\n{active.stdout}\n{active.exception}"
 
-    # --- report ---------------------------------------------------------
     report = runner.invoke(app, ["report", "--config", str(config_path)])
     assert report.exit_code == 0, f"report failed:\n{report.stdout}\n{report.exception}"
     report_summary = json.loads(report.stdout)
@@ -402,8 +490,6 @@ def test_sc_zn_reference_aware_benchmark_e2e() -> None:
     assert pipeline_manifest["stage"] == "pipeline"
     assert "report_json" in pipeline_manifest["output_hashes"]
 
-    # --- benchmark-pack artifact ----------------------------------------
-    # benchmark_pack path is based on system_name slug (sc_zn), not config filename
     system_slug = "sc_zn"
     benchmark_pack_path = workspace / "data" / "reports" / f"{system_slug}_benchmark_pack.json"
     assert benchmark_pack_path.exists(), (

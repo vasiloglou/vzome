@@ -14,6 +14,7 @@ def build_pipeline_manifest(
     backend_mode: Literal["mock", "real"],
     backend_versions: dict[str, str],
     stage_paths: dict[str, Path],
+    source_lineage: dict[str, object] | None = None,
 ) -> ArtifactManifest:
     output_hashes = {name: file_sha256(path) for name, path in stage_paths.items()}
     return ArtifactManifest(
@@ -25,6 +26,7 @@ def build_pipeline_manifest(
         backend_versions=backend_versions,
         output_hashes=output_hashes,
         created_at_utc=datetime.now(UTC).isoformat(),
+        source_lineage=source_lineage,
     )
 
 

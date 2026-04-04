@@ -4,6 +4,9 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 11 Plan 03 launch continuation docs | Documented `mdisc llm-launch`, launch wrapper artifacts, manual downstream continuation, failure posture, and a lineage-audit path in the LLM and pipeline developer docs |
+| 2026-04-04 | Phase 11 Plan 03 campaign lineage propagation | Threaded additive `llm_campaign` lineage into launched `llm_generate` manifests, downstream stage manifests, and pipeline manifests, with focused downstream-lineage and mock continuation regression coverage |
+| 2026-04-04 | Phase 11 Plan 03 RED tests | Added failing downstream-lineage and mock end-to-end launch regressions in `test_llm_campaign_lineage.py`, `test_report.py`, and `test_real_mode_pipeline.py` before wiring campaign lineage through later pipeline stages |
 | 2026-04-04 | Phase 11 Plan 02 Task 2 llm-launch CLI | Added the new `mdisc llm-launch --campaign-spec ...` command, wrote resolved/summary launch artifacts, validated config-hash drift before runtime execution, and preserved partial-failure auditability |
 | 2026-04-04 | Phase 11 Plan 02 Task 2 RED tests | Added `tests/test_llm_launch_cli.py` and a shared `test_cli.py` smoke case to lock `llm-launch` success and config-drift failure behavior before wiring the CLI |
 | 2026-04-04 | Phase 11 Plan 02 Task 1 campaign-aware llm-generate | Added prompt instruction deltas and campaign launch metadata to the LLM generation request/run-manifest flow while keeping manual `llm-generate` behavior unchanged |
@@ -343,6 +346,12 @@
 
 ### 2026-04-04
 
+- 12:47 EDT — Completed the Phase 11 Plan 03 lineage propagation and launch-continuation docs pass.
+- Normalized additive `llm_campaign` lineage once, wrote it into launched `llm_generate` manifests, reused it across `screen`, `hifi-validate`, `hifi-rank`, `active-learn`, `report`, and the pipeline manifest, and documented the `llm-launch` wrapper plus manual continuation flow in the developer docs.
+- Focused verification passed with `16 passed` across `tests/test_llm_campaign_lineage.py` and `tests/test_report.py`, plus `1 passed` for the offline `tests/test_real_mode_pipeline.py -k "campaign or llm_launch"` slice.
+- 12:47 EDT — Started Phase 11 Plan 03 in TDD RED mode by adding downstream lineage and mock launch continuation regressions.
+- Added `tests/test_llm_campaign_lineage.py`, extended `tests/test_report.py`, and extended `tests/test_real_mode_pipeline.py` to lock campaign-lineage propagation into downstream manifests plus the offline `llm-launch -> screen` continuation lane.
+- Open item: normalize campaign lineage once, thread it into downstream manifests and the pipeline manifest, then update docs for the Phase 11 manual continuation flow.
 - 12:47 EDT — Implemented the Phase 11 Plan 02 Task 2 `llm-launch` CLI bridge.
 - Added `mdisc llm-launch --campaign-spec ...`, config-hash drift validation with pinned/current hash detail, early `launch_id` visibility, `resolved_launch.json` / `launch_summary.json` writing, and additive execution through the existing `generate_llm_candidates()` path.
 - Focused verification passed with `13 passed` across `tests/test_llm_launch_cli.py` and `tests/test_cli.py`.

@@ -523,6 +523,126 @@ def _load_benchmark_context(
     return build_benchmark_run_context(config, source_lineage)
 
 
+_CAMPAIGN_LINEAGE_KEYS = (
+    "campaign_id",
+    "launch_id",
+    "proposal_id",
+    "approval_id",
+    "campaign_spec_path",
+    "launch_summary_path",
+    "resolved_launch_path",
+    "requested_model_lanes",
+    "resolved_model_lane",
+    "resolved_model_lane_source",
+)
+
+
+def _normalize_campaign_lineage(
+    lineage: dict[str, object] | None,
+) -> dict[str, object] | None:
+    if not isinstance(lineage, dict):
+        return None
+
+    raw_campaign = lineage.get("llm_campaign")
+    if isinstance(raw_campaign, dict):
+        payload = raw_campaign
+    else:
+        payload = lineage
+
+    campaign_id = payload.get("campaign_id")
+    launch_id = payload.get("launch_id")
+    if not isinstance(campaign_id, str) or not campaign_id.strip():
+        return None
+    if not isinstance(launch_id, str) or not launch_id.strip():
+        return None
+
+    normalized: dict[str, object] = {
+        "campaign_id": campaign_id.strip(),
+        "launch_id": launch_id.strip(),
+    }
+    for key in _CAMPAIGN_LINEAGE_KEYS:
+        if key in {"campaign_id", "launch_id"}:
+            continue
+        value = payload.get(key)
+        if value is None:
+            continue
+        if key == "requested_model_lanes":
+            if isinstance(value, list):
+                cleaned = [
+                    item.strip()
+                    for item in value
+                    if isinstance(item, str) and item.strip()
+                ]
+                if cleaned:
+                    normalized[key] = cleaned
+            continue
+        if isinstance(value, str):
+            stripped = value.strip()
+            if stripped:
+                normalized[key] = stripped
+
+    return {"llm_campaign": normalized}
+
+
+def _candidate_campaign_lineage(
+    candidates: list[CandidateRecord],
+) -> dict[str, object] | None:
+    for candidate in sorted(candidates, key=lambda item: item.candidate_id):
+        raw = candidate.provenance.get("llm_campaign")
+        if isinstance(raw, dict):
+            normalized = _normalize_campaign_lineage({"llm_campaign": raw})
+            if normalized is not None:
+                return normalized
+    return None
+
+
+def _load_llm_generate_campaign_lineage(system_slug: str) -> dict[str, object] | None:
+    manifest_path = (
+        workspace_root() / "data" / "manifests" / f"{system_slug}_llm_generate_manifest.json"
+    )
+    if not manifest_path.exists():
+        return None
+    try:
+        raw_manifest = load_json_object(manifest_path)
+    except Exception:  # noqa: BLE001
+        return None
+    lineage = raw_manifest.get("source_lineage")
+    if isinstance(lineage, dict):
+        return _normalize_campaign_lineage(lineage)
+    return None
+
+
+def _merge_campaign_lineage(
+    primary: dict[str, object] | None,
+    fallback: dict[str, object] | None,
+) -> dict[str, object] | None:
+    if primary is None:
+        return fallback
+    if fallback is None:
+        return primary
+
+    primary_payload = primary["llm_campaign"]
+    fallback_payload = fallback["llm_campaign"]
+    if (
+        primary_payload.get("campaign_id") != fallback_payload.get("campaign_id")
+        or primary_payload.get("launch_id") != fallback_payload.get("launch_id")
+    ):
+        return primary
+
+    merged = dict(fallback_payload)
+    merged.update(primary_payload)
+    return {"llm_campaign": merged}
+
+
+def _resolve_campaign_lineage(
+    system_slug: str,
+    candidates: list[CandidateRecord],
+) -> dict[str, object] | None:
+    candidate_lineage = _candidate_campaign_lineage(candidates)
+    manifest_lineage = _load_llm_generate_campaign_lineage(system_slug)
+    return _merge_campaign_lineage(candidate_lineage, manifest_lineage)
+
+
 @app.command("ingest")
 def ingest_command(
     config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
@@ -945,6 +1065,14 @@ def llm_launch_command(
             "resolved_model_lane_source": resolved_launch.resolved_model_lane_source,
             "launch_summary_path": str(launch_summary_path),
         }
+        launch_source_lineage = _normalize_campaign_lineage(
+            {
+                "llm_campaign": {
+                    **campaign_metadata,
+                    "resolved_launch_path": str(resolved_launch_path),
+                }
+            }
+        )
 
         summary = generate_llm_candidates(
             resolved_config,
@@ -983,6 +1111,7 @@ def llm_launch_command(
             backend_mode=resolved_config.backend.mode,
             backend_versions=_backend_versions_for_stage(resolved_config, "generate"),
             output_paths=output_paths,
+            source_lineage=launch_source_lineage,
         )
         write_manifest(manifest, llm_generate_manifest_path)
 
@@ -1100,6 +1229,7 @@ def screen_command(
 
         raw_candidates = load_jsonl(input_path)
         candidates = [CandidateRecord.model_validate(row) for row in raw_candidates]
+        campaign_lineage = _resolve_campaign_lineage(system_slug, candidates)
         relaxed = run_fast_relaxation(system_config, candidates)
 
         min_distance = DEFAULT_MIN_DISTANCE_PROXY
@@ -1148,6 +1278,7 @@ def screen_command(
                 "screened_jsonl": output_path,
                 "screen_calibration_json": calibration_path,
             },
+            source_lineage=campaign_lineage,
         )
         write_manifest(manifest, manifest_path)
 
@@ -1193,6 +1324,7 @@ def hifi_validate_command(
         raw_candidates = load_jsonl(input_path)
         candidates = [CandidateRecord.model_validate(row) for row in raw_candidates]
         selected = _select_hifi_batch(candidates, batch)
+        campaign_lineage = _resolve_campaign_lineage(system_slug, selected)
 
         validated = run_committee_relaxation(system_config, selected, batch)
         validated = compute_committee_uncertainty(validated)
@@ -1230,6 +1362,7 @@ def hifi_validate_command(
                 "hifi_validated_jsonl": output_path,
                 "validation_calibration_json": calibration_path,
             },
+            source_lineage=campaign_lineage,
         )
         write_manifest(manifest, manifest_path)
 
@@ -1261,6 +1394,7 @@ def hifi_rank_command(
         bm_ctx_dict = benchmark_ctx.as_dict()
 
         validated = _load_validated_candidates(system_slug)
+        campaign_lineage = _resolve_campaign_lineage(system_slug, validated)
         # Pass benchmark context so it is embedded in every ranked candidate's provenance.
         enriched_ranked = rank_validated_candidates(
             system_config, validated, benchmark_context=bm_ctx_dict
@@ -1288,6 +1422,7 @@ def hifi_rank_command(
                 "ranked_jsonl": output_path,
                 "ranking_calibration_json": calibration_path,
             },
+            source_lineage=campaign_lineage,
             benchmark_context=bm_ctx_dict,
         )
         write_manifest(manifest, manifest_path)
@@ -1328,6 +1463,7 @@ def active_learn_command(
 
         validated = _load_validated_candidates(system_slug)
         validated = _enrich_validated_with_ranked(system_slug, validated)
+        campaign_lineage = _resolve_campaign_lineage(system_slug, validated)
         validated_ids = {candidate.candidate_id for candidate in validated}
         candidate_pool = _load_active_learning_pool(system_slug, validated_ids)
 
@@ -1432,6 +1568,7 @@ def active_learn_command(
                 "feature_store_jsonl": feature_store_path,
                 "model_registry_jsonl": model_registry_path,
             },
+            source_lineage=campaign_lineage,
         )
         write_manifest(manifest, manifest_path)
 
@@ -1465,6 +1602,7 @@ def report_command(
         bm_ctx_dict = benchmark_ctx.as_dict()
 
         ranked, ranked_source_path = _load_report_candidates(system_slug)
+        campaign_lineage = _resolve_campaign_lineage(system_slug, ranked)
         xrd_patterns = simulate_powder_xrd_patterns(ranked)
         report = compile_experiment_report(system_config, ranked, xrd_patterns)
 
@@ -1499,6 +1637,7 @@ def report_command(
                 "xrd_patterns_jsonl": xrd_path,
                 "report_calibration_json": calibration_path,
             },
+            source_lineage=campaign_lineage,
             benchmark_context=bm_ctx_dict,
         )
         write_manifest(report_manifest, manifest_path)
@@ -1533,6 +1672,7 @@ def report_command(
             backend_mode=system_config.backend.mode,
             backend_versions=_backend_versions_for_stage(system_config, "pipeline"),
             stage_paths=existing_stage_paths,
+            source_lineage=campaign_lineage,
         )
         write_pipeline_manifest(pipeline_manifest, pipeline_manifest_path)
 
