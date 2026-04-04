@@ -12,14 +12,14 @@ reinforce each other instead of living in separate prototypes.
 - [x] **LLM-06**: The platform can turn an acceptance-pack analysis into a
   structured campaign proposal over composition regions and/or Zomic motif
   edits.
-- [ ] **LLM-08**: An operator can approve a proposal and materialize it into a
+- [x] **LLM-08**: An operator can approve a proposal and materialize it into a
   file-backed campaign spec that `llm-generate` can execute reproducibly.
 - [ ] **LLM-09**: The platform can replay a saved campaign and recover the same
   proposal, eval-set, acceptance-pack, and launch inputs for comparison.
 
 ### Workflow Integration
 
-- [ ] **LLM-10**: Approved campaigns can launch `llm-generate` and emit
+- [x] **LLM-10**: Approved campaigns can launch `llm-generate` and emit
   standard `CandidateRecord` artifacts that continue through the existing
   downstream pipeline.
 - [ ] **LLM-11**: Campaign outcomes can be compared against the originating
@@ -30,7 +30,7 @@ reinforce each other instead of living in separate prototypes.
 
 - [x] **OPS-05**: No suggestion mutates generation inputs, campaign state, or
   active-learning artifacts without an explicit operator approval step.
-- [ ] **OPS-06**: Every campaign records lineage from acceptance pack and eval
+- [x] **OPS-06**: Every campaign records lineage from acceptance pack and eval
   set through approved suggestion, generation run, downstream artifacts, and
   operator decisions.
 - [ ] **OPS-07**: The closed-loop workflow ships with an operator runbook and
@@ -67,9 +67,9 @@ reinforce each other instead of living in separate prototypes.
 |-------------|-------|--------|
 | LLM-06 | Phase 13 | Complete |
 | OPS-05 | Phase 13 | Complete |
-| LLM-08 | Phase 14 | Pending |
-| LLM-10 | Phase 14 | Pending |
-| OPS-06 | Phase 14 | Pending |
+| LLM-08 | Phase 14 | Complete |
+| LLM-10 | Phase 14 | Complete |
+| OPS-06 | Phase 14 | Complete |
 | LLM-09 | Phase 15 | Pending |
 | LLM-11 | Phase 15 | Pending |
 | OPS-07 | Phase 15 | Pending |
@@ -81,4 +81,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-04 after completing Phase 13 audit-gap closure*
+*Last updated: 2026-04-04 after completing Phase 14 audit-gap closure*
