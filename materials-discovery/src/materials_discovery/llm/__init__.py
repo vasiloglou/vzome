@@ -21,6 +21,8 @@ from materials_discovery.llm.acceptance import (
 )
 from materials_discovery.llm.campaigns import (
     build_campaign_proposals,
+    create_campaign_approval,
+    materialize_campaign_spec,
     summarize_campaign_proposals,
 )
 from materials_discovery.llm.suggest import build_llm_suggestions, write_llm_suggestions
@@ -119,6 +121,7 @@ from materials_discovery.llm.storage import (
     llm_acceptance_proposal_path,
     llm_acceptance_proposals_dir,
     llm_acceptance_suggestion_path,
+    llm_artifact_root_from_acceptance_pack_path,
     llm_campaign_dir,
     llm_campaign_spec_path,
     llm_eval_set_dir,
@@ -164,6 +167,7 @@ __all__ = [
     "build_campaign_proposals",
     "build_generation_prompt",
     "build_llm_suggestions",
+    "create_campaign_approval",
     "dedupe_corpus_examples",
     "CorpusBuildConfig",
     "CorpusBuildSummary",
@@ -214,6 +218,7 @@ __all__ = [
     "load_acceptance_benchmark_input",
     "load_eval_set",
     "load_seed_zomic_text",
+    "llm_artifact_root_from_acceptance_pack_path",
     "llm_acceptance_dir",
     "llm_acceptance_approval_path",
     "llm_acceptance_approvals_dir",
@@ -223,6 +228,7 @@ __all__ = [
     "llm_acceptance_suggestion_path",
     "llm_campaign_dir",
     "llm_campaign_spec_path",
+    "materialize_campaign_spec",
     "llm_eval_set_dir",
     "llm_eval_set_manifest_path",
     "llm_eval_set_path",

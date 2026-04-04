@@ -102,9 +102,22 @@ from materials_discovery.lake.index import (
     write_lake_index,
 )
 from materials_discovery.llm.corpus_builder import build_llm_corpus
+from materials_discovery.llm.campaigns import (
+    create_campaign_approval,
+    materialize_campaign_spec,
+)
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
-from materials_discovery.llm.schema import CorpusBuildConfig, LlmAcceptancePack
+from materials_discovery.llm.schema import (
+    CorpusBuildConfig,
+    LlmAcceptancePack,
+    LlmCampaignProposal,
+)
+from materials_discovery.llm.storage import (
+    llm_acceptance_approval_path,
+    llm_artifact_root_from_acceptance_pack_path,
+    llm_campaign_spec_path,
+)
 from materials_discovery.llm.suggest import write_llm_suggestions
 
 app = typer.Typer(add_completion=False, help="No-DFT materials discovery CLI scaffold")
@@ -788,6 +801,77 @@ def llm_suggest_command(
         typer.echo(json.dumps(load_json_object(written_path)))
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"llm-suggest failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-approve")
+def llm_approve_command(
+    proposal: Path = typer.Option(..., "--proposal", exists=False, dir_okay=False),
+    decision: str = typer.Option(..., "--decision"),
+    operator: str = typer.Option(..., "--operator"),
+    config: Path | None = typer.Option(None, "--config", exists=False, dir_okay=False),
+    notes: str | None = typer.Option(None, "--notes"),
+) -> None:
+    """Write approval artifacts and an optional self-contained campaign spec."""
+    try:
+        proposal_payload = load_json_object(proposal)
+        typed_proposal = LlmCampaignProposal.model_validate(proposal_payload)
+        approval = create_campaign_approval(
+            typed_proposal,
+            proposal_path=proposal,
+            decision=decision,
+            operator=operator,
+            notes=notes,
+        )
+
+        acceptance_pack_path = Path(typed_proposal.acceptance_pack_path).resolve()
+        artifact_root = llm_artifact_root_from_acceptance_pack_path(acceptance_pack_path)
+        approval_path = llm_acceptance_approval_path(
+            typed_proposal.pack_id,
+            approval.approval_id,
+            root=artifact_root,
+        )
+        ensure_parent(approval_path)
+        approval_path.write_text(approval.model_dump_json(indent=2), encoding="utf-8")
+
+        campaign_spec_path: Path | None = None
+        if approval.decision == "approved":
+            if config is None:
+                raise ValueError("approved decisions require --config")
+            system_config = _load_system_config(config)
+            campaign_spec = materialize_campaign_spec(
+                typed_proposal,
+                approval,
+                approval_path=approval_path,
+                system_config=system_config,
+                system_config_path=config,
+            )
+            campaign_spec_path = llm_campaign_spec_path(
+                campaign_spec.campaign_id,
+                root=artifact_root,
+            )
+            ensure_parent(campaign_spec_path)
+            campaign_spec_path.write_text(
+                campaign_spec.model_dump_json(indent=2),
+                encoding="utf-8",
+            )
+
+        typer.echo(
+            json.dumps(
+                {
+                    "proposal_id": typed_proposal.proposal_id,
+                    "decision": approval.decision,
+                    "approval_id": approval.approval_id,
+                    "approval_path": str(approval_path),
+                    "campaign_id": approval.campaign_id,
+                    "campaign_spec_path": (
+                        str(campaign_spec_path) if campaign_spec_path is not None else None
+                    ),
+                }
+            )
+        )
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-approve failed: {exc}")
         raise typer.Exit(code=2)
 
 

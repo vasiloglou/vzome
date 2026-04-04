@@ -1,14 +1,21 @@
 from __future__ import annotations
 
+import hashlib
 from datetime import UTC, datetime
 from pathlib import Path
 
+from materials_discovery.common.manifest import config_sha256
+from materials_discovery.common.schema import SystemConfig
 from materials_discovery.llm.schema import (
     LlmAcceptancePack,
     LlmAcceptanceSystemMetrics,
     LlmCampaignAction,
+    LlmCampaignApproval,
+    LlmCampaignLaunchBaseline,
+    LlmCampaignLineage,
     LlmCampaignProposal,
     LlmCampaignProposalSummary,
+    LlmCampaignSpec,
     LlmCampaignSuggestion,
     LlmCompositionWindowActionData,
     LlmPromptConditioningActionData,
@@ -29,6 +36,34 @@ def _proposal_id(pack_id: str, system: str) -> str:
 
 def _action_id(proposal_id: str, ordinal: int) -> str:
     return f"{proposal_id}_action_{ordinal:02d}"
+
+
+def _digest(*parts: str) -> str:
+    payload = "||".join(parts).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _approval_id(
+    proposal_id: str,
+    *,
+    decision: str,
+    operator: str,
+    decided_at_utc: str,
+    notes: str | None,
+) -> str:
+    digest = _digest(
+        proposal_id,
+        decision,
+        operator.strip(),
+        decided_at_utc,
+        (notes or "").strip(),
+    )
+    return f"{proposal_id}_approval_{digest[:12]}"
+
+
+def _campaign_id(proposal: LlmCampaignProposal, approval_id: str) -> str:
+    digest = _digest(proposal.proposal_id, approval_id)
+    return f"{_system_slug(proposal.system)}_{digest[:16]}"
 
 
 def _overall_status(pack: LlmAcceptancePack) -> str:
@@ -298,4 +333,89 @@ def summarize_campaign_proposals(
         generated_at_utc=datetime.now(UTC).isoformat(),
         proposal_count=len(summaries),
         proposals=summaries,
+    )
+
+
+def create_campaign_approval(
+    proposal: LlmCampaignProposal,
+    *,
+    proposal_path: Path,
+    decision: str,
+    operator: str,
+    notes: str | None = None,
+    decided_at_utc: str | None = None,
+) -> LlmCampaignApproval:
+    decision_value = decision.strip().lower()
+    decided_at = decided_at_utc or datetime.now(UTC).isoformat()
+    approval_id = _approval_id(
+        proposal.proposal_id,
+        decision=decision_value,
+        operator=operator,
+        decided_at_utc=decided_at,
+        notes=notes,
+    )
+    campaign_id = (
+        _campaign_id(proposal, approval_id)
+        if decision_value == "approved"
+        else None
+    )
+    return LlmCampaignApproval(
+        approval_id=approval_id,
+        proposal_id=proposal.proposal_id,
+        proposal_path=str(proposal_path),
+        decision=decision_value,
+        operator=operator,
+        decided_at_utc=decided_at,
+        notes=notes,
+        campaign_id=campaign_id,
+    )
+
+
+def materialize_campaign_spec(
+    proposal: LlmCampaignProposal,
+    approval: LlmCampaignApproval,
+    *,
+    approval_path: Path,
+    system_config: SystemConfig,
+    system_config_path: Path,
+) -> LlmCampaignSpec:
+    if approval.decision != "approved" or approval.campaign_id is None:
+        raise ValueError("only approved proposals can be materialized into campaign specs")
+    if approval.proposal_id != proposal.proposal_id:
+        raise ValueError("approval proposal_id must match the proposal being materialized")
+    if system_config.system_name != proposal.system:
+        raise ValueError("system config system_name must match the proposal system")
+
+    llm_generate = system_config.llm_generate
+    launch_baseline = LlmCampaignLaunchBaseline(
+        system_config_path=str(system_config_path),
+        system_config_hash=config_sha256(system_config),
+        system=system_config.system_name,
+        template_family=system_config.template_family,
+        default_count=system_config.default_count,
+        composition_bounds=system_config.composition_bounds,
+        prompt_template=llm_generate.prompt_template if llm_generate is not None else None,
+        example_pack_path=llm_generate.example_pack_path if llm_generate is not None else None,
+        max_conditioning_examples=(
+            llm_generate.max_conditioning_examples if llm_generate is not None else None
+        ),
+        seed_zomic_path=llm_generate.seed_zomic if llm_generate is not None else None,
+    )
+    lineage = LlmCampaignLineage(
+        acceptance_pack_path=proposal.acceptance_pack_path,
+        eval_set_manifest_path=proposal.eval_set_manifest_path,
+        proposal_path=approval.proposal_path,
+        approval_path=str(approval_path),
+        source_system_config_path=str(system_config_path),
+        source_system_config_hash=config_sha256(system_config),
+    )
+    return LlmCampaignSpec(
+        campaign_id=approval.campaign_id,
+        proposal_id=proposal.proposal_id,
+        approval_id=approval.approval_id,
+        system=proposal.system,
+        created_at_utc=approval.decided_at_utc,
+        actions=[action.model_copy(deep=True) for action in proposal.actions],
+        launch_baseline=launch_baseline,
+        lineage=lineage,
     )

@@ -56,6 +56,8 @@
 | 2026-04-04 | Phase 10 Plan 02 Task 1 GREEN: typed proposal mapping and writer | Added `llm/campaigns.py`, migrated `llm-suggest` to typed campaign suggestions plus per-proposal artifact writing, exported the new helpers, and updated the acceptance-benchmark caller to the new contract |
 | 2026-04-04 | Phase 10 Plan 02 Task 2 RED: llm-suggest CLI bundle tests | Added failing CLI coverage for typed stdout, default `suggestions.json`, per-system `proposals/` writing, invalid-input exit handling, and the shared `test_cli.py` migration to the new bundle contract |
 | 2026-04-04 | Phase 10 Plan 02 Task 2 GREEN: llm-suggest typed CLI contract | Updated `mdisc llm-suggest` to write the typed suggestion bundle plus proposal artifacts through `suggest.py`, print the persisted typed JSON contract, and pass the focused CLI regression slice |
+| 2026-04-04 | Phase 10 Plan 03: campaign approval and spec materialization | Added deterministic approval/spec helpers, acceptance-pack-root artifact-root derivation, and focused pytest coverage for approved, rejected, and re-approval campaign flows |
+| 2026-04-04 | Phase 10 Plan 03: llm-approve CLI governance boundary | Added the non-launching `mdisc llm-approve` command, refreshed LLM developer docs, updated shared CLI coverage, and closed the full `materials-discovery` suite at 332 passed, 3 skipped |
 
 ## Diary
 
@@ -358,3 +360,10 @@
 - 01:50 EDT — Implemented the Phase 10 Plan 02 Task 2 CLI migration.
 - `cli.py` now sends `mdisc llm-suggest` through the typed suggestion writer, preserves dry-run behavior, and prints the persisted campaign-bundle JSON instead of the legacy plain-language suggestion surface.
 - Added `tests/test_llm_suggest_cli.py`, updated the shared `tests/test_cli.py` contract, and confirmed the focused CLI slice passes with proposal artifacts written under the acceptance-pack root.
+- 10:56 EDT — Started Phase 10 Plan 03 in TDD RED mode by adding `tests/test_llm_campaign_spec.py`, `tests/test_llm_approve_cli.py`, and a new shared `test_cli.py` smoke case for `llm-approve`.
+- The new failing coverage locked deterministic approval IDs, campaign-spec lineage, approved-vs-rejected behavior, and the requirement that Phase 10 approval must not call `llm-generate` or `llm-evaluate`.
+- 10:56 EDT — Implemented the Phase 10 Plan 03 governance boundary.
+- Added `create_campaign_approval()` and `materialize_campaign_spec()` to `llm/campaigns.py`, plus artifact-root derivation in `llm/storage.py` so approvals stay under the acceptance-pack root and campaign specs land under `data/llm_campaigns/{campaign_id}/`.
+- Added `mdisc llm-approve` to `cli.py`; approved decisions now require `--config`, rejected decisions stop at the approval artifact, and the command emits a JSON summary without launching any downstream run.
+- Refreshed `developers-docs/llm-integration.md` and `developers-docs/pipeline-stages.md` to document the new dry-run vs approval/spec boundary.
+- Re-verified Phase 10 locally with focused tests plus the full suite: `332 passed, 3 skipped, 1 warning`.

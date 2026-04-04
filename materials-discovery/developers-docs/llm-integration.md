@@ -202,12 +202,28 @@ The current Phase 9 surface is intentionally lightweight and operator-facing:
 - `run_llm_acceptance_benchmarks.sh` computes a typed acceptance pack from the
   Phase 7 and Phase 8 benchmark artifacts
 - `mdisc llm-suggest --acceptance-pack ...` reads that pack and emits structured
-  next-step suggestions without executing a new search loop
+  next-step proposal bundles without executing a new search loop
 - Suggestions are aligned to existing workflow concepts: prompt validity,
   composition-conditioned example quality, downstream pass-through, and release
   readiness
 
 This is a dry-run decision aid, not yet a fully autonomous closed loop.
+
+#### `mdisc llm-approve` — Campaign Approval and Spec Materialization (Phase 10)
+
+Phase 10 adds the governance boundary that sits between dry-run suggestions and
+any future closed-loop launch path:
+- `mdisc llm-approve --proposal ... --decision approved|rejected --operator ...`
+  writes a separate typed approval artifact under the acceptance-pack root
+- approved proposals require a system config and materialize a self-contained
+  `campaign_spec.json` under `data/llm_campaigns/{campaign_id}/`
+- rejected proposals stop at the approval artifact and do not produce a launch
+  spec
+- the command does not call `llm-generate`, does not write candidate JSONL, and
+  does not mutate active-learning state
+
+This keeps the workflow file-backed and operator-governed while still giving
+Phase 11 a durable contract to launch and replay later.
 
 ### 3.2 Backend Adapter for LLM
 
@@ -437,6 +453,7 @@ Detailed in [Zomic LLM Data Plan](zomic-llm-data-plan.md). Summary:
 
 ### Phase 4 — Active Learning Loop
 - [x] Implement `mdisc llm-suggest` dry-run CLI command
+- [x] Implement `mdisc llm-approve` approval/spec governance command
 - [ ] Connect LLM suggestions to `llm-generate` for closed-loop exploration
 - [ ] Benchmark against traditional `active-learn` surrogate
 

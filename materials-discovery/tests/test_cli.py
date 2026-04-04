@@ -282,3 +282,73 @@ def test_cli_llm_suggest_success(tmp_path: Path) -> None:
     proposal_path = Path(stdout_payload["proposals"][0]["proposal_path"])
     assert proposal_path.parent == tmp_path / "proposals"
     assert proposal_path.exists()
+
+
+def test_cli_llm_approve_rejected_success(tmp_path: Path) -> None:
+    runner = CliRunner()
+    acceptance_pack_path = (
+        tmp_path
+        / "data"
+        / "benchmarks"
+        / "llm_acceptance"
+        / "acceptance_demo"
+        / "acceptance_pack.json"
+    )
+    acceptance_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    acceptance_pack_path.write_text("{}", encoding="utf-8")
+    proposal_path = tmp_path / "data" / "benchmarks" / "llm_acceptance" / "acceptance_demo" / "proposals" / "acceptance_demo_al_cu_fe.json"
+    proposal_path.parent.mkdir(parents=True, exist_ok=True)
+    proposal_path.write_text(
+        """
+{
+  "schema_version": "llm-campaign-proposal/v1",
+  "proposal_id": "acceptance_demo_al_cu_fe",
+  "pack_id": "acceptance_demo",
+  "system": "Al-Cu-Fe",
+  "generated_at_utc": "2026-04-04T00:00:00Z",
+  "acceptance_pack_path": "__ACCEPTANCE_PACK_PATH__",
+  "eval_set_manifest_path": "data/llm_eval_sets/eval_demo/manifest.json",
+  "generate_comparison_path": "data/benchmarks/llm_generate/al_cu_fe_comparison.json",
+  "pipeline_comparison_path": "data/benchmarks/llm_pipeline/al_cu_fe_comparison.json",
+  "overall_status": "needs_improvement",
+  "priority": "high",
+  "failing_metrics": ["parse_success_rate"],
+  "actions": [
+    {
+      "action_id": "acceptance_demo_al_cu_fe_action_01",
+      "family": "prompt_conditioning",
+      "title": "Tighten prompt validity conditioning",
+      "rationale": "Parse reliability is below the acceptance threshold.",
+      "priority": "high",
+      "evidence_metrics": ["parse_success_rate"],
+      "preferred_model_lane": "general_purpose",
+      "prompt_conditioning": {
+        "instruction_delta": "Emphasize parser-safe Zomic syntax.",
+        "conditioning_strategy": "increase_exact_system_examples",
+        "target_example_family": "acceptance_pack_exact_matches",
+        "preferred_max_conditioning_examples": 6
+      }
+    }
+  ]
+}
+""".replace("__ACCEPTANCE_PACK_PATH__", str(acceptance_pack_path)).strip(),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-approve",
+            "--proposal",
+            str(proposal_path),
+            "--decision",
+            "rejected",
+            "--operator",
+            "operator@example.com",
+        ],
+    )
+
+    assert result.exit_code == 0
+    stdout_payload = json.loads(result.stdout)
+    assert stdout_payload["decision"] == "rejected"
+    assert stdout_payload["campaign_spec_path"] is None

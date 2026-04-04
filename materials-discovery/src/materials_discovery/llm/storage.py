@@ -65,6 +65,17 @@ def llm_acceptance_pack_path(pack_id: str, root: Path | None = None) -> Path:
     return llm_acceptance_dir(pack_id, root) / "acceptance_pack.json"
 
 
+def llm_artifact_root_from_acceptance_pack_path(acceptance_pack_path: Path) -> Path:
+    parts = acceptance_pack_path.parts
+    marker = ("data", "benchmarks", "llm_acceptance")
+    for idx in range(len(parts) - len(marker) + 1):
+        if parts[idx : idx + len(marker)] == marker:
+            return Path(*parts[:idx]) if idx > 0 else Path(".")
+    raise ValueError(
+        "acceptance pack path must live under data/benchmarks/llm_acceptance/{pack_id}/"
+    )
+
+
 def llm_acceptance_suggestion_path(pack_id: str, root: Path | None = None) -> Path:
     return llm_acceptance_dir(pack_id, root) / "suggestions.json"
 

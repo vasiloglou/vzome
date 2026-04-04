@@ -661,7 +661,7 @@ mdisc llm-evaluate --config PATH [--batch BATCH]
 
 ## 11. `mdisc llm-suggest`
 
-Emit dry-run next-step suggestions from a typed acceptance pack.
+Emit dry-run next-step proposal bundles from a typed acceptance pack.
 
 ### CLI syntax
 
@@ -686,9 +686,9 @@ mdisc llm-suggest --acceptance-pack PATH [--out PATH]
 
 1. **Load acceptance pack.** Parse the typed per-system benchmark summary.
 2. **Assess weak spots.** Check validity, generation success, shortlist/validation pass-through, synthesizability, and release-gate readiness.
-3. **Emit dry-run suggestions.** Produce structured recommendations for the next model-improvement pass without launching a search loop.
-4. **Write suggestion artifact.** Persist the dry-run JSON next to the acceptance pack by default.
-5. **Emit summary.** Print the typed `LlmSuggestion` JSON to stdout.
+3. **Emit dry-run suggestions.** Produce typed system-scoped campaign proposals for the next model-improvement pass without launching a search loop.
+4. **Write suggestion artifact.** Persist the suggestion bundle JSON plus sibling `proposals/{proposal_id}.json` artifacts next to the acceptance pack by default.
+5. **Emit summary.** Print the typed `LlmCampaignSuggestion` JSON to stdout.
 
 ### Artifacts
 
@@ -696,10 +696,61 @@ mdisc llm-suggest --acceptance-pack PATH [--out PATH]
 |---|---|
 | Acceptance pack | `{workspace}/data/benchmarks/llm_acceptance/{pack_id}/acceptance_pack.json` |
 | Suggestion JSON | `{workspace}/data/benchmarks/llm_acceptance/{pack_id}/suggestions.json` |
+| Proposal JSON | `{workspace}/data/benchmarks/llm_acceptance/{pack_id}/proposals/{proposal_id}.json` |
 
 ### Return type
 
-`LlmSuggestion` (JSON to stdout).
+`LlmCampaignSuggestion` (JSON to stdout).
+
+---
+
+## 12. `mdisc llm-approve`
+
+Write an explicit approval artifact for a typed proposal and, when approved,
+materialize a self-contained campaign spec without launching generation.
+
+### CLI syntax
+
+```
+mdisc llm-approve --proposal PATH --decision approved|rejected --operator TEXT [--config PATH] [--notes TEXT]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--proposal` | PATH | Yes | -- | Path to a typed campaign proposal JSON |
+| `--decision` | STR | Yes | -- | `approved` or `rejected` |
+| `--operator` | STR | Yes | -- | Operator identity recorded on the approval artifact |
+| `--config` | PATH | Approved only | `None` | Required for approved proposals so the campaign spec can pin a launch baseline |
+| `--notes` | STR | No | `None` | Optional approval notes |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Proposal JSON | `{workspace}/data/benchmarks/llm_acceptance/{pack_id}/proposals/{proposal_id}.json` | `mdisc llm-suggest` |
+| System config YAML | user-selected | Required only for `approved` decisions |
+
+### Internal steps
+
+1. **Load proposal.** Parse the typed `LlmCampaignProposal` artifact.
+2. **Create approval artifact.** Build a separate `LlmCampaignApproval` with a deterministic approval ID.
+3. **Write approval JSON.** Persist the approval artifact under `approvals/{approval_id}.json` next to the acceptance-pack root.
+4. **Materialize campaign spec when approved.** Load `SystemConfig`, hash it, pin the launch baseline, and write `campaign_spec.json` under `data/llm_campaigns/{campaign_id}/`.
+5. **Stop at governance artifacts.** Do not call `llm-generate`, `llm-evaluate`, or any downstream pipeline stage.
+6. **Emit summary.** Print a small JSON object containing the approval path and optional campaign-spec path.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Approval JSON | `{workspace}/data/benchmarks/llm_acceptance/{pack_id}/approvals/{approval_id}.json` |
+| Campaign spec JSON | `{workspace}/data/llm_campaigns/{campaign_id}/campaign_spec.json` |
+
+### Return type
+
+JSON summary with `proposal_id`, `decision`, `approval_id`, `approval_path`, optional `campaign_id`, and optional `campaign_spec_path`.
 
 ---
 
@@ -738,6 +789,7 @@ alongside `generate`. Both produce CandidateRecord JSONL that feeds into
 `screen`. The implemented `llm-evaluate` command enriches ranked candidates with
 synthesizability and precursor information before reporting, and `report`
 prefers the additive `*_all_llm_evaluated.jsonl` artifact when it exists. The
-implemented dry-run `llm-suggest` command now reads typed acceptance packs and
-emits structured next-step suggestions without replacing the existing
-`active-learn` loop.
+implemented `llm-suggest` command now reads typed acceptance packs and emits
+dry-run proposal bundles, while `llm-approve` materializes separate approval
+artifacts and self-contained campaign specs without replacing the existing
+`active-learn` loop or launching a closed-loop search yet.
