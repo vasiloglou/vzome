@@ -6,8 +6,8 @@ current_phase: 11
 current_phase_name: closed-loop-campaign-execution-bridge
 current_plan: 0
 status: ready_to_execute
-stopped_at: Plans created and verified for Phase 11
-last_updated: "2026-04-04T16:12:23Z"
+stopped_at: Review feedback incorporated for Phase 11
+last_updated: "2026-04-04T16:40:00Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 3
@@ -37,7 +37,7 @@ Phase: 11 (closed-loop-campaign-execution-bridge) — READY TO EXECUTE
 Plan: 0 of 3
 Status: Plans created and verified — ready for execution
 Last activity: 2026-04-04
-Last Activity Description: Phase 11 planning complete — awaiting execution
+Last Activity Description: Phase 11 replanned after review feedback — awaiting execution
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -164,6 +164,7 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 11-closed-loop-campaign-execution-bridge]: Launch through a dedicated `mdisc llm-launch --campaign-spec ...` command rather than folding execution into `llm-approve`.
 - [Phase 11-closed-loop-campaign-execution-bridge]: Resolve approved campaign actions through an in-memory runtime overlay over the existing `llm-generate` path rather than rewriting YAML configs.
 - [Phase 11-closed-loop-campaign-execution-bridge]: Keep standard artifact roots primary, add campaign launch wrapper artifacts under `data/llm_campaigns/{campaign_id}/launches/{launch_id}/`, and preserve partial artifacts on failure without resume support.
+- [Phase 11-closed-loop-campaign-execution-bridge]: Treat the 10 percent composition-window shrink as a deliberate v1.1 heuristic and record whether lane resolution used a configured match or baseline fallback.
 
 ### Pending Todos
 
@@ -175,6 +176,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T16:12:23Z
-Stopped at: Plans created and verified for Phase 11
+Last session: 2026-04-04T16:40:00Z
+Stopped at: Review feedback incorporated for Phase 11
 Resume file: .planning/phases/11-closed-loop-campaign-execution-bridge/11-01-PLAN.md
