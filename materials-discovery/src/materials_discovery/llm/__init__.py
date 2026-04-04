@@ -35,6 +35,11 @@ from materials_discovery.llm.pipeline_benchmark import (
     write_llm_pipeline_comparison,
 )
 from materials_discovery.llm.prompting import build_generation_prompt, load_seed_zomic_text
+from materials_discovery.llm.launch import (
+    materialize_campaign_seed,
+    resolve_campaign_launch,
+    resolve_campaign_model_lane,
+)
 from materials_discovery.llm.qa import (
     dedupe_corpus_examples,
     grade_corpus_example,
@@ -245,6 +250,7 @@ __all__ = [
     "llm_campaign_resolved_launch_path",
     "llm_campaign_spec_path",
     "materialize_campaign_spec",
+    "materialize_campaign_seed",
     "llm_eval_set_dir",
     "llm_eval_set_manifest_path",
     "llm_eval_set_path",
@@ -253,6 +259,8 @@ __all__ = [
     "materials_corpus_path",
     "ReleaseTier",
     "resolve_llm_adapter",
+    "resolve_campaign_launch",
+    "resolve_campaign_model_lane",
     "SourceFamily",
     "summarize_corpus_quality",
     "summarize_campaign_proposals",

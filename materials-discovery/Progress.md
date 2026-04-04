@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 11 Plan 01 Task 2 launch resolution | Added `llm/launch.py` with deterministic lane selection, prompt/composition overlays, eval-set seed materialization, and exported campaign launch helpers |
 | 2026-04-04 | Phase 11 Plan 01 Task 2 RED tests | Added `tests/test_llm_launch_core.py` to lock deterministic lane, prompt, composition, and seed resolution behavior before implementing `llm/launch.py` |
 | 2026-04-04 | Phase 11 Plan 01 Task 1 launch contracts | Added lane-aware `llm_generate.model_lanes`, typed launch summary models, and deterministic campaign launch storage helpers |
 | 2026-04-04 | Phase 11 Plan 01 Task 1 RED tests | Added `tests/test_llm_launch_schema.py` to lock lane-aware config validation, launch summary contracts, and campaign launch storage paths before implementation |
@@ -338,6 +339,9 @@
 
 ### 2026-04-04
 
+- 13:12 EDT — Implemented the Phase 11 Plan 01 Task 2 launch resolution layer.
+- Added `materials_discovery.llm.launch` with deterministic action ordering, configured-lane vs baseline-fallback resolution, heuristic composition-window shrinking, and eval-set-backed seed materialization into the campaign launch directory.
+- Exported `resolve_campaign_launch()`, `resolve_campaign_model_lane()`, and `materialize_campaign_seed()` from `materials_discovery.llm` so later CLI and runtime work can use a single additive launch overlay surface.
 - 12:30 EDT — Started Phase 11 Plan 01 Task 2 in TDD RED mode by adding `tests/test_llm_launch_core.py`.
 - The new failing coverage locks deterministic lane selection and fallback, ordered prompt deltas, exact vs heuristic composition overlays, seed reuse/materialization, and the requirement that source `SystemConfig` objects stay unmodified.
 - Open item: implement `materials_discovery.llm.launch`, export its helpers, and keep all resolution logic file-backed and additive over the existing `llm-generate` path.
