@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 11 Plan 01 Task 2 RED tests | Added `tests/test_llm_launch_core.py` to lock deterministic lane, prompt, composition, and seed resolution behavior before implementing `llm/launch.py` |
 | 2026-04-04 | Phase 11 Plan 01 Task 1 launch contracts | Added lane-aware `llm_generate.model_lanes`, typed launch summary models, and deterministic campaign launch storage helpers |
 | 2026-04-04 | Phase 11 Plan 01 Task 1 RED tests | Added `tests/test_llm_launch_schema.py` to lock lane-aware config validation, launch summary contracts, and campaign launch storage paths before implementation |
 | 2026-03-22 | Initial Progress.md created | Tracking document for experiments and actions |
@@ -337,6 +338,9 @@
 
 ### 2026-04-04
 
+- 12:30 EDT — Started Phase 11 Plan 01 Task 2 in TDD RED mode by adding `tests/test_llm_launch_core.py`.
+- The new failing coverage locks deterministic lane selection and fallback, ordered prompt deltas, exact vs heuristic composition overlays, seed reuse/materialization, and the requirement that source `SystemConfig` objects stay unmodified.
+- Open item: implement `materials_discovery.llm.launch`, export its helpers, and keep all resolution logic file-backed and additive over the existing `llm-generate` path.
 - 12:27 EDT — Started Phase 11 Plan 01 Task 1 in TDD RED mode by adding `tests/test_llm_launch_schema.py`.
 - The new failing coverage locks the additive `model_lanes` config seam, typed launch-summary/resolved-launch artifacts, and deterministic `data/llm_campaigns/{campaign_id}/launches/{launch_id}/` path helpers before touching the implementation.
 - Open item: add the lane-aware schema fields, launch artifact models, storage helpers, and exports without breaking legacy `llm-generate` configs.
