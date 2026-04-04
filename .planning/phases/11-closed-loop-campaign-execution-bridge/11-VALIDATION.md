@@ -1,9 +1,9 @@
 ---
 phase: 11
 slug: closed-loop-campaign-execution-bridge
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: automated_complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-04
 ---
 
@@ -19,7 +19,8 @@ created: 2026-04-04
 |----------|-------|
 | **Framework** | pytest |
 | **Config file** | `materials-discovery/pyproject.toml` |
-| **Quick run command** | `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py tests/test_llm_launch_core.py tests/test_llm_generate_core.py tests/test_llm_generate_cli.py tests/test_llm_launch_cli.py tests/test_cli.py tests/test_llm_campaign_lineage.py -x -v` |
+| **Quick run command** | `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py tests/test_llm_launch_core.py tests/test_llm_generate_core.py tests/test_llm_generate_cli.py tests/test_llm_launch_cli.py tests/test_cli.py tests/test_llm_campaign_lineage.py tests/test_report.py -x -v` |
+| **Focused downstream command** | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py -k "campaign or llm_launch" -x -v` |
 | **Full suite command** | `cd materials-discovery && uv run pytest` |
 | **Estimated runtime** | ~45-240 seconds depending on focused wave vs full suite |
 
@@ -27,10 +28,11 @@ created: 2026-04-04
 
 ## Sampling Rate
 
-- **After every task commit:** Run the smallest focused Phase 11 command that
-  matches the files changed.
-- **After every plan wave:** Run that wave's targeted pytest command.
-- **Before `$gsd-verify-work`:** Full suite must be green.
+- **After evidence refresh work:** Run the focused Phase 11 launch/lineage
+  slices plus the downstream compatibility check.
+- **After verification or traceability doc work:** Run `git diff --check`.
+- **Before the Phase 11 audit gap closes:** Ensure `11-VALIDATION.md` and
+  `11-VERIFICATION.md` tell the same success or blocked story.
 - **Max feedback latency:** 240 seconds
 
 ---
@@ -39,12 +41,12 @@ created: 2026-04-04
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 11-01-01 | 01 | 1 | LLM-08 | schema/storage | `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py -x -v` | ⬜ | ⬜ pending |
-| 11-01-02 | 01 | 1 | LLM-08 | core/unit | `cd materials-discovery && uv run pytest tests/test_llm_launch_core.py -x -v` | ⬜ | ⬜ pending |
-| 11-02-01 | 02 | 2 | LLM-08, LLM-10 | core/integration | `cd materials-discovery && uv run pytest tests/test_llm_generate_core.py tests/test_llm_generate_cli.py -x -v` | ✅ | ⬜ pending |
-| 11-02-02 | 02 | 2 | LLM-08, LLM-10, OPS-06 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_launch_cli.py tests/test_cli.py -x -v` | ⬜ | ⬜ pending |
-| 11-03-01 | 03 | 3 | OPS-06 | manifest/integration | `cd materials-discovery && uv run pytest tests/test_llm_campaign_lineage.py tests/test_report.py -x -v` | ⬜ | ⬜ pending |
-| 11-03-02 | 03 | 3 | LLM-10, OPS-06 | E2E/integration | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py -k \"campaign or llm_launch\" -x -v` | ✅ | ⬜ pending |
+| 11-01-01 | 01 | 1 | LLM-08 | schema/storage | `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py -x -v` | ✅ | ✅ green |
+| 11-01-02 | 01 | 1 | LLM-08 | core/unit | `cd materials-discovery && uv run pytest tests/test_llm_launch_core.py -x -v` | ✅ | ✅ green |
+| 11-02-01 | 02 | 2 | LLM-08, LLM-10 | core/integration | `cd materials-discovery && uv run pytest tests/test_llm_generate_core.py tests/test_llm_generate_cli.py -x -v` | ✅ | ✅ green |
+| 11-02-02 | 02 | 2 | LLM-08, LLM-10, OPS-06 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_launch_cli.py tests/test_cli.py -x -v` | ✅ | ✅ green |
+| 11-03-01 | 03 | 3 | OPS-06 | manifest/integration | `cd materials-discovery && uv run pytest tests/test_llm_campaign_lineage.py tests/test_report.py -x -v` | ✅ | ✅ green |
+| 11-03-02 | 03 | 3 | LLM-10, OPS-06 | E2E/integration | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py -k \"campaign or llm_launch\" -x -v` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,30 +54,30 @@ created: 2026-04-04
 
 ## Wave 0 Requirements
 
-- [ ] `materials-discovery/tests/test_llm_launch_schema.py` — typed launch
+- [x] `materials-discovery/tests/test_llm_launch_schema.py` — typed launch
   artifact, lane-config, lane-resolution-source, and storage-path coverage
-- [ ] `materials-discovery/tests/test_llm_launch_core.py` — deterministic
+- [x] `materials-discovery/tests/test_llm_launch_core.py` — deterministic
   action-to-overlay resolution coverage for prompt, composition, precision-safe
   shrink heuristics, lane fallback, and seed flows
-- [ ] `materials-discovery/tests/test_llm_launch_cli.py` — approved
+- [x] `materials-discovery/tests/test_llm_launch_cli.py` — approved
   campaign-spec launch CLI coverage including config-drift detail, `--out`
   override recording, launch-id visibility, and failure/success paths
-- [ ] `materials-discovery/tests/test_llm_campaign_lineage.py` — downstream
+- [x] `materials-discovery/tests/test_llm_campaign_lineage.py` — downstream
   manifest propagation coverage for campaign lineage without duplicate nesting
-- [ ] `materials-discovery/tests/test_llm_generate_core.py` and
+- [x] `materials-discovery/tests/test_llm_generate_core.py` and
   `materials-discovery/tests/test_llm_generate_cli.py` stay green with no
   campaign spec involved
-- [ ] Any Phase 11 execution that changes `materials-discovery/` must update
+- [x] Any Phase 11 execution that changes `materials-discovery/` must update
   `materials-discovery/Progress.md` per repo policy
-- [ ] Any launch tests must avoid live provider calls unless explicitly
+- [x] Any launch tests must avoid live provider calls unless explicitly
   monkeypatched and should remain offline/deterministic by default
-- [ ] Any launch tests that materialize seed Zomic from eval-set examples must
+- [x] Any launch tests that materialize seed Zomic from eval-set examples must
   use committed fixtures or synthetic examples, not Java-dependent exports
-- [ ] Any new campaign-lineage tests must verify both run-level artifacts and
+- [x] Any new campaign-lineage tests must verify both run-level artifacts and
   standard stage manifests
-- [ ] Any config-drift test failures must assert operator-facing context:
+- [x] Any config-drift test failures must assert operator-facing context:
   config path, pinned/current hash detail when available, and re-approval guidance
-- [ ] Any `resolved_launch.json` checks must assert both the effective
+- [x] Any `resolved_launch.json` checks must assert both the effective
   candidates path and whether the resolved lane came from a configured-lane
   match or baseline fallback
 
@@ -95,13 +97,31 @@ launch and lineage coverage rather than tooling installation.*
 
 ---
 
+## Verification Results
+
+- Focused Phase 11 rerun performed during Phase 14 audit closure:
+  - `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py tests/test_llm_launch_core.py tests/test_llm_generate_core.py tests/test_llm_generate_cli.py tests/test_llm_launch_cli.py tests/test_cli.py tests/test_llm_campaign_lineage.py tests/test_report.py -x -v`
+  - Result: `60 passed in 1.42s`
+- Focused downstream compatibility rerun performed during Phase 14 audit closure:
+  - `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py -k "campaign or llm_launch" -x -v`
+  - Result: `2 passed, 6 deselected in 13.18s`
+- Existing full-suite evidence from
+  [11-03-SUMMARY.md](/Users/nikolaosvasiloglou/github-repos/vzome/.planning/phases/11-closed-loop-campaign-execution-bridge/11-03-SUMMARY.md):
+  - `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest`
+  - Result: `357 passed, 3 skipped, 1 warning`
+
+This validation artifact was finalized retroactively in Phase 14 to close the
+v1.1 milestone audit gap for Phase 11.
+
+---
+
 ## Validation Sign-Off
 
-- [ ] All tasks have focused automated verify commands or explicit Wave 0 prerequisites
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all new Phase 11 seams
-- [ ] No watch-mode or long-running background commands are required
-- [ ] Feedback latency < 240s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have focused automated verify commands or explicit Wave 0 prerequisites
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all new Phase 11 seams
+- [x] No watch-mode or long-running background commands are required
+- [x] Feedback latency < 240s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** automated verification complete
