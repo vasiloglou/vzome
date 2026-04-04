@@ -9,6 +9,13 @@ def _artifact_root(root: Path | None = None) -> Path:
     return workspace_root() if root is None else root
 
 
+def _require_artifact_id(value: str, field_name: str) -> str:
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError(f"{field_name} must not be blank")
+    return normalized
+
+
 def corpus_build_dir(build_id: str, root: Path | None = None) -> Path:
     return _artifact_root(root) / "data" / "llm_corpus" / build_id
 
@@ -50,8 +57,48 @@ def llm_eval_set_manifest_path(export_id: str, root: Path | None = None) -> Path
 
 
 def llm_acceptance_dir(pack_id: str, root: Path | None = None) -> Path:
-    return _artifact_root(root) / "data" / "benchmarks" / "llm_acceptance" / pack_id
+    normalized_pack_id = _require_artifact_id(pack_id, "pack_id")
+    return _artifact_root(root) / "data" / "benchmarks" / "llm_acceptance" / normalized_pack_id
 
 
 def llm_acceptance_pack_path(pack_id: str, root: Path | None = None) -> Path:
     return llm_acceptance_dir(pack_id, root) / "acceptance_pack.json"
+
+
+def llm_acceptance_suggestion_path(pack_id: str, root: Path | None = None) -> Path:
+    return llm_acceptance_dir(pack_id, root) / "suggestions.json"
+
+
+def llm_acceptance_proposals_dir(pack_id: str, root: Path | None = None) -> Path:
+    return llm_acceptance_dir(pack_id, root) / "proposals"
+
+
+def llm_acceptance_proposal_path(
+    pack_id: str,
+    proposal_id: str,
+    root: Path | None = None,
+) -> Path:
+    normalized_proposal_id = _require_artifact_id(proposal_id, "proposal_id")
+    return llm_acceptance_proposals_dir(pack_id, root) / f"{normalized_proposal_id}.json"
+
+
+def llm_acceptance_approvals_dir(pack_id: str, root: Path | None = None) -> Path:
+    return llm_acceptance_dir(pack_id, root) / "approvals"
+
+
+def llm_acceptance_approval_path(
+    pack_id: str,
+    approval_id: str,
+    root: Path | None = None,
+) -> Path:
+    normalized_approval_id = _require_artifact_id(approval_id, "approval_id")
+    return llm_acceptance_approvals_dir(pack_id, root) / f"{normalized_approval_id}.json"
+
+
+def llm_campaign_dir(campaign_id: str, root: Path | None = None) -> Path:
+    normalized_campaign_id = _require_artifact_id(campaign_id, "campaign_id")
+    return _artifact_root(root) / "data" / "llm_campaigns" / normalized_campaign_id
+
+
+def llm_campaign_spec_path(campaign_id: str, root: Path | None = None) -> Path:
+    return llm_campaign_dir(campaign_id, root) / "campaign_spec.json"

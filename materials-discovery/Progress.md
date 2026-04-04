@@ -51,6 +51,7 @@
 | 2026-04-04 | Phase 10 Plan 01 Task 1 RED: campaign schema tests | Added failing pytest coverage for typed campaign proposals, action-family payload validation, separate approvals, and campaign-spec lineage before implementing the new governance contract |
 | 2026-04-04 | Phase 10 Plan 01 Task 1 GREEN: campaign governance schema | Added the additive Phase 10 proposal, approval, launch-baseline, lineage, and campaign-spec models in `llm/schema.py`, exported them from `llm/__init__.py`, and aligned them with the new focused schema tests |
 | 2026-04-04 | Phase 10 Plan 01 Task 2 RED: campaign storage tests | Added failing pytest coverage for deterministic suggestion, proposal, approval, and campaign-spec artifact paths plus blank-ID rejection before implementing the new storage helpers |
+| 2026-04-04 | Phase 10 Plan 01 Task 2 GREEN: campaign storage helpers | Added deterministic acceptance-pack and campaign artifact path helpers in `llm/storage.py`, exported them from `llm/__init__.py`, and made blank artifact IDs fail fast instead of producing malformed paths |
 
 ## Diary
 
@@ -337,3 +338,6 @@
 - 01:30 EDT — Started Phase 10 Plan 01 Task 2 in TDD RED mode by adding `tests/test_llm_campaign_storage.py`.
 - The new failing storage tests lock the deterministic artifact layout for acceptance-pack-rooted suggestions, proposals, approvals, and dedicated `data/llm_campaigns/{campaign_id}/campaign_spec.json` outputs.
 - Open item: add the new storage helpers to `materials_discovery.llm.storage`, reject blank artifact IDs, and export the helper surface from `materials_discovery.llm`.
+- 01:31 EDT — Implemented the Phase 10 storage helpers in `materials_discovery.llm.storage` and exported them from `materials_discovery.llm`.
+- Added deterministic helpers for `suggestions.json`, `proposals/{proposal_id}.json`, `approvals/{approval_id}.json`, and `data/llm_campaigns/{campaign_id}/campaign_spec.json`.
+- Blank `pack_id`, `proposal_id`, `approval_id`, and `campaign_id` inputs now raise immediately so the storage layer cannot quietly point at malformed artifact roots.
