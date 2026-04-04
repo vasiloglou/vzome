@@ -1,9 +1,9 @@
 ---
 phase: 12
 slug: replay-comparison-and-operator-workflow
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: automated_complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-04
 ---
 
@@ -39,12 +39,12 @@ created: 2026-04-04
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 12-01-01 | 01 | 1 | LLM-09, LLM-11 | schema/storage | `cd materials-discovery && uv run pytest tests/test_llm_replay_core.py -x -v` | ⬜ | ⬜ pending |
-| 12-01-02 | 01 | 1 | LLM-09, LLM-11 | core/unit | `cd materials-discovery && uv run pytest tests/test_llm_replay_core.py tests/test_llm_compare_core.py -x -v` | ⬜ | ⬜ pending |
-| 12-02-01 | 02 | 2 | LLM-09, OPS-07 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_replay_cli.py tests/test_cli.py -x -v` | ⬜ | ⬜ pending |
-| 12-02-02 | 02 | 2 | LLM-11, OPS-07 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_compare_cli.py tests/test_cli.py -x -v` | ⬜ | ⬜ pending |
-| 12-03-01 | 03 | 3 | LLM-09, LLM-11 | E2E/integration | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py -k "llm_replay or llm_compare or campaign" -x -v` | ✅ | ⬜ pending |
-| 12-03-02 | 03 | 3 | OPS-07 | docs/regression | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py -k "llm_replay or llm_compare or campaign" -x -v` | ✅ | ⬜ pending |
+| 12-01-01 | 01 | 1 | LLM-09, LLM-11 | schema/storage | `cd materials-discovery && uv run pytest tests/test_llm_replay_core.py -x -v` | ✅ | ✅ green |
+| 12-01-02 | 01 | 1 | LLM-09, LLM-11 | core/unit | `cd materials-discovery && uv run pytest tests/test_llm_replay_core.py tests/test_llm_compare_core.py -x -v` | ✅ | ✅ green |
+| 12-02-01 | 02 | 2 | LLM-09, OPS-07 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_replay_cli.py tests/test_cli.py -x -v` | ✅ | ✅ green |
+| 12-02-02 | 02 | 2 | LLM-11, OPS-07 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_compare_cli.py tests/test_cli.py -x -v` | ✅ | ✅ green |
+| 12-03-01 | 03 | 3 | LLM-09, LLM-11 | E2E/integration | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py -k "llm_replay or llm_compare or campaign" tests/test_llm_campaign_lineage.py -x -v` | ✅ | ✅ green |
+| 12-03-02 | 03 | 3 | OPS-07 | docs/regression | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py -k "llm_replay or llm_compare or campaign" tests/test_llm_campaign_lineage.py -x -v` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,23 +52,23 @@ created: 2026-04-04
 
 ## Wave 0 Requirements
 
-- [ ] `materials-discovery/tests/test_llm_replay_core.py` — launch-bundle,
+- [x] `materials-discovery/tests/test_llm_replay_core.py` — launch-bundle,
   strict replay, and drift-recording coverage
-- [ ] `materials-discovery/tests/test_llm_compare_core.py` — outcome snapshot,
+- [x] `materials-discovery/tests/test_llm_compare_core.py` — outcome snapshot,
   acceptance-pack baseline, and prior-launch selection coverage
-- [ ] `materials-discovery/tests/test_llm_replay_cli.py` — replay command
+- [x] `materials-discovery/tests/test_llm_replay_cli.py` — replay command
   coverage for success, missing bundle pieces, and no-override behavior
-- [ ] `materials-discovery/tests/test_llm_compare_cli.py` — compare command
+- [x] `materials-discovery/tests/test_llm_compare_cli.py` — compare command
   coverage for JSON artifact writing and human-readable summaries
-- [ ] Any Phase 12 execution that changes `materials-discovery/` must update
+- [x] Any Phase 12 execution that changes `materials-discovery/` must update
   `materials-discovery/Progress.md` per repo policy
-- [ ] Replay and compare tests must remain offline and deterministic by default;
+- [x] Replay and compare tests must remain offline and deterministic by default;
   no live providers or Java-dependent exports
-- [ ] Any replay tests that exercise config drift must assert that the drift is
+- [x] Any replay tests that exercise config drift must assert that the drift is
   recorded but does not silently change the effective launch inputs
-- [ ] Any comparison tests that rely on prior launches must use committed or
+- [x] Any comparison tests that rely on prior launches must use committed or
   synthetic launch bundles rather than mutable current workspace artifacts
-- [ ] Any comparison snapshot tests must assert explicit missing-metric markers
+- [x] Any comparison snapshot tests must assert explicit missing-metric markers
   when downstream artifacts are absent
 
 *Existing pytest infrastructure covers the repo. Wave 0 is about new replay,
@@ -88,12 +88,11 @@ comparison, and operator-workflow coverage rather than tooling installation.*
 
 ## Validation Sign-Off
 
-- [ ] All tasks have focused automated verify commands or explicit Wave 0 prerequisites
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all new Phase 12 seams
-- [ ] No watch-mode or long-running background commands are required
-- [ ] Feedback latency < 240s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have focused automated verify commands or explicit Wave 0 prerequisites
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all new Phase 12 seams
+- [x] No watch-mode or long-running background commands are required
+- [x] Feedback latency < 240s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
-
+**Approval:** automated verification complete
