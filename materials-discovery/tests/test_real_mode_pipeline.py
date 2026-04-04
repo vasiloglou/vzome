@@ -12,6 +12,11 @@ from materials_discovery.cli import app
 from materials_discovery.common.io import load_yaml
 from materials_discovery.common.manifest import config_sha256
 from materials_discovery.common.schema import SystemConfig
+from materials_discovery.llm.storage import (
+    llm_acceptance_pack_path,
+    llm_campaign_comparison_path,
+    llm_campaign_outcome_snapshot_path,
+)
 
 
 @pytest.mark.integration
@@ -184,6 +189,55 @@ def _write_llm_campaign_spec(tmp_path: Path, config_path: Path) -> Path:
     return spec_path
 
 
+def _write_llm_acceptance_pack(root: Path, pack_id: str = "pack_v1") -> Path:
+    acceptance_pack_path = llm_acceptance_pack_path(pack_id, root=root)
+    acceptance_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    acceptance_pack_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "llm-acceptance-pack/v1",
+                "pack_id": pack_id,
+                "created_at_utc": "2026-04-04T16:30:00Z",
+                "eval_set_manifest_path": None,
+                "thresholds": {
+                    "min_parse_success_rate": 0.8,
+                    "min_compile_success_rate": 0.8,
+                    "min_generation_success_rate": 0.3,
+                    "min_shortlist_pass_rate": 0.05,
+                    "min_validation_pass_rate": 0.02,
+                    "min_novelty_score_mean": 0.0,
+                    "min_synthesizability_mean": 0.5,
+                },
+                "systems": [
+                    {
+                        "system": "Al-Cu-Fe",
+                        "generate_comparison_path": "data/benchmarks/llm_generate/al_cu_fe_comparison.json",
+                        "pipeline_comparison_path": "data/benchmarks/llm_pipeline/al_cu_fe_comparison.json",
+                        "parse_success_rate": 0.72,
+                        "compile_success_rate": 0.64,
+                        "generation_success_rate": 0.28,
+                        "shortlist_pass_rate": 0.04,
+                        "validation_pass_rate": 0.01,
+                        "novelty_score_mean": 0.11,
+                        "synthesizability_mean": 0.46,
+                        "report_release_gate_ready": False,
+                        "failing_metrics": [
+                            "parse_success_rate",
+                            "compile_success_rate",
+                            "generation_success_rate",
+                        ],
+                        "passed": False,
+                    }
+                ],
+                "overall_passed": False,
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    return acceptance_pack_path
+
+
 @pytest.mark.integration
 def test_real_mode_llm_launch_candidates_continue_through_screen_with_lineage(
     tmp_path: Path,
@@ -223,6 +277,118 @@ def test_real_mode_llm_launch_candidates_continue_through_screen_with_lineage(
     assert screen_manifest["source_lineage"]["llm_campaign"]["launch_summary_path"].endswith(
         "launch_summary.json"
     )
+
+
+@pytest.mark.integration
+def test_real_mode_llm_replay_compare_campaign_operator_workflow_offline(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    runner = CliRunner()
+    repo_workspace = Path(__file__).resolve().parents[1]
+    artifact_workspace = tmp_path / "workspace"
+    config_path = repo_workspace / "configs" / "systems" / "al_cu_fe_llm_mock.yaml"
+    acceptance_pack_path = _write_llm_acceptance_pack(artifact_workspace)
+
+    monkeypatch.setattr("materials_discovery.cli.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr("materials_discovery.llm.generate.workspace_root", lambda: artifact_workspace)
+
+    suggest = runner.invoke(
+        app,
+        ["llm-suggest", "--acceptance-pack", str(acceptance_pack_path)],
+    )
+    assert suggest.exit_code == 0, f"llm-suggest failed:\n{suggest.stdout}\n{suggest.stderr}"
+    suggestion_payload = json.loads(suggest.stdout)
+    proposal_path = Path(suggestion_payload["proposals"][0]["proposal_path"])
+    assert proposal_path.exists()
+
+    approve = runner.invoke(
+        app,
+        [
+            "llm-approve",
+            "--proposal",
+            str(proposal_path),
+            "--decision",
+            "approved",
+            "--operator",
+            "operator@example.com",
+            "--config",
+            str(config_path),
+        ],
+    )
+    assert approve.exit_code == 0, f"llm-approve failed:\n{approve.stdout}\n{approve.stderr}"
+    approval_payload = json.loads(approve.stdout)
+    campaign_spec_path = Path(approval_payload["campaign_spec_path"])
+    assert campaign_spec_path.exists()
+
+    launch = runner.invoke(
+        app,
+        ["llm-launch", "--campaign-spec", str(campaign_spec_path)],
+    )
+    assert launch.exit_code == 0, f"llm-launch failed:\n{launch.stdout}\n{launch.stderr}"
+    launch_payload = json.loads(launch.stdout)
+    first_launch_summary_path = Path(launch_payload["resolved_launch_path"]).with_name(
+        "launch_summary.json"
+    )
+    assert first_launch_summary_path.exists()
+
+    replay = runner.invoke(
+        app,
+        ["llm-replay", "--launch-summary", str(first_launch_summary_path)],
+    )
+    assert replay.exit_code == 0, f"llm-replay failed:\n{replay.stdout}\n{replay.stderr}"
+    replay_payload = json.loads(replay.stdout)
+    replay_launch_summary_path = Path(replay_payload["resolved_launch_path"]).with_name(
+        "launch_summary.json"
+    )
+    assert replay_launch_summary_path.exists()
+
+    replay_candidates = [
+        json.loads(line)
+        for line in Path(replay_payload["candidates_path"]).read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert replay_candidates
+    assert replay_candidates[0]["provenance"]["llm_campaign"]["replay_of_launch_id"] == (
+        launch_payload["launch_id"]
+    )
+    assert replay_candidates[0]["provenance"]["llm_campaign"][
+        "replay_of_launch_summary_path"
+    ] == str(first_launch_summary_path)
+
+    compare = runner.invoke(
+        app,
+        ["llm-compare", "--launch-summary", str(replay_launch_summary_path)],
+    )
+    assert compare.exit_code == 0, f"llm-compare failed:\n{compare.stdout}\n{compare.stderr}"
+
+    outcome_snapshot_path = llm_campaign_outcome_snapshot_path(
+        replay_payload["campaign_id"],
+        replay_payload["launch_id"],
+        root=artifact_workspace,
+    )
+    comparison_path = llm_campaign_comparison_path(
+        replay_payload["campaign_id"],
+        f"comparison_{replay_payload['launch_id']}",
+        root=artifact_workspace,
+    )
+    assert outcome_snapshot_path.exists()
+    assert comparison_path.exists()
+
+    outcome_snapshot = json.loads(outcome_snapshot_path.read_text(encoding="utf-8"))
+    assert outcome_snapshot["launch_id"] == replay_payload["launch_id"]
+    assert "shortlist_pass_rate" in outcome_snapshot["missing_metrics"]
+    assert "validation_pass_rate" in outcome_snapshot["missing_metrics"]
+
+    comparison_payload = json.loads(comparison_path.read_text(encoding="utf-8"))
+    assert comparison_payload["launch_id"] == replay_payload["launch_id"]
+    assert comparison_payload["current_outcome"]["launch_id"] == replay_payload["launch_id"]
+    assert comparison_payload["prior_outcome"]["launch_id"] == launch_payload["launch_id"]
+    assert comparison_payload["acceptance_baseline"]["system"] == "Al-Cu-Fe"
+    assert "shortlist_pass_rate" in comparison_payload["current_outcome"]["missing_metrics"]
+    assert "Prior launch baseline:" in compare.stdout
+    assert "Outcome snapshot:" in compare.stdout
+    assert "Comparison artifact:" in compare.stdout
 
 
 @pytest.mark.integration

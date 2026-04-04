@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-04 | Phase 12 Plan 03 replay and compare workflow closeout | Added an offline full closed-loop regression for `llm-suggest -> llm-approve -> llm-launch -> llm-replay -> llm-compare`, extended campaign-lineage tests for replay fields, documented the strict replay/compare operator flow, and re-verified the full suite at 374 passed, 3 skipped |
 | 2026-04-04 | Phase 12 Plan 02 replay and compare CLI | Added strict `mdisc llm-replay --launch-summary ...`, `mdisc llm-compare --launch-summary ...`, replay-aware `llm-generate` lineage, and focused replay/compare CLI coverage while keeping the shared CLI suite green |
 | 2026-04-04 | Phase 12 Plan 01 replay and comparison foundation | Added strict replay bundle loading, replay-config reconstruction helpers, typed outcome/comparison artifacts, deterministic campaign comparison paths, and focused replay/compare core regression coverage |
 | 2026-04-04 | Phase 11 Plan 03 launch continuation docs | Documented `mdisc llm-launch`, launch wrapper artifacts, manual downstream continuation, failure posture, and a lineage-audit path in the LLM and pipeline developer docs |
@@ -348,6 +349,9 @@
 
 ### 2026-04-04
 
+- 13:43 EDT — Closed Phase 12 Plan 03 with the full offline operator workflow and docs pass.
+- Added an end-to-end regression in `tests/test_real_mode_pipeline.py` for `llm-suggest -> llm-approve -> llm-launch -> llm-replay -> llm-compare`, extended `tests/test_llm_campaign_lineage.py` so replay lineage fields stay normalized, and documented strict replay plus comparison baselines in `RUNBOOK.md`, `developers-docs/llm-integration.md`, and `developers-docs/pipeline-stages.md`.
+- Focused Phase 12 verification passed with `4 passed, 7 deselected`, and the full `materials-discovery` suite closed green at `374 passed, 3 skipped, 1 warning`.
 - 13:35 EDT — Implemented the Phase 12 Plan 02 replay and compare CLI layer.
 - Added strict `mdisc llm-replay --launch-summary ...` and `mdisc llm-compare --launch-summary ...`, updated `llm-generate` so replay lineage flows additively into run manifests and candidate provenance, and kept replay outputs on deterministic standard-root candidate paths.
 - Added `tests/test_llm_replay_cli.py`, `tests/test_llm_compare_cli.py`, and extended `tests/test_cli.py`; focused verification passed with `17 passed`.

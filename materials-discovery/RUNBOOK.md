@@ -637,7 +637,46 @@ uv run mdisc ingest --config configs/systems/sc_zn_reference_aware.yaml
 
 ---
 
-## 8. Quick Reference
+## 8. Closed-Loop LLM Workflow
+
+Phase 12 makes the closed-loop LLM path usable end to end without changing the
+manual pipeline contract. The safe operator sequence is:
+
+```bash
+uv run mdisc llm-suggest --acceptance-pack data/benchmarks/llm_acceptance/pack_v1/acceptance_pack.json
+uv run mdisc llm-approve --proposal data/benchmarks/llm_acceptance/pack_v1/proposals/<proposal_id>.json --decision approved --operator you@example.com --config configs/systems/al_cu_fe_llm_mock.yaml
+uv run mdisc llm-launch --campaign-spec data/llm_campaigns/<campaign_id>/campaign_spec.json
+uv run mdisc llm-replay --launch-summary data/llm_campaigns/<campaign_id>/launches/<launch_id>/launch_summary.json
+uv run mdisc llm-compare --launch-summary data/llm_campaigns/<campaign_id>/launches/<replay_launch_id>/launch_summary.json
+```
+
+What each step does:
+- `llm-suggest` stays dry-run and writes typed proposals next to the acceptance pack.
+- `llm-approve` writes a separate approval artifact and, when approved, a self-contained `campaign_spec.json`.
+- `llm-launch` resolves the approved spec into a standard `llm-generate` run without mutating the source YAML.
+- `llm-replay` reuses the recorded launch bundle strictly. It records current-vs-source config drift, but Phase 12 exposes no behavioral override flags.
+- `llm-compare` always compares the targeted launch against the acceptance-pack baseline and also against the most recent prior launch when one exists.
+
+The audit trail on disk is:
+
+| Artifact | Path |
+|---|---|
+| Campaign spec | `data/llm_campaigns/{campaign_id}/campaign_spec.json` |
+| Resolved launch | `data/llm_campaigns/{campaign_id}/launches/{launch_id}/resolved_launch.json` |
+| Launch summary | `data/llm_campaigns/{campaign_id}/launches/{launch_id}/launch_summary.json` |
+| Outcome snapshot | `data/llm_campaigns/{campaign_id}/launches/{launch_id}/outcome_snapshot.json` |
+| Comparison result | `data/llm_campaigns/{campaign_id}/comparisons/{comparison_id}.json` |
+
+Interpretation notes:
+- Replay is strict in Phase 12. If the recorded launch bundle is incomplete or the pinned config path is gone, the replay fails instead of silently changing behavior.
+- Missing downstream metrics in `llm-compare` are reported explicitly in `missing_metrics`; they are not treated as zero.
+- A replayed run still writes normal candidate JSONL and standard manifests, so later commands like `screen`, `hifi-validate`, `hifi-rank`, and `report` remain manual and unchanged.
+
+See also:
+- `developers-docs/llm-integration.md`
+- `developers-docs/pipeline-stages.md`
+
+## 9. Quick Reference
 
 ### All mdisc commands
 
@@ -651,6 +690,11 @@ uv run mdisc ingest --config configs/systems/sc_zn_reference_aware.yaml
 | `mdisc hifi-rank --config <cfg>` | Calibrated ranking with benchmark context |
 | `mdisc active-learn --config <cfg>` | Update surrogate and select next batch |
 | `mdisc report --config <cfg>` | Produce experiment report and benchmark pack |
+| `mdisc llm-suggest --acceptance-pack <pack>` | Emit dry-run campaign proposals from an acceptance pack |
+| `mdisc llm-approve --proposal <proposal> --decision <approved\|rejected> --operator <id>` | Write approval artifacts and optional campaign spec |
+| `mdisc llm-launch --campaign-spec <spec>` | Launch an approved campaign through the existing LLM generation runtime |
+| `mdisc llm-replay --launch-summary <summary>` | Strictly replay a recorded launch bundle with a fresh launch wrapper |
+| `mdisc llm-compare --launch-summary <summary>` | Compare a launch against the acceptance-pack baseline and prior launch |
 | `mdisc lake index` | Build per-directory catalogs and lake-wide index |
 | `mdisc lake stats` | Print lake artifact counts and staleness summary |
 | `mdisc lake compare <pack_a> <pack_b>` | Compare two benchmark packs (gate + metrics) |
@@ -669,6 +713,9 @@ uv run mdisc ingest --config configs/systems/sc_zn_reference_aware.yaml
 | `data/manifests/` | Stage and pipeline manifests (JSON) |
 | `data/calibration/` | Stage calibration outputs (JSON) |
 | `data/benchmarks/` | Benchmark corpus files (JSON) |
+| `data/benchmarks/llm_acceptance/` | Acceptance packs, dry-run suggestions, proposals, and approvals |
+| `data/llm_campaigns/` | Campaign specs, launch wrappers, outcome snapshots, and comparisons |
+| `data/llm_runs/` | Raw prompt/completion/compile artifacts for each LLM generation run |
 | `data/external/sources/` | Staged canonical source snapshots (JSONL) |
 | `data/external/reference_packs/` | Assembled reference packs |
 | `data/comparisons/` | Cross-lane comparison results (JSON) |
@@ -683,6 +730,7 @@ uv run mdisc ingest --config configs/systems/sc_zn_reference_aware.yaml
 | `configs/systems/al_cu_fe.yaml` | Al-Cu-Fe mock mode |
 | `configs/systems/al_cu_fe_real.yaml` | Al-Cu-Fe real mode |
 | `configs/systems/al_cu_fe_reference_aware.yaml` | Al-Cu-Fe with multi-source ref pack |
+| `configs/systems/al_cu_fe_llm_mock.yaml` | Al-Cu-Fe mock LLM closed-loop workflow |
 | `configs/systems/sc_zn_reference_aware.yaml` | Sc-Zn with multi-source ref pack |
 | `configs/systems/sc_zn_zomic.yaml` | Sc-Zn with Zomic generation |
 | `configs/systems/ti_zr_ni.yaml` | Ti-Zr-Ni mock mode |

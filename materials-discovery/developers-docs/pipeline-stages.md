@@ -836,6 +836,123 @@ This audit path is additive: non-campaign runs continue to emit manifests with
 
 ---
 
+## 14. `mdisc llm-replay`
+
+Strictly replay a recorded launch bundle through the existing `llm-generate`
+runtime.
+
+### CLI syntax
+
+```
+mdisc llm-replay --launch-summary PATH
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--launch-summary` | PATH | Yes | -- | Path to an existing `launch_summary.json` from `mdisc llm-launch` or a previous replay |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Launch summary JSON | `{workspace}/data/llm_campaigns/{campaign_id}/launches/{launch_id}/launch_summary.json` | `mdisc llm-launch` or a prior `mdisc llm-replay` |
+| Resolved launch JSON | referenced by the launch summary | must still exist and agree with the launch summary |
+| Run manifest JSON | referenced by the launch summary | must still exist and agree with the launch summary |
+| Prompt JSON | referenced by the run manifest | must still exist and contain the original request |
+
+### Internal steps
+
+1. **Load the recorded launch bundle.** Read `launch_summary.json`, `resolved_launch.json`, `run_manifest.json`, and `prompt.json` as a single replay authority.
+2. **Load current config.** Resolve `system_config_path` from the recorded launch, load `SystemConfig`, and compute the current config hash.
+3. **Rebuild the effective replay config.** Reapply the recorded adapter/provider/model, prompt template, resolved composition bounds, seed path, conditioning-example cap, and request count without mutating the source YAML.
+4. **Allocate a fresh launch wrapper.** Create a new `launch_id` and a new launch directory under `data/llm_campaigns/{campaign_id}/launches/{launch_id}/`.
+5. **Write `resolved_launch.json`.** Persist the strict replay wrapper, including `replay_of_launch_id`, `replay_of_launch_summary_path`, and the current config hash.
+6. **Launch through the existing runtime.** Call `generate_llm_candidates(...)` with the rebuilt config and replay metadata.
+7. **Write standard stage artifacts.** Persist the normal candidate JSONL, `llm_generate` stage manifest, and run-level artifacts.
+8. **Write `launch_summary.json`.** Record the replay result and point back to the source launch.
+9. **Preserve partial artifacts on failure.** Failed replays still write a failed launch summary; Phase 12 does not implement replay overrides or `--resume`.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Replay resolved launch JSON | `{workspace}/data/llm_campaigns/{campaign_id}/launches/{launch_id}/resolved_launch.json` |
+| Replay launch summary JSON | `{workspace}/data/llm_campaigns/{campaign_id}/launches/{launch_id}/launch_summary.json` |
+| Replay candidates JSONL | `{workspace}/data/candidates/{slug}_replay_{launch_id}.jsonl` |
+| Replay `llm_generate` manifest | `{workspace}/data/manifests/{slug}_llm_generate_manifest.json` |
+| Replay run artifacts | `{workspace}/data/llm_runs/{run_id}/...` |
+
+### Return type
+
+`LlmCampaignLaunchSummary` (JSON to stdout).
+
+### Strict replay contract
+
+Phase 12 replay is intentionally strict:
+- the recorded launch bundle is the authority
+- the current config hash is recorded for auditability
+- there are no behavioral override flags
+- missing or inconsistent launch-bundle files are surfaced as operator-facing failures
+
+---
+
+## 15. `mdisc llm-compare`
+
+Compare a launch or replay against its acceptance-pack baseline and, when
+available, the most recent prior launch for the same campaign/system.
+
+### CLI syntax
+
+```
+mdisc llm-compare --launch-summary PATH
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--launch-summary` | PATH | Yes | -- | Path to the launch summary whose outcome should be compared |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Launch summary JSON | `{workspace}/data/llm_campaigns/{campaign_id}/launches/{launch_id}/launch_summary.json` | `mdisc llm-launch` or `mdisc llm-replay` |
+| Acceptance pack JSON | referenced by the campaign spec | must contain metrics for the launch system |
+| Prior launch summary | discovered automatically under the same campaign | optional; used only when an older launch exists |
+
+### Internal steps
+
+1. **Load the target launch bundle.** Resolve the same strict launch bundle used by replay.
+2. **Build or reuse `outcome_snapshot.json`.** Freeze the current launch metrics into an immutable typed snapshot.
+3. **Load the acceptance baseline.** Always compare against the originating acceptance-pack metrics for the same system.
+4. **Find a prior launch baseline when available.** Reuse the most recent earlier launch for the same campaign/system and its outcome snapshot.
+5. **Compute deltas.** Produce `delta_vs_acceptance` and `delta_vs_prior` only for metrics that exist on both sides.
+6. **Report missing metrics explicitly.** Keep unavailable downstream metrics in `missing_metrics`; do not coerce them to zero.
+7. **Write the comparison artifact.** Persist the typed comparison JSON under the campaign root and print concise summary lines to stdout.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Outcome snapshot JSON | `{workspace}/data/llm_campaigns/{campaign_id}/launches/{launch_id}/outcome_snapshot.json` |
+| Comparison JSON | `{workspace}/data/llm_campaigns/{campaign_id}/comparisons/comparison_{launch_id}.json` |
+
+### Return type
+
+Human-readable summary lines to stdout plus explicit `Outcome snapshot:` and
+`Comparison artifact:` paths.
+
+### Baseline rules
+
+- The acceptance-pack baseline is always included.
+- The prior-launch baseline is included only when a previous launch for the same campaign/system exists.
+- Missing downstream metrics remain explicit in `missing_metrics` and summary lines.
+
+---
+
 ## Pipeline data flow
 
 The commands are designed to run in sequence. Each stage reads the output of a
@@ -873,6 +990,8 @@ synthesizability and precursor information before reporting, and `report`
 prefers the additive `*_all_llm_evaluated.jsonl` artifact when it exists. The
 implemented `llm-suggest` command now reads typed acceptance packs and emits
 dry-run proposal bundles, `llm-approve` materializes separate approval
-artifacts and self-contained campaign specs, and `llm-launch` executes those
-approved specs through the existing `llm-generate` runtime while keeping later
-pipeline stages manual/operator-driven in Phase 11.
+artifacts and self-contained campaign specs, `llm-launch` executes those
+approved specs through the existing `llm-generate` runtime, `llm-replay`
+strictly reruns recorded launch bundles, and `llm-compare` writes immutable
+outcome/comparison artifacts while keeping later pipeline stages
+manual/operator-driven.

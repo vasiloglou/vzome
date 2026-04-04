@@ -18,7 +18,24 @@ def _workspace() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def _launched_candidate(candidate_id: str = "cand-001") -> CandidateRecord:
+def _launched_candidate(
+    candidate_id: str = "cand-001",
+    *,
+    replay_of_launch_id: str | None = None,
+    replay_of_launch_summary_path: str | None = None,
+) -> CandidateRecord:
+    llm_campaign = {
+        "campaign_id": "campaign-001",
+        "launch_id": "launch-001",
+        "proposal_id": "proposal-001",
+        "approval_id": "approval-001",
+        "campaign_spec_path": "data/llm_campaigns/campaign-001/campaign_spec.json",
+    }
+    if replay_of_launch_id is not None:
+        llm_campaign["replay_of_launch_id"] = replay_of_launch_id
+    if replay_of_launch_summary_path is not None:
+        llm_campaign["replay_of_launch_summary_path"] = replay_of_launch_summary_path
+
     return CandidateRecord.model_validate(
         {
             "candidate_id": candidate_id,
@@ -48,13 +65,7 @@ def _launched_candidate(candidate_id: str = "cand-001") -> CandidateRecord:
             "digital_validation": {"status": "generated"},
             "provenance": {
                 "source": "llm",
-                "llm_campaign": {
-                    "campaign_id": "campaign-001",
-                    "launch_id": "launch-001",
-                    "proposal_id": "proposal-001",
-                    "approval_id": "approval-001",
-                    "campaign_spec_path": "data/llm_campaigns/campaign-001/campaign_spec.json",
-                },
+                "llm_campaign": llm_campaign,
             },
         }
     )
@@ -84,6 +95,10 @@ def test_resolve_campaign_lineage_prefers_candidate_provenance_and_enriches_from
                     ),
                     "resolved_model_lane": "general_purpose",
                     "resolved_model_lane_source": "configured_lane",
+                    "replay_of_launch_id": "launch-000",
+                    "replay_of_launch_summary_path": (
+                        "data/llm_campaigns/campaign-001/launches/launch-000/launch_summary.json"
+                    ),
                 }
             }
         },
@@ -91,7 +106,17 @@ def test_resolve_campaign_lineage_prefers_candidate_provenance_and_enriches_from
     )
     monkeypatch.setattr("materials_discovery.cli.workspace_root", lambda: workspace)
 
-    lineage = _resolve_campaign_lineage(system_slug, [_launched_candidate()])
+    lineage = _resolve_campaign_lineage(
+        system_slug,
+        [
+            _launched_candidate(
+                replay_of_launch_id="launch-000",
+                replay_of_launch_summary_path=(
+                    "data/llm_campaigns/campaign-001/launches/launch-000/launch_summary.json"
+                ),
+            )
+        ],
+    )
 
     assert lineage == {
         "llm_campaign": {
@@ -108,6 +133,10 @@ def test_resolve_campaign_lineage_prefers_candidate_provenance_and_enriches_from
             ),
             "resolved_model_lane": "general_purpose",
             "resolved_model_lane_source": "configured_lane",
+            "replay_of_launch_id": "launch-000",
+            "replay_of_launch_summary_path": (
+                "data/llm_campaigns/campaign-001/launches/launch-000/launch_summary.json"
+            ),
         }
     }
     assert "llm_campaign" not in lineage["llm_campaign"]
@@ -124,7 +153,17 @@ def test_screen_manifest_carries_normalized_campaign_lineage(
     system_slug = config.system_name.lower().replace("-", "_")
 
     candidates_path = workspace / "data" / "candidates" / f"{system_slug}_candidates.jsonl"
-    write_jsonl([_launched_candidate().model_dump(mode="json")], candidates_path)
+    write_jsonl(
+        [
+            _launched_candidate(
+                replay_of_launch_id="launch-000",
+                replay_of_launch_summary_path=(
+                    "data/llm_campaigns/campaign-001/launches/launch-000/launch_summary.json"
+                ),
+            ).model_dump(mode="json")
+        ],
+        candidates_path,
+    )
     write_json_object(
         {
             "source_lineage": {
@@ -136,6 +175,10 @@ def test_screen_manifest_carries_normalized_campaign_lineage(
                     "campaign_spec_path": "data/llm_campaigns/campaign-001/campaign_spec.json",
                     "launch_summary_path": (
                         "data/llm_campaigns/campaign-001/launches/launch-001/launch_summary.json"
+                    ),
+                    "replay_of_launch_id": "launch-000",
+                    "replay_of_launch_summary_path": (
+                        "data/llm_campaigns/campaign-001/launches/launch-000/launch_summary.json"
                     ),
                 }
             }
@@ -160,6 +203,13 @@ def test_screen_manifest_carries_normalized_campaign_lineage(
     assert (
         manifest["source_lineage"]["llm_campaign"]["launch_summary_path"]
         == "data/llm_campaigns/campaign-001/launches/launch-001/launch_summary.json"
+    )
+    assert (
+        manifest["source_lineage"]["llm_campaign"]["replay_of_launch_id"] == "launch-000"
+    )
+    assert (
+        manifest["source_lineage"]["llm_campaign"]["replay_of_launch_summary_path"]
+        == "data/llm_campaigns/campaign-001/launches/launch-000/launch_summary.json"
     )
     assert "llm_campaign" not in manifest["source_lineage"]["llm_campaign"]
 

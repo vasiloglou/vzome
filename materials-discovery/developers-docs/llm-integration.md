@@ -264,6 +264,54 @@ For any launched run, the trace path is:
 This gives operators a file-backed audit chain from a later pipeline stage back
 to the approved proposal and benchmark context that triggered the launch.
 
+#### `mdisc llm-replay` and `mdisc llm-compare` — Replay and Comparison Workflow (Phase 12)
+
+Phase 12 adds the reproducibility and operator-interpretation layer on top of
+the Phase 11 launch bridge:
+- `mdisc llm-replay --launch-summary ...` uses the recorded launch bundle as the
+  primary authority, not the approval artifact alone
+- replay reads the original `launch_summary.json`, `resolved_launch.json`,
+  `run_manifest.json`, and `prompt.json`, reconstructs the same effective
+  request, and then launches a fresh run with a new `launch_id`
+- the command records the current config hash alongside the source launch
+  identity so operators can detect drift, but it deliberately exposes no
+  override knobs in Phase 12
+- replay writes a new launch wrapper under
+  `data/llm_campaigns/{campaign_id}/launches/{launch_id}/` and keeps the
+  existing standard `llm_generate` artifacts under `data/llm_runs/`
+
+The strict replay posture is deliberate:
+- the workflow is meant to answer "what happens if we rerun this exact launch
+  contract?" rather than "what nearby launch should we try next?"
+- if the recorded launch bundle is missing or inconsistent, replay fails
+  instead of silently substituting new behavior
+
+`mdisc llm-compare --launch-summary ...` then turns a launch or replay into a
+stable comparison unit:
+- it always builds or reuses an immutable `outcome_snapshot.json` for the
+  targeted launch
+- it always compares against the originating acceptance-pack baseline for the
+  system
+- it also compares against the most recent prior launch for the same campaign
+  and system when one exists
+- missing downstream metrics stay explicit in `missing_metrics`; they are not
+  coerced to zero just to make comparisons easier
+
+Why the outcome snapshot matters:
+- later stages may evolve, but the snapshot freezes the specific parse,
+  compile, generation, and available downstream metrics that belonged to one
+  launch at one point in time
+- comparison artifacts can then reference those frozen snapshots without
+  recomputing history or depending on mutable notebook logic
+
+Phase 12 still keeps the workflow additive:
+- `llm-suggest` stays dry-run
+- `llm-approve` stays governance-only
+- `llm-launch` and `llm-replay` stop at candidate generation plus audit
+  artifacts
+- downstream stages such as `screen`, `hifi-validate`, `hifi-rank`, and
+  `report` remain manual/operator-driven
+
 ### 3.2 Backend Adapter for LLM
 
 Following the existing adapter pattern:
@@ -494,7 +542,8 @@ Detailed in [Zomic LLM Data Plan](zomic-llm-data-plan.md). Summary:
 - [x] Implement `mdisc llm-suggest` dry-run CLI command
 - [x] Implement `mdisc llm-approve` approval/spec governance command
 - [x] Implement `mdisc llm-launch` as the approved-spec execution bridge
-- [ ] Connect campaign launches to a fuller closed-loop exploration workflow
+- [x] Add strict `mdisc llm-replay` and `mdisc llm-compare` workflow commands
+- [x] Connect campaign launches to a fuller closed-loop exploration workflow
 - [ ] Benchmark against traditional `active-learn` surrogate
 
 ---
