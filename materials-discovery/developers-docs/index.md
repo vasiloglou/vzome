@@ -16,8 +16,9 @@ runtime in the native phonon backend.
 
 All milestones (M1-M6) and real-mode execution phases (RM0-RM6) are implemented.
 The codebase contains ~60 Python modules (7200+ LOC) with unit, integration,
-and end-to-end scenarios. The first LLM inference path is now implemented;
-LLM evaluation and closed-loop fine-tuning remain future phases.
+and end-to-end scenarios. The first LLM inference path and additive LLM
+evaluation/reporting path are now implemented; closed-loop fine-tuning remains
+a future phase.
 
 | Stage | CLI Command | Module | Status |
 |-------|-------------|--------|--------|
@@ -30,7 +31,7 @@ LLM evaluation and closed-loop fine-tuning remain future phases.
 | Active learning | `mdisc active-learn` | `active_learning/` | Implemented |
 | Experiment report | `mdisc report` | `diffraction/` | Implemented |
 | LLM-powered generation | `mdisc llm-generate` | `llm/` | Implemented (Phase 7 MVP) |
-| LLM-powered evaluation | `mdisc llm-evaluate` | `llm/` | Planned |
+| LLM-powered evaluation | `mdisc llm-evaluate` | `llm/` | Implemented (Phase 8 MVP) |
 | LLM-guided suggestions | `mdisc llm-suggest` | `llm/` | Planned |
 
 ## Quickstart
@@ -74,6 +75,7 @@ uv run mdisc hifi-rank --config configs/systems/sc_zn_real.yaml
 | How do we build the Zomic training corpus? | [Zomic LLM Data Plan](zomic-llm-data-plan.md) |
 | How do I run the Phase 4 benchmark workflow? | [Reference-Aware Benchmark Runbook](reference-aware-benchmarks.md) |
 | How do I compare deterministic vs LLM generation offline? | [LLM Integration](llm-integration.md) |
+| How do I benchmark deterministic vs LLM lanes through report? | [LLM Integration](llm-integration.md) |
 
 ## Scope
 

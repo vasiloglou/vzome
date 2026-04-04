@@ -44,6 +44,7 @@
 | 2026-04-03 | Phase 7 Plan 03: llm benchmark and docs layer | Added the offline deterministic-vs-LLM comparison helper, benchmark runner script, docs refresh, pytest marker, and two-system benchmark regression coverage for Al-Cu-Fe and Sc-Zn |
 | 2026-04-03 | Phase 8 Plan 01: llm-evaluate contracts and CLI path | Added additive `llm_evaluate` config/summary contracts, typed evaluation request/assessment/run-manifest models, the `llm/evaluate.py` engine, the `mdisc llm-evaluate` CLI command, and focused schema/CLI pytest coverage |
 | 2026-04-03 | Phase 8 Plan 02: report and rank LLM-assessment integration | Taught `report` to prefer `*_all_llm_evaluated.jsonl`, surfaced additive `llm_assessment` context in report entries/calibration, and added regressions proving `hifi-rank` preserves but does not reweight that context |
+| 2026-04-03 | Phase 8 Plan 03: downstream LLM pipeline benchmarks | Added the downstream deterministic-vs-LLM benchmark helper, the `run_llm_pipeline_benchmarks.sh` operator script, refreshed LLM docs, and added offline Al-Cu-Fe/Sc-Zn benchmark regression coverage |
 
 ## Diary
 
@@ -272,6 +273,11 @@
 - `common/stage_metrics.py` now records additive LLM-assessment calibration metrics so report calibration captures assessed/failed counts, anomaly flags, and mean synthesizability.
 - `hifi_digital/rank_candidates.py` now documents the Phase 8 rule explicitly: existing `llm_assessment` provenance is preserved but never used to reweight scores in this phase.
 - Added Plan 02 regressions in `tests/test_report.py` and `tests/test_hifi_rank.py` covering report enrichment, `llm_evaluated` preference, calibration visibility, and score/order invariance when LLM assessment context is present.
+- 20:43 EDT — Closed Phase 8 Plan 03 with the downstream deterministic-vs-LLM benchmark lane.
+- Added `llm/pipeline_benchmark.py` with a dedicated comparison artifact over `screen`, `hifi-validate`, `hifi-rank`, and `report`, including downstream validity, novelty, top-rank quality, and report acceptance deltas.
+- Added `scripts/run_llm_pipeline_benchmarks.sh`, which injects temporary offline `llm_evaluate` configs, runs both deterministic and LLM lanes, snapshots calibration JSON per stage, and writes `data/benchmarks/llm_pipeline/{system}_comparison.json`.
+- Added `tests/test_llm_pipeline_benchmarks.py` with helper-level coverage plus offline two-system end-to-end benchmark proofs for `Al-Cu-Fe` and `Sc-Zn`.
+- Refreshed `README.md`, `developers-docs/index.md`, `developers-docs/llm-integration.md`, and `developers-docs/pipeline-stages.md` so Phase 8 is documented as implemented and the new pipeline benchmark workflow is discoverable.
   - `llm/runtime.py` adds the provider-neutral adapter seam with deterministic `llm_fixture_v1` behavior and the first hosted adapter path, `anthropic_api_v1`, via lazy `httpx`.
   - `llm/__init__.py` now exports the new Phase 7 runtime/schemas alongside the existing Phase 6 corpus surface.
   - `developers-docs/configuration-reference.md` now documents the `llm_generate:` block, mock-only defaulting, and the requirement that real hosted configs set `llm_provider` and `llm_model`.

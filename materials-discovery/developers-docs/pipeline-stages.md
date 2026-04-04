@@ -597,10 +597,10 @@ mdisc llm-generate --config PATH --count INT [--seed-zomic PATH] [--temperature 
 
 ---
 
-## 10. `mdisc llm-evaluate` (Planned)
+## 10. `mdisc llm-evaluate`
 
-Enrich validated candidates with LLM-powered assessment: synthesizability scoring,
-precursor suggestions, and anomaly detection.
+Enrich ranked candidates with LLM-powered assessment: synthesizability scoring,
+precursor suggestions, anomaly detection, and short literature-style context.
 
 ### CLI syntax
 
@@ -614,17 +614,18 @@ mdisc llm-evaluate --config PATH [--batch BATCH]
 |---|---|---|---|---|
 | `--config` | PATH | Yes | -- | Path to the YAML system configuration file |
 | `--batch` | STR | No | `"all"` | Batch selector (same semantics as `hifi-validate`) |
+| `--out` | PATH | No | computed | Output JSONL override |
 
 ### Inputs
 
 | Input | Path | Prerequisite |
 |---|---|---|
-| Validated JSONL | `{workspace}/data/hifi_validated/{slug}_*_validated.jsonl` | `mdisc hifi-validate` |
+| Ranked JSONL | `{workspace}/data/ranked/{slug}_ranked.jsonl` | `mdisc hifi-rank` |
 
 ### Internal steps
 
 1. **Load configuration.** Parse and validate `SystemConfig`.
-2. **Load validated candidates.** Same loading logic as `hifi-rank`.
+2. **Load ranked candidates.** Read the ranked JSONL and optionally select `all` or `topN`.
 3. **Resolve LLM backend.** Select the evaluation LLM adapter from config (typically
    a general-purpose model like Claude or GPT-4, not the fine-tuned Zomic model).
 4. **For each candidate:**
@@ -635,15 +636,20 @@ mdisc llm-evaluate --config PATH [--batch BATCH]
    e. LLM provides literature context (does this match known QC families?).
 5. **Attach assessments.** Add `llm_assessment` block to each CandidateRecord.
 6. **Write output.** Serialize enriched candidates to output JSONL.
-7. **Write calibration.** Record LLM call count, average assessment time.
-8. **Write manifest.** Stage manifest with `stage="llm_evaluate"`.
-9. **Emit summary.** Print `LlmEvaluateSummary` as JSON to stdout.
+7. **Persist audit artifacts.** Write `requests.jsonl`, `assessments.jsonl`, raw responses,
+   and `run_manifest.json` under `data/llm_evaluations/`.
+8. **Write calibration.** Record assessed/failed counts and success rate.
+9. **Write manifest.** Stage manifest with `stage="llm_evaluate"`.
+10. **Emit summary.** Print `LlmEvaluateSummary` as JSON to stdout.
 
 ### Artifacts
 
 | Artifact | Default path |
 |---|---|
 | LLM-evaluated JSONL | `{workspace}/data/llm_evaluated/{slug}_{batch_slug}_llm_evaluated.jsonl` |
+| Evaluation requests | `{workspace}/data/llm_evaluations/{run_id}/requests.jsonl` |
+| Evaluation assessments | `{workspace}/data/llm_evaluations/{run_id}/assessments.jsonl` |
+| Evaluation run manifest | `{workspace}/data/llm_evaluations/{run_id}/run_manifest.json` |
 | LLM evaluation metrics | `{workspace}/data/calibration/{slug}_{batch_slug}_llm_evaluation_metrics.json` |
 | Stage manifest | `{workspace}/data/manifests/{slug}_{batch_slug}_llm_evaluate_manifest.json` |
 
@@ -685,7 +691,8 @@ again on that batch before re-ranking and re-reporting.
 
 The implemented `llm-generate` command provides an alternative candidate source
 alongside `generate`. Both produce CandidateRecord JSONL that feeds into
-`screen`. The planned `llm-evaluate` command will enrich validated candidates
-with synthesizability and precursor information before reporting. The planned
-`llm-suggest` command can replace or augment `active-learn` with LLM-guided
-exploration.
+`screen`. The implemented `llm-evaluate` command enriches ranked candidates with
+synthesizability and precursor information before reporting, and `report`
+prefers the additive `*_all_llm_evaluated.jsonl` artifact when it exists. The
+planned `llm-suggest` command can replace or augment `active-learn` with
+LLM-guided exploration.

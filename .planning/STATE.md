@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 08
-current_phase_name: llm-evaluation-and-pipeline-integration
+current_phase: 09
+current_phase_name: fine-tuned-zomic-model-and-closed-loop-design
 current_plan: 1
 status: ready_to_execute
-stopped_at: Phase 08 planning complete; ready to execute
-last_updated: "2026-04-04T00:05:00Z"
-last_activity: 2026-04-03 -- Phase 08 autonomous planning complete
+stopped_at: Phase 09 planning complete; ready to execute
+last_updated: "2026-04-04T01:12:00Z"
+last_activity: 2026-04-03 -- Phase 09 autonomous planning complete
 progress:
   total_phases: 9
-  completed_phases: 7
-  total_plans: 23
-  completed_plans: 20
-  percent: 87
+  completed_phases: 8
+  total_plans: 26
+  completed_plans: 23
+  percent: 89
 ---
 
 # Project State
@@ -24,28 +24,28 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-02)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 08 — llm-evaluation-and-pipeline-integration
+**Current focus:** Phase 09 — fine-tuned-zomic-model-and-closed-loop-design
 
 ## Current Position
 
-Current Phase: 08
-Current Phase Name: llm-evaluation-and-pipeline-integration
+Current Phase: 09
+Current Phase Name: fine-tuned-zomic-model-and-closed-loop-design
 Total Phases: 9
 Current Plan: 1
 Total Plans in Phase: 3
-Phase: 08 (llm-evaluation-and-pipeline-integration) — READY TO EXECUTE
+Phase: 09 (fine-tuned-zomic-model-and-closed-loop-design) — READY TO EXECUTE
 Plan: 3 plans created
-Status: Ready to execute Phase 08
-Last activity: 2026-04-03 -- Phase 08 autonomous planning complete
-Last Activity Description: Phase 07 is complete and Phase 08 now has context, research, validation, and a three-plan execution set
+Status: Ready to execute Phase 09
+Last activity: 2026-04-03 -- Phase 09 autonomous planning complete
+Last Activity Description: Phase 08 is complete and Phase 09 now has context, research, validation, and a three-plan execution set
 
-Progress: [█████████░] 87%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 17
+- Total plans completed: 23
 - Average duration: 20 min
 - Total execution time: 5.7 hours
 
@@ -59,11 +59,13 @@ Progress: [█████████░] 87%
 | 4 | 3 | 38 min | 13 min |
 | 5 | 3 | 38 min | 13 min |
 | 6 | 4 | 122 min | 30 min |
+| 7 | 3 | 69 min | 23 min |
+| 8 | 3 | 56 min | 19 min |
 
 **Recent Trend:**
 
-- Last 5 plans: P5.03=8min, P6.01=24min, P6.02=32min, P6.03=36min, P6.04=54min
-- Trend: stable with deeper implementation phases
+- Last 5 plans: P7.02=35min, P7.03=34min, P8.01=18min, P8.02=16min, P8.03=22min
+- Trend: stable with faster incremental LLM integration phases
 
 | Phase 01-program-charter-and-canonical-data-model P01 | 9min | 3 tasks | 8 files |
 | Phase 02-ingestion-platform-mvp P01 | 59min | 3 tasks | 15 files |
@@ -83,6 +85,11 @@ Progress: [█████████░] 87%
 | Phase 06 P02 | 32 | 2 tasks | 8 files |
 | Phase 06 P03 | 36 | 2 tasks | 8 files |
 | Phase 06 P04 | 54 | 4 tasks | 12 files |
+| Phase 07 P02 | 35 | 2 tasks | 13 files |
+| Phase 07 P03 | 34 | 3 tasks | 8 files |
+| Phase 08 P01 | 18 | 3 tasks | 9 files |
+| Phase 08 P02 | 16 | 3 tasks | 7 files |
+| Phase 08 P03 | 22 | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -133,6 +140,9 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 07-llm-inference-mvp]: Keep llm-generate config-driven with optional seed Zomic support, not a free-form chat prompt.
 - [Phase 07-llm-inference-mvp]: Preserve rich prompt/raw-output lineage at the run level and keep CandidateRecord provenance lighter by linking back to the run.
 - [Phase 07-llm-inference-mvp]: Benchmark `Al-Cu-Fe` and `Sc-Zn` at parse/compile/conversion/screen level in Phase 7; full hi-fi comparison is deferred to Phase 8.
+- [Phase 08-llm-evaluation-and-pipeline-integration]: `llm-evaluate` is additive and report-oriented; it does not rerank candidates in this milestone.
+- [Phase 08-llm-evaluation-and-pipeline-integration]: `report` prefers `*_all_llm_evaluated.jsonl` when present, while partial evaluation artifacts do not override the default ranked lane.
+- [Phase 08-llm-evaluation-and-pipeline-integration]: The downstream deterministic-vs-LLM benchmark lane is now real and should be reused as the acceptance surface for Phase 9.
 
 ### Pending Todos
 
@@ -144,6 +154,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T00:05:00Z
-Stopped at: Phase 08 planning complete; ready to execute
-Resume file: .planning/phases/08-llm-evaluation-and-pipeline-integration/08-01-PLAN.md
+Last session: 2026-04-04T01:12:00Z
+Stopped at: Phase 09 planning complete; ready to execute
+Resume file: .planning/phases/09-fine-tuned-zomic-model-and-closed-loop-design/09-01-PLAN.md

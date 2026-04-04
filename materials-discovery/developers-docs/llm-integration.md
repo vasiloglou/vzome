@@ -138,8 +138,9 @@ Already integrated in our pipeline. Key references:
 
 The pipeline gains LLM-powered stages that sit alongside (not replacing) the
 existing generation and evaluation paths. Phase 7 implements the first
-`mdisc llm-generate` MVP with mock coverage plus one hosted-provider seam;
-`llm-evaluate` and `llm-suggest` remain future work.
+`mdisc llm-generate` MVP with mock coverage plus one hosted-provider seam.
+Phase 8 adds `mdisc llm-evaluate`, additive report integration, and an offline
+downstream benchmark lane. `llm-suggest` remains future work.
 
 #### `mdisc llm-generate` — LLM-Powered Candidate Generation
 
@@ -171,8 +172,9 @@ is no "approximately right" failure mode that could poison the pipeline.
 #### `mdisc llm-evaluate` — LLM-Powered Candidate Assessment
 
 **Input:**
-- CandidateRecord (from any generation source)
-- Validation results (committee energies, phonon, MD, XRD)
+- Ranked CandidateRecord JSONL by default (`data/ranked/{system}_ranked.jsonl`)
+- Validation results already embedded in each candidate (committee energies,
+  phonon, MD, XRD)
 
 **Process:**
 1. Serialize candidate structure and validation data as a structured prompt
@@ -184,7 +186,9 @@ is no "approximately right" failure mode that could poison the pipeline.
 3. LLM assessment is attached to the CandidateRecord
 
 **Output:**
-- Enriched CandidateRecord with `llm_assessment` block
+- Enriched CandidateRecord JSONL under `data/llm_evaluated/`
+- Run-level audit artifacts (`requests.jsonl`, `assessments.jsonl`,
+  `run_manifest.json`) under `data/llm_evaluations/`
 - Can be used by `mdisc report` for experiment-facing summaries
 
 **Key design choice:** This stage uses a general-purpose LLM (e.g., Claude, GPT-4)
@@ -420,10 +424,10 @@ Detailed in [Zomic LLM Data Plan](zomic-llm-data-plan.md). Summary:
 - [ ] Iterate until >30% screen pass rate
 
 ### Phase 3 — LLM Evaluation
-- [ ] Implement `mdisc llm-evaluate` CLI command
-- [ ] Design synthesizability prompt (inspired by CSLLM)
-- [ ] Design anomaly detection prompt
-- [ ] Integrate LLM assessment into report stage
+- [x] Implement `mdisc llm-evaluate` CLI command
+- [x] Design synthesizability prompt (inspired by CSLLM)
+- [x] Design anomaly detection prompt
+- [x] Integrate LLM assessment into report stage
 
 ### Phase 4 — Active Learning Loop
 - [ ] Implement `mdisc llm-suggest` CLI command

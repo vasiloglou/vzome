@@ -26,7 +26,9 @@ uv run mdisc report    --config configs/systems/al_cu_fe.yaml
 
 # Run the first LLM inference path (mock + compile-backed validation)
 uv run mdisc llm-generate --config configs/systems/al_cu_fe_llm_mock.yaml --count 5
+uv run mdisc llm-evaluate --config configs/systems/al_cu_fe_llm_mock.yaml --batch all
 ./scripts/run_llm_generate_benchmarks.sh --systems all --count 5
+./scripts/run_llm_pipeline_benchmarks.sh --systems all --count 5
 ```
 
 For real-mode execution with MLIP backends:
@@ -83,10 +85,11 @@ HYPOD-X snapshot does not yet include `Sc-Zn` rows. Their calibrated assets are:
 
 ## What is Implemented
 
-All M1-M6 milestones and RM0-RM6 real-mode execution phases, plus the first
-Phase 7 LLM inference path. Nine CLI commands (`ingest`, `export-zomic`,
-`generate`, `llm-generate`, `screen`, `hifi-validate`, `hifi-rank`,
-`active-learn`, `report`) with mock and real backend modes.
+All M1-M6 milestones and RM0-RM6 real-mode execution phases, plus the Phase 7
+LLM inference path and the Phase 8 LLM evaluation/report integration path. Ten
+CLI commands (`ingest`, `export-zomic`, `generate`, `llm-generate`,
+`llm-evaluate`, `screen`, `hifi-validate`, `hifi-rank`, `active-learn`,
+`report`) with mock and real backend modes.
 
 `export-zomic` and Zomic-backed generation invoke `vZome core` through
 `./gradlew :core:zomicExport`, so they require a local Java runtime.
