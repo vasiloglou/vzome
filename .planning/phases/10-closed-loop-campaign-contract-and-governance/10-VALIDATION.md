@@ -42,7 +42,7 @@ created: 2026-04-04
 | 10-01-01 | 01 | 1 | LLM-06 | schema | `cd materials-discovery && uv run pytest tests/test_llm_campaign_schema.py -x -v` | ⬜ | ⬜ pending |
 | 10-01-02 | 01 | 1 | OPS-05 | unit/storage | `cd materials-discovery && uv run pytest tests/test_llm_campaign_storage.py -x -v` | ⬜ | ⬜ pending |
 | 10-02-01 | 02 | 2 | LLM-06 | unit | `cd materials-discovery && uv run pytest tests/test_llm_suggest_core.py -x -v` | ⬜ | ⬜ pending |
-| 10-02-02 | 02 | 2 | OPS-05 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_suggest_cli.py -x -v` | ⬜ | ⬜ pending |
+| 10-02-02 | 02 | 2 | OPS-05 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_suggest_cli.py tests/test_cli.py -x -v` | ⬜ | ⬜ pending |
 | 10-03-01 | 03 | 3 | OPS-05 | unit/integration | `cd materials-discovery && uv run pytest tests/test_llm_campaign_spec.py -x -v` | ⬜ | ⬜ pending |
 | 10-03-02 | 03 | 3 | LLM-06, OPS-05 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_approve_cli.py tests/test_cli.py -x -v` | ⬜ | ⬜ pending |
 
@@ -60,6 +60,8 @@ created: 2026-04-04
   proposal mapping coverage across all major failing-metric branches
 - [ ] `materials-discovery/tests/test_llm_suggest_cli.py` — dry-run CLI
   contract coverage for bundle/proposal outputs
+- [ ] `materials-discovery/tests/test_cli.py` — shared CLI regression coverage
+  for the typed `llm-suggest` migration in Wave 2 and the new approval command
 - [ ] `materials-discovery/tests/test_llm_campaign_spec.py` — approval decision
   and self-contained spec materialization coverage
 - [ ] `materials-discovery/tests/test_llm_approve_cli.py` — approval CLI
@@ -70,6 +72,8 @@ created: 2026-04-04
   on Java export availability unless explicitly monkeypatched
 - [ ] Any CLI regression that touches shared LLM command routing should keep
   `materials-discovery/tests/test_cli.py` green
+- [ ] Any campaign-spec tests must cover deterministic `campaign_id` behavior
+  and the repo’s chosen re-approval policy
 
 *Existing pytest infrastructure already covers the project. Wave 0 is about new
 Phase 10 tests and governance-boundary regression coverage rather than tooling
