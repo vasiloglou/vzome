@@ -137,6 +137,13 @@ def _extract_benchmark_context(candidates: list[CandidateRecord]) -> dict[str, A
     return None
 
 
+def _extract_llm_assessment(candidate: CandidateRecord) -> dict[str, Any] | None:
+    raw_assessment = candidate.provenance.get("llm_assessment")
+    if isinstance(raw_assessment, dict):
+        return raw_assessment
+    return None
+
+
 def compile_experiment_report(
     config: SystemConfig,
     ranked_candidates: list[CandidateRecord],
@@ -160,6 +167,9 @@ def compile_experiment_report(
     benchmark_context_from_candidates = _extract_benchmark_context(ranked_candidates)
 
     report_entries: list[dict[str, Any]] = []
+    llm_assessed_count = 0
+    llm_synth_scores: list[float] = []
+    llm_anomaly_flagged_count = 0
     for candidate in selected:
         pattern = pattern_by_id.get(candidate.candidate_id)
         if pattern is None:
@@ -183,52 +193,67 @@ def compile_experiment_report(
         )
         risk_flags = _risk_flags(candidate, distinctiveness)
         validation = candidate.digital_validation
-        report_entries.append(
-            {
-                "candidate_id": candidate.candidate_id,
-                "rank": _rank_from_provenance(candidate),
-                "hifi_score": round(score, 6),
-                "passed_checks": passed_checks,
-                "stability_probability": round(_rank_metric(candidate, "stability_probability"), 6),
-                "ood_score": round(_rank_metric(candidate, "ood_score"), 6),
-                "novelty_score": round(_rank_metric(candidate, "novelty_score"), 6),
-                "xrd_confidence": xrd_confidence,
-                "xrd_distinctiveness": distinctiveness,
-                "priority": priority,
-                "recommendation": recommendation,
-                "risk_flags": risk_flags,
-                "composition": candidate.composition,
-                "proxy_hull_reference_phases": validation.proxy_hull_reference_phases or [],
-                "evidence": {
-                    "decision_score": round(score, 6),
-                    "reference_distance": round(_rank_metric(candidate, "reference_distance"), 6),
-                    "uncertainty_penalty": round(_rank_metric(candidate, "uncertainty_penalty"), 6),
-                    "hull_penalty": round(_rank_metric(candidate, "hull_penalty"), 6),
-                    "delta_e_proxy_hull_ev_per_atom": float(
-                        validation.delta_e_proxy_hull_ev_per_atom or 0.0
-                    ),
-                    "uncertainty_ev_per_atom": float(validation.uncertainty_ev_per_atom or 0.0),
-                    "md_stability_score": float(validation.md_stability_score or 0.0),
-                    "committee_std_ev_per_atom": float(validation.committee_std_ev_per_atom or 0.0),
-                    "xrd_confidence": xrd_confidence,
-                    "passed_checks": passed_checks,
-                    "calibration_provenance": (
-                        (candidate.provenance.get("hifi_rank") or {}).get("calibration_provenance")
-                    ),
-                    "benchmark_context": (
-                        (candidate.provenance.get("hifi_rank") or {}).get("benchmark_context")
-                    ),
-                },
-                "selection_rationale": (
-                    "promote_for_synthesis"
-                    if recommendation == "synthesize"
-                    else "retain_for_secondary_review"
-                    if recommendation == "secondary"
-                    else "hold_until_better_evidence"
+        llm_assessment = _extract_llm_assessment(candidate)
+        if isinstance(llm_assessment, dict):
+            if llm_assessment.get("status") == "passed":
+                llm_assessed_count += 1
+            score = llm_assessment.get("synthesizability_score")
+            if isinstance(score, int | float):
+                llm_synth_scores.append(float(score))
+            anomaly_flags = llm_assessment.get("anomaly_flags")
+            if isinstance(anomaly_flags, list) and anomaly_flags:
+                llm_anomaly_flagged_count += 1
+
+        entry = {
+            "candidate_id": candidate.candidate_id,
+            "rank": _rank_from_provenance(candidate),
+            "hifi_score": round(score, 6),
+            "passed_checks": passed_checks,
+            "stability_probability": round(_rank_metric(candidate, "stability_probability"), 6),
+            "ood_score": round(_rank_metric(candidate, "ood_score"), 6),
+            "novelty_score": round(_rank_metric(candidate, "novelty_score"), 6),
+            "xrd_confidence": xrd_confidence,
+            "xrd_distinctiveness": distinctiveness,
+            "priority": priority,
+            "recommendation": recommendation,
+            "risk_flags": risk_flags,
+            "composition": candidate.composition,
+            "proxy_hull_reference_phases": validation.proxy_hull_reference_phases or [],
+            "evidence": {
+                "decision_score": round(score, 6),
+                "reference_distance": round(_rank_metric(candidate, "reference_distance"), 6),
+                "uncertainty_penalty": round(_rank_metric(candidate, "uncertainty_penalty"), 6),
+                "hull_penalty": round(_rank_metric(candidate, "hull_penalty"), 6),
+                "delta_e_proxy_hull_ev_per_atom": float(
+                    validation.delta_e_proxy_hull_ev_per_atom or 0.0
                 ),
-                "top_peaks": pattern["peaks"][:4],
-                "pattern_fingerprint": pattern["fingerprint"],
-            }
+                "uncertainty_ev_per_atom": float(validation.uncertainty_ev_per_atom or 0.0),
+                "md_stability_score": float(validation.md_stability_score or 0.0),
+                "committee_std_ev_per_atom": float(validation.committee_std_ev_per_atom or 0.0),
+                "xrd_confidence": xrd_confidence,
+                "passed_checks": passed_checks,
+                "calibration_provenance": (
+                    (candidate.provenance.get("hifi_rank") or {}).get("calibration_provenance")
+                ),
+                "benchmark_context": (
+                    (candidate.provenance.get("hifi_rank") or {}).get("benchmark_context")
+                ),
+            },
+            "selection_rationale": (
+                "promote_for_synthesis"
+                if recommendation == "synthesize"
+                else "retain_for_secondary_review"
+                if recommendation == "secondary"
+                else "hold_until_better_evidence"
+            ),
+            "top_peaks": pattern["peaks"][:4],
+            "pattern_fingerprint": pattern["fingerprint"],
+        }
+        if llm_assessment is not None:
+            entry["llm_assessment"] = llm_assessment
+            entry["evidence"]["llm_assessment"] = llm_assessment
+        report_entries.append(
+            entry
         )
 
     synthesize_count = sum(entry["recommendation"] == "synthesize" for entry in report_entries)
@@ -295,6 +320,13 @@ def compile_experiment_report(
             "max_ood_score": round(
                 max(float(entry["ood_score"]) for entry in report_entries),
                 6,
+            ),
+            "llm_assessed_count": llm_assessed_count,
+            "llm_anomaly_flagged_count": llm_anomaly_flagged_count,
+            "llm_synthesizability_mean": (
+                round(sum(llm_synth_scores) / len(llm_synth_scores), 6)
+                if llm_synth_scores
+                else 0.0
             ),
         },
         "release_gate": release_gate,

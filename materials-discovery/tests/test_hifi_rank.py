@@ -489,3 +489,59 @@ def test_both_phase4_benchmark_configs_have_comparable_context_keys() -> None:
     )
     # Reference pack IDs must differ
     assert al_ctx["reference_pack_id"] != sc_ctx["reference_pack_id"]
+
+
+def test_rank_preserves_llm_assessment_without_reweighting_scores() -> None:
+    config = _real_config()
+    base_candidate = _validated_candidate(
+        "llm_ctx_a",
+        {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+        uncertainty=0.006,
+        delta_hull=0.012,
+        md_score=0.90,
+        xrd_confidence=0.91,
+        reference_distance=0.0,
+        qphi_scale=1,
+        passed_checks=True,
+    )
+    peer_candidate = _validated_candidate(
+        "llm_ctx_b",
+        {"Al": 0.66, "Cu": 0.21, "Fe": 0.13},
+        uncertainty=0.010,
+        delta_hull=0.018,
+        md_score=0.86,
+        xrd_confidence=0.88,
+        reference_distance=0.02,
+        qphi_scale=2,
+        passed_checks=True,
+    )
+
+    with_llm_context = base_candidate.model_copy(deep=True)
+    with_llm_context.provenance["llm_assessment"] = {
+        "status": "passed",
+        "run_id": "rank_ctx_demo",
+        "synthesizability_score": 0.77,
+        "precursor_hints": ["Al powder", "Cu powder"],
+        "anomaly_flags": [],
+        "literature_context": "Synthetic regression context.",
+        "rationale": "Synthetic regression rationale.",
+        "error_kind": None,
+        "error_message": None,
+    }
+
+    ranked_plain = rank_validated_candidates(config, [base_candidate, peer_candidate])
+    ranked_with_context = rank_validated_candidates(config, [with_llm_context, peer_candidate])
+
+    plain_scores = {
+        candidate.candidate_id: candidate.provenance["hifi_rank"]["score"] for candidate in ranked_plain
+    }
+    context_scores = {
+        candidate.candidate_id: candidate.provenance["hifi_rank"]["score"]
+        for candidate in ranked_with_context
+    }
+
+    assert plain_scores == context_scores
+    assert [candidate.candidate_id for candidate in ranked_plain] == [
+        candidate.candidate_id for candidate in ranked_with_context
+    ]
+    assert ranked_with_context[0].provenance.get("llm_assessment") is not None

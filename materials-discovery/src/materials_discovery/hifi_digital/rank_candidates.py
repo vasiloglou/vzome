@@ -163,6 +163,11 @@ def rank_validated_candidates(
         so operators can confirm which lane produced each result without opening
         separate config or manifest files.  Callers that do not supply this
         argument still get deterministic ranking — provenance is simply absent.
+
+    Notes
+    -----
+    Any existing additive provenance such as ``llm_assessment`` is preserved but
+    intentionally does not alter the ranking formula in this phase.
     """
     if not candidates:
         raise ValueError("no validated candidates found for hifi ranking")

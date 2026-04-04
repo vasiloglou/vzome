@@ -43,6 +43,7 @@
 | 2026-04-03 | Phase 7 Plan 02: llm-generate core path | Added config-driven prompt assembly, bounded retry generation, compile-backed candidate conversion, the `mdisc llm-generate` CLI command, committed mock configs, and focused core/CLI pytest coverage |
 | 2026-04-03 | Phase 7 Plan 03: llm benchmark and docs layer | Added the offline deterministic-vs-LLM comparison helper, benchmark runner script, docs refresh, pytest marker, and two-system benchmark regression coverage for Al-Cu-Fe and Sc-Zn |
 | 2026-04-03 | Phase 8 Plan 01: llm-evaluate contracts and CLI path | Added additive `llm_evaluate` config/summary contracts, typed evaluation request/assessment/run-manifest models, the `llm/evaluate.py` engine, the `mdisc llm-evaluate` CLI command, and focused schema/CLI pytest coverage |
+| 2026-04-03 | Phase 8 Plan 02: report and rank LLM-assessment integration | Taught `report` to prefer `*_all_llm_evaluated.jsonl`, surfaced additive `llm_assessment` context in report entries/calibration, and added regressions proving `hifi-rank` preserves but does not reweight that context |
 
 ## Diary
 
@@ -265,6 +266,12 @@
 - Added `llm/evaluate.py` with ranked-candidate loading, structured prompt assembly, mock/real provider reuse, typed request/assessment JSONL artifacts, additive `CandidateRecord.provenance["llm_assessment"]`, and run-manifest persistence under `data/llm_evaluations/`.
 - Added `mdisc llm-evaluate` to `cli.py`, including default output under `data/llm_evaluated/` and CLI-written calibration/manifest artifacts.
 - Added focused Phase 8 tests in `tests/test_llm_evaluate_schema.py` and `tests/test_llm_evaluate_cli.py` covering schema validation, end-to-end mock evaluation artifacts, CLI success, and the missing-config error path.
+- 20:20 EDT — Landed Phase 8 Plan 02 to thread LLM assessment through downstream artifacts without changing ranking weights.
+- `cli.py` now prefers `data/llm_evaluated/{system}_all_llm_evaluated.jsonl` during `mdisc report` when that additive artifact exists, while keeping the ranked JSONL fallback unchanged.
+- `diffraction/compare_patterns.py` now surfaces `llm_assessment` in report entries/evidence and adds summary-level LLM counts and synthesizability aggregates.
+- `common/stage_metrics.py` now records additive LLM-assessment calibration metrics so report calibration captures assessed/failed counts, anomaly flags, and mean synthesizability.
+- `hifi_digital/rank_candidates.py` now documents the Phase 8 rule explicitly: existing `llm_assessment` provenance is preserved but never used to reweight scores in this phase.
+- Added Plan 02 regressions in `tests/test_report.py` and `tests/test_hifi_rank.py` covering report enrichment, `llm_evaluated` preference, calibration visibility, and score/order invariance when LLM assessment context is present.
   - `llm/runtime.py` adds the provider-neutral adapter seam with deterministic `llm_fixture_v1` behavior and the first hosted adapter path, `anthropic_api_v1`, via lazy `httpx`.
   - `llm/__init__.py` now exports the new Phase 7 runtime/schemas alongside the existing Phase 6 corpus surface.
   - `developers-docs/configuration-reference.md` now documents the `llm_generate:` block, mock-only defaulting, and the requirement that real hosted configs set `llm_provider` and `llm_model`.

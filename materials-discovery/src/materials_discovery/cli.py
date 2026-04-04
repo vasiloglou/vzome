@@ -283,6 +283,21 @@ def _load_ranked_candidates(system_slug: str) -> list[CandidateRecord]:
     return ranked
 
 
+def _load_report_candidates(system_slug: str) -> tuple[list[CandidateRecord], Path]:
+    llm_evaluated_path = (
+        workspace_root() / "data" / "llm_evaluated" / f"{system_slug}_all_llm_evaluated.jsonl"
+    )
+    if llm_evaluated_path.exists():
+        evaluated = [
+            CandidateRecord.model_validate(row) for row in load_jsonl(llm_evaluated_path)
+        ]
+        if evaluated:
+            return evaluated, llm_evaluated_path
+
+    ranked_path = workspace_root() / "data" / "ranked" / f"{system_slug}_ranked.jsonl"
+    return _load_ranked_candidates(system_slug), ranked_path
+
+
 def _enrich_validated_with_ranked(
     system_slug: str,
     validated: list[CandidateRecord],
@@ -1155,7 +1170,7 @@ def report_command(
         benchmark_ctx = _load_benchmark_context(system_config, system_slug)
         bm_ctx_dict = benchmark_ctx.as_dict()
 
-        ranked = _load_ranked_candidates(system_slug)
+        ranked, ranked_source_path = _load_report_candidates(system_slug)
         xrd_patterns = simulate_powder_xrd_patterns(ranked)
         report = compile_experiment_report(system_config, ranked, xrd_patterns)
 
@@ -1210,6 +1225,8 @@ def report_command(
             / "screened"
             / f"{system_slug}_screened.jsonl",
         }
+        if ranked_source_path.name.endswith("_llm_evaluated.jsonl"):
+            stage_paths["llm_evaluated_jsonl"] = ranked_source_path
         validated_paths = sorted(
             (workspace_root() / "data" / "hifi_validated").glob(f"{system_slug}_*_validated.jsonl")
         )

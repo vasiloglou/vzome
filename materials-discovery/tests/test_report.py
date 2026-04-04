@@ -154,6 +154,152 @@ def test_report_is_deterministic() -> None:
     assert pipeline_manifest_a["output_hashes"] == pipeline_manifest_b["output_hashes"]
 
 
+def test_report_surfaces_llm_assessment_when_present(tmp_path: Path) -> None:
+    from materials_discovery.common.stage_metrics import report_calibration
+    from materials_discovery.common.schema import CandidateRecord
+    from materials_discovery.diffraction.compare_patterns import compile_experiment_report
+    from materials_discovery.diffraction.simulate_powder_xrd import simulate_powder_xrd_patterns
+
+    workspace = Path(__file__).resolve().parents[1]
+    config_path = workspace / "configs" / "systems" / "al_cu_fe_real.yaml"
+    config = SystemConfig.model_validate(load_yaml(config_path))
+
+    del tmp_path
+    ranked_candidate = CandidateRecord.model_validate(
+        {
+            "candidate_id": "llm_report_0001",
+            "system": "Al-Cu-Fe",
+            "template_family": "icosahedral_approximant_1_1",
+            "cell": {
+                "a": 14.2,
+                "b": 14.2,
+                "c": 14.2,
+                "alpha": 90.0,
+                "beta": 90.0,
+                "gamma": 90.0,
+            },
+            "sites": [
+                {
+                    "label": "S1",
+                    "qphi": [[1, 0], [0, 1], [-1, 1]],
+                    "species": "Al",
+                    "occ": 1.0,
+                }
+            ],
+            "composition": {"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            "screen": {"energy_proxy_ev_per_atom": -2.9},
+            "digital_validation": {
+                "status": "ranked",
+                "committee": ["MACE", "CHGNet", "MatterSim"],
+                "uncertainty_ev_per_atom": 0.01,
+                "committee_energy_ev_per_atom": {
+                    "MACE": -2.91,
+                    "CHGNet": -2.90,
+                    "MatterSim": -2.89,
+                },
+                "committee_std_ev_per_atom": 0.01,
+                "delta_e_proxy_hull_ev_per_atom": 0.02,
+                "proxy_hull_reference_distance": 0.01,
+                "proxy_hull_reference_phases": ["i-phase"],
+                "phonon_imaginary_modes": 0,
+                "phonon_pass": True,
+                "md_stability_score": 0.82,
+                "md_pass": True,
+                "xrd_confidence": 0.91,
+                "xrd_pass": True,
+                "passed_checks": True,
+            },
+            "provenance": {},
+        }
+    )
+    ranked_candidate.provenance["hifi_rank"] = {
+        "rank": 1,
+        "score": 0.81,
+        "decision_score": 0.81,
+        "stability_probability": 0.84,
+        "ood_score": 0.12,
+        "novelty_score": 0.41,
+        "reference_distance": 0.02,
+        "benchmark_alignment": 0.3,
+        "uncertainty_penalty": 0.1,
+        "hull_penalty": 0.1,
+        "calibration_provenance": {"source": "fixture", "backend_mode": "real"},
+    }
+    ranked_candidate.digital_validation.status = "ranked"
+    ranked_candidate.digital_validation.passed_checks = True
+    ranked_candidate.digital_validation.xrd_confidence = 0.91
+    ranked_candidate.digital_validation.md_stability_score = 0.82
+    ranked_candidate.digital_validation.delta_e_proxy_hull_ev_per_atom = 0.02
+    ranked_candidate.digital_validation.uncertainty_ev_per_atom = 0.01
+    ranked_candidate.provenance["llm_assessment"] = {
+        "status": "passed",
+        "run_id": "demo_run",
+        "synthesizability_score": 0.74,
+        "precursor_hints": ["Al powder", "Cu powder", "Fe powder"],
+        "anomaly_flags": [],
+        "literature_context": "Matches known Al-Cu-Fe approximant families.",
+        "rationale": "Validation signals look consistent.",
+        "error_kind": None,
+        "error_message": None,
+    }
+
+    patterns = simulate_powder_xrd_patterns([ranked_candidate])
+    report = compile_experiment_report(config, [ranked_candidate], patterns)
+    calibration = report_calibration(report)
+
+    entry = report["entries"][0]
+    assert entry["llm_assessment"]["status"] == "passed"
+    assert entry["llm_assessment"]["synthesizability_score"] == pytest.approx(0.74)
+    assert entry["evidence"]["llm_assessment"]["literature_context"].startswith("Matches known")
+    assert report["summary"]["llm_assessed_count"] == 1
+    assert report["summary"]["llm_synthesizability_mean"] == pytest.approx(0.74)
+    assert calibration["llm_assessed_count"] == 1
+    assert calibration["llm_synthesizability_mean"] == pytest.approx(0.74)
+
+
+def test_report_command_prefers_all_llm_evaluated_artifact_when_present() -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    config_path = workspace / "configs" / "systems" / "al_cu_fe.yaml"
+    system_slug = "al_cu_fe"
+
+    _prepare_ranked_inputs(config_path, count=36, seed=321)
+
+    ranked_path = workspace / "data" / "ranked" / f"{system_slug}_ranked.jsonl"
+    ranked_rows = _read_jsonl(ranked_path)
+    ranked_rows[0]["provenance"]["llm_assessment"] = {
+        "status": "passed",
+        "run_id": "test_prefers_eval",
+        "synthesizability_score": 0.66,
+        "precursor_hints": ["Al shot", "Cu granules"],
+        "anomaly_flags": ["needs_manual_review"],
+        "literature_context": "Synthetic test context.",
+        "rationale": "Synthetic test rationale.",
+        "error_kind": None,
+        "error_message": None,
+    }
+    llm_evaluated_path = (
+        workspace / "data" / "llm_evaluated" / f"{system_slug}_all_llm_evaluated.jsonl"
+    )
+    try:
+        llm_evaluated_path.parent.mkdir(parents=True, exist_ok=True)
+        with llm_evaluated_path.open("w", encoding="utf-8") as handle:
+            for row in ranked_rows:
+                handle.write(json.dumps(row, sort_keys=True))
+                handle.write("\n")
+
+        result = runner.invoke(app, ["report", "--config", str(config_path)])
+        assert result.exit_code == 0
+
+        summary = json.loads(result.stdout)
+        report = json.loads(Path(summary["report_path"]).read_text(encoding="utf-8"))
+        first_entry = report["entries"][0]
+        assert first_entry["llm_assessment"]["run_id"] == "test_prefers_eval"
+        assert first_entry["llm_assessment"]["anomaly_flags"] == ["needs_manual_review"]
+    finally:
+        llm_evaluated_path.unlink(missing_ok=True)
+
+
 def test_report_emits_benchmark_context_when_ranked_candidates_carry_it() -> None:
     """compile_experiment_report must surface benchmark_context when candidates carry it."""
     from materials_discovery.common.benchmarking import build_benchmark_run_context

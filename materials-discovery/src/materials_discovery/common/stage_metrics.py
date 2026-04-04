@@ -15,6 +15,46 @@ def _rank_metric(candidate: CandidateRecord, key: str, default: float = 0.0) -> 
     return default
 
 
+def llm_assessment_metrics(
+    candidates: list[CandidateRecord],
+) -> dict[str, float | int]:
+    assessed_count = 0
+    failed_count = 0
+    anomaly_flagged_count = 0
+    precursor_hint_count = 0
+    synth_scores: list[float] = []
+
+    for candidate in candidates:
+        raw_assessment = candidate.provenance.get("llm_assessment")
+        if not isinstance(raw_assessment, dict):
+            continue
+        status = raw_assessment.get("status")
+        if status == "passed":
+            assessed_count += 1
+        elif status == "failed":
+            failed_count += 1
+
+        score = raw_assessment.get("synthesizability_score")
+        if isinstance(score, int | float):
+            synth_scores.append(float(score))
+
+        anomaly_flags = raw_assessment.get("anomaly_flags")
+        if isinstance(anomaly_flags, list) and anomaly_flags:
+            anomaly_flagged_count += 1
+
+        precursor_hints = raw_assessment.get("precursor_hints")
+        if isinstance(precursor_hints, list):
+            precursor_hint_count += len([hint for hint in precursor_hints if isinstance(hint, str)])
+
+    return {
+        "llm_assessed_count": assessed_count,
+        "llm_failed_count": failed_count,
+        "llm_anomaly_flagged_count": anomaly_flagged_count,
+        "llm_precursor_hint_count": precursor_hint_count,
+        "llm_synthesizability_mean": round(mean(synth_scores), 6) if synth_scores else 0.0,
+    }
+
+
 def generation_metrics(
     requested_count: int,
     generated_count: int,
@@ -240,6 +280,28 @@ def report_calibration(report: dict[str, Any]) -> dict[str, Any]:
     if top_three:
         top_three_passes = sum(bool(entry.get("passed_checks")) for entry in top_three)
 
+    llm_scores: list[float] = []
+    llm_assessed_count = 0
+    llm_failed_count = 0
+    llm_anomaly_flagged_count = 0
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        raw_assessment = entry.get("llm_assessment")
+        if not isinstance(raw_assessment, dict):
+            continue
+        status = raw_assessment.get("status")
+        if status == "passed":
+            llm_assessed_count += 1
+        elif status == "failed":
+            llm_failed_count += 1
+        score = raw_assessment.get("synthesizability_score")
+        if isinstance(score, int | float):
+            llm_scores.append(float(score))
+        anomaly_flags = raw_assessment.get("anomaly_flags")
+        if isinstance(anomaly_flags, list) and anomaly_flags:
+            llm_anomaly_flagged_count += 1
+
     release_gate = report.get("release_gate", {})
     if not isinstance(release_gate, dict):
         release_gate = {}
@@ -266,6 +328,10 @@ def report_calibration(report: dict[str, Any]) -> dict[str, Any]:
         ),
         "max_ood_score": max(ood_scores) if ood_scores else 0.0,
         "top_3_pass_rate": round(top_three_passes / len(top_three), 6) if top_three else 0.0,
+        "llm_assessed_count": llm_assessed_count,
+        "llm_failed_count": llm_failed_count,
+        "llm_anomaly_flagged_count": llm_anomaly_flagged_count,
+        "llm_synthesizability_mean": round(mean(llm_scores), 6) if llm_scores else 0.0,
         "release_gate_ready": bool(release_gate.get("ready_for_experimental_pack", False)),
         "release_gate_pass_count": release_gate_pass_count,
         "report_fingerprint": str(report.get("report_fingerprint", "")),
