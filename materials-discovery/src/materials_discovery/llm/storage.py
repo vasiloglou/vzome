@@ -16,6 +16,12 @@ def _require_artifact_id(value: str, field_name: str) -> str:
     return normalized
 
 
+def _require_revision(value: int) -> int:
+    if value < 0:
+        raise ValueError("revision must be >= 0")
+    return value
+
+
 def corpus_build_dir(build_id: str, root: Path | None = None) -> Path:
     return _artifact_root(root) / "data" / "llm_corpus" / build_id
 
@@ -116,6 +122,77 @@ def llm_checkpoint_registration_path(
     root: Path | None = None,
 ) -> Path:
     return llm_checkpoint_dir(checkpoint_id, root) / "registration.json"
+
+
+def llm_checkpoint_family_dir(
+    checkpoint_family: str,
+    root: Path | None = None,
+) -> Path:
+    normalized_checkpoint_family = _require_artifact_id(checkpoint_family, "checkpoint_family")
+    return _artifact_root(root) / "data" / "llm_checkpoints" / "families" / normalized_checkpoint_family
+
+
+def llm_checkpoint_lifecycle_index_path(
+    checkpoint_family: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_checkpoint_family_dir(checkpoint_family, root) / "lifecycle.json"
+
+
+def llm_checkpoint_action_dir(
+    checkpoint_family: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_checkpoint_family_dir(checkpoint_family, root) / "actions"
+
+
+def _llm_checkpoint_revision_action_path(
+    checkpoint_family: str,
+    checkpoint_id: str,
+    *,
+    revision: int,
+    action_prefix: str,
+    root: Path | None = None,
+) -> Path:
+    normalized_action_prefix = _require_artifact_id(action_prefix, "action_prefix")
+    normalized_checkpoint_id = _require_artifact_id(checkpoint_id, "checkpoint_id")
+    normalized_revision = _require_revision(revision)
+    return (
+        llm_checkpoint_action_dir(checkpoint_family, root)
+        / f"{normalized_action_prefix}-r{normalized_revision}-{normalized_checkpoint_id}.json"
+    )
+
+
+def llm_checkpoint_promotion_action_path(
+    checkpoint_family: str,
+    checkpoint_id: str,
+    *,
+    revision: int,
+    root: Path | None = None,
+) -> Path:
+    return _llm_checkpoint_revision_action_path(
+        checkpoint_family,
+        checkpoint_id,
+        revision=revision,
+        action_prefix="promotion",
+        root=root,
+    )
+
+
+def llm_checkpoint_retirement_action_path(
+    checkpoint_family: str,
+    checkpoint_id: str,
+    *,
+    revision: int,
+    root: Path | None = None,
+) -> Path:
+    return _llm_checkpoint_revision_action_path(
+        checkpoint_family,
+        checkpoint_id,
+        revision=revision,
+        action_prefix="retirement",
+        root=root,
+    )
 
 
 def llm_serving_benchmark_dir(benchmark_id: str, root: Path | None = None) -> Path:

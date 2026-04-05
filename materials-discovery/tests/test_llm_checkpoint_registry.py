@@ -12,6 +12,14 @@ from materials_discovery.llm.checkpoints import (
     resolve_checkpoint_lane,
 )
 from materials_discovery.llm.launch import build_serving_identity
+from materials_discovery.llm.storage import (
+    llm_checkpoint_action_dir,
+    llm_checkpoint_family_dir,
+    llm_checkpoint_lifecycle_index_path,
+    llm_checkpoint_promotion_action_path,
+    llm_checkpoint_registration_path,
+    llm_checkpoint_retirement_action_path,
+)
 
 
 def _write_required_lineage_files(root: Path) -> None:
@@ -68,6 +76,65 @@ def test_register_checkpoint_rejects_missing_lineage_inputs(tmp_path: Path) -> N
 
     with pytest.raises(FileNotFoundError, match="adaptation artifact"):
         register_llm_checkpoint(spec_path, root=tmp_path)
+
+
+def test_checkpoint_family_storage_paths_are_deterministic(tmp_path: Path) -> None:
+    family_dir = llm_checkpoint_family_dir(" adapted-al-cu-fe ", root=tmp_path)
+    lifecycle_path = llm_checkpoint_lifecycle_index_path("adapted-al-cu-fe", root=tmp_path)
+    action_dir = llm_checkpoint_action_dir("adapted-al-cu-fe", root=tmp_path)
+
+    assert family_dir == tmp_path / "data" / "llm_checkpoints" / "families" / "adapted-al-cu-fe"
+    assert lifecycle_path == family_dir / "lifecycle.json"
+    assert action_dir == family_dir / "actions"
+
+
+def test_checkpoint_lifecycle_action_paths_use_revision_filenames(tmp_path: Path) -> None:
+    promotion_path = llm_checkpoint_promotion_action_path(
+        "adapted-al-cu-fe",
+        "ckpt-al-cu-fe-zomic-adapted",
+        revision=3,
+        root=tmp_path,
+    )
+    retirement_path = llm_checkpoint_retirement_action_path(
+        "adapted-al-cu-fe",
+        "ckpt-al-cu-fe-zomic-adapted",
+        revision=4,
+        root=tmp_path,
+    )
+
+    assert promotion_path == (
+        tmp_path
+        / "data"
+        / "llm_checkpoints"
+        / "families"
+        / "adapted-al-cu-fe"
+        / "actions"
+        / "promotion-r3-ckpt-al-cu-fe-zomic-adapted.json"
+    )
+    assert retirement_path == (
+        tmp_path
+        / "data"
+        / "llm_checkpoints"
+        / "families"
+        / "adapted-al-cu-fe"
+        / "actions"
+        / "retirement-r4-ckpt-al-cu-fe-zomic-adapted.json"
+    )
+
+
+def test_checkpoint_family_storage_keeps_registration_path_unchanged(tmp_path: Path) -> None:
+    registration_path = llm_checkpoint_registration_path(
+        "ckpt-al-cu-fe-zomic-adapted",
+        root=tmp_path,
+    )
+
+    assert registration_path == (
+        tmp_path
+        / "data"
+        / "llm_checkpoints"
+        / "ckpt-al-cu-fe-zomic-adapted"
+        / "registration.json"
+    )
 
 
 def test_resolve_checkpoint_lane_fills_identity_from_registration(tmp_path: Path) -> None:
