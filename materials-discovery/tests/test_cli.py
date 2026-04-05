@@ -262,6 +262,17 @@ def test_cli_llm_serving_benchmark_missing_spec_returns_2() -> None:
     assert result.exit_code == 2
 
 
+def test_cli_help_lists_checkpoint_lifecycle_commands() -> None:
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["--help"])
+
+    assert result.exit_code == 0
+    assert "llm-list-checkpoints" in result.stdout
+    assert "llm-promote-checkpoint" in result.stdout
+    assert "llm-retire-checkpoint" in result.stdout
+
+
 def test_cli_export_zomic_success(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     runner = CliRunner()
     design_path = tmp_path / "demo.yaml"

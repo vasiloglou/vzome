@@ -109,7 +109,11 @@ from materials_discovery.llm.campaigns import (
     materialize_campaign_spec,
 )
 from materials_discovery.llm.checkpoints import (
+    list_checkpoint_family_members,
+    load_checkpoint_lifecycle,
+    promote_checkpoint,
     register_llm_checkpoint,
+    retire_checkpoint,
     resolve_checkpoint_lane,
 )
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
@@ -132,6 +136,8 @@ from materials_discovery.llm.schema import (
     LlmCampaignLaunchSummary,
     LlmCampaignProposal,
     LlmCampaignSpec,
+    LlmCheckpointPromotionSpec,
+    LlmCheckpointRetirementSpec,
     LlmServingIdentity,
 )
 from materials_discovery.llm.storage import (
@@ -161,6 +167,16 @@ app.add_typer(llm_corpus_app, name="llm-corpus")
 
 def _emit_error(message: str) -> None:
     typer.echo(message, err=True)
+
+
+def _checkpoint_member_payload(member: object) -> dict[str, object]:
+    return {
+        "checkpoint_id": getattr(member, "checkpoint_id"),
+        "fingerprint": getattr(member, "fingerprint"),
+        "lifecycle_state": getattr(member, "lifecycle_state"),
+        "promoted_at": getattr(member, "promoted_at_utc"),
+        "retired_at": getattr(member, "retired_at_utc"),
+    }
 
 
 def _load_system_config(path: Path) -> SystemConfig:
@@ -975,6 +991,76 @@ def llm_register_checkpoint_command(
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"llm-register-checkpoint failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-list-checkpoints")
+def llm_list_checkpoints_command(
+    checkpoint_family: str = typer.Option(..., "--checkpoint-family"),
+) -> None:
+    """List the current lifecycle state for one checkpoint family."""
+    try:
+        lifecycle, _ = load_checkpoint_lifecycle(checkpoint_family)
+        members = list_checkpoint_family_members(checkpoint_family)
+        typer.echo(
+            json.dumps(
+                {
+                    "checkpoint_family": lifecycle.checkpoint_family,
+                    "revision": lifecycle.revision,
+                    "members": [_checkpoint_member_payload(member) for member in members],
+                },
+                sort_keys=True,
+            )
+        )
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-list-checkpoints failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-promote-checkpoint")
+def llm_promote_checkpoint_command(
+    spec: Path = typer.Option(..., "--spec", exists=False, dir_okay=False),
+) -> None:
+    """Promote one checkpoint within a family using a typed lifecycle action spec."""
+    try:
+        spec_model = LlmCheckpointPromotionSpec.model_validate(load_yaml(spec))
+        lifecycle = promote_checkpoint(spec)
+        typer.echo(
+            json.dumps(
+                {
+                    "checkpoint_family": lifecycle.checkpoint_family,
+                    "checkpoint_id": spec_model.checkpoint_id,
+                    "promoted_checkpoint_id": lifecycle.promoted_checkpoint_id,
+                    "revision": lifecycle.revision,
+                },
+                sort_keys=True,
+            )
+        )
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-promote-checkpoint failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-retire-checkpoint")
+def llm_retire_checkpoint_command(
+    spec: Path = typer.Option(..., "--spec", exists=False, dir_okay=False),
+) -> None:
+    """Retire one checkpoint within a family using a typed lifecycle action spec."""
+    try:
+        spec_model = LlmCheckpointRetirementSpec.model_validate(load_yaml(spec))
+        lifecycle = retire_checkpoint(spec)
+        typer.echo(
+            json.dumps(
+                {
+                    "checkpoint_family": lifecycle.checkpoint_family,
+                    "checkpoint_id": spec_model.checkpoint_id,
+                    "revision": lifecycle.revision,
+                },
+                sort_keys=True,
+            )
+        )
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-retire-checkpoint failed: {exc}")
         raise typer.Exit(code=2)
 
 
