@@ -65,6 +65,8 @@ created: 2026-04-04
 - [x] `12-01-SUMMARY.md` and `12-02-SUMMARY.md` now exist and complete the
   missing Phase 12 summary chain this phase was created to restore
 - [x] `12-VALIDATION.md` stayed green and did not require contradictory edits
+- [x] Phase 18 later confirmed this validation artifact remained consistent
+  with the new `15-VERIFICATION.md` self-verification report
 - [x] `REQUIREMENTS.md` Phase 15 rows only flipped after the summary chain and
   `12-VERIFICATION.md` existed
 - [x] No `materials-discovery/` files changed during Phase 15 execution, so
