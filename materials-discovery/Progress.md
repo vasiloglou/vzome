@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 21 Plan 03 serving benchmark operator docs | Added the serving-benchmark workflow to the runbook and developer docs, documented benchmark-spec fields plus strict smoke/no-silent-fallback behavior, added shared CLI coverage for missing benchmark specs, and kept the Wave 3 docs/CLI slice green at `31 passed` |
 | 2026-04-05 | Phase 21 Plan 03 committed benchmark examples | Added the hosted Al-Cu-Fe LLM config plus committed Al-Cu-Fe and Sc-Zn serving-benchmark specs, kept the specialized target evaluation-primary with an aligned `top1` slice, and re-verified the shared CLI/real-mode benchmark slice at `16 passed` |
 | 2026-04-05 | Phase 21 Plan 03 Task 1 RED benchmark example-config tests | Added failing `test_real_mode_pipeline.py` coverage that locks the committed hosted config plus Al-Cu-Fe and Sc-Zn serving-benchmark example specs before adding the operator-facing benchmark files |
 | 2026-04-05 | Phase 21 Plan 02 serving benchmark execution proof | Reused the shipped launch and evaluation flows inside `llm-serving-benchmark`, recorded standard launch/comparison and evaluation summary artifacts per target, rejected misaligned evaluation batches before execution, and kept the combined Wave 2 verification green at `15 passed` |
@@ -366,6 +367,9 @@
 
 ### 2026-04-05
 
+- 03:22 EDT — Completed the Phase 21 Plan 03 operator workflow docs pass.
+- Added a dedicated serving-benchmark section to `RUNBOOK.md`, documented benchmark-spec fields plus artifact paths in the developer docs, and added shared CLI coverage for missing benchmark specs so the new command is represented in the broad command-surface suite.
+- Focused verification passed with `31 passed` across `tests/test_llm_serving_benchmark_cli.py`, `tests/test_cli.py`, and `tests/test_real_mode_pipeline.py`.
 - 03:20 EDT — Implemented the Phase 21 Plan 03 committed hosted and benchmark example configs.
 - Added `configs/systems/al_cu_fe_llm_hosted.yaml`, plus committed `configs/llm/al_cu_fe_serving_benchmark.yaml` and `configs/llm/sc_zn_serving_benchmark.yaml` specs with placeholder-safe artifact paths and an evaluation-primary `top1` specialized target.
 - Focused verification passed with `16 passed` across `tests/test_llm_serving_benchmark_cli.py` and `tests/test_real_mode_pipeline.py`, keeping the full offline benchmark proof green with the new repo-level example coverage.

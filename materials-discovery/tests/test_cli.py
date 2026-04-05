@@ -245,6 +245,23 @@ def test_cli_llm_compare_missing_summary_returns_2() -> None:
     assert result.exit_code == 2
 
 
+def test_cli_llm_serving_benchmark_missing_spec_returns_2() -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    benchmark_spec = workspace / "does-not-exist-serving-benchmark.yaml"
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-serving-benchmark",
+            "--spec",
+            str(benchmark_spec),
+        ],
+    )
+
+    assert result.exit_code == 2
+
+
 def test_cli_export_zomic_success(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     runner = CliRunner()
     design_path = tmp_path / "demo.yaml"

@@ -676,7 +676,48 @@ See also:
 - `developers-docs/llm-integration.md`
 - `developers-docs/pipeline-stages.md`
 
-## 9. Quick Reference
+## 9. Serving Lane Benchmark Workflow
+
+Phase 21 adds a dedicated operator benchmark command for comparing hosted,
+local, and specialized serving lanes under one shared acceptance-pack context.
+Use the committed benchmark specs after you already have:
+
+- an acceptance pack at the benchmark spec's `acceptance_pack_path`
+- campaign specs for any `campaign_launch` targets referenced by the spec
+- reachable serving endpoints for every requested lane
+
+Smoke-only preflight:
+
+```bash
+uv run mdisc llm-serving-benchmark --spec configs/llm/al_cu_fe_serving_benchmark.yaml --smoke-only
+```
+
+Full benchmark run:
+
+```bash
+uv run mdisc llm-serving-benchmark --spec configs/llm/al_cu_fe_serving_benchmark.yaml
+```
+
+What to expect:
+
+- The command always writes `smoke_checks.json` under `data/benchmarks/llm_serving/{benchmark_id}/` before deciding whether to continue.
+- A strict smoke failure stops the benchmark immediately unless that target explicitly allows fallback.
+- No silent fallback is allowed during benchmarking. If a requested lane resolves somewhere unexpected, operators should see that in the smoke artifact instead of assuming the benchmark stayed honest.
+- The committed `specialized_assessment` examples are evaluation-primary. They compare assessment behavior, not direct specialized Zomic generation.
+
+How to interpret results:
+
+- `quality_metrics` tell you what the target actually observed. Launch targets report generation-style metrics; evaluation targets only report the assessment metrics they truly produced.
+- `estimated_cost_usd` is the operator planning cost for that target, not a billing guarantee.
+- `execution_latency_s` lets you compare runtime responsiveness across hosted, local, and specialized targets.
+- `operator_friction_tier` captures how much setup and babysitting the lane usually needs. Hosted is usually lowest friction, local is often cheaper with more setup, and specialized lanes should be chosen when their domain-specific assessment value outweighs their extra friction.
+
+Artifact cleanup:
+
+- Benchmark artifacts accumulate under `data/benchmarks/llm_serving/`.
+- Delete or archive stale benchmark directories once you have captured the comparison you need, especially after repeated smoke-only setup attempts.
+
+## 10. Quick Reference
 
 ### All mdisc commands
 
@@ -695,6 +736,7 @@ See also:
 | `mdisc llm-launch --campaign-spec <spec>` | Launch an approved campaign through the existing LLM generation runtime |
 | `mdisc llm-replay --launch-summary <summary>` | Strictly replay a recorded launch bundle with a fresh launch wrapper |
 | `mdisc llm-compare --launch-summary <summary>` | Compare a launch against the acceptance-pack baseline and prior launch |
+| `mdisc llm-serving-benchmark --spec <spec>` | Smoke-test and compare hosted, local, and specialized serving lanes under one benchmark context |
 | `mdisc lake index` | Build per-directory catalogs and lake-wide index |
 | `mdisc lake stats` | Print lake artifact counts and staleness summary |
 | `mdisc lake compare <pack_a> <pack_b>` | Compare two benchmark packs (gate + metrics) |
@@ -714,6 +756,7 @@ See also:
 | `data/calibration/` | Stage calibration outputs (JSON) |
 | `data/benchmarks/` | Benchmark corpus files (JSON) |
 | `data/benchmarks/llm_acceptance/` | Acceptance packs, dry-run suggestions, proposals, and approvals |
+| `data/benchmarks/llm_serving/` | Smoke artifacts and benchmark summaries for hosted/local/specialized lane comparisons |
 | `data/llm_campaigns/` | Campaign specs, launch wrappers, outcome snapshots, and comparisons |
 | `data/llm_runs/` | Raw prompt/completion/compile artifacts for each LLM generation run |
 | `data/external/sources/` | Staged canonical source snapshots (JSONL) |

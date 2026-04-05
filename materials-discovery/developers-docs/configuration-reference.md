@@ -18,6 +18,7 @@ Zomic-authored generation, and Phase 19 local-serving examples:
 | `al_pd_mn.yaml` | Alternative ternary system (decagonal) | mock |
 | `sc_zn.yaml` | Binary system (cubic) | mock |
 | `sc_zn_zomic.yaml` | Binary system generated from a Zomic-authored prototype bridge | mock |
+| `al_cu_fe_llm_hosted.yaml` | Hosted general-purpose serving example for the Phase 21 benchmark workflow | real |
 | `sc_zn_llm_local.yaml` | Local OpenAI-compatible serving example with seeded cubic generation and the thinner specialized-evaluation compatibility proof | real |
 
 ---
@@ -182,6 +183,32 @@ curl http://specialist.example.internal:8000/v1/models
 The example above is operational guidance, not a CI dependency. The endpoint
 may be local or remote, but `mdisc` expects an already-running
 OpenAI-compatible surface and does not start the serving process for you.
+
+### Serving benchmark spec reference
+
+Phase 21 adds committed benchmark specs under `configs/llm/` that drive
+`mdisc llm-serving-benchmark`. These are not system configs; they are typed
+benchmark orchestration specs describing which hosted, local, and specialized
+targets should be compared under one shared acceptance-pack context.
+
+| Field | Type | Description |
+|---|---|---|
+| `benchmark_id` | `str` | Stable artifact key used under `data/benchmarks/llm_serving/{benchmark_id}/...`. |
+| `acceptance_pack_path` | `str` | Shared benchmark context. Every target in the spec must match the same system(s) represented by this acceptance pack. |
+| `targets[].workflow_role` | `"campaign_launch"` \| `"llm_evaluate"` | Whether the target reuses the launch/generation flow or the evaluation flow. |
+| `targets[].generation_model_lane` | `"general_purpose"` \| `"specialized_materials"` \| `None` | Launch-role lane override used only for `campaign_launch` targets. |
+| `targets[].evaluation_model_lane` | `"general_purpose"` \| `"specialized_materials"` \| `None` | Evaluation-role lane selection used only for `llm_evaluate` targets. |
+| `targets[].estimated_cost_usd` | `float` | Operator planning estimate shown in the benchmark summary. Must be `>= 0`. |
+| `targets[].operator_friction_tier` | `"low"` \| `"medium"` \| `"high"` | Relative setup and babysitting burden used in operator-facing recommendations. |
+| `targets[].allow_fallback` | `bool` | Whether the smoke phase may accept a resolved fallback lane without failing the target. Default is `false`. |
+
+Additional target requirements:
+
+- `campaign_launch` targets must provide `campaign_spec_path`.
+- `llm_evaluate` targets must provide an acceptance-pack-aligned `batch`.
+- The committed examples use an explicit `top1` evaluation slice for the
+  specialized lane so the benchmark does not compare an unrelated or generic
+  evaluation batch.
 
 ---
 

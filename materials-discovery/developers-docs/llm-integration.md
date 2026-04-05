@@ -364,6 +364,37 @@ This milestone boundary matters:
 - Zomic-native local generation remains a later milestone once hosted, local,
   and specialized baselines can be compared honestly
 
+#### Phase 21: Comparative Benchmarks and Operator Serving Workflow
+
+Phase 21 turns the hosted/local/specialized lane contract into an operator
+benchmark workflow:
+
+- `mdisc llm-serving-benchmark --spec ... --smoke-only` runs explicit per-lane
+  readiness checks and writes a typed smoke artifact before any benchmark work
+  starts
+- `mdisc llm-serving-benchmark --spec ...` reuses the shipped launch/evaluate
+  flows and writes a benchmark summary under
+  `data/benchmarks/llm_serving/{benchmark_id}/`
+- benchmark comparisons are anchored to one shared acceptance-pack context so
+  hosted, local, and specialized targets are judged against the same system and
+  operator question
+
+The specialized lane remains deliberately honest in this workflow:
+
+- the committed specialist target is still **evaluation-primary**
+- the benchmark summary keeps role-specific missing metrics explicit instead of
+  pretending launch and evaluation lanes produce identical outputs
+- Zomic-native specialized generation remains a later milestone after serving
+  baselines and operator tradeoffs are understood
+
+Phase 21 is also strict by design:
+
+- smoke failure stops the benchmark unless fallback is explicitly allowed for
+  that target
+- no silent fallback is permitted during serving benchmarks
+- operators should treat benchmark artifacts as auditable records of what lane
+  really ran, not just what was requested
+
 ### 3.2 Backend Adapter for LLM
 
 Following the existing adapter pattern:

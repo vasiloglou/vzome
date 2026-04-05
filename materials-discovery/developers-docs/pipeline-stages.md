@@ -991,6 +991,66 @@ Human-readable summary lines to stdout plus explicit `Outcome snapshot:` and
 
 ---
 
+## 16. `mdisc llm-serving-benchmark`
+
+Smoke-test and compare hosted, local, and specialized serving targets under one
+shared benchmark context.
+
+### CLI syntax
+
+```
+mdisc llm-serving-benchmark --spec PATH [--smoke-only] [--out PATH]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--spec` | PATH | Yes | -- | Path to the typed serving benchmark YAML |
+| `--smoke-only` | FLAG | No | `False` | Run only the readiness/smoke phase and stop after writing the smoke artifact |
+| `--out` | PATH | No | computed | Optional override for the final benchmark summary JSON |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Benchmark spec YAML | e.g. `configs/llm/al_cu_fe_serving_benchmark.yaml` | committed operator spec or operator-authored equivalent |
+| Acceptance pack JSON | referenced by the spec | must exist and match the benchmark system |
+| Campaign spec JSON | referenced by each `campaign_launch` target | produced earlier by `mdisc llm-approve` |
+
+### Internal steps
+
+1. **Load the benchmark spec.** Validate the typed spec and reject mixed-system targets against the shared acceptance-pack context.
+2. **Run smoke checks first.** Probe every requested serving target and record a typed smoke artifact before any benchmark execution begins.
+3. **Stop on strict smoke failures.** If any target fails readiness or resolves through a disallowed fallback lane, exit with code 2 instead of silently benchmarking the wrong lane.
+4. **Honor role-specific execution paths.**
+   a. `campaign_launch` targets reuse the shipped launch/generate/compare flow.
+   b. `llm_evaluate` targets reuse `mdisc llm-evaluate` core behavior with an acceptance-pack-aligned batch such as `top1`.
+5. **Keep role-specific metrics honest.** Launch targets and evaluation targets only report the quality metrics they actually observed; missing role-specific metrics remain explicit.
+6. **Write benchmark artifacts.** Persist smoke checks and the final benchmark summary under `data/benchmarks/llm_serving/{benchmark_id}/...`.
+7. **Emit operator guidance.** Print concise recommendation lines plus the final benchmark summary path.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Smoke artifact JSON | `{workspace}/data/benchmarks/llm_serving/{benchmark_id}/smoke_checks.json` |
+| Benchmark summary JSON | `{workspace}/data/benchmarks/llm_serving/{benchmark_id}/benchmark_summary.json` |
+
+### Return type
+
+Human-readable smoke or recommendation lines to stdout plus explicit artifact
+paths.
+
+### Fairness and failure rules
+
+- Every target in the benchmark spec must match the shared acceptance-pack system.
+- Evaluation targets must keep their `batch` aligned with that same context.
+- Smoke failure stops the benchmark unless the target explicitly allows fallback.
+- No silent fallback is allowed during benchmark comparison.
+
+---
+
 ## Pipeline data flow
 
 The commands are designed to run in sequence. Each stage reads the output of a
@@ -1032,4 +1092,6 @@ artifacts and self-contained campaign specs, `llm-launch` executes those
 approved specs through the existing `llm-generate` runtime, `llm-replay`
 strictly reruns recorded launch bundles, and `llm-compare` writes immutable
 outcome/comparison artifacts while keeping later pipeline stages
-manual/operator-driven.
+manual/operator-driven. Phase 21 adds `llm-serving-benchmark` as an operator
+comparison wrapper over those same launch/evaluate surfaces; it does not
+replace them with a separate serving-only pipeline.
