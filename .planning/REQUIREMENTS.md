@@ -1,16 +1,86 @@
 # Requirements: Materials Design Program
 
-**Active milestone:** none
+**Defined:** 2026-04-05
+**Core Value:** Build one reproducible system where trusted materials data,
+physically grounded no-DFT validation, and LLM-guided structure generation
+reinforce each other instead of living in separate prototypes.
 
-There is no active milestone requirement set right now.
+## v1.4 Requirements
 
-Archived requirements:
+### Checkpoint Lifecycle
 
-- `.planning/milestones/v1.3-REQUIREMENTS.md`
-- `.planning/milestones/v1.2-REQUIREMENTS.md`
-- `.planning/milestones/v1.1-REQUIREMENTS.md`
-- `.planning/milestones/v1.0-REQUIREMENTS.md`
+- [ ] **LLM-23**: An operator can manage more than one adapted checkpoint for a
+  system with explicit lifecycle state such as candidate, promoted, pinned, or
+  retired, without losing the lineage and fingerprint guarantees shipped in
+  `v1.3`.
+- [ ] **LLM-24**: `mdisc llm-generate`, approved campaign launches, and replay
+  can resolve the promoted or explicitly pinned adapted checkpoint
+  deterministically while preserving the current lane-based workflow.
 
-Start the next milestone with:
+### Workflow Integration
 
-- `$gsd-new-milestone`
+- [ ] **LLM-25**: The platform can compare one or more candidate checkpoints
+  against the current promoted checkpoint and the baseline local model on a
+  shared benchmark context using the existing compare and benchmark surfaces.
+- [ ] **LLM-26**: Promotion, rollback, and retirement actions remain compatible
+  with `llm-launch`, `llm-replay`, `llm-compare`, and
+  `llm-serving-benchmark` instead of requiring a checkpoint-only workflow fork.
+
+### Operations and Governance
+
+- [ ] **OPS-13**: Every lifecycle action for an adapted checkpoint is
+  file-backed, auditable, and fails clearly on stale, conflicting, or
+  incompatible lifecycle state.
+- [ ] **OPS-14**: The workflow ships with operator docs for listing
+  checkpoints, promoting one to default use, pinning a specific checkpoint,
+  rolling back to a prior checkpoint or the baseline local lane, and retiring
+  stale checkpoints safely.
+
+## v2+ Requirements
+
+### LLM Expansion
+
+- **LLM-12**: Add optional autonomous campaign execution only after
+  multi-checkpoint selection and rollback remain reliable with promoted
+  checkpoints in the workflow.
+- **LLM-18**: Add controlled training and fine-tuning automation only after the
+  checkpoint lifecycle surface is stable enough to support automated adaptation
+  jobs, checkpoint promotion, retirement, and multi-checkpoint management
+  responsibly.
+
+### Platform Expansion
+
+- **PIPE-06**: Add more target chemistries beyond the current QC-centered
+  systems.
+- **PIPE-07**: Add automated release gates and benchmark dashboards for every
+  source/backend/serving/checkpoint combination.
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Fully automated checkpoint training jobs in v1.4 | The milestone focus is safe checkpoint lifecycle and promotion, not training orchestration |
+| Large-scale checkpoint farming or tournament infrastructure | Too broad before one promoted-checkpoint workflow is stable |
+| Fully autonomous campaign execution | Operator-governed launch remains the safety boundary |
+| New chemistry breadth as the headline | The milestone focus is checkpoint depth, not expanding system coverage |
+| UI-first checkpoint management surface | The existing CLI and file-backed artifacts remain the right control surface |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| LLM-23 | Phase 28 | Pending |
+| OPS-13 | Phase 28 | Pending |
+| LLM-24 | Phase 29 | Pending |
+| LLM-26 | Phase 29 | Pending |
+| LLM-25 | Phase 30 | Pending |
+| OPS-14 | Phase 30 | Pending |
+
+**Coverage:**
+- v1.4 requirements: 6 total
+- Mapped to phases: 6
+- Unmapped: 0
+
+---
+*Requirements defined: 2026-04-05*
+*Last updated: 2026-04-05 after starting milestone v1.4*
