@@ -360,9 +360,9 @@
 
 ### 2026-04-05
 
-- 03:17 EDT — Implemented the Phase 21 serving-benchmark core helpers and turned the new smoke/summary tests green.
+- 03:00 EDT — Implemented the Phase 21 serving-benchmark core helpers and turned the new smoke/summary tests green.
 - `run_serving_smoke_check(...)` now reuses the shipped serving-lane resolver and readiness probe, records explicit no-fallback failures without dropping operator context, and `build_serving_benchmark_summary(...)` preserves per-target metadata while naming the fastest, cheapest, and lowest-friction targets.
-- 03:08 EDT — Started Phase 21 Plan 01 Task 2 in TDD RED mode with new offline benchmark-core tests.
+- 02:58 EDT — Started Phase 21 Plan 01 Task 2 in TDD RED mode with new offline benchmark-core tests.
 - The new failing coverage locks launch-role and evaluate-role smoke checks, explicit fallback rejection when `allow_fallback` is false, and summary recommendation lines that keep role-specific missing metrics visible.
 - 03:01 EDT — Implemented the Phase 21 serving-benchmark schema, storage, and loader contract in the `llm` package.
 - The new typed benchmark models now carry shared-context target metadata, nested smoke-check serving identity, deterministic artifact paths under `data/benchmarks/llm_serving/`, and an early mixed-system guard in `load_serving_benchmark_spec(...)`.
