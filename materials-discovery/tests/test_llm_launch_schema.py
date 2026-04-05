@@ -103,6 +103,288 @@ def test_legacy_llm_generate_configs_still_validate_without_model_lanes() -> Non
     assert config.llm_generate.model_lanes == {}
 
 
+def test_system_config_accepts_checkpoint_family_with_explicit_pin() -> None:
+    data = _base_config()
+    data["llm_generate"] = {
+        "prompt_template": "zomic_generate_v1",
+        "model_lanes": {
+            "general_purpose": {
+                "adapter": "llm_fixture_v1",
+                "provider": "mock",
+                "model": "fixture-zomic-v1",
+            },
+            "specialized_materials": {
+                "adapter": "openai_compat_v1",
+                "provider": "openai_compat",
+                "model": "materials-local-v1",
+                "checkpoint_family": " adapted-al-cu-fe ",
+                "checkpoint_id": " ckpt-123 ",
+            },
+        },
+    }
+
+    config = SystemConfig.model_validate(data)
+    lane = config.llm_generate.model_lanes["specialized_materials"]
+
+    assert lane.checkpoint_family == "adapted-al-cu-fe"
+    assert lane.checkpoint_id == "ckpt-123"
+
+
+def test_system_config_normalizes_blank_checkpoint_family_to_none() -> None:
+    data = _base_config()
+    data["llm_generate"] = {
+        "prompt_template": "zomic_generate_v1",
+        "model_lanes": {
+            "general_purpose": {
+                "adapter": "llm_fixture_v1",
+                "provider": "mock",
+                "model": "fixture-zomic-v1",
+                "checkpoint_family": "   ",
+            }
+        },
+    }
+
+    config = SystemConfig.model_validate(data)
+
+    assert config.llm_generate.model_lanes["general_purpose"].checkpoint_family is None
+
+
+def test_checkpoint_family_does_not_change_registration_fingerprint() -> None:
+    from materials_discovery.llm import LlmCheckpointRegistrationSpec
+    from materials_discovery.llm.checkpoints import _checkpoint_fingerprint
+
+    baseline = LlmCheckpointRegistrationSpec(
+        checkpoint_id="ckpt-123",
+        system="Al-Cu-Fe",
+        template_family="icosahedral_approximant_1_1",
+        adapter="openai_compat_v1",
+        provider="openai_compat",
+        model="materials-local-v1",
+        local_model_path="/models/materials-local-v1",
+        model_revision="rev-a",
+        base_model="materials-baseline-v1",
+        base_model_revision="base-rev-a",
+        adaptation_method="lora",
+        adaptation_artifact_path="lineage/adapter_manifest.json",
+        corpus_manifest_path="lineage/corpus_manifest.json",
+        eval_set_manifest_path="lineage/eval_manifest.json",
+        acceptance_pack_path="lineage/acceptance_pack.json",
+    )
+    with_family = baseline.model_copy(update={"checkpoint_family": "adapted-al-cu-fe"})
+
+    assert _checkpoint_fingerprint(baseline) == _checkpoint_fingerprint(with_family)
+
+
+def test_checkpoint_registration_and_lineage_models_support_checkpoint_family() -> None:
+    from materials_discovery.llm import (
+        LlmCheckpointLineage,
+        LlmCheckpointRegistration,
+        LlmCheckpointRegistrationSummary,
+    )
+
+    registration = LlmCheckpointRegistration(
+        checkpoint_id="ckpt-123",
+        checkpoint_family="adapted-al-cu-fe",
+        system="Al-Cu-Fe",
+        template_family="icosahedral_approximant_1_1",
+        created_at_utc="2026-04-05T19:00:00Z",
+        adapter="openai_compat_v1",
+        provider="openai_compat",
+        model="materials-local-v1",
+        local_model_path="/models/materials-local-v1",
+        model_revision="rev-a",
+        fingerprint="abc123def4567890",
+        base_model="materials-baseline-v1",
+        base_model_revision="base-rev-a",
+        adaptation_method="lora",
+        adaptation_artifact_path="lineage/adapter_manifest.json",
+        corpus_manifest_path="lineage/corpus_manifest.json",
+        eval_set_manifest_path="lineage/eval_manifest.json",
+        acceptance_pack_path="lineage/acceptance_pack.json",
+    )
+    lineage = LlmCheckpointLineage(
+        checkpoint_id="ckpt-123",
+        checkpoint_family="adapted-al-cu-fe",
+        registration_path="data/llm_checkpoints/ckpt-123/registration.json",
+        fingerprint="abc123def4567890",
+        base_model="materials-baseline-v1",
+        base_model_revision="base-rev-a",
+        adaptation_method="lora",
+        adaptation_artifact_path="lineage/adapter_manifest.json",
+        corpus_manifest_path="lineage/corpus_manifest.json",
+        eval_set_manifest_path="lineage/eval_manifest.json",
+        acceptance_pack_path="lineage/acceptance_pack.json",
+    )
+    legacy_registration = LlmCheckpointRegistration.model_validate(
+        {
+            "checkpoint_id": "ckpt-legacy",
+            "system": "Al-Cu-Fe",
+            "template_family": "icosahedral_approximant_1_1",
+            "created_at_utc": "2026-04-05T19:00:00Z",
+            "adapter": "openai_compat_v1",
+            "provider": "openai_compat",
+            "model": "materials-local-v1",
+            "local_model_path": "/models/materials-local-v1",
+            "model_revision": "rev-a",
+            "fingerprint": "abc123def4567890",
+            "base_model": "materials-baseline-v1",
+            "base_model_revision": "base-rev-a",
+            "adaptation_method": "lora",
+            "adaptation_artifact_path": "lineage/adapter_manifest.json",
+            "corpus_manifest_path": "lineage/corpus_manifest.json",
+            "eval_set_manifest_path": "lineage/eval_manifest.json",
+        }
+    )
+    legacy_lineage = LlmCheckpointLineage.model_validate(
+        {
+            "checkpoint_id": "ckpt-legacy",
+            "registration_path": "data/llm_checkpoints/ckpt-legacy/registration.json",
+            "fingerprint": "abc123def4567890",
+            "base_model": "materials-baseline-v1",
+            "base_model_revision": "base-rev-a",
+            "adaptation_method": "lora",
+            "adaptation_artifact_path": "lineage/adapter_manifest.json",
+            "corpus_manifest_path": "lineage/corpus_manifest.json",
+            "eval_set_manifest_path": "lineage/eval_manifest.json",
+        }
+    )
+    summary = LlmCheckpointRegistrationSummary(
+        checkpoint_id="ckpt-123",
+        checkpoint_family="adapted-al-cu-fe",
+        fingerprint="abc123def4567890",
+        registration_path="data/llm_checkpoints/ckpt-123/registration.json",
+    )
+
+    assert registration.checkpoint_family == "adapted-al-cu-fe"
+    assert lineage.checkpoint_family == "adapted-al-cu-fe"
+    assert summary.checkpoint_family == "adapted-al-cu-fe"
+    assert legacy_registration.checkpoint_family is None
+    assert legacy_lineage.checkpoint_family is None
+
+
+def test_checkpoint_lifecycle_contract_models_round_trip() -> None:
+    from materials_discovery.llm import (
+        LlmCheckpointLifecycleIndex,
+        LlmCheckpointLifecycleMemberSummary,
+        LlmCheckpointPinSelectionSpec,
+        LlmCheckpointPromotionSpec,
+        LlmCheckpointRetirementSpec,
+    )
+
+    index = LlmCheckpointLifecycleIndex(
+        checkpoint_family="adapted-al-cu-fe",
+        revision=3,
+        promoted_checkpoint_id="ckpt-123",
+        members=[
+            LlmCheckpointLifecycleMemberSummary(
+                checkpoint_id="ckpt-123",
+                fingerprint="abc123def4567890",
+                registration_path="data/llm_checkpoints/ckpt-123/registration.json",
+                lifecycle_state="promoted",
+                registered_at_utc="2026-04-05T19:00:00Z",
+                promoted_at_utc="2026-04-05T19:10:00Z",
+                last_action_path=(
+                    "data/llm_checkpoints/families/adapted-al-cu-fe/actions/"
+                    "promotion-r3-ckpt-123.json"
+                ),
+            ),
+            LlmCheckpointLifecycleMemberSummary(
+                checkpoint_id="ckpt-122",
+                fingerprint="fff222def4567890",
+                registration_path="data/llm_checkpoints/ckpt-122/registration.json",
+                lifecycle_state="retired",
+                registered_at_utc="2026-04-05T18:00:00Z",
+                retired_at_utc="2026-04-05T18:30:00Z",
+                retirement_reason="superseded",
+                last_action_path=(
+                    "data/llm_checkpoints/families/adapted-al-cu-fe/actions/"
+                    "retirement-r2-ckpt-122.json"
+                ),
+            ),
+        ],
+        action_history_paths=[
+            " data/llm_checkpoints/families/adapted-al-cu-fe/actions/promotion-r3-ckpt-123.json ",
+            "data/llm_checkpoints/families/adapted-al-cu-fe/actions/retirement-r2-ckpt-122.json",
+        ],
+    )
+    promotion = LlmCheckpointPromotionSpec(
+        checkpoint_family="adapted-al-cu-fe",
+        checkpoint_id="ckpt-123",
+        evidence_paths=[
+            " reports/serving_benchmark.json ",
+            "reports/acceptance_eval.json",
+        ],
+        expected_revision=2,
+        expected_promoted_checkpoint_id=" ",
+        note=" promoted after benchmark comparison ",
+    )
+    retirement = LlmCheckpointRetirementSpec(
+        checkpoint_family="adapted-al-cu-fe",
+        checkpoint_id="ckpt-122",
+        reason="superseded",
+        expected_revision=3,
+        replacement_checkpoint_id="ckpt-123",
+        note=" retired after promotion ",
+    )
+    pin_selection = LlmCheckpointPinSelectionSpec(
+        checkpoint_family="adapted-al-cu-fe",
+        checkpoint_id="ckpt-123",
+        selection_source="campaign",
+        campaign_id=" campaign-001 ",
+        note=" pin for replay ",
+    )
+
+    round_tripped_index = LlmCheckpointLifecycleIndex.model_validate(index.model_dump(mode="json"))
+    round_tripped_pin = LlmCheckpointPinSelectionSpec.model_validate(
+        pin_selection.model_dump(mode="json")
+    )
+
+    assert round_tripped_index.revision == 3
+    assert round_tripped_index.promoted_checkpoint_id == "ckpt-123"
+    assert round_tripped_index.action_history_paths == [
+        "data/llm_checkpoints/families/adapted-al-cu-fe/actions/promotion-r3-ckpt-123.json",
+        "data/llm_checkpoints/families/adapted-al-cu-fe/actions/retirement-r2-ckpt-122.json",
+    ]
+    assert promotion.expected_promoted_checkpoint_id is None
+    assert promotion.evidence_paths == [
+        "reports/serving_benchmark.json",
+        "reports/acceptance_eval.json",
+    ]
+    assert retirement.replacement_checkpoint_id == "ckpt-123"
+    assert round_tripped_pin.campaign_id == "campaign-001"
+
+
+@pytest.mark.parametrize(
+    ("factory", "match"),
+    [
+        (
+            lambda: __import__("materials_discovery.llm", fromlist=["LlmCheckpointLifecycleIndex"])
+            .LlmCheckpointLifecycleIndex(
+                checkpoint_family="adapted-al-cu-fe",
+                revision=1,
+                promoted_checkpoint_id="ckpt-123",
+                members=[],
+            ),
+            "promoted_checkpoint_id must reference a known family member",
+        ),
+        (
+            lambda: __import__(
+                "materials_discovery.llm", fromlist=["LlmCheckpointPinSelectionSpec"]
+            ).LlmCheckpointPinSelectionSpec(
+                checkpoint_family="adapted-al-cu-fe",
+                checkpoint_id="ckpt-123",
+                selection_source="manual",
+                campaign_id="campaign-001",
+            ),
+            "manual pin selections cannot include campaign_id",
+        ),
+    ],
+)
+def test_checkpoint_lifecycle_contract_models_reject_conflicts(factory, match: str) -> None:
+    with pytest.raises(ValidationError, match=match):
+        factory()
+
+
 def test_launch_contract_models_capture_lane_and_artifact_metadata() -> None:
     from materials_discovery.llm import (  # imported lazily so RED fails on missing exports
         LlmCampaignLaunchSummary,

@@ -34,6 +34,10 @@ DEFAULT_LLM_EVAL_SET_SCHEMA_VERSION = "llm-eval-set-example/v1"
 DEFAULT_LLM_EVAL_SET_MANIFEST_VERSION = "llm-eval-set-manifest/v1"
 DEFAULT_LLM_ACCEPTANCE_PACK_VERSION = "llm-acceptance-pack/v1"
 DEFAULT_LLM_CHECKPOINT_REGISTRATION_VERSION = "llm-checkpoint-registration/v1"
+DEFAULT_LLM_CHECKPOINT_LIFECYCLE_INDEX_VERSION = "llm-checkpoint-lifecycle-index/v1"
+DEFAULT_LLM_CHECKPOINT_PROMOTION_SPEC_VERSION = "llm-checkpoint-promotion/v1"
+DEFAULT_LLM_CHECKPOINT_RETIREMENT_SPEC_VERSION = "llm-checkpoint-retirement/v1"
+DEFAULT_LLM_CHECKPOINT_PIN_SELECTION_VERSION = "llm-checkpoint-pin-selection/v1"
 DEFAULT_LLM_SUGGESTION_SCHEMA_VERSION = "llm-suggestion/v1"
 DEFAULT_LLM_CAMPAIGN_SUGGESTION_VERSION = "llm-campaign-suggestion/v1"
 DEFAULT_LLM_CAMPAIGN_PROPOSAL_VERSION = "llm-campaign-proposal/v1"
@@ -53,6 +57,9 @@ CampaignPriority = Literal["high", "medium", "low"]
 CampaignOverallStatus = Literal["ready", "needs_improvement"]
 CampaignLaunchStatus = Literal["running", "succeeded", "failed"]
 CheckpointAdaptationMethod = Literal["lora", "qlora", "merge", "full_finetune", "manual"]
+CheckpointLifecycleState = Literal["candidate", "promoted", "retired"]
+CheckpointPinSource = Literal["manual", "campaign"]
+CheckpointRetirementReason = Literal["superseded", "invalidated", "operator_request", "obsolete"]
 ResolvedModelLaneSource = Literal[
     "configured_lane",
     "default_lane",
@@ -526,6 +533,7 @@ class LlmGenerationResult(BaseModel):
 
 class LlmCheckpointLineage(BaseModel):
     checkpoint_id: str
+    checkpoint_family: str | None = None
     registration_path: str
     fingerprint: str
     base_model: str
@@ -552,7 +560,7 @@ class LlmCheckpointLineage(BaseModel):
             return normalized.rstrip("/")
         return normalized
 
-    @field_validator("base_model_revision", "acceptance_pack_path")
+    @field_validator("checkpoint_family", "base_model_revision", "acceptance_pack_path")
     @classmethod
     def normalize_optional_strings(cls, value: str | None) -> str | None:
         normalized = _normalize_optional_string(value)
@@ -565,6 +573,7 @@ class LlmCheckpointLineage(BaseModel):
 
 class LlmCheckpointRegistrationSpec(BaseModel):
     checkpoint_id: str
+    checkpoint_family: str | None = None
     system: str
     template_family: str
     adapter: str
@@ -602,6 +611,7 @@ class LlmCheckpointRegistrationSpec(BaseModel):
         return normalized
 
     @field_validator(
+        "checkpoint_family",
         "model_revision",
         "base_model_revision",
         "acceptance_pack_path",
@@ -620,6 +630,7 @@ class LlmCheckpointRegistrationSpec(BaseModel):
 class LlmCheckpointRegistration(BaseModel):
     schema_version: str = DEFAULT_LLM_CHECKPOINT_REGISTRATION_VERSION
     checkpoint_id: str
+    checkpoint_family: str | None = None
     system: str
     template_family: str
     created_at_utc: str
@@ -662,6 +673,7 @@ class LlmCheckpointRegistration(BaseModel):
         return normalized
 
     @field_validator(
+        "checkpoint_family",
         "model_revision",
         "base_model_revision",
         "acceptance_pack_path",
@@ -679,6 +691,7 @@ class LlmCheckpointRegistration(BaseModel):
 
 class LlmCheckpointRegistrationSummary(BaseModel):
     checkpoint_id: str
+    checkpoint_family: str | None = None
     fingerprint: str
     registration_path: str
 
@@ -689,6 +702,210 @@ class LlmCheckpointRegistrationSummary(BaseModel):
         if normalized.startswith("http://") or normalized.startswith("https://"):
             return normalized.rstrip("/")
         return normalized
+
+    @field_validator("checkpoint_family")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+
+class LlmCheckpointLifecycleMemberSummary(BaseModel):
+    checkpoint_id: str
+    fingerprint: str
+    registration_path: str
+    lifecycle_state: CheckpointLifecycleState = "candidate"
+    registered_at_utc: str | None = None
+    promoted_at_utc: str | None = None
+    retired_at_utc: str | None = None
+    retirement_reason: CheckpointRetirementReason | None = None
+    last_action_path: str | None = None
+
+    @field_validator("checkpoint_id", "fingerprint", "registration_path")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @field_validator(
+        "registered_at_utc",
+        "promoted_at_utc",
+        "retired_at_utc",
+        "last_action_path",
+    )
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        normalized = _normalize_optional_string(value)
+        if normalized is None:
+            return None
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_retirement_state(self) -> LlmCheckpointLifecycleMemberSummary:
+        if self.lifecycle_state == "retired":
+            if self.retirement_reason is None:
+                raise ValueError("retired members must record retirement_reason")
+            return self
+        if self.retired_at_utc is not None or self.retirement_reason is not None:
+            raise ValueError("only retired members may record retirement metadata")
+        return self
+
+
+class LlmCheckpointLifecycleIndex(BaseModel):
+    schema_version: str = DEFAULT_LLM_CHECKPOINT_LIFECYCLE_INDEX_VERSION
+    checkpoint_family: str
+    revision: int = 0
+    promoted_checkpoint_id: str | None = None
+    members: list[LlmCheckpointLifecycleMemberSummary] = Field(default_factory=list)
+    action_history_paths: list[str] = Field(default_factory=list)
+
+    @field_validator("schema_version", "checkpoint_family")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("promoted_checkpoint_id")
+    @classmethod
+    def normalize_optional_checkpoint_id(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("revision")
+    @classmethod
+    def validate_revision(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("revision must be >= 0")
+        return value
+
+    @field_validator("action_history_paths")
+    @classmethod
+    def normalize_action_history_paths(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @model_validator(mode="after")
+    def validate_member_state(self) -> LlmCheckpointLifecycleIndex:
+        member_ids = [member.checkpoint_id for member in self.members]
+        if len(member_ids) != len(set(member_ids)):
+            raise ValueError("members must be unique by checkpoint_id")
+
+        promoted_members = [
+            member.checkpoint_id
+            for member in self.members
+            if member.lifecycle_state == "promoted"
+        ]
+        if len(promoted_members) > 1:
+            raise ValueError("only one member may be promoted per checkpoint family")
+        if self.promoted_checkpoint_id is None and promoted_members:
+            raise ValueError("promoted_checkpoint_id must be set when a promoted member exists")
+        if self.promoted_checkpoint_id is not None:
+            if self.promoted_checkpoint_id not in member_ids:
+                raise ValueError("promoted_checkpoint_id must reference a known family member")
+            if promoted_members != [self.promoted_checkpoint_id]:
+                raise ValueError(
+                    "promoted member lifecycle_state must match promoted_checkpoint_id"
+                )
+        return self
+
+
+class LlmCheckpointPromotionSpec(BaseModel):
+    schema_version: str = DEFAULT_LLM_CHECKPOINT_PROMOTION_SPEC_VERSION
+    checkpoint_family: str
+    checkpoint_id: str
+    evidence_paths: list[str] = Field(default_factory=list)
+    expected_revision: int | None = None
+    expected_promoted_checkpoint_id: str | None = None
+    note: str | None = None
+
+    @field_validator("schema_version", "checkpoint_family", "checkpoint_id")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @field_validator("evidence_paths")
+    @classmethod
+    def validate_evidence_paths(cls, values: Sequence[str]) -> list[str]:
+        normalized = _normalize_string_list(values)
+        if not normalized:
+            raise ValueError("evidence_paths must contain at least one repo-relative path")
+        return normalized
+
+    @field_validator("expected_revision")
+    @classmethod
+    def validate_expected_revision(cls, value: int | None) -> int | None:
+        if value is not None and value < 0:
+            raise ValueError("expected_revision must be >= 0")
+        return value
+
+    @field_validator("expected_promoted_checkpoint_id", "note")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+
+class LlmCheckpointRetirementSpec(BaseModel):
+    schema_version: str = DEFAULT_LLM_CHECKPOINT_RETIREMENT_SPEC_VERSION
+    checkpoint_family: str
+    checkpoint_id: str
+    reason: CheckpointRetirementReason
+    expected_revision: int | None = None
+    expected_promoted_checkpoint_id: str | None = None
+    replacement_checkpoint_id: str | None = None
+    note: str | None = None
+
+    @field_validator("schema_version", "checkpoint_family", "checkpoint_id")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("expected_revision")
+    @classmethod
+    def validate_expected_revision(cls, value: int | None) -> int | None:
+        if value is not None and value < 0:
+            raise ValueError("expected_revision must be >= 0")
+        return value
+
+    @field_validator("expected_promoted_checkpoint_id", "replacement_checkpoint_id", "note")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @model_validator(mode="after")
+    def validate_replacement_checkpoint(self) -> LlmCheckpointRetirementSpec:
+        if self.replacement_checkpoint_id == self.checkpoint_id:
+            raise ValueError("replacement_checkpoint_id must differ from checkpoint_id")
+        return self
+
+
+class LlmCheckpointPinSelectionSpec(BaseModel):
+    schema_version: str = DEFAULT_LLM_CHECKPOINT_PIN_SELECTION_VERSION
+    checkpoint_family: str
+    checkpoint_id: str
+    selection_source: CheckpointPinSource
+    campaign_id: str | None = None
+    note: str | None = None
+
+    @field_validator("schema_version", "checkpoint_family", "checkpoint_id")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("campaign_id", "note")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @model_validator(mode="after")
+    def validate_selection_source(self) -> LlmCheckpointPinSelectionSpec:
+        if self.selection_source == "campaign" and self.campaign_id is None:
+            raise ValueError("campaign pin selections must include campaign_id")
+        if self.selection_source == "manual" and self.campaign_id is not None:
+            raise ValueError("manual pin selections cannot include campaign_id")
+        return self
 
 
 class LlmServingIdentity(BaseModel):

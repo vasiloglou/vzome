@@ -317,7 +317,14 @@ class LlmModelLaneConfig(BaseModel):
     provider: str
     model: str
     api_base: str | None = None
-    checkpoint_id: str | None = None
+    checkpoint_family: str | None = Field(
+        default=None,
+        description="Checkpoint family selector for promoted-family resolution.",
+    )
+    checkpoint_id: str | None = Field(
+        default=None,
+        description="Explicit pin within checkpoint_family when both selectors are set.",
+    )
     require_checkpoint_registration: bool = False
     model_revision: str | None = None
     local_model_path: str | None = None
@@ -338,7 +345,12 @@ class LlmModelLaneConfig(BaseModel):
         stripped = value.strip()
         return stripped.rstrip("/") or None
 
-    @field_validator("checkpoint_id", "model_revision", "local_model_path")
+    @field_validator(
+        "checkpoint_family",
+        "checkpoint_id",
+        "model_revision",
+        "local_model_path",
+    )
     @classmethod
     def normalize_optional_identity_fields(cls, value: str | None) -> str | None:
         if value is None:

@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 28 Task 1 checkpoint lifecycle schema contract | Added the additive `checkpoint_family` lane selector, shipped the lifecycle/promotion/retirement/pin-selection schema contract, and locked the Wave 1 schema surface in focused LLM checkpoint tests |
 | 2026-04-05 | Phase 27 adapted checkpoint operator workflow docs | Documented `mdisc llm-register-checkpoint`, adapted-lane registration rules, the committed adapted Al-Cu-Fe config and benchmark spec, rollback guidance, and replay-safe checkpoint drift behavior across `RUNBOOK.md`, `configuration-reference.md`, `llm-integration.md`, and `pipeline-stages.md` |
 | 2026-04-05 | Phase 26 adapted checkpoint workflow integration | Added file-backed checkpoint resolution to serving identity, hardened replay against checkpoint fingerprint drift, added the committed adapted Al-Cu-Fe system and benchmark configs, and proved the offline adapted-vs-baseline benchmark path in `test_real_mode_pipeline.py` |
 | 2026-04-05 | Phase 25 checkpoint registration and lineage contracts | Added typed checkpoint registration models, storage helpers, `llm/checkpoints.py`, the `mdisc llm-register-checkpoint` CLI, and focused registry/CLI coverage for auditable adapted-checkpoint lineage |
@@ -370,6 +371,8 @@
 
 ### 2026-04-05
 
+- 19:31 EDT — Implemented Phase 28 Plan 01 Task 1 by extending the additive checkpoint lane contract with `checkpoint_family` and shipping the typed lifecycle/promotion/retirement/pin-selection schema pass for multi-checkpoint family management.
+- The Wave 1 schema work keeps `checkpoint_id` as an explicit pin when a family is also declared, preserves checkpoint fingerprint identity, and adds focused coverage before any resolver or CLI behavior changes.
 - 11:41 EDT — Closed the v1.3 adapted-checkpoint operator docs pass.
 - Documented `mdisc llm-register-checkpoint`, strict adapted-lane registration, rollback-to-baseline guidance, and the adapted-vs-baseline benchmark recipe in `RUNBOOK.md`, `developers-docs/configuration-reference.md`, `developers-docs/llm-integration.md`, and `developers-docs/pipeline-stages.md`.
 - 11:28 EDT — Completed the adapted checkpoint integration proof.
