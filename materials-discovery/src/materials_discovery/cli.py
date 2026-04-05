@@ -108,6 +108,10 @@ from materials_discovery.llm.campaigns import (
     create_campaign_approval,
     materialize_campaign_spec,
 )
+from materials_discovery.llm.checkpoints import (
+    register_llm_checkpoint,
+    resolve_checkpoint_lane,
+)
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
 from materials_discovery.llm.launch import resolve_campaign_launch, resolve_serving_lane
@@ -230,7 +234,9 @@ def _build_serving_identity(
     checkpoint_id = None
     model_revision = None
     local_model_path = None
+    checkpoint_lineage = None
     if lane_config is not None:
+        lane_config, checkpoint_lineage = resolve_checkpoint_lane(lane_config)
         adapter = lane_config.adapter
         provider = lane_config.provider
         model = lane_config.model
@@ -249,6 +255,7 @@ def _build_serving_identity(
         checkpoint_id=checkpoint_id,
         model_revision=model_revision,
         local_model_path=local_model_path,
+        checkpoint_lineage=checkpoint_lineage,
     )
 
 
@@ -955,6 +962,19 @@ def llm_generate_command(
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
         _emit_error(f"llm-generate failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-register-checkpoint")
+def llm_register_checkpoint_command(
+    spec: Path = typer.Option(..., "--spec", exists=False, dir_okay=False),
+) -> None:
+    """Register a Zomic-adapted local checkpoint as a file-backed serving artifact."""
+    try:
+        summary = register_llm_checkpoint(spec)
+        typer.echo(summary.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-register-checkpoint failed: {exc}")
         raise typer.Exit(code=2)
 
 

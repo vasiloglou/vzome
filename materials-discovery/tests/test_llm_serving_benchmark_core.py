@@ -6,7 +6,9 @@ import pytest
 import yaml
 
 from materials_discovery.llm.schema import (
+    LlmCheckpointLineage,
     LlmServingBenchmarkSpec,
+    LlmServingIdentity,
     LlmServingBenchmarkTarget,
     LlmServingBenchmarkTargetResult,
     LlmServingSmokeCheck,
@@ -238,3 +240,98 @@ def test_build_serving_benchmark_summary_preserves_missing_metrics_and_recommend
     assert summary.failed_targets == ["fallback_failure"]
     assert summary.targets[0].quality_metrics["synthesizability_mean"] is None
     assert summary.targets[1].quality_metrics["parse_success_rate"] is None
+
+
+def test_build_serving_benchmark_summary_reports_adapted_checkpoint_improvement() -> None:
+    spec = LlmServingBenchmarkSpec(
+        benchmark_id="bench_adapted_v1",
+        acceptance_pack_path="/tmp/acceptance.json",
+        targets=[
+            _launch_target().model_copy(update={"target_id": "baseline_local_generation"}),
+            _launch_target().model_copy(update={"target_id": "adapted_checkpoint_generation"}),
+        ],
+    )
+    target_results = [
+        LlmServingBenchmarkTargetResult(
+            target_id="baseline_local_generation",
+            label="Baseline local generation",
+            workflow_role="campaign_launch",
+            estimated_cost_usd=0.03,
+            operator_friction_tier="medium",
+            smoke_checks=[
+                LlmServingSmokeCheck(
+                    target_id="baseline_local_generation",
+                    role="generation",
+                    status="passed",
+                    requested_model_lane="general_purpose",
+                    resolved_model_lane="general_purpose",
+                    resolved_model_lane_source="configured_lane",
+                    serving_identity=LlmServingIdentity(
+                        requested_model_lane="general_purpose",
+                        resolved_model_lane="general_purpose",
+                        resolved_model_lane_source="configured_lane",
+                        adapter="openai_compat_v1",
+                        provider="openai_compat",
+                        model="zomic-general-local-v1",
+                    ),
+                    latency_s=0.4,
+                )
+            ],
+            quality_metrics={
+                "parse_success_rate": 0.4,
+                "compile_success_rate": 0.3,
+                "generation_success_rate": 0.2,
+            },
+            execution_latency_s=0.4,
+        ),
+        LlmServingBenchmarkTargetResult(
+            target_id="adapted_checkpoint_generation",
+            label="Adapted checkpoint generation",
+            workflow_role="campaign_launch",
+            estimated_cost_usd=0.04,
+            operator_friction_tier="medium",
+            smoke_checks=[
+                LlmServingSmokeCheck(
+                    target_id="adapted_checkpoint_generation",
+                    role="generation",
+                    status="passed",
+                    requested_model_lane="general_purpose",
+                    resolved_model_lane="general_purpose",
+                    resolved_model_lane_source="configured_lane",
+                    serving_identity=LlmServingIdentity(
+                        requested_model_lane="general_purpose",
+                        resolved_model_lane="general_purpose",
+                        resolved_model_lane_source="configured_lane",
+                        adapter="openai_compat_v1",
+                        provider="openai_compat",
+                        model="zomic-adapted-local-v1",
+                        checkpoint_id="ckpt-al-cu-fe-zomic-adapted",
+                        checkpoint_lineage=LlmCheckpointLineage(
+                            checkpoint_id="ckpt-al-cu-fe-zomic-adapted",
+                            registration_path="data/llm_checkpoints/ckpt-al-cu-fe-zomic-adapted/registration.json",
+                            fingerprint="fp-adapted-001",
+                            base_model="zomic-general-local-v1",
+                            adaptation_method="lora",
+                            adaptation_artifact_path="data/llm_checkpoints/ckpt-al-cu-fe-zomic-adapted/adapter_manifest.json",
+                            corpus_manifest_path="data/llm_corpus/al_cu_fe_v1/manifest.json",
+                            eval_set_manifest_path="data/llm_eval_sets/al_cu_fe_v1/manifest.json",
+                        ),
+                    ),
+                    latency_s=0.5,
+                )
+            ],
+            quality_metrics={
+                "parse_success_rate": 0.8,
+                "compile_success_rate": 0.6,
+                "generation_success_rate": 0.5,
+            },
+            execution_latency_s=0.5,
+        ),
+    ]
+
+    summary = build_serving_benchmark_summary(spec, target_results)
+
+    assert any(
+        "Adapted checkpoint improvement: adapted_checkpoint_generation vs baseline_local_generation" in line
+        for line in summary.recommendation_lines
+    )

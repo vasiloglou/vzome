@@ -106,6 +106,18 @@ def llm_acceptance_approval_path(
     return llm_acceptance_approvals_dir(pack_id, root) / f"{normalized_approval_id}.json"
 
 
+def llm_checkpoint_dir(checkpoint_id: str, root: Path | None = None) -> Path:
+    normalized_checkpoint_id = _require_artifact_id(checkpoint_id, "checkpoint_id")
+    return _artifact_root(root) / "data" / "llm_checkpoints" / normalized_checkpoint_id
+
+
+def llm_checkpoint_registration_path(
+    checkpoint_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_checkpoint_dir(checkpoint_id, root) / "registration.json"
+
+
 def llm_serving_benchmark_dir(benchmark_id: str, root: Path | None = None) -> Path:
     normalized_benchmark_id = _require_artifact_id(benchmark_id, "benchmark_id")
     return _artifact_root(root) / "data" / "benchmarks" / "llm_serving" / normalized_benchmark_id

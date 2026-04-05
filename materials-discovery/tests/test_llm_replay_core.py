@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from materials_discovery.common.io import load_yaml, write_json_object, write_jsonl
 from materials_discovery.common.manifest import config_sha256
 from materials_discovery.common.schema import SystemConfig
+from materials_discovery.llm.checkpoints import register_llm_checkpoint
 from materials_discovery.llm.replay import (
     build_replay_campaign_metadata,
     build_replay_config,
@@ -31,6 +32,7 @@ from materials_discovery.llm.storage import (
     llm_campaign_resolved_launch_path,
     llm_campaign_spec_path,
 )
+import yaml
 
 
 def _workspace() -> Path:
@@ -40,6 +42,43 @@ def _workspace() -> Path:
 def _system_config(config_name: str = "al_cu_fe_llm_mock.yaml") -> tuple[SystemConfig, Path]:
     config_path = _workspace() / "configs" / "systems" / config_name
     return SystemConfig.model_validate(load_yaml(config_path)), config_path
+
+
+def _register_checkpoint_for_test(root: Path, *, checkpoint_id: str, model: str) -> None:
+    lineage_dir = root / "lineage"
+    lineage_dir.mkdir(parents=True, exist_ok=True)
+    for name in (
+        "adapter_manifest.json",
+        "corpus_manifest.json",
+        "eval_manifest.json",
+        "acceptance_pack.json",
+    ):
+        (lineage_dir / name).write_text("{}", encoding="utf-8")
+    spec_path = root / f"{checkpoint_id}.yaml"
+    spec_path.write_text(
+        yaml.safe_dump(
+            {
+                "checkpoint_id": checkpoint_id,
+                "system": "Al-Cu-Fe",
+                "template_family": "icosahedral_approximant_1_1",
+                "adapter": "openai_compat_v1",
+                "provider": "openai_compat",
+                "model": model,
+                "local_model_path": f"/opt/models/{model}",
+                "model_revision": "adapted-dev-2026-04-05",
+                "base_model": "zomic-general-local-v1",
+                "base_model_revision": "local-dev-2026-04-05",
+                "adaptation_method": "lora",
+                "adaptation_artifact_path": "lineage/adapter_manifest.json",
+                "corpus_manifest_path": "lineage/corpus_manifest.json",
+                "eval_set_manifest_path": "lineage/eval_manifest.json",
+                "acceptance_pack_path": "lineage/acceptance_pack.json",
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    register_llm_checkpoint(spec_path, root=root)
 
 
 def _write_launch_bundle(
@@ -599,6 +638,65 @@ def test_build_replay_config_rejects_hard_local_identity_drift(
     )
 
     with pytest.raises(ValueError, match="hard serving identity drift"):
+        build_replay_config(bundle, current_config)
+
+
+def test_build_replay_config_rejects_registered_checkpoint_fingerprint_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("materials_discovery.llm.checkpoints.workspace_root", lambda: tmp_path)
+    monkeypatch.setattr("materials_discovery.llm.storage.workspace_root", lambda: tmp_path)
+    _register_checkpoint_for_test(
+        tmp_path,
+        checkpoint_id="ckpt-al-cu-fe-zomic-adapted",
+        model="zomic-al-cu-fe-adapted-v1",
+    )
+
+    launch_summary_path = _write_launch_bundle(
+        tmp_path,
+        config_name="al_cu_fe_llm_local.yaml",
+        requested_model_lanes=["general_purpose"],
+        resolved_model_lane="general_purpose",
+        resolved_model_lane_source="configured_lane",
+        serving_identity={
+            "requested_model_lane": "general_purpose",
+            "resolved_model_lane": "general_purpose",
+            "resolved_model_lane_source": "configured_lane",
+            "adapter": "openai_compat_v1",
+            "provider": "openai_compat",
+            "model": "zomic-al-cu-fe-adapted-v1",
+            "effective_api_base": "http://localhost:8000",
+            "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+            "model_revision": "adapted-dev-2026-04-05",
+            "local_model_path": "/opt/models/zomic-al-cu-fe-adapted-v1",
+            "checkpoint_lineage": {
+                "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                "registration_path": "data/llm_checkpoints/ckpt-al-cu-fe-zomic-adapted/registration.json",
+                "fingerprint": "stale-fingerprint",
+                "base_model": "zomic-general-local-v1",
+                "base_model_revision": "local-dev-2026-04-05",
+                "adaptation_method": "lora",
+                "adaptation_artifact_path": "lineage/adapter_manifest.json",
+                "corpus_manifest_path": "lineage/corpus_manifest.json",
+                "eval_set_manifest_path": "lineage/eval_manifest.json",
+                "acceptance_pack_path": "lineage/acceptance_pack.json",
+            },
+        },
+    )
+    bundle = load_campaign_launch_bundle(launch_summary_path, root=tmp_path)
+    current_config, _ = _system_config("al_cu_fe_llm_local.yaml")
+    assert current_config.llm_generate is not None
+    current_config.llm_generate.model_lanes["general_purpose"].model = "zomic-al-cu-fe-adapted-v1"
+    current_config.llm_generate.model_lanes["general_purpose"].api_base = "http://localhost:8001"
+    current_config.llm_generate.model_lanes["general_purpose"].checkpoint_id = (
+        "ckpt-al-cu-fe-zomic-adapted"
+    )
+    current_config.llm_generate.model_lanes["general_purpose"].require_checkpoint_registration = True
+    current_config.llm_generate.model_lanes["general_purpose"].model_revision = None
+    current_config.llm_generate.model_lanes["general_purpose"].local_model_path = None
+
+    with pytest.raises(ValueError, match="fingerprint drift"):
         build_replay_config(bundle, current_config)
 
 

@@ -438,6 +438,58 @@ def build_serving_benchmark_summary(
         if any(smoke.status == "failed" for smoke in result.smoke_checks):
             failed_targets.append(result.target_id)
 
+    generation_targets = [
+        result for result in target_results if result.workflow_role == "campaign_launch"
+    ]
+    adapted_generation_targets = [
+        result
+        for result in generation_targets
+        if any(
+            smoke.serving_identity is not None
+            and smoke.serving_identity.checkpoint_lineage is not None
+            for smoke in result.smoke_checks
+        )
+    ]
+    baseline_generation_targets = [
+        result
+        for result in generation_targets
+        if all(
+            smoke.serving_identity is None
+            or smoke.serving_identity.checkpoint_lineage is None
+            for smoke in result.smoke_checks
+        )
+    ]
+    if adapted_generation_targets and baseline_generation_targets:
+        adapted_target = adapted_generation_targets[0]
+        baseline_target = baseline_generation_targets[0]
+        delta_bits: list[str] = []
+        for metric_name in (
+            "parse_success_rate",
+            "compile_success_rate",
+            "generation_success_rate",
+        ):
+            adapted_metric = adapted_target.quality_metrics.get(metric_name)
+            baseline_metric = baseline_target.quality_metrics.get(metric_name)
+            if not isinstance(adapted_metric, (int, float)) or not isinstance(
+                baseline_metric, (int, float)
+            ):
+                continue
+            delta = float(adapted_metric) - float(baseline_metric)
+            if delta > 0:
+                delta_bits.append(f"{metric_name} +{delta:.2f}")
+        if delta_bits:
+            recommendation_lines.append(
+                "Adapted checkpoint improvement: "
+                f"{adapted_target.target_id} vs {baseline_target.target_id} "
+                f"({', '.join(delta_bits)})"
+            )
+        else:
+            recommendation_lines.append(
+                "Adapted checkpoint comparison: "
+                f"{adapted_target.target_id} did not beat {baseline_target.target_id} "
+                "on the tracked generation metrics."
+            )
+
     return LlmServingBenchmarkSummary(
         benchmark_id=spec.benchmark_id,
         acceptance_pack_path=spec.acceptance_pack_path,

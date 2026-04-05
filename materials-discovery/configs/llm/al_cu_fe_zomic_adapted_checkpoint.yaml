@@ -1,0 +1,19 @@
+checkpoint_id: ckpt-al-cu-fe-zomic-adapted
+system: Al-Cu-Fe
+template_family: icosahedral_approximant_1_1
+adapter: openai_compat_v1
+provider: openai_compat
+model: zomic-al-cu-fe-adapted-v1
+local_model_path: /opt/models/zomic-al-cu-fe-adapted-v1
+model_revision: adapted-dev-2026-04-05
+base_model: zomic-general-local-v1
+base_model_revision: local-dev-2026-04-05
+adaptation_method: lora
+adaptation_artifact_path: ../../data/llm_checkpoints/ckpt-al-cu-fe-zomic-adapted/adapter_manifest.json
+corpus_manifest_path: ../../data/llm_corpus/al_cu_fe_zomic_adapted_v1/manifest.json
+eval_set_manifest_path: ../../data/llm_eval_sets/al_cu_fe_zomic_adapted_v1/manifest.json
+acceptance_pack_path: ../../data/benchmarks/llm_acceptance/pack_v1/acceptance_pack.json
+notes: >
+  Example registration spec for the first Al-Cu-Fe Zomic-adapted local checkpoint.
+  Operators should replace the local model path and lineage paths with their real
+  workspace artifacts before running llm-register-checkpoint.

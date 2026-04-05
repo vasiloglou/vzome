@@ -1,0 +1,57 @@
+system_name: Al-Cu-Fe
+template_family: icosahedral_approximant_1_1
+species:
+  - Al
+  - Cu
+  - Fe
+composition_bounds:
+  Al:
+    min: 0.60
+    max: 0.80
+  Cu:
+    min: 0.10
+    max: 0.25
+  Fe:
+    min: 0.05
+    max: 0.20
+coeff_bounds:
+  min: -3
+  max: 3
+seed: 17
+default_count: 5
+backend:
+  mode: real
+  llm_adapter: openai_compat_v1
+  llm_provider: openai_compat
+  llm_model: zomic-general-local-v1
+  llm_api_base: http://localhost:8000
+  llm_request_timeout_s: 120.0
+  llm_probe_timeout_s: 5.0
+llm_generate:
+  prompt_template: zomic_generate_v1
+  temperature: 0.2
+  max_tokens: 1024
+  max_attempts: 2
+  default_model_lane: general_purpose
+  fallback_model_lane: general_purpose
+  model_lanes:
+    general_purpose:
+      adapter: openai_compat_v1
+      provider: openai_compat
+      model: zomic-al-cu-fe-adapted-v1
+      api_base: http://localhost:8000
+      checkpoint_id: ckpt-al-cu-fe-zomic-adapted
+      require_checkpoint_registration: true
+    specialized_materials:
+      adapter: openai_compat_v1
+      provider: openai_compat
+      model: materials-al-cu-fe-specialist-v1
+      api_base: http://localhost:8000
+      checkpoint_id: ckpt-al-cu-fe-specialist
+      model_revision: local-dev-2026-04-05
+      local_model_path: /opt/models/materials-al-cu-fe-specialist-v1
+llm_evaluate:
+  prompt_template: materials_assess_v1
+  temperature: 0.2
+  max_tokens: 1024
+  model_lane: specialized_materials

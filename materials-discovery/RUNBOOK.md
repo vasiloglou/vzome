@@ -676,7 +676,76 @@ See also:
 - `developers-docs/llm-integration.md`
 - `developers-docs/pipeline-stages.md`
 
-## 9. Serving Lane Benchmark Workflow
+## 9. Adapted Checkpoint Workflow
+
+Phase 27 turns the first Zomic-adapted checkpoint into a reproducible operator
+workflow instead of a one-off experiment. The committed examples assume:
+
+- you already have a local OpenAI-compatible server running
+- you have a real adapted checkpoint directory on disk
+- you have real lineage artifacts for the adaptation artifact, corpus manifest,
+  eval-set manifest, and acceptance pack
+
+Start by updating the committed registration spec with your real paths:
+
+```bash
+uv run mdisc llm-register-checkpoint --spec configs/llm/al_cu_fe_zomic_adapted_checkpoint.yaml
+```
+
+That writes a file-backed registration artifact at:
+
+| Artifact | Path |
+|---|---|
+| Checkpoint registration | `data/llm_checkpoints/{checkpoint_id}/registration.json` |
+
+Once the checkpoint is registered, you can run the adapted lane directly:
+
+```bash
+uv run mdisc llm-generate --config configs/systems/al_cu_fe_llm_adapted.yaml --model-lane general_purpose
+```
+
+What the adapted config changes:
+
+- `configs/systems/al_cu_fe_llm_adapted.yaml` points `general_purpose` at the
+  adapted model name and requires file-backed checkpoint registration.
+- The lane intentionally omits `model_revision` and `local_model_path` in YAML,
+  so registration becomes the source of truth for those fields.
+- Replay treats model and checkpoint fingerprint as hard identity. Endpoint or
+  local-path drift is tolerated only when the checkpoint identity still matches.
+
+Smoke-check the adapted-vs-baseline comparison before running the full benchmark:
+
+```bash
+uv run mdisc llm-serving-benchmark --spec configs/llm/al_cu_fe_adapted_serving_benchmark.yaml --smoke-only
+```
+
+Then run the full comparison:
+
+```bash
+uv run mdisc llm-serving-benchmark --spec configs/llm/al_cu_fe_adapted_serving_benchmark.yaml
+```
+
+How to interpret the result:
+
+- The benchmark uses one shared acceptance-pack context for both the baseline
+  local target and the adapted-checkpoint target.
+- The summary keeps the same generation metrics the platform already uses:
+  parse success, compile success, and generation success.
+- When the adapted target truly improves on the baseline, the recommendation
+  section prints an explicit `Adapted checkpoint improvement:` line.
+
+Rollback path:
+
+- If registration fails, fix the lineage inputs and rerun
+  `llm-register-checkpoint`; do not bypass the registration check for the
+  adapted lane.
+- If the adapted benchmark underperforms, switch back to
+  `configs/systems/al_cu_fe_llm_local.yaml` for the baseline lane.
+- The committed adapted benchmark spec already carries the rollback baseline as
+  `baseline_local_generation`, so operators can compare before making that
+  switch permanent.
+
+## 10. Serving Lane Benchmark Workflow
 
 Phase 21 adds a dedicated operator benchmark command for comparing hosted,
 local, and specialized serving lanes under one shared acceptance-pack context.
@@ -717,7 +786,7 @@ Artifact cleanup:
 - Benchmark artifacts accumulate under `data/benchmarks/llm_serving/`.
 - Delete or archive stale benchmark directories once you have captured the comparison you need, especially after repeated smoke-only setup attempts.
 
-## 10. Quick Reference
+## 11. Quick Reference
 
 ### All mdisc commands
 
@@ -736,6 +805,7 @@ Artifact cleanup:
 | `mdisc llm-launch --campaign-spec <spec>` | Launch an approved campaign through the existing LLM generation runtime |
 | `mdisc llm-replay --launch-summary <summary>` | Strictly replay a recorded launch bundle with a fresh launch wrapper |
 | `mdisc llm-compare --launch-summary <summary>` | Compare a launch against the acceptance-pack baseline and prior launch |
+| `mdisc llm-register-checkpoint --spec <spec>` | Register a Zomic-adapted local checkpoint with pinned lineage before using a strict adapted lane |
 | `mdisc llm-serving-benchmark --spec <spec>` | Smoke-test and compare hosted, local, and specialized serving lanes under one benchmark context |
 | `mdisc lake index` | Build per-directory catalogs and lake-wide index |
 | `mdisc lake stats` | Print lake artifact counts and staleness summary |
@@ -757,6 +827,7 @@ Artifact cleanup:
 | `data/benchmarks/` | Benchmark corpus files (JSON) |
 | `data/benchmarks/llm_acceptance/` | Acceptance packs, dry-run suggestions, proposals, and approvals |
 | `data/benchmarks/llm_serving/` | Smoke artifacts and benchmark summaries for hosted/local/specialized lane comparisons |
+| `data/llm_checkpoints/` | File-backed adapted-checkpoint registrations and lineage records |
 | `data/llm_campaigns/` | Campaign specs, launch wrappers, outcome snapshots, and comparisons |
 | `data/llm_runs/` | Raw prompt/completion/compile artifacts for each LLM generation run |
 | `data/external/sources/` | Staged canonical source snapshots (JSONL) |
@@ -774,8 +845,12 @@ Artifact cleanup:
 | `configs/systems/al_cu_fe_real.yaml` | Al-Cu-Fe real mode |
 | `configs/systems/al_cu_fe_reference_aware.yaml` | Al-Cu-Fe with multi-source ref pack |
 | `configs/systems/al_cu_fe_llm_mock.yaml` | Al-Cu-Fe mock LLM closed-loop workflow |
+| `configs/systems/al_cu_fe_llm_local.yaml` | Al-Cu-Fe baseline local-serving lane |
+| `configs/systems/al_cu_fe_llm_adapted.yaml` | Al-Cu-Fe adapted-checkpoint local lane |
 | `configs/systems/sc_zn_reference_aware.yaml` | Sc-Zn with multi-source ref pack |
 | `configs/systems/sc_zn_zomic.yaml` | Sc-Zn with Zomic generation |
+| `configs/llm/al_cu_fe_zomic_adapted_checkpoint.yaml` | Adapted-checkpoint registration spec template |
+| `configs/llm/al_cu_fe_adapted_serving_benchmark.yaml` | Adapted-vs-baseline local benchmark spec |
 | `configs/systems/ti_zr_ni.yaml` | Ti-Zr-Ni mock mode |
 
 ### See also

@@ -11,6 +11,7 @@ from materials_discovery.common.schema import (
     LlmModelLaneConfig,
     SystemConfig,
 )
+from materials_discovery.llm.checkpoints import resolve_checkpoint_lane
 from materials_discovery.llm.eval_set import load_eval_set
 from materials_discovery.llm.prompting import select_conditioning_examples
 from materials_discovery.llm.schema import (
@@ -91,12 +92,15 @@ def build_serving_identity(
     lane_source: ResolvedModelLaneSource,
     backend: BackendConfig,
     lane_config: LlmModelLaneConfig | None,
+    root: Path | None = None,
 ) -> LlmServingIdentity:
     adapter, provider, model, api_base = _baseline_backend_tuple_from_backend(backend)
     checkpoint_id = None
     model_revision = None
     local_model_path = None
+    checkpoint_lineage = None
     if lane_config is not None:
+        lane_config, checkpoint_lineage = resolve_checkpoint_lane(lane_config, root=root)
         adapter = lane_config.adapter
         provider = lane_config.provider
         model = lane_config.model
@@ -116,6 +120,7 @@ def build_serving_identity(
         checkpoint_id=checkpoint_id,
         model_revision=model_revision,
         local_model_path=local_model_path,
+        checkpoint_lineage=checkpoint_lineage,
     )
 
 

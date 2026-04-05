@@ -22,6 +22,7 @@ from materials_discovery.llm.storage import (
     llm_campaign_comparison_path,
     llm_campaign_outcome_snapshot_path,
 )
+from materials_discovery.llm.checkpoints import register_llm_checkpoint
 from materials_discovery.llm.serving_benchmark import load_serving_benchmark_spec
 
 
@@ -426,8 +427,10 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     workspace = Path(__file__).resolve().parents[1]
     hosted_config_path = workspace / "configs" / "systems" / "al_cu_fe_llm_hosted.yaml"
     local_config_path = workspace / "configs" / "systems" / "al_cu_fe_llm_local.yaml"
+    adapted_config_path = workspace / "configs" / "systems" / "al_cu_fe_llm_adapted.yaml"
     sc_zn_local_config_path = workspace / "configs" / "systems" / "sc_zn_llm_local.yaml"
     al_benchmark_example = workspace / "configs" / "llm" / "al_cu_fe_serving_benchmark.yaml"
+    adapted_benchmark_example = workspace / "configs" / "llm" / "al_cu_fe_adapted_serving_benchmark.yaml"
     sc_benchmark_example = workspace / "configs" / "llm" / "sc_zn_serving_benchmark.yaml"
 
     hosted_config = SystemConfig.model_validate(load_yaml(hosted_config_path))
@@ -436,10 +439,19 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     assert hosted_config.backend.llm_model == "hosted-general-placeholder"
     assert hosted_config.llm_generate is not None
     assert hosted_config.llm_generate.max_attempts == 2
+    adapted_config = SystemConfig.model_validate(load_yaml(adapted_config_path))
+    assert adapted_config.llm_generate is not None
+    assert adapted_config.llm_generate.model_lanes["general_purpose"].checkpoint_id == (
+        "ckpt-al-cu-fe-zomic-adapted"
+    )
+    assert adapted_config.llm_generate.model_lanes["general_purpose"].require_checkpoint_registration
+    assert adapted_config.llm_generate.model_lanes["general_purpose"].model_revision is None
+    assert adapted_config.llm_generate.model_lanes["general_purpose"].local_model_path is None
 
     al_acceptance_pack_path = _write_llm_acceptance_pack(tmp_path / "al_workspace", system="Al-Cu-Fe")
     (tmp_path / "al_hosted_campaign").mkdir(parents=True, exist_ok=True)
     (tmp_path / "al_local_campaign").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "al_adapted_campaign").mkdir(parents=True, exist_ok=True)
     hosted_campaign_spec_path = _write_llm_campaign_spec(
         tmp_path / "al_hosted_campaign",
         hosted_config_path,
@@ -447,6 +459,10 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     local_campaign_spec_path = _write_llm_campaign_spec(
         tmp_path / "al_local_campaign",
         local_config_path,
+    )
+    adapted_campaign_spec_path = _write_llm_campaign_spec(
+        tmp_path / "al_adapted_campaign",
+        adapted_config_path,
     )
     al_payload = load_yaml(al_benchmark_example)
     al_payload["acceptance_pack_path"] = str(al_acceptance_pack_path)
@@ -475,6 +491,33 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     assert specialized_target.batch == "top1"
     assert specialized_target.evaluation_model_lane == "specialized_materials"
 
+    adapted_payload = load_yaml(adapted_benchmark_example)
+    adapted_payload["acceptance_pack_path"] = str(al_acceptance_pack_path)
+    for target in adapted_payload["targets"]:
+        target["system_config_path"] = str(
+            (adapted_benchmark_example.parent / target["system_config_path"]).resolve()
+        )
+        if target["target_id"] == "baseline_local_generation":
+            target["campaign_spec_path"] = str(local_campaign_spec_path)
+        elif target["target_id"] == "adapted_checkpoint_generation":
+            target["campaign_spec_path"] = str(adapted_campaign_spec_path)
+    adapted_runtime_spec_path = tmp_path / "al_runtime_adapted_benchmark.yaml"
+    adapted_runtime_spec_path.write_text(
+        yaml.safe_dump(adapted_payload, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    adapted_spec = load_serving_benchmark_spec(adapted_runtime_spec_path)
+    assert adapted_spec.benchmark_id == "al_cu_fe_adapted_checkpoint_v1"
+    assert [target.target_id for target in adapted_spec.targets] == [
+        "baseline_local_generation",
+        "adapted_checkpoint_generation",
+    ]
+    assert any(
+        target.notes and "register the checkpoint" in target.notes.lower()
+        for target in adapted_spec.targets
+    )
+
     sc_acceptance_pack_path = _write_llm_acceptance_pack(tmp_path / "sc_workspace", system="Sc-Zn")
     (tmp_path / "sc_local_campaign").mkdir(parents=True, exist_ok=True)
     sc_campaign_spec_path = _write_llm_campaign_spec(
@@ -501,6 +544,194 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     assert any(
         target.notes and "compatibility" in target.notes.lower() for target in sc_spec.targets
     )
+
+
+@pytest.mark.integration
+def test_real_mode_adapted_checkpoint_benchmark_reuses_launch_and_compare_workflow_offline(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    runner = CliRunner()
+    repo_workspace = Path(__file__).resolve().parents[1]
+    artifact_workspace = tmp_path / "workspace"
+    acceptance_pack_path = _write_llm_acceptance_pack(artifact_workspace, system="Al-Cu-Fe")
+    baseline_config_path = repo_workspace / "configs" / "systems" / "al_cu_fe_llm_local.yaml"
+    adapted_config_path = repo_workspace / "configs" / "systems" / "al_cu_fe_llm_adapted.yaml"
+    benchmark_example = repo_workspace / "configs" / "llm" / "al_cu_fe_adapted_serving_benchmark.yaml"
+
+    (tmp_path / "baseline_campaign").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "adapted_campaign").mkdir(parents=True, exist_ok=True)
+    baseline_spec_path = _write_llm_campaign_spec(tmp_path / "baseline_campaign", baseline_config_path)
+    adapted_spec_path = _write_llm_campaign_spec(tmp_path / "adapted_campaign", adapted_config_path)
+
+    checkpoint_lineage_dir = artifact_workspace / "lineage"
+    checkpoint_lineage_dir.mkdir(parents=True, exist_ok=True)
+    for name in (
+        "adapter_manifest.json",
+        "corpus_manifest.json",
+        "eval_manifest.json",
+        "acceptance_pack.json",
+    ):
+        (checkpoint_lineage_dir / name).write_text("{}", encoding="utf-8")
+    checkpoint_spec_path = artifact_workspace / "al_cu_fe_zomic_adapted_checkpoint.yaml"
+    checkpoint_spec_path.write_text(
+        yaml.safe_dump(
+            {
+                "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                "system": "Al-Cu-Fe",
+                "template_family": "icosahedral_approximant_1_1",
+                "adapter": "openai_compat_v1",
+                "provider": "openai_compat",
+                "model": "zomic-al-cu-fe-adapted-v1",
+                "local_model_path": "/opt/models/zomic-al-cu-fe-adapted-v1",
+                "model_revision": "adapted-dev-2026-04-05",
+                "base_model": "zomic-general-local-v1",
+                "base_model_revision": "local-dev-2026-04-05",
+                "adaptation_method": "lora",
+                "adaptation_artifact_path": "lineage/adapter_manifest.json",
+                "corpus_manifest_path": "lineage/corpus_manifest.json",
+                "eval_set_manifest_path": "lineage/eval_manifest.json",
+                "acceptance_pack_path": "lineage/acceptance_pack.json",
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    register_llm_checkpoint(checkpoint_spec_path, root=artifact_workspace)
+
+    benchmark_payload = load_yaml(benchmark_example)
+    benchmark_payload["acceptance_pack_path"] = str(acceptance_pack_path)
+    for target in benchmark_payload["targets"]:
+        target["system_config_path"] = str(
+            (benchmark_example.parent / target["system_config_path"]).resolve()
+        )
+        if target["target_id"] == "baseline_local_generation":
+            target["campaign_spec_path"] = str(baseline_spec_path)
+        elif target["target_id"] == "adapted_checkpoint_generation":
+            target["campaign_spec_path"] = str(adapted_spec_path)
+    benchmark_spec_path = tmp_path / "al_cu_fe_adapted_benchmark_runtime.yaml"
+    benchmark_spec_path.write_text(
+        yaml.safe_dump(benchmark_payload, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr("materials_discovery.cli.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr("materials_discovery.llm.serving_benchmark.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr("materials_discovery.llm.generate.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr("materials_discovery.llm.checkpoints.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr("materials_discovery.llm.storage.workspace_root", lambda: artifact_workspace)
+
+    class _FakeAdapter:
+        def generate(self, request) -> str:
+            del request
+            return "label adapted.demo\n"
+
+    def _fake_compile(
+        zomic_text: str,
+        *,
+        prototype_key: str,
+        system_name: str,
+        template_family: str,
+        source_qphi_bounds=None,
+        artifact_root: Path | None = None,
+    ) -> dict[str, object]:
+        del zomic_text, system_name, template_family, source_qphi_bounds
+        raw_export_path = None
+        orbit_library_path = None
+        if artifact_root is not None:
+            artifact_root.mkdir(parents=True, exist_ok=True)
+            raw_export_path = artifact_root / f"{prototype_key}.raw.json"
+            orbit_library_path = artifact_root / f"{prototype_key}.json"
+            raw_export_path.write_text("{}", encoding="utf-8")
+            orbit_library_path.write_text("{}", encoding="utf-8")
+        return {
+            "parse_status": "passed",
+            "compile_status": "passed",
+            "error_kind": None,
+            "raw_export_path": None if raw_export_path is None else str(raw_export_path),
+            "orbit_library_path": None if orbit_library_path is None else str(orbit_library_path),
+            "cell_scale_used": 10.0,
+            "geometry_equivalence": None,
+            "geometry_error": None,
+            "error_message": None,
+        }
+
+    def _fake_candidate_from_prototype_library(
+        config: SystemConfig,
+        *,
+        seed: int,
+        candidate_index: int,
+        template_override_path: Path,
+        extra_provenance: dict[str, object] | None = None,
+    ) -> CandidateRecord:
+        del seed, template_override_path
+        provenance = {"source": "llm"}
+        if extra_provenance:
+            provenance.update(extra_provenance)
+        return CandidateRecord(
+            candidate_id=f"md_{candidate_index:06d}",
+            system=config.system_name,
+            template_family=config.template_family,
+            cell={
+                "a": 14.2,
+                "b": 14.2,
+                "c": 14.2,
+                "alpha": 90.0,
+                "beta": 90.0,
+                "gamma": 90.0,
+            },
+            sites=[
+                SiteRecord(
+                    label="S01",
+                    qphi=((0, 0), (1, 0), (1, 0)),
+                    species="Al",
+                    occ=1.0,
+                    fractional_position=(0.2, 0.2, 0.2),
+                    cartesian_position=(2.84, 2.84, 2.84),
+                )
+            ],
+            composition={"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            screen={"model": "MACE", "energy_per_atom_ev": -3.0},
+            digital_validation=DigitalValidationRecord(status="pending"),
+            provenance=provenance,
+        )
+
+    monkeypatch.setattr(
+        "materials_discovery.llm.serving_benchmark.validate_llm_adapter_ready",
+        lambda adapter, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "materials_discovery.llm.generate.resolve_llm_adapter",
+        lambda mode, backend=None, llm_generate=None: _FakeAdapter(),
+    )
+    monkeypatch.setattr("materials_discovery.llm.generate.compile_zomic_script", _fake_compile)
+    monkeypatch.setattr(
+        "materials_discovery.llm.generate.build_candidate_from_prototype_library",
+        _fake_candidate_from_prototype_library,
+    )
+
+    result = runner.invoke(app, ["llm-serving-benchmark", "--spec", str(benchmark_spec_path)])
+
+    assert result.exit_code == 0, (
+        f"llm-serving-benchmark failed:\n{result.stdout}\n{result.stderr}"
+    )
+    summary_path = (
+        artifact_workspace
+        / "data"
+        / "benchmarks"
+        / "llm_serving"
+        / "al_cu_fe_adapted_checkpoint_v1"
+        / "benchmark_summary.json"
+    )
+    assert summary_path.exists()
+    summary_payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    targets = {row["target_id"]: row for row in summary_payload["targets"]}
+    adapted_identity = targets["adapted_checkpoint_generation"]["smoke_checks"][0]["serving_identity"]
+    assert adapted_identity["checkpoint_id"] == "ckpt-al-cu-fe-zomic-adapted"
+    assert adapted_identity["checkpoint_lineage"]["base_model"] == "zomic-general-local-v1"
+    assert Path(targets["baseline_local_generation"]["launch_summary_path"]).exists()
+    assert Path(targets["adapted_checkpoint_generation"]["launch_summary_path"]).exists()
+    assert any("Adapted checkpoint" in line for line in summary_payload["recommendation_lines"])
 
 
 @pytest.mark.integration

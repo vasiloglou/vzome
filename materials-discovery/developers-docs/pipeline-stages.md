@@ -991,7 +991,59 @@ Human-readable summary lines to stdout plus explicit `Outcome snapshot:` and
 
 ---
 
-## 16. `mdisc llm-serving-benchmark`
+## 16. `mdisc llm-register-checkpoint`
+
+Register a Zomic-adapted local checkpoint as a file-backed serving artifact.
+
+### CLI syntax
+
+```
+mdisc llm-register-checkpoint --spec PATH
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--spec` | PATH | Yes | -- | Path to the typed checkpoint registration YAML |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Registration spec YAML | e.g. `configs/llm/al_cu_fe_zomic_adapted_checkpoint.yaml` | must describe one adapted checkpoint |
+| Adaptation artifact | referenced by the spec | must exist |
+| Corpus manifest | referenced by the spec | must exist |
+| Eval-set manifest | referenced by the spec | must exist |
+| Acceptance pack JSON | referenced by the spec when provided | optional, but if present it must exist |
+
+### Internal steps
+
+1. **Load the typed spec.** Validate the checkpoint registration payload and normalize relative paths against the spec location.
+2. **Verify lineage inputs exist.** Fail early if the adaptation artifact, corpus manifest, eval-set manifest, or optional acceptance pack is missing.
+3. **Normalize storage paths.** Persist workspace-relative lineage paths when the artifacts live under the repository workspace.
+4. **Build the checkpoint fingerprint.** Hash the pinned serving and lineage identity so replay and later runs can detect true checkpoint drift.
+5. **Write `registration.json`.** Persist the typed registration artifact under `data/llm_checkpoints/{checkpoint_id}/`.
+6. **Protect the checkpoint id.** If the same `checkpoint_id` already exists with a different fingerprint, fail instead of overwriting the existing registration.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Checkpoint registration JSON | `{workspace}/data/llm_checkpoints/{checkpoint_id}/registration.json` |
+
+### Return type
+
+`LlmCheckpointRegistrationSummary` (JSON to stdout).
+
+### Failure rules
+
+- A strict adapted lane with `require_checkpoint_registration: true` may not run without this registration artifact.
+- Registration fails on missing lineage inputs, adapter/provider/model mismatch, or fingerprint conflict for an already registered `checkpoint_id`.
+
+---
+
+## 17. `mdisc llm-serving-benchmark`
 
 Smoke-test and compare hosted, local, and specialized serving targets under one
 shared benchmark context.

@@ -105,6 +105,55 @@ Important boundary:
 generator." In `v1.2`, a specialized lane may be generation-adjacent or
 evaluation-focused rather than Zomic-native.
 
+### Adapted checkpoint registration
+
+Phase 25 adds a stricter checkpoint path for the first Zomic-adapted local
+generation lane.
+
+Important distinction:
+
+- `checkpoint_id` by itself can still act as lightweight serving metadata for
+  existing local or specialized lanes.
+- `require_checkpoint_registration: true` turns that lane into a strict
+  adapted-checkpoint lane. The lane will not run until
+  `data/llm_checkpoints/{checkpoint_id}/registration.json` exists and agrees
+  with the configured adapter, provider, and model.
+
+The operator flow is:
+
+1. author a typed checkpoint registration spec such as
+   `configs/llm/al_cu_fe_zomic_adapted_checkpoint.yaml`
+2. run `uv run mdisc llm-register-checkpoint --spec <spec>`
+3. use a system config such as `configs/systems/al_cu_fe_llm_adapted.yaml`
+   that points `general_purpose` at the adapted checkpoint lane
+
+The registration spec pins:
+
+- base model and base-model revision
+- adaptation method and adaptation artifact path
+- corpus manifest path
+- eval-set manifest path
+- optional acceptance-pack path
+- serving identity fields such as model, revision, and local model path
+
+That registration is then reused by generation, launch, replay, and benchmark
+commands for consistent checkpoint fingerprinting and replay drift checks.
+
+Minimal adapted lane example:
+
+```yaml
+llm_generate:
+  default_model_lane: general_purpose
+  model_lanes:
+    general_purpose:
+      adapter: openai_compat_v1
+      provider: openai_compat
+      model: zomic-al-cu-fe-adapted-v1
+      api_base: http://localhost:8000
+      checkpoint_id: ckpt-al-cu-fe-zomic-adapted
+      require_checkpoint_registration: true
+```
+
 `llm-evaluate` now uses the same lane family additively:
 
 - `mdisc llm-evaluate --model-lane general_purpose`

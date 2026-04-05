@@ -395,6 +395,62 @@ Phase 21 is also strict by design:
 - operators should treat benchmark artifacts as auditable records of what lane
   really ran, not just what was requested
 
+#### Phase 25: Checkpoint Artifact and Lineage Contracts
+
+Phase 25 adds the first file-backed contract for a Zomic-adapted local
+checkpoint:
+
+- `mdisc llm-register-checkpoint --spec ...` writes a typed registration under
+  `data/llm_checkpoints/{checkpoint_id}/registration.json`
+- the registration pins base model, adaptation method, adaptation artifact,
+  corpus manifest, eval-set manifest, optional acceptance pack, model revision,
+  and local model path
+- a lane can still carry `checkpoint_id` as lightweight metadata, but
+  `require_checkpoint_registration: true` upgrades that lane into a strict
+  adapted-checkpoint lane
+
+This boundary is intentional:
+
+- the milestone does not automate training
+- the milestone does make adapted checkpoints auditable, replay-safe, and
+  comparable inside the shipped workflow
+
+#### Phase 26: Adapted Local Generation Integration
+
+Phase 26 makes the first adapted checkpoint operational:
+
+- `configs/systems/al_cu_fe_llm_adapted.yaml` proves one real adapted lane
+  through the existing `llm-generate` and campaign surfaces
+- serving identity now carries `checkpoint_lineage` so launch, replay, and
+  benchmark artifacts can distinguish the adapted checkpoint from the baseline
+  local model
+- replay treats checkpoint identity and checkpoint fingerprint as hard drift,
+  while endpoint and local-path differences remain transport drift when the
+  same checkpoint still resolves cleanly
+
+This is the first milestone that explicitly aims at Zomic-native local
+generation rather than only hosted, local, or specialist serving transport.
+
+#### Phase 27: Adapted Checkpoint Benchmarks and Operator Workflow
+
+Phase 27 turns the adapted checkpoint into an operator-usable workflow:
+
+- `configs/llm/al_cu_fe_adapted_serving_benchmark.yaml` compares the adapted
+  checkpoint against the unadapted local baseline on one shared acceptance-pack
+  context
+- benchmark summaries now emit an explicit adapted-vs-baseline recommendation
+  line when an adapted checkpoint improves parse, compile, or generation
+  success
+- the runbook documents checkpoint registration, smoke testing, rollback to the
+  baseline local lane, and how to interpret an adapted benchmark result
+
+The milestone remains deliberately narrow:
+
+- one credible adapted checkpoint is enough
+- large-scale checkpoint farming or automated promotion is still a later
+  milestone
+- the workflow stays CLI-first, file-backed, and operator-governed
+
 ### 3.2 Backend Adapter for LLM
 
 Following the existing adapter pattern:

@@ -4,6 +4,9 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 27 adapted checkpoint operator workflow docs | Documented `mdisc llm-register-checkpoint`, adapted-lane registration rules, the committed adapted Al-Cu-Fe config and benchmark spec, rollback guidance, and replay-safe checkpoint drift behavior across `RUNBOOK.md`, `configuration-reference.md`, `llm-integration.md`, and `pipeline-stages.md` |
+| 2026-04-05 | Phase 26 adapted checkpoint workflow integration | Added file-backed checkpoint resolution to serving identity, hardened replay against checkpoint fingerprint drift, added the committed adapted Al-Cu-Fe system and benchmark configs, and proved the offline adapted-vs-baseline benchmark path in `test_real_mode_pipeline.py` |
+| 2026-04-05 | Phase 25 checkpoint registration and lineage contracts | Added typed checkpoint registration models, storage helpers, `llm/checkpoints.py`, the `mdisc llm-register-checkpoint` CLI, and focused registry/CLI coverage for auditable adapted-checkpoint lineage |
 | 2026-04-05 | Phase 21 Plan 03 serving benchmark operator docs | Added the serving-benchmark workflow to the runbook and developer docs, documented benchmark-spec fields plus strict smoke/no-silent-fallback behavior, added shared CLI coverage for missing benchmark specs, and kept the Wave 3 docs/CLI slice green at `31 passed` |
 | 2026-04-05 | Phase 21 Plan 03 committed benchmark examples | Added the hosted Al-Cu-Fe LLM config plus committed Al-Cu-Fe and Sc-Zn serving-benchmark specs, kept the specialized target evaluation-primary with an aligned `top1` slice, and re-verified the shared CLI/real-mode benchmark slice at `16 passed` |
 | 2026-04-05 | Phase 21 Plan 03 Task 1 RED benchmark example-config tests | Added failing `test_real_mode_pipeline.py` coverage that locks the committed hosted config plus Al-Cu-Fe and Sc-Zn serving-benchmark example specs before adding the operator-facing benchmark files |
@@ -367,6 +370,14 @@
 
 ### 2026-04-05
 
+- 11:41 EDT — Closed the v1.3 adapted-checkpoint operator docs pass.
+- Documented `mdisc llm-register-checkpoint`, strict adapted-lane registration, rollback-to-baseline guidance, and the adapted-vs-baseline benchmark recipe in `RUNBOOK.md`, `developers-docs/configuration-reference.md`, `developers-docs/llm-integration.md`, and `developers-docs/pipeline-stages.md`.
+- 11:28 EDT — Completed the adapted checkpoint integration proof.
+- Added file-backed checkpoint lineage to serving identity, taught replay to hard-fail on checkpoint fingerprint drift, committed `al_cu_fe_llm_adapted.yaml` plus `al_cu_fe_adapted_serving_benchmark.yaml`, and proved the offline adapted benchmark workflow in `tests/test_real_mode_pipeline.py`.
+- Focused verification passed with `12 passed, 28 deselected` across checkpoint, replay, serving-benchmark, and real-mode pipeline coverage.
+- 11:12 EDT — Implemented the Phase 25 checkpoint registration contract foundation.
+- Added typed checkpoint registration models, storage helpers under `data/llm_checkpoints/`, a new `llm/checkpoints.py` registry layer, and the `mdisc llm-register-checkpoint --spec ...` command with deterministic fingerprinting and lineage validation.
+- Focused verification passed with `16 passed` across `tests/test_llm_checkpoint_registry.py`, `tests/test_llm_checkpoint_cli.py`, and `tests/test_llm_replay_core.py`.
 - 03:22 EDT — Completed the Phase 21 Plan 03 operator workflow docs pass.
 - Added a dedicated serving-benchmark section to `RUNBOOK.md`, documented benchmark-spec fields plus artifact paths in the developer docs, and added shared CLI coverage for missing benchmark specs so the new command is represented in the broad command-surface suite.
 - Focused verification passed with `31 passed` across `tests/test_llm_serving_benchmark_cli.py`, `tests/test_cli.py`, and `tests/test_real_mode_pipeline.py`.

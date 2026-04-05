@@ -318,6 +318,7 @@ class LlmModelLaneConfig(BaseModel):
     model: str
     api_base: str | None = None
     checkpoint_id: str | None = None
+    require_checkpoint_registration: bool = False
     model_revision: str | None = None
     local_model_path: str | None = None
 

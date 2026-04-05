@@ -1,0 +1,21 @@
+benchmark_id: al_cu_fe_adapted_checkpoint_v1
+acceptance_pack_path: ../../data/benchmarks/llm_acceptance/pack_v1/acceptance_pack.json
+targets:
+  - target_id: baseline_local_generation
+    label: Baseline local generation
+    workflow_role: campaign_launch
+    system_config_path: ../systems/al_cu_fe_llm_local.yaml
+    campaign_spec_path: ../../data/llm_campaigns/al_cu_fe_serving_local/campaign_spec.json
+    generation_model_lane: general_purpose
+    estimated_cost_usd: 0.03
+    operator_friction_tier: medium
+    notes: Unadapted local baseline for rollback and adapted-checkpoint comparison.
+  - target_id: adapted_checkpoint_generation
+    label: Adapted checkpoint generation
+    workflow_role: campaign_launch
+    system_config_path: ../systems/al_cu_fe_llm_adapted.yaml
+    campaign_spec_path: ../../data/llm_campaigns/al_cu_fe_adapted_local/campaign_spec.json
+    generation_model_lane: general_purpose
+    estimated_cost_usd: 0.04
+    operator_friction_tier: medium
+    notes: First Zomic-adapted local checkpoint lane. Register the checkpoint before running this benchmark.

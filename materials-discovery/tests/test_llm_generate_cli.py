@@ -13,6 +13,7 @@ from materials_discovery.common.schema import (
     LlmGenerateSummary,
     SiteRecord,
 )
+from materials_discovery.llm.checkpoints import register_llm_checkpoint
 from materials_discovery.llm.schema import LlmServingIdentity
 
 
@@ -239,3 +240,141 @@ def test_cli_llm_generate_model_lane_overrides_default_and_records_serving_ident
     assert result.exit_code == 0
     assert out_file.exists()
     assert ready_calls == [("specialized_materials", "specialized_materials")]
+
+
+def test_cli_llm_generate_uses_registered_checkpoint_lineage_for_adapted_lane(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    runner = CliRunner()
+    lineage_dir = tmp_path / "lineage"
+    lineage_dir.mkdir(parents=True, exist_ok=True)
+    for name in (
+        "adapter_manifest.json",
+        "corpus_manifest.json",
+        "eval_manifest.json",
+        "acceptance_pack.json",
+    ):
+        (lineage_dir / name).write_text("{}", encoding="utf-8")
+
+    checkpoint_spec = tmp_path / "checkpoint.yaml"
+    checkpoint_spec.write_text(
+        yaml.safe_dump(
+            {
+                "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                "system": "Al-Cu-Fe",
+                "template_family": "icosahedral_approximant_1_1",
+                "adapter": "openai_compat_v1",
+                "provider": "openai_compat",
+                "model": "zomic-adapted-local-v1",
+                "local_model_path": "/opt/models/zomic-adapted-local-v1",
+                "model_revision": "adapted-dev-2026-04-05",
+                "base_model": "zomic-general-local-v1",
+                "base_model_revision": "local-dev-2026-04-05",
+                "adaptation_method": "lora",
+                "adaptation_artifact_path": "lineage/adapter_manifest.json",
+                "corpus_manifest_path": "lineage/corpus_manifest.json",
+                "eval_set_manifest_path": "lineage/eval_manifest.json",
+                "acceptance_pack_path": "lineage/acceptance_pack.json",
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    register_llm_checkpoint(checkpoint_spec, root=tmp_path)
+
+    config_path = tmp_path / "al_cu_fe_llm_adapted.yaml"
+    config_path.write_text(
+        yaml.safe_dump(
+            {
+                "system_name": "Al-Cu-Fe",
+                "template_family": "icosahedral_approximant_1_1",
+                "species": ["Al", "Cu", "Fe"],
+                "composition_bounds": {
+                    "Al": {"min": 0.6, "max": 0.8},
+                    "Cu": {"min": 0.1, "max": 0.25},
+                    "Fe": {"min": 0.05, "max": 0.2},
+                },
+                "coeff_bounds": {"min": -3, "max": 3},
+                "seed": 17,
+                "default_count": 5,
+                "backend": {
+                    "mode": "real",
+                    "llm_adapter": "openai_compat_v1",
+                    "llm_provider": "openai_compat",
+                    "llm_model": "zomic-general-local-v1",
+                    "llm_api_base": "http://localhost:8000",
+                },
+                "llm_generate": {
+                    "prompt_template": "zomic_generate_v1",
+                    "temperature": 0.2,
+                    "max_tokens": 1024,
+                    "max_attempts": 2,
+                    "default_model_lane": "general_purpose",
+                    "model_lanes": {
+                        "general_purpose": {
+                            "adapter": "openai_compat_v1",
+                            "provider": "openai_compat",
+                            "model": "zomic-adapted-local-v1",
+                            "api_base": "http://localhost:8000",
+                            "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                            "require_checkpoint_registration": True,
+                        }
+                    },
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    out_file = tmp_path / "llm_adapted.jsonl"
+    run_manifest = tmp_path / "run_manifest.json"
+    run_manifest.write_text("{}", encoding="utf-8")
+
+    monkeypatch.setattr("materials_discovery.llm.checkpoints.workspace_root", lambda: tmp_path)
+    monkeypatch.setattr("materials_discovery.llm.storage.workspace_root", lambda: tmp_path)
+
+    class _Adapter:
+        pass
+
+    monkeypatch.setattr("materials_discovery.cli.resolve_llm_adapter", lambda *args, **kwargs: _Adapter())
+    monkeypatch.setattr("materials_discovery.cli.validate_llm_adapter_ready", lambda *args, **kwargs: None)
+
+    def _fake_generate(system_config, output_path, count, **kwargs):
+        del count
+        assert system_config.backend.llm_model == "zomic-adapted-local-v1"
+        serving_identity = kwargs["serving_identity"]
+        assert serving_identity.checkpoint_id == "ckpt-al-cu-fe-zomic-adapted"
+        assert serving_identity.model_revision == "adapted-dev-2026-04-05"
+        assert serving_identity.local_model_path == "/opt/models/zomic-adapted-local-v1"
+        assert serving_identity.checkpoint_lineage is not None
+        assert serving_identity.checkpoint_lineage.base_model == "zomic-general-local-v1"
+        write_jsonl([_candidate().model_dump(mode="json")], output_path)
+        return LlmGenerateSummary(
+            requested_count=1,
+            generated_count=1,
+            attempt_count=1,
+            parse_pass_count=1,
+            compile_pass_count=1,
+            output_path=str(output_path),
+            run_manifest_path=str(run_manifest),
+        )
+
+    monkeypatch.setattr("materials_discovery.cli.generate_llm_candidates", _fake_generate)
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-generate",
+            "--config",
+            str(config_path),
+            "--count",
+            "1",
+            "--out",
+            str(out_file),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert out_file.exists()

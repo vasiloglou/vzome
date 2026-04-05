@@ -6,6 +6,7 @@ from typing import Any
 
 from materials_discovery.common.io import load_json_object, workspace_root
 from materials_discovery.common.schema import SystemConfig
+from materials_discovery.llm.checkpoints import resolve_checkpoint_lane
 from materials_discovery.llm.schema import (
     LlmCampaignLaunchSummary,
     LlmCampaignResolvedLaunch,
@@ -84,10 +85,18 @@ def _hard_identity_matches(
     provider: str,
     model: str,
     checkpoint_id: str | None,
+    checkpoint_fingerprint: str | None = None,
 ) -> bool:
     if adapter != recorded.adapter or provider != recorded.provider or model != recorded.model:
         return False
     if recorded.checkpoint_id is not None and checkpoint_id != recorded.checkpoint_id:
+        return False
+    recorded_fingerprint = (
+        None
+        if recorded.checkpoint_lineage is None
+        else recorded.checkpoint_lineage.fingerprint
+    )
+    if recorded_fingerprint is not None and checkpoint_fingerprint != recorded_fingerprint:
         return False
     return True
 
@@ -98,6 +107,7 @@ def _format_identity(
     provider: str,
     model: str,
     checkpoint_id: str | None,
+    checkpoint_fingerprint: str | None = None,
 ) -> str:
     parts = [
         f"adapter={adapter}",
@@ -106,6 +116,8 @@ def _format_identity(
     ]
     if checkpoint_id is not None:
         parts.append(f"checkpoint_id={checkpoint_id}")
+    if checkpoint_fingerprint is not None:
+        parts.append(f"checkpoint_fingerprint={checkpoint_fingerprint}")
     return ", ".join(parts)
 
 
@@ -149,6 +161,7 @@ def build_replay_serving_identity(
             provider=backend_provider,
             model=backend_model,
             checkpoint_id=None,
+            checkpoint_fingerprint=None,
         )
         if lane_config is None:
             if backend_matches:
@@ -164,15 +177,19 @@ def build_replay_serving_identity(
             raise ValueError(
                 "replay hard serving identity drift: "
                 f"resolved lane '{recorded.resolved_model_lane}' is no longer configured "
-                f"for recorded {_format_identity(**recorded.model_dump(include={'adapter', 'provider', 'model', 'checkpoint_id'}))}. "
-                "Endpoint, revision, and local-path drift are allowed; model or checkpoint drift is not."
+                f"for recorded {_format_identity(adapter=recorded.adapter, provider=recorded.provider, model=recorded.model, checkpoint_id=recorded.checkpoint_id, checkpoint_fingerprint=(None if recorded.checkpoint_lineage is None else recorded.checkpoint_lineage.fingerprint))}. "
+                "Endpoint, revision, local-path, and registration-path drift are allowed; model, checkpoint, or fingerprint drift is not."
             )
+        lane_config, checkpoint_lineage = resolve_checkpoint_lane(lane_config)
         if not _hard_identity_matches(
             recorded,
             adapter=lane_config.adapter,
             provider=lane_config.provider,
             model=lane_config.model,
             checkpoint_id=lane_config.checkpoint_id,
+            checkpoint_fingerprint=(
+                None if checkpoint_lineage is None else checkpoint_lineage.fingerprint
+            ),
         ):
             if backend_matches:
                 return LlmServingIdentity(
@@ -186,10 +203,10 @@ def build_replay_serving_identity(
                 )
             raise ValueError(
                 "replay hard serving identity drift: "
-                f"recorded {_format_identity(**recorded.model_dump(include={'adapter', 'provider', 'model', 'checkpoint_id'}))} "
+                f"recorded {_format_identity(adapter=recorded.adapter, provider=recorded.provider, model=recorded.model, checkpoint_id=recorded.checkpoint_id, checkpoint_fingerprint=(None if recorded.checkpoint_lineage is None else recorded.checkpoint_lineage.fingerprint))} "
                 f"but current lane '{recorded.resolved_model_lane}' resolves to "
-                f"{_format_identity(adapter=lane_config.adapter, provider=lane_config.provider, model=lane_config.model, checkpoint_id=lane_config.checkpoint_id)}. "
-                "Endpoint, revision, and local-path drift are allowed; model or checkpoint drift is not."
+                f"{_format_identity(adapter=lane_config.adapter, provider=lane_config.provider, model=lane_config.model, checkpoint_id=lane_config.checkpoint_id, checkpoint_fingerprint=(None if checkpoint_lineage is None else checkpoint_lineage.fingerprint))}. "
+                "Endpoint, revision, local-path, and registration-path drift are allowed; model, checkpoint, or fingerprint drift is not."
             )
         return LlmServingIdentity(
             requested_model_lane=recorded.requested_model_lane,
@@ -202,6 +219,7 @@ def build_replay_serving_identity(
             checkpoint_id=lane_config.checkpoint_id,
             model_revision=lane_config.model_revision,
             local_model_path=lane_config.local_model_path,
+            checkpoint_lineage=checkpoint_lineage,
         )
 
     adapter, provider, model, api_base = _current_backend_tuple(current_config)
@@ -211,13 +229,14 @@ def build_replay_serving_identity(
         provider=provider,
         model=model,
         checkpoint_id=None,
+        checkpoint_fingerprint=None,
     ):
         raise ValueError(
             "replay hard serving identity drift: "
-            f"recorded {_format_identity(**recorded.model_dump(include={'adapter', 'provider', 'model', 'checkpoint_id'}))} "
+            f"recorded {_format_identity(adapter=recorded.adapter, provider=recorded.provider, model=recorded.model, checkpoint_id=recorded.checkpoint_id, checkpoint_fingerprint=(None if recorded.checkpoint_lineage is None else recorded.checkpoint_lineage.fingerprint))} "
             f"but current backend default resolves to "
-            f"{_format_identity(adapter=adapter, provider=provider, model=model, checkpoint_id=None)}. "
-            "Endpoint drift is allowed; model or checkpoint drift is not."
+            f"{_format_identity(adapter=adapter, provider=provider, model=model, checkpoint_id=None, checkpoint_fingerprint=None)}. "
+            "Endpoint drift is allowed; model, checkpoint, or fingerprint drift is not."
         )
     return LlmServingIdentity(
         requested_model_lane=recorded.requested_model_lane,

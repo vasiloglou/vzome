@@ -33,6 +33,7 @@ DEFAULT_LLM_EVALUATION_RUN_MANIFEST_VERSION = "llm-evaluation-run-manifest/v1"
 DEFAULT_LLM_EVAL_SET_SCHEMA_VERSION = "llm-eval-set-example/v1"
 DEFAULT_LLM_EVAL_SET_MANIFEST_VERSION = "llm-eval-set-manifest/v1"
 DEFAULT_LLM_ACCEPTANCE_PACK_VERSION = "llm-acceptance-pack/v1"
+DEFAULT_LLM_CHECKPOINT_REGISTRATION_VERSION = "llm-checkpoint-registration/v1"
 DEFAULT_LLM_SUGGESTION_SCHEMA_VERSION = "llm-suggestion/v1"
 DEFAULT_LLM_CAMPAIGN_SUGGESTION_VERSION = "llm-campaign-suggestion/v1"
 DEFAULT_LLM_CAMPAIGN_PROPOSAL_VERSION = "llm-campaign-proposal/v1"
@@ -51,6 +52,7 @@ CampaignDecision = Literal["approved", "rejected"]
 CampaignPriority = Literal["high", "medium", "low"]
 CampaignOverallStatus = Literal["ready", "needs_improvement"]
 CampaignLaunchStatus = Literal["running", "succeeded", "failed"]
+CheckpointAdaptationMethod = Literal["lora", "qlora", "merge", "full_finetune", "manual"]
 ResolvedModelLaneSource = Literal[
     "configured_lane",
     "default_lane",
@@ -522,6 +524,173 @@ class LlmGenerationResult(BaseModel):
         return stripped or None
 
 
+class LlmCheckpointLineage(BaseModel):
+    checkpoint_id: str
+    registration_path: str
+    fingerprint: str
+    base_model: str
+    base_model_revision: str | None = None
+    adaptation_method: CheckpointAdaptationMethod
+    adaptation_artifact_path: str
+    corpus_manifest_path: str
+    eval_set_manifest_path: str
+    acceptance_pack_path: str | None = None
+
+    @field_validator(
+        "checkpoint_id",
+        "registration_path",
+        "fingerprint",
+        "base_model",
+        "adaptation_artifact_path",
+        "corpus_manifest_path",
+        "eval_set_manifest_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @field_validator("base_model_revision", "acceptance_pack_path")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        normalized = _normalize_optional_string(value)
+        if normalized is None:
+            return None
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+
+class LlmCheckpointRegistrationSpec(BaseModel):
+    checkpoint_id: str
+    system: str
+    template_family: str
+    adapter: str
+    provider: str
+    model: str
+    local_model_path: str
+    model_revision: str | None = None
+    base_model: str
+    base_model_revision: str | None = None
+    adaptation_method: CheckpointAdaptationMethod
+    adaptation_artifact_path: str
+    corpus_manifest_path: str
+    eval_set_manifest_path: str
+    acceptance_pack_path: str | None = None
+    notes: str | None = None
+
+    @field_validator(
+        "checkpoint_id",
+        "system",
+        "template_family",
+        "adapter",
+        "provider",
+        "model",
+        "local_model_path",
+        "base_model",
+        "adaptation_artifact_path",
+        "corpus_manifest_path",
+        "eval_set_manifest_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @field_validator(
+        "model_revision",
+        "base_model_revision",
+        "acceptance_pack_path",
+        "notes",
+    )
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        normalized = _normalize_optional_string(value)
+        if normalized is None:
+            return None
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+
+class LlmCheckpointRegistration(BaseModel):
+    schema_version: str = DEFAULT_LLM_CHECKPOINT_REGISTRATION_VERSION
+    checkpoint_id: str
+    system: str
+    template_family: str
+    created_at_utc: str
+    adapter: str
+    provider: str
+    model: str
+    local_model_path: str
+    model_revision: str | None = None
+    fingerprint: str
+    base_model: str
+    base_model_revision: str | None = None
+    adaptation_method: CheckpointAdaptationMethod
+    adaptation_artifact_path: str
+    corpus_manifest_path: str
+    eval_set_manifest_path: str
+    acceptance_pack_path: str | None = None
+    notes: str | None = None
+
+    @field_validator(
+        "schema_version",
+        "checkpoint_id",
+        "system",
+        "template_family",
+        "created_at_utc",
+        "adapter",
+        "provider",
+        "model",
+        "local_model_path",
+        "fingerprint",
+        "base_model",
+        "adaptation_artifact_path",
+        "corpus_manifest_path",
+        "eval_set_manifest_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @field_validator(
+        "model_revision",
+        "base_model_revision",
+        "acceptance_pack_path",
+        "notes",
+    )
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        normalized = _normalize_optional_string(value)
+        if normalized is None:
+            return None
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+
+class LlmCheckpointRegistrationSummary(BaseModel):
+    checkpoint_id: str
+    fingerprint: str
+    registration_path: str
+
+    @field_validator("checkpoint_id", "fingerprint", "registration_path")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+
 class LlmServingIdentity(BaseModel):
     requested_model_lane: str | None = None
     resolved_model_lane: str
@@ -533,6 +702,7 @@ class LlmServingIdentity(BaseModel):
     checkpoint_id: str | None = None
     model_revision: str | None = None
     local_model_path: str | None = None
+    checkpoint_lineage: LlmCheckpointLineage | None = None
 
     @field_validator(
         "resolved_model_lane",
