@@ -1,9 +1,9 @@
 ---
 phase: 13
 slug: phase-10-verification-and-governance-audit-closure
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: automated_complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-04
 ---
 
@@ -41,12 +41,12 @@ created: 2026-04-04
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 13-01-01 | 01 | 1 | LLM-06, OPS-05 | focused regression | `cd materials-discovery && uv run pytest tests/test_llm_campaign_schema.py tests/test_llm_campaign_storage.py tests/test_llm_suggest_core.py tests/test_llm_suggest_cli.py tests/test_llm_campaign_spec.py tests/test_llm_approve_cli.py tests/test_cli.py -x -v` | ✅ | ⬜ pending |
-| 13-01-02 | 01 | 1 | LLM-06, OPS-05 | doc consistency | `git diff --check` | ✅ | ⬜ pending |
-| 13-02-01 | 02 | 2 | LLM-06 | proof matrix | `git diff --check` | ✅ | ⬜ pending |
-| 13-02-02 | 02 | 2 | OPS-05 | proof matrix | `git diff --check` | ✅ | ⬜ pending |
-| 13-03-01 | 03 | 3 | LLM-06, OPS-05 | traceability | `git diff --check` | ✅ | ⬜ pending |
-| 13-03-02 | 03 | 3 | LLM-06, OPS-05 | state handoff | `git diff --check` | ✅ | ⬜ pending |
+| 13-01-01 | 01 | 1 | LLM-06, OPS-05 | focused regression | `cd materials-discovery && uv run pytest tests/test_llm_campaign_schema.py tests/test_llm_campaign_storage.py tests/test_llm_suggest_core.py tests/test_llm_suggest_cli.py tests/test_llm_campaign_spec.py tests/test_llm_approve_cli.py tests/test_cli.py -x -v` | ✅ | ✅ green |
+| 13-01-02 | 01 | 1 | LLM-06, OPS-05 | doc consistency | `git diff --check` | ✅ | ✅ green |
+| 13-02-01 | 02 | 2 | LLM-06 | proof matrix | `git diff --check` | ✅ | ✅ green |
+| 13-02-02 | 02 | 2 | OPS-05 | proof matrix | `git diff --check` | ✅ | ✅ green |
+| 13-03-01 | 03 | 3 | LLM-06, OPS-05 | traceability | `git diff --check` | ✅ | ✅ green |
+| 13-03-02 | 03 | 3 | LLM-06, OPS-05 | state handoff | `git diff --check` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -54,16 +54,17 @@ created: 2026-04-04
 
 ## Wave 0 Requirements
 
-- [ ] `10-VERIFICATION.md` does not exist yet and must be created by this phase
-- [ ] `10-VALIDATION.md` must move from `status: draft` to an audit-ready state
-- [ ] `REQUIREMENTS.md` currently maps `LLM-06` and `OPS-05` to Phase 13 as
-  pending closure work; those rows should only flip after proof exists
-- [ ] Any Phase 13 execution that unexpectedly edits `materials-discovery/`
-  must also update `materials-discovery/Progress.md` per `AGENTS.md`
-- [ ] Focused pytest evidence should stay offline/deterministic and must not
-  require live provider access
-- [ ] The milestone audit should not be rerun until Phases 14 and 15 also close
-  their proof gaps
+- [x] `10-VERIFICATION.md` now exists and closes the Phase 10 proof gap
+- [x] `10-VALIDATION.md` moved from `status: draft` to an audit-ready state
+- [x] `REQUIREMENTS.md` Phase 13 ownership only flipped after proof existed
+- [x] No `materials-discovery/` files changed during Phase 13 execution, so
+  `materials-discovery/Progress.md` did not require an update
+- [x] Focused pytest evidence stayed offline/deterministic and required no live
+  provider access
+- [x] The milestone audit remained deferred until the later closure phases
+  completed
+- [x] This validation artifact was finalized retroactively in Phase 16 to close
+  the remaining documentary tech debt on Phase 13 itself
 
 ---
 
@@ -78,11 +79,11 @@ created: 2026-04-04
 
 ## Validation Sign-Off
 
-- [ ] All tasks have focused automated verification or doc-hygiene checks
-- [ ] Sampling continuity: no 2 consecutive evidence updates without either pytest or doc-hygiene verification
-- [ ] Wave 0 captures the actual Phase 10 audit gap, not unrelated implementation work
-- [ ] No watch-mode or long-running background commands are required
-- [ ] Feedback latency < 180s
-- [ ] `nyquist_compliant: true` set in frontmatter by the end of execution
+- [x] All tasks have focused automated verification or doc-hygiene checks
+- [x] Sampling continuity: no 2 consecutive evidence updates without either pytest or doc-hygiene verification
+- [x] Wave 0 captures the actual Phase 10 audit gap, not unrelated implementation work
+- [x] No watch-mode or long-running background commands are required
+- [x] Feedback latency < 180s
+- [x] `nyquist_compliant: true` set in frontmatter by the end of execution
 
-**Approval:** pending
+**Approval:** automated verification complete

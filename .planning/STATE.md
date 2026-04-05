@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-current_phase: 16
-current_phase_name: phase-13-self-verification-and-validation-closure
+current_phase: 17
+current_phase_name: phase-14-self-verification-and-validation-closure
 current_plan: 0
 status: ready_to_plan
-stopped_at: Tech-debt closure phases created from v1.1 audit
-last_updated: "2026-04-05T01:55:00.000Z"
-last_activity: 2026-04-05 -- Created Phases 16-18 to close remaining v1.1 tech debt
+stopped_at: Phase 16 complete
+last_updated: "2026-04-05T02:12:00.000Z"
+last_activity: 2026-04-05 -- Phase 16 closed the remaining Phase 13 tech debt; next step Phase 17
 progress:
   total_phases: 9
-  completed_phases: 6
-  total_plans: 18
-  completed_plans: 18
-  percent: 67
+  completed_phases: 7
+  total_plans: 21
+  completed_plans: 21
+  percent: 78
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-03)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Milestone v1.1 tech-debt closure after the successful audit
+**Current focus:** Milestone v1.1 tech-debt closure after Phase 16 completed
 
 ## Current Position
 
-Current Phase: 16
-Current Phase Name: phase-13-self-verification-and-validation-closure
+Current Phase: 17
+Current Phase Name: phase-14-self-verification-and-validation-closure
 Total Phases: 9
 Current Plan: 0
 Total Plans in Phase: 0
-Phase: 16 of 18
+Phase: 17 of 18
 Plan: 0 of 0
-Status: Tech-debt closure phases created; Phase 16 ready to plan
-Last activity: 2026-04-05 -- Created Phases 16-18 to close remaining v1.1 tech debt
-Last Activity Description: Roadmap updated to route the post-audit documentary cleanup through three focused self-verification phases
+Status: Phase 16 complete; Phase 17 ready to plan
+Last activity: 2026-04-05 -- Phase 16 closed the remaining Phase 13 tech debt; next step Phase 17
+Last Activity Description: Phase 13 is now self-verifying, and the milestone handoff has moved to the Phase 14 cleanup phase
 
-Progress: [███████░░░] 67%
+Progress: [████████░░] 78%
 
 ## Performance Metrics
 
@@ -181,6 +181,7 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 13-phase-10-verification-and-governance-audit-closure]: Close the Phase 10 proof gap by finalizing 10-VALIDATION.md, creating 10-VERIFICATION.md, and restoring LLM-06 / OPS-05 traceability.
 - [Phase 15-phase-12-replay-and-operator-workflow-audit-closure]: Close the final v1.1 proof gap by restoring the Phase 12 summary chain, creating 12-VERIFICATION.md, and returning the milestone to ready_for_milestone_audit.
 - [Milestone v1.1 tech-debt closure]: Close the remaining documentary debt through Phases 16-18 rather than archiving the milestone with caveats.
+- [Phase 16-phase-13-self-verification-and-validation-closure]: Finalize 13-VALIDATION.md, create 13-VERIFICATION.md, and keep the cleanup loop from recurring.
 
 ### Pending Todos
 
@@ -192,6 +193,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T01:55:00Z
-Stopped at: Tech-debt closure phases created from v1.1 audit
-Resume file: .planning/phases/16-phase-13-self-verification-and-validation-closure/README.md
+Last session: 2026-04-05T02:12:00Z
+Stopped at: Phase 16 complete
+Resume file: .planning/phases/16-phase-13-self-verification-and-validation-closure/16-03-SUMMARY.md
