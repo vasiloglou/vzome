@@ -21,20 +21,25 @@ Archive references:
 
 ## Current Milestone
 
-There is no active milestone right now.
+`v1.2` — Local and Specialized LLM Serving MVP
 
-The most recent milestone, `v1.1`, is archived. The next milestone should be
-opened explicitly once new requirements are chosen.
+**Goal:** make local and specialized materials-model lanes real execution
+targets inside the shipped operator-governed LLM workflow, without weakening
+the no-DFT, file-backed, approval-gated pipeline.
 
-**Recommended next step:** `$gsd-new-milestone`
+**Target features:**
+- local serving path for `llm-generate`, campaign launch, and replay
+- first-class `general_purpose` vs `specialized_materials` lane execution
+- comparative operator workflow for hosted vs local vs specialized lanes
 
 ## Later Milestone Candidates
 
-- broaden source coverage or deepen source QA
-- add local or fine-tuned model serving only after the closed-loop campaign
-  workflow is stable
-- expand campaign automation only after operator-governed replay and comparison
-  are proven useful
+- broaden source coverage or deepen source QA after the LLM serving surface is
+  stable
+- expand campaign automation only after hosted/local/specialized serving paths
+  are proven reliable
+- add larger training and checkpoint-management automation only after serving
+  comparison workflows are credible
 
 ## What This Is
 
@@ -89,8 +94,12 @@ instead of living in separate prototypes.
 
 ### Active
 
-- No active milestone requirements yet.
-- Start the next requirement set with `$gsd-new-milestone`.
+- Add local serving as a first-class LLM execution target inside the shipped
+  campaign workflow.
+- Turn specialized materials-model lanes into real workflow behavior, not just
+  metadata on proposals and campaign specs.
+- Give operators a reproducible way to compare hosted, local, and specialized
+  serving paths before any future autonomous execution milestone.
 
 ### Out of Scope
 
@@ -149,6 +158,7 @@ instead of living in separate prototypes.
 | Defer large-model training until corpus + evaluation are ready | Prevents premature spending and noisy benchmarks | ✓ Good |
 | Start Project 3 v1.1 with closed-loop campaign execution instead of local serving | The dry-run suggestion surface is already shipped, and a governed execution loop is the next leverage point | ✓ Good |
 | Keep the next milestone operator-governed and file-backed | Approval, replay, and provenance matter more right now than additional infrastructure | ✓ Good |
+| Start Project 3 v1.2 with local and specialized serving rather than autonomy | The closed-loop campaign workflow is now stable enough to expand execution depth safely | ✓ Good |
 
 ## Evolution
 
@@ -168,4 +178,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after archiving milestone v1.1*
+*Last updated: 2026-04-05 after starting milestone v1.2*
