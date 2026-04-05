@@ -214,11 +214,112 @@ supporting summary artifacts the audit expects.
 
 - This is a gap-closure phase created directly from the v1.1 milestone audit.
 
+## Phase 16: Phase 13 Self-Verification and Validation Closure
+
+**Goal:** remove the remaining documentary tech debt in Phase 13 by making the
+Phase 13 closure work self-verifying and fully Nyquist-complete.
+
+**Deliverables**
+
+- `13-VERIFICATION.md` with explicit proof that Phase 13 restored the Phase 10
+  audit chain correctly
+- finalized `13-VALIDATION.md` with complete verification status and closure
+  evidence
+- audit-ready evidence map back to `13-01-SUMMARY.md`, `13-02-SUMMARY.md`, and
+  `13-03-SUMMARY.md`
+- milestone-closeout note showing that the remaining v1.1 governance debt is
+  reduced without reopening product behavior
+
+**Primary requirements**
+
+- None; audit tech-debt closure only
+
+**Success criteria**
+
+1. Phase 13 has a standalone verification report instead of relying only on
+   summary artifacts.
+2. `13-VALIDATION.md` is finalized and no longer marked as draft.
+3. The audit can describe Phase 13 as self-verifying rather than documentary
+   closeout only.
+4. No shipped Phase 10 requirement behavior is re-opened or regressed while
+   closing this debt.
+
+**Notes**
+
+- This phase closes residual tech debt from the successful v1.1 audit.
+
+## Phase 17: Phase 14 Self-Verification and Validation Closure
+
+**Goal:** remove the remaining documentary tech debt in Phase 14 by making the
+Phase 14 closure work self-verifying and fully Nyquist-complete.
+
+**Deliverables**
+
+- `14-VERIFICATION.md` with explicit proof that Phase 14 restored the Phase 11
+  audit chain correctly
+- finalized `14-VALIDATION.md` with complete verification status and closure
+  evidence
+- audit-ready evidence map back to `14-01-SUMMARY.md`, `14-02-SUMMARY.md`, and
+  `14-03-SUMMARY.md`
+- milestone-closeout note showing that the remaining v1.1 launch/lineage debt
+  is reduced without reopening shipped functionality
+
+**Primary requirements**
+
+- None; audit tech-debt closure only
+
+**Success criteria**
+
+1. Phase 14 has a standalone verification report instead of relying only on
+   summary artifacts.
+2. `14-VALIDATION.md` is finalized and no longer marked as draft.
+3. The audit can describe Phase 14 as self-verifying rather than documentary
+   closeout only.
+4. No shipped Phase 11 behavior is re-opened or regressed while closing this
+   debt.
+
+**Notes**
+
+- This phase closes residual tech debt from the successful v1.1 audit.
+
+## Phase 18: Phase 15 Self-Verification Closure
+
+**Goal:** remove the final documentary tech debt in Phase 15 by giving the
+Phase 15 closure work its own standalone verification report.
+
+**Deliverables**
+
+- `15-VERIFICATION.md` with explicit proof that Phase 15 restored the Phase 12
+  audit chain correctly
+- audit-ready evidence map back to `15-01-SUMMARY.md`, `15-02-SUMMARY.md`, and
+  `15-03-SUMMARY.md`
+- consistency check between `15-VERIFICATION.md` and finalized
+  `15-VALIDATION.md`
+- final milestone-closeout note showing that no residual v1.1 documentary debt
+  remains
+
+**Primary requirements**
+
+- None; audit tech-debt closure only
+
+**Success criteria**
+
+1. Phase 15 has a standalone verification report instead of relying only on
+   summary artifacts.
+2. Phase 15 verification and validation agree on the closure evidence.
+3. The audit can describe Phase 15 as fully self-verifying.
+4. No shipped Phase 12 replay/comparison/operator behavior is re-opened or
+   regressed while closing this debt.
+
+**Notes**
+
+- This phase closes the last residual tech debt from the successful v1.1 audit.
+
 ## Workstream View
 
 ### Project C: Material Design Based on LLM Training and Inference
 
-Owns Phases 10-15 in `v1.1`.
+Owns Phases 10-18 in `v1.1`.
 
 Success condition:
 
@@ -227,6 +328,8 @@ Success condition:
   runs and measure whether they improve downstream discovery outcomes
 - the full v1.1 closed-loop workflow is also formally audit-ready, with phase
   verification and requirement traceability aligned to the delivered behavior
+- the residual documentary tech debt in the v1.1 audit-closure phases is also
+  eliminated, so the milestone can be archived without caveats
 
 ## Archive References
 
@@ -242,3 +345,9 @@ Success condition:
    Close the missing Phase 11 launch and lineage verification gap.
 3. **Phase 15**
    Close the missing Phase 12 replay and operator-workflow verification gap.
+4. **Phase 16**
+   Close the remaining self-verification debt in Phase 13.
+5. **Phase 17**
+   Close the remaining self-verification debt in Phase 14.
+6. **Phase 18**
+   Close the remaining self-verification debt in Phase 15.
