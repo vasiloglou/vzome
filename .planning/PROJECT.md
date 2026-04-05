@@ -25,12 +25,15 @@ Archive references:
 
 ## Current Milestone
 
-There is no active milestone right now.
+`v1.3` — Zomic-Native Local Checkpoint MVP
 
-The most recent milestone, `v1.2`, is archived. The next milestone should be
-opened explicitly once new requirements are chosen.
+**Goal:** make at least one Zomic-adapted local checkpoint a real, auditable,
+benchmarkable execution target inside the shipped operator-governed workflow.
 
-**Recommended next step:** `$gsd-new-milestone`
+**Target features:**
+- checkpoint registration and lineage for adapted local model lanes
+- adapted-checkpoint execution through `llm-generate`, `llm-launch`, and replay
+- adapted-vs-baseline benchmark workflow and operator rollback guidance
 
 ## Later Milestone Candidates
 
@@ -38,10 +41,8 @@ opened explicitly once new requirements are chosen.
   stable
 - expand campaign automation only after hosted/local/specialized serving paths
   are proven reliable in operator hands
-- add Zomic-native local generation adaptation or fine-tuned checkpoints now
-  that hosted/local/specialized serving baselines are benchmarked cleanly
 - add larger training and checkpoint-management automation only after serving
-  comparison workflows are credible
+  comparison workflows and the first adapted checkpoint lane are credible
 
 ## What This Is
 
@@ -99,8 +100,14 @@ instead of living in separate prototypes.
 
 ### Active
 
-- No active milestone requirements yet.
-- Start the next requirement set with `$gsd-new-milestone`.
+- Add the first Zomic-adapted local checkpoint lane as a reproducible,
+  file-backed serving target rather than leaving adaptation as an external
+  experiment.
+- Preserve the shipped campaign, replay, compare, and serving-benchmark
+  workflow when adapted checkpoints are introduced.
+- Give operators clear checkpoint registration, smoke-test, rollback, and
+  adapted-vs-baseline comparison guidance before any broader training
+  automation milestone.
 
 ### Out of Scope
 
@@ -161,6 +168,7 @@ instead of living in separate prototypes.
 | Keep the next milestone operator-governed and file-backed | Approval, replay, and provenance matter more right now than additional infrastructure | ✓ Good |
 | Start Project 3 v1.2 with local and specialized serving rather than autonomy | The closed-loop campaign workflow is now stable enough to expand execution depth safely | ✓ Good |
 | Archive milestone v1.2 after the proof-chain closure phases | The serving expansion is now shipped, benchmarked, and fully audited | ✓ Good |
+| Start Project 3 v1.3 with Zomic-adapted local checkpoints | The serving surface is now stable enough to judge adapted local generation honestly | ✓ Good |
 
 ## Evolution
 
@@ -180,4 +188,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after archiving milestone v1.2*
+*Last updated: 2026-04-05 after starting milestone v1.3*
