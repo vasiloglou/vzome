@@ -61,6 +61,9 @@ created: 2026-04-05
 - [ ] `materials-discovery/tests/test_llm_serving_benchmark_cli.py` — cover `--smoke-only`, normal benchmark execution, and human-readable recommendation output
 - [ ] `materials-discovery/tests/test_real_mode_pipeline.py` — cover one real serving benchmark proof path offline with monkeypatched providers
 - [ ] All serving-benchmark tests must remain offline and deterministic; no live hosted or local model server is required in CI
+- [ ] `load_serving_benchmark_spec(...)` must reject mixed-system benchmark specs by comparing each target system config against the shared acceptance-pack context
+- [ ] `llm_evaluate` benchmark targets must keep their batch or candidate source aligned with the shared acceptance-pack context; unrelated slices must fail clearly
+- [ ] Benchmark summaries must leave role-specific missing metrics explicit rather than fabricating parity between generation and evaluation targets
 - [ ] Any Phase 21 execution that changes `materials-discovery/` must update `materials-discovery/Progress.md` per repo policy
 
 *Existing pytest infrastructure covers the repo. Wave 0 is about the new serving-benchmark workflow seams, not test tooling installation.*
@@ -87,4 +90,3 @@ created: 2026-04-05
 - [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending execution
-
