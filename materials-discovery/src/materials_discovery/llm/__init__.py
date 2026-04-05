@@ -42,6 +42,7 @@ from materials_discovery.llm.pipeline_benchmark import (
 from materials_discovery.llm.prompting import build_generation_prompt, load_seed_zomic_text
 from materials_discovery.llm.serving_benchmark import (
     build_serving_benchmark_summary,
+    execute_serving_benchmark,
     load_serving_benchmark_spec,
     run_serving_smoke_check,
 )
@@ -249,6 +250,7 @@ __all__ = [
     "find_prior_campaign_launch",
     "grade_corpus_example",
     "evaluate_llm_candidates",
+    "execute_serving_benchmark",
     "generate_llm_candidates",
     "LlmAdapter",
     "LlmAcceptanceBenchmarkInput",

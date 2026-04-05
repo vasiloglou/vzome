@@ -111,6 +111,7 @@ from materials_discovery.llm.campaigns import (
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
 from materials_discovery.llm.launch import resolve_campaign_launch, resolve_serving_lane
+from materials_discovery.llm.serving_benchmark import execute_serving_benchmark
 from materials_discovery.llm.compare import (
     build_campaign_comparison,
     build_campaign_outcome_snapshot,
@@ -137,6 +138,8 @@ from materials_discovery.llm.storage import (
     llm_campaign_outcome_snapshot_path,
     llm_campaign_resolved_launch_path,
     llm_campaign_spec_path,
+    llm_serving_benchmark_smoke_path,
+    llm_serving_benchmark_summary_path,
 )
 from materials_discovery.llm.suggest import write_llm_suggestions
 from materials_discovery.llm.runtime import resolve_llm_adapter, validate_llm_adapter_ready
@@ -1549,6 +1552,37 @@ def llm_compare_command(
         typer.echo(f"Comparison artifact: {comparison_path}")
     except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
         _emit_error(f"llm-compare failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-serving-benchmark")
+def llm_serving_benchmark_command(
+    spec: Path = typer.Option(..., "--spec", exists=False, dir_okay=False),
+    smoke_only: bool = typer.Option(False, "--smoke-only"),
+    out: Path | None = typer.Option(None, "--out", exists=False, dir_okay=False),
+) -> None:
+    """Run a shared-context serving benchmark across hosted, local, and specialized targets."""
+    try:
+        summary = execute_serving_benchmark(spec, smoke_only=smoke_only, out_path=out)
+        if smoke_only:
+            for target in summary.targets:
+                for smoke in target.smoke_checks:
+                    typer.echo(f"{target.target_id} [{smoke.role}] {smoke.status}")
+            typer.echo(
+                "Smoke artifact: "
+                f"{llm_serving_benchmark_smoke_path(summary.benchmark_id, root=workspace_root())}"
+            )
+            return
+
+        for line in summary.recommendation_lines:
+            typer.echo(line)
+        summary_path = out or llm_serving_benchmark_summary_path(
+            summary.benchmark_id,
+            root=workspace_root(),
+        )
+        typer.echo(f"Benchmark summary: {summary_path}")
+    except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
+        _emit_error(f"llm-serving-benchmark failed: {exc}")
         raise typer.Exit(code=2)
 
 

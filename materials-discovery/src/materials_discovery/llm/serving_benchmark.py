@@ -4,7 +4,12 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from materials_discovery.common.io import load_json_object, load_yaml, workspace_root
+from materials_discovery.common.io import (
+    load_json_object,
+    load_yaml,
+    workspace_root,
+    write_json_object,
+)
 from materials_discovery.common.schema import SystemConfig
 from materials_discovery.llm.launch import build_serving_identity, resolve_serving_lane
 from materials_discovery.llm.runtime import resolve_llm_adapter, validate_llm_adapter_ready
@@ -15,6 +20,10 @@ from materials_discovery.llm.schema import (
     LlmServingBenchmarkTarget,
     LlmServingBenchmarkTargetResult,
     LlmServingSmokeCheck,
+)
+from materials_discovery.llm.storage import (
+    llm_serving_benchmark_smoke_path,
+    llm_serving_benchmark_summary_path,
 )
 
 
@@ -212,3 +221,59 @@ def build_serving_benchmark_summary(
         recommendation_lines=recommendation_lines,
         failed_targets=failed_targets,
     )
+
+
+def execute_serving_benchmark(
+    spec_path: Path,
+    *,
+    smoke_only: bool = False,
+    out_path: Path | None = None,
+) -> LlmServingBenchmarkSummary:
+    spec = load_serving_benchmark_spec(spec_path)
+    artifact_root = workspace_root()
+
+    target_results: list[LlmServingBenchmarkTargetResult] = []
+    all_smoke_checks: list[LlmServingSmokeCheck] = []
+    for target in spec.targets:
+        smoke_checks = run_serving_smoke_check(target, root=artifact_root)
+        all_smoke_checks.extend(smoke_checks)
+        execution_latency = None if not smoke_checks else smoke_checks[-1].latency_s
+        target_results.append(
+            LlmServingBenchmarkTargetResult(
+                target_id=target.target_id,
+                label=target.label,
+                workflow_role=target.workflow_role,
+                estimated_cost_usd=target.estimated_cost_usd,
+                operator_friction_tier=target.operator_friction_tier,
+                smoke_checks=smoke_checks,
+                quality_metrics={},
+                execution_latency_s=execution_latency,
+            )
+        )
+
+    smoke_path = llm_serving_benchmark_smoke_path(spec.benchmark_id, root=artifact_root)
+    write_json_object(
+        {
+            "benchmark_id": spec.benchmark_id,
+            "generated_at_utc": _utc_now(),
+            "smoke_checks": [item.model_dump(mode="json") for item in all_smoke_checks],
+        },
+        smoke_path,
+    )
+
+    summary = build_serving_benchmark_summary(spec, target_results)
+    if smoke_only:
+        return summary
+
+    if summary.failed_targets:
+        failed = ", ".join(summary.failed_targets)
+        raise RuntimeError(
+            f"strict smoke failed for {failed}; see {smoke_path}"
+        )
+
+    summary_path = out_path or llm_serving_benchmark_summary_path(
+        spec.benchmark_id,
+        root=artifact_root,
+    )
+    write_json_object(summary.model_dump(mode="json"), summary_path)
+    return summary

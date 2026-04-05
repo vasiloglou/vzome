@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 21 Plan 02 benchmark CLI and strict smoke orchestration | Added the `llm-serving-benchmark` CLI command, wrote typed smoke artifacts before benchmark continuation, enforced exit code 2 on strict smoke failures, and supported summary-path overrides for operator benchmarks |
 | 2026-04-05 | Phase 21 Plan 02 Task 1 RED benchmark CLI tests | Added failing `test_llm_serving_benchmark_cli.py` coverage for smoke-only output, strict smoke failure exit code 2, recommendation printing, and `--out` summary override behavior |
 | 2026-04-05 | Phase 21 Plan 01 serving benchmark smoke and summary helpers | Added offline serving-benchmark core helpers that reuse lane resolution and readiness probes, surface explicit no-fallback smoke failures, and build per-target summaries with fastest/cheapest/lowest-friction recommendations |
 | 2026-04-05 | Phase 21 Plan 01 Task 2 RED benchmark-core tests | Added failing `test_llm_serving_benchmark_core.py` coverage for offline launch and evaluation smoke checks, explicit no-fallback failures, and summary recommendations that keep missing metrics explicit |
@@ -361,6 +362,8 @@
 
 ### 2026-04-05
 
+- 03:12 EDT — Implemented the first Wave 2 benchmark CLI path and turned the new command tests green.
+- `llm-serving-benchmark` now delegates to a typed orchestration entrypoint, always writes the smoke artifact first, stops with exit code 2 on strict smoke failures, and prints concise smoke or recommendation output plus the artifact path operators need next.
 - 03:05 EDT — Started Phase 21 Plan 02 Task 1 in TDD RED mode with new benchmark CLI coverage.
 - The failing CLI contract now locks `llm-serving-benchmark` smoke-only output, strict smoke failure semantics, recommendation-line printing, and `--out` summary override behavior before the command exists.
 - 03:00 EDT — Implemented the Phase 21 serving-benchmark core helpers and turned the new smoke/summary tests green.
