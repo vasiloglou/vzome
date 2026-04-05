@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 21 Plan 01 serving benchmark schema and loader contract | Added typed serving-benchmark models, benchmark storage helpers under `data/benchmarks/llm_serving/`, and a shared-context `load_serving_benchmark_spec(...)` loader that rejects mixed-system benchmark targets before execution |
 | 2026-04-05 | Phase 21 Plan 01 Task 1 RED benchmark schema tests | Added failing `test_llm_serving_benchmark_schema.py` coverage for the shared-context benchmark contract, mixed-system loader rejection, nested serving identity serialization, and new benchmark storage paths before implementing the Phase 21 schema/core layer |
 | 2026-04-05 | Phase 20 full-suite projection metadata normalization | Rounded `projection2zomic` composition metadata deterministically so the inherited PyQCstrc projection regression stays exact-value stable under the expanded full-suite run |
 | 2026-04-05 | Phase 20 Plan 03 Sc-Zn compatibility proof and specialized-lane docs | Added `llm_evaluate` specialized-lane config to `sc_zn_llm_local.yaml`, proved offline `Sc-Zn` launch/replay/compare compatibility with injected specialized evaluation lineage, documented `llm_evaluate.model_lane` plus a concrete OpenAI-compatible specialist endpoint recipe, and kept the Wave 3 real-mode/CLI regressions green |
@@ -357,6 +358,8 @@
 
 ### 2026-04-05
 
+- 03:01 EDT — Implemented the Phase 21 serving-benchmark schema, storage, and loader contract in the `llm` package.
+- The new typed benchmark models now carry shared-context target metadata, nested smoke-check serving identity, deterministic artifact paths under `data/benchmarks/llm_serving/`, and an early mixed-system guard in `load_serving_benchmark_spec(...)`.
 - 02:53 EDT — Started Phase 21 Plan 01 Task 1 in TDD RED mode by adding `tests/test_llm_serving_benchmark_schema.py`.
 - The new failing coverage locks the shared-context benchmark spec, mixed-system acceptance-pack validation, nested serving-identity serialization, and deterministic benchmark storage paths before the new serving-benchmark schema/core layer is implemented.
 - 01:24 EDT — Rounded `projection2zomic` composition metadata deterministically after the Phase 20 full-suite run exposed exact-value float noise in the inherited PyQCstrc regression.

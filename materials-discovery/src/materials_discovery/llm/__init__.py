@@ -40,6 +40,7 @@ from materials_discovery.llm.pipeline_benchmark import (
     write_llm_pipeline_comparison,
 )
 from materials_discovery.llm.prompting import build_generation_prompt, load_seed_zomic_text
+from materials_discovery.llm.serving_benchmark import load_serving_benchmark_spec
 from materials_discovery.llm.specialist import build_specialized_evaluation_payload
 from materials_discovery.llm.launch import (
     materialize_campaign_seed,
@@ -131,6 +132,11 @@ from materials_discovery.llm.schema import (
     LlmRunManifest,
     LlmSeedMotifVariationActionData,
     LlmServingIdentity,
+    LlmServingBenchmarkSpec,
+    LlmServingBenchmarkSummary,
+    LlmServingBenchmarkTarget,
+    LlmServingBenchmarkTargetResult,
+    LlmServingSmokeCheck,
     LlmSuggestion,
     LlmSuggestionItem,
     ReleaseTier,
@@ -165,6 +171,9 @@ from materials_discovery.llm.storage import (
     llm_eval_set_dir,
     llm_eval_set_manifest_path,
     llm_eval_set_path,
+    llm_serving_benchmark_dir,
+    llm_serving_benchmark_smoke_path,
+    llm_serving_benchmark_summary_path,
     materials_corpus_path,
     syntax_corpus_path,
 )
@@ -267,12 +276,18 @@ __all__ = [
     "LlmRunManifest",
     "LlmSeedMotifVariationActionData",
     "LlmServingIdentity",
+    "LlmServingBenchmarkSpec",
+    "LlmServingBenchmarkSummary",
+    "LlmServingBenchmarkTarget",
+    "LlmServingBenchmarkTargetResult",
+    "LlmServingSmokeCheck",
     "LlmSuggestion",
     "LlmSuggestionItem",
     "load_acceptance_benchmark_input",
     "load_campaign_launch_bundle",
     "load_eval_set",
     "load_seed_zomic_text",
+    "load_serving_benchmark_spec",
     "llm_artifact_root_from_acceptance_pack_path",
     "llm_acceptance_dir",
     "llm_acceptance_approval_path",
@@ -296,6 +311,9 @@ __all__ = [
     "llm_eval_set_dir",
     "llm_eval_set_manifest_path",
     "llm_eval_set_path",
+    "llm_serving_benchmark_dir",
+    "llm_serving_benchmark_smoke_path",
+    "llm_serving_benchmark_summary_path",
     "MockLlmAdapter",
     "AnthropicApiLlmAdapter",
     "OpenAICompatLlmAdapter",

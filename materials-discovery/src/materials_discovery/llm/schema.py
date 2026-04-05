@@ -1705,6 +1705,176 @@ class LlmCampaignComparisonResult(BaseModel):
         return self
 
 
+class LlmServingBenchmarkTarget(BaseModel):
+    target_id: str
+    label: str
+    workflow_role: Literal["campaign_launch", "llm_evaluate"]
+    system_config_path: str
+    campaign_spec_path: str | None = None
+    batch: str | None = None
+    generation_model_lane: CampaignModelLane | None = None
+    evaluation_model_lane: CampaignModelLane | None = None
+    estimated_cost_usd: float
+    operator_friction_tier: Literal["low", "medium", "high"]
+    allow_fallback: bool = False
+    notes: str | None = None
+
+    @field_validator(
+        "target_id",
+        "label",
+        "system_config_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("campaign_spec_path", "batch", "notes")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @model_validator(mode="after")
+    def validate_target_configuration(self) -> LlmServingBenchmarkTarget:
+        if self.estimated_cost_usd < 0.0:
+            raise ValueError("estimated_cost_usd must be >= 0")
+        if self.workflow_role == "campaign_launch" and self.campaign_spec_path is None:
+            raise ValueError("campaign_spec_path is required for campaign_launch targets")
+        if self.workflow_role == "llm_evaluate" and self.batch is None:
+            raise ValueError("batch is required for llm_evaluate targets")
+        if self.generation_model_lane is None and self.evaluation_model_lane is None:
+            raise ValueError(
+                "at least one of generation_model_lane or evaluation_model_lane must be set"
+            )
+        return self
+
+
+class LlmServingSmokeCheck(BaseModel):
+    target_id: str
+    role: Literal["generation", "evaluation"]
+    status: Literal["passed", "failed"]
+    requested_model_lane: CampaignModelLane | None = None
+    resolved_model_lane: CampaignModelLane | None = None
+    resolved_model_lane_source: ResolvedModelLaneSource | None = None
+    serving_identity: LlmServingIdentity | None = None
+    latency_s: float
+    detail: str | None = None
+
+    @field_validator("target_id")
+    @classmethod
+    def validate_target_id(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("detail")
+    @classmethod
+    def normalize_optional_detail(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @model_validator(mode="after")
+    def validate_latency(self) -> LlmServingSmokeCheck:
+        if self.latency_s < 0.0:
+            raise ValueError("latency_s must be >= 0")
+        return self
+
+
+class LlmServingBenchmarkTargetResult(BaseModel):
+    target_id: str
+    label: str
+    workflow_role: Literal["campaign_launch", "llm_evaluate"]
+    estimated_cost_usd: float
+    operator_friction_tier: Literal["low", "medium", "high"]
+    smoke_checks: list[LlmServingSmokeCheck] = Field(default_factory=list)
+    quality_metrics: dict[str, float | bool | None] = Field(default_factory=dict)
+    execution_latency_s: float | None = None
+    launch_summary_path: str | None = None
+    comparison_path: str | None = None
+    evaluate_summary_path: str | None = None
+    summary_lines: list[str] = Field(default_factory=list)
+
+    @field_validator("target_id", "label")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator(
+        "launch_summary_path",
+        "comparison_path",
+        "evaluate_summary_path",
+    )
+    @classmethod
+    def normalize_optional_paths(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("summary_lines")
+    @classmethod
+    def normalize_summary_lines(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("quality_metrics")
+    @classmethod
+    def validate_quality_metrics(
+        cls, value: dict[str, float | bool | None]
+    ) -> dict[str, float | bool | None]:
+        out: dict[str, float | bool | None] = {}
+        for key, metric in value.items():
+            normalized_key = _require_non_blank_string(key)
+            if normalized_key not in OUTCOME_METRIC_KEYS:
+                raise ValueError(f"unsupported quality metric key: {normalized_key}")
+            if metric is not None and not isinstance(metric, (bool, float, int)):
+                raise ValueError("quality_metrics values must be float, bool, or None")
+            if isinstance(metric, int) and not isinstance(metric, bool):
+                out[normalized_key] = float(metric)
+            else:
+                out[normalized_key] = metric
+        return out
+
+    @model_validator(mode="after")
+    def validate_result_metrics(self) -> LlmServingBenchmarkTargetResult:
+        if self.estimated_cost_usd < 0.0:
+            raise ValueError("estimated_cost_usd must be >= 0")
+        if self.execution_latency_s is not None and self.execution_latency_s < 0.0:
+            raise ValueError("execution_latency_s must be >= 0")
+        return self
+
+
+class LlmServingBenchmarkSummary(BaseModel):
+    benchmark_id: str
+    acceptance_pack_path: str
+    generated_at_utc: str
+    targets: list[LlmServingBenchmarkTargetResult] = Field(default_factory=list)
+    recommendation_lines: list[str] = Field(default_factory=list)
+    failed_targets: list[str] = Field(default_factory=list)
+
+    @field_validator("benchmark_id", "acceptance_pack_path", "generated_at_utc")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("recommendation_lines", "failed_targets")
+    @classmethod
+    def normalize_string_fields(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+
+class LlmServingBenchmarkSpec(BaseModel):
+    benchmark_id: str
+    acceptance_pack_path: str
+    targets: list[LlmServingBenchmarkTarget] = Field(default_factory=list)
+
+    @field_validator("benchmark_id", "acceptance_pack_path")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @model_validator(mode="after")
+    def validate_targets(self) -> LlmServingBenchmarkSpec:
+        if len(self.targets) < 2:
+            raise ValueError("serving benchmark spec must include at least two targets")
+        target_ids = [target.target_id for target in self.targets]
+        if len(set(target_ids)) != len(target_ids):
+            raise ValueError("serving benchmark spec must use unique target_id values")
+        return self
+
+
 from materials_discovery.common.schema import LlmEvaluateSummary
 
 LlmEvaluateSummary.model_rebuild(

@@ -106,6 +106,23 @@ def llm_acceptance_approval_path(
     return llm_acceptance_approvals_dir(pack_id, root) / f"{normalized_approval_id}.json"
 
 
+def llm_serving_benchmark_dir(benchmark_id: str, root: Path | None = None) -> Path:
+    normalized_benchmark_id = _require_artifact_id(benchmark_id, "benchmark_id")
+    return _artifact_root(root) / "data" / "benchmarks" / "llm_serving" / normalized_benchmark_id
+
+
+def llm_serving_benchmark_smoke_path(
+    benchmark_id: str, root: Path | None = None
+) -> Path:
+    return llm_serving_benchmark_dir(benchmark_id, root) / "smoke_checks.json"
+
+
+def llm_serving_benchmark_summary_path(
+    benchmark_id: str, root: Path | None = None
+) -> Path:
+    return llm_serving_benchmark_dir(benchmark_id, root) / "benchmark_summary.json"
+
+
 def llm_campaign_dir(campaign_id: str, root: Path | None = None) -> Path:
     normalized_campaign_id = _require_artifact_id(campaign_id, "campaign_id")
     return _artifact_root(root) / "data" / "llm_campaigns" / normalized_campaign_id
