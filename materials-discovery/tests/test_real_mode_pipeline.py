@@ -1010,6 +1010,74 @@ def test_real_mode_llm_serving_benchmark_compares_hosted_local_and_specialized_t
 
 
 @pytest.mark.integration
+def test_real_mode_llm_serving_benchmark_rejects_misaligned_evaluate_batch_before_execution(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    runner = CliRunner()
+    repo_workspace = Path(__file__).resolve().parents[1]
+    artifact_workspace = tmp_path / "workspace"
+    local_config_path = repo_workspace / "configs" / "systems" / "al_cu_fe_llm_local.yaml"
+    hosted_config_path = _write_hosted_llm_config(tmp_path, base_config_path=local_config_path)
+    acceptance_pack_path = _write_llm_acceptance_pack(artifact_workspace, system="Al-Cu-Fe")
+
+    (tmp_path / "local_blocked").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "hosted_blocked").mkdir(parents=True, exist_ok=True)
+    local_spec_path = _write_llm_campaign_spec(tmp_path / "local_blocked", local_config_path)
+    hosted_spec_path = _write_llm_campaign_spec(tmp_path / "hosted_blocked", hosted_config_path)
+    benchmark_spec_path = _write_serving_benchmark_spec(
+        tmp_path,
+        benchmark_id="al_cu_fe_serving_bad_batch",
+        acceptance_pack_path=acceptance_pack_path,
+        hosted_config_path=hosted_config_path,
+        hosted_spec_path=hosted_spec_path,
+        local_config_path=local_config_path,
+        local_spec_path=local_spec_path,
+        evaluate_batch="foreign_slice",
+    )
+
+    monkeypatch.setattr("materials_discovery.cli.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr(
+        "materials_discovery.llm.serving_benchmark.workspace_root",
+        lambda: artifact_workspace,
+    )
+    monkeypatch.setattr(
+        "materials_discovery.llm.serving_benchmark.validate_llm_adapter_ready",
+        lambda adapter, **kwargs: None,
+    )
+
+    executed = {"launch": 0, "evaluate": 0}
+
+    def _should_not_launch(*args, **kwargs):
+        del args, kwargs
+        executed["launch"] += 1
+        raise AssertionError("launch target should not execute for a misaligned batch")
+
+    def _should_not_evaluate(*args, **kwargs):
+        del args, kwargs
+        executed["evaluate"] += 1
+        raise AssertionError("evaluate target should not execute for a misaligned batch")
+
+    monkeypatch.setattr(
+        "materials_discovery.llm.serving_benchmark._execute_launch_target",
+        _should_not_launch,
+    )
+    monkeypatch.setattr(
+        "materials_discovery.llm.serving_benchmark._execute_evaluate_target",
+        _should_not_evaluate,
+    )
+
+    result = runner.invoke(
+        app,
+        ["llm-serving-benchmark", "--spec", str(benchmark_spec_path)],
+    )
+
+    assert result.exit_code == 2
+    assert "shared acceptance-pack context" in result.stderr
+    assert executed == {"launch": 0, "evaluate": 0}
+
+
+@pytest.mark.integration
 def test_real_mode_end_to_end_pipeline_artifacts_with_source_registry(tmp_path: Path) -> None:
     runner = CliRunner()
     workspace = Path(__file__).resolve().parents[1]

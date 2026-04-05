@@ -316,16 +316,25 @@ def resolve_campaign_launch(
     campaign_spec_path: Path,
     launch_id: str,
     artifact_root: Path | None = None,
+    requested_model_lane_override: str | None = None,
 ) -> tuple[SystemConfig, LlmCampaignResolvedLaunch]:
     if config.llm_generate is None:
         raise ValueError("config.llm_generate must be configured for campaign launch")
 
     launch_root = artifact_root.resolve() if artifact_root is not None else workspace_root()
     launch_dir = llm_campaign_launch_dir(spec.campaign_id, launch_id, root=launch_root)
-    requested_lanes, resolved_lane, lane_config, lane_source = resolve_campaign_model_lane(
-        spec,
-        config,
-    )
+    if requested_model_lane_override is not None:
+        resolved_lane, lane_config, lane_source = resolve_serving_lane(
+            requested_model_lane_override,
+            config.llm_generate,
+            config.backend,
+        )
+        requested_lanes = [requested_model_lane_override]
+    else:
+        requested_lanes, resolved_lane, lane_config, lane_source = resolve_campaign_model_lane(
+            spec,
+            config,
+        )
     prompt_deltas = _resolved_prompt_deltas(spec)
     composition_bounds = _resolved_composition_bounds(spec, config)
     resolved_seed = materialize_campaign_seed(spec, config, launch_dir)
