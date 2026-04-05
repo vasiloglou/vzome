@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 21 Plan 03 Task 1 RED benchmark example-config tests | Added failing `test_real_mode_pipeline.py` coverage that locks the committed hosted config plus Al-Cu-Fe and Sc-Zn serving-benchmark example specs before adding the operator-facing benchmark files |
 | 2026-04-05 | Phase 21 Plan 02 serving benchmark execution proof | Reused the shipped launch and evaluation flows inside `llm-serving-benchmark`, recorded standard launch/comparison and evaluation summary artifacts per target, rejected misaligned evaluation batches before execution, and kept the combined Wave 2 verification green at `15 passed` |
 | 2026-04-05 | Phase 21 Plan 02 Task 2 RED benchmark integration proof | Added failing offline `test_real_mode_pipeline.py` coverage for one shared-context serving benchmark spanning hosted launch, local launch, and specialized evaluation targets while preserving on-disk campaign specs |
 | 2026-04-05 | Phase 21 Plan 02 benchmark CLI and strict smoke orchestration | Added the `llm-serving-benchmark` CLI command, wrote typed smoke artifacts before benchmark continuation, enforced exit code 2 on strict smoke failures, and supported summary-path overrides for operator benchmarks |
@@ -364,6 +365,8 @@
 
 ### 2026-04-05
 
+- 03:19 EDT — Started Phase 21 Plan 03 Task 1 in TDD RED mode with repo-level benchmark example coverage.
+- The new failing `test_real_mode_pipeline.py` regression locks the committed hosted config plus the Al-Cu-Fe and Sc-Zn serving-benchmark example specs, including the shared-context evaluation slice and thinner second-system compatibility expectations.
 - 03:14 EDT — Closed Phase 21 Plan 02 Task 2 by wiring the real serving-benchmark execution proof through the shipped launch and evaluation paths.
 - `llm-serving-benchmark` now reuses `resolve_campaign_launch()` with a benchmark-only lane override for launch targets, writes standard launch/comparison artifacts back into benchmark results, reuses `evaluate_llm_candidates()` for specialized evaluation targets, and rejects misaligned evaluation batches before any target execution begins.
 - Focused Wave 2 verification passed with `15 passed` across `tests/test_llm_serving_benchmark_cli.py` and `tests/test_real_mode_pipeline.py`, including the new shared-context misalignment regression.

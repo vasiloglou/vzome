@@ -22,6 +22,7 @@ from materials_discovery.llm.storage import (
     llm_campaign_comparison_path,
     llm_campaign_outcome_snapshot_path,
 )
+from materials_discovery.llm.serving_benchmark import load_serving_benchmark_spec
 
 
 @pytest.mark.integration
@@ -417,6 +418,86 @@ def _write_serving_benchmark_spec(
         encoding="utf-8",
     )
     return spec_path
+
+
+def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
+    tmp_path: Path,
+) -> None:
+    workspace = Path(__file__).resolve().parents[1]
+    hosted_config_path = workspace / "configs" / "systems" / "al_cu_fe_llm_hosted.yaml"
+    local_config_path = workspace / "configs" / "systems" / "al_cu_fe_llm_local.yaml"
+    sc_zn_local_config_path = workspace / "configs" / "systems" / "sc_zn_llm_local.yaml"
+    al_benchmark_example = workspace / "configs" / "llm" / "al_cu_fe_serving_benchmark.yaml"
+    sc_benchmark_example = workspace / "configs" / "llm" / "sc_zn_serving_benchmark.yaml"
+
+    hosted_config = SystemConfig.model_validate(load_yaml(hosted_config_path))
+    assert hosted_config.backend.llm_adapter == "anthropic_api_v1"
+    assert hosted_config.backend.llm_provider == "anthropic"
+    assert hosted_config.backend.llm_model == "hosted-general-placeholder"
+    assert hosted_config.llm_generate is not None
+    assert hosted_config.llm_generate.max_attempts == 2
+
+    al_acceptance_pack_path = _write_llm_acceptance_pack(tmp_path / "al_workspace", system="Al-Cu-Fe")
+    hosted_campaign_spec_path = _write_llm_campaign_spec(
+        tmp_path / "al_hosted_campaign",
+        hosted_config_path,
+    )
+    local_campaign_spec_path = _write_llm_campaign_spec(
+        tmp_path / "al_local_campaign",
+        local_config_path,
+    )
+    al_payload = load_yaml(al_benchmark_example)
+    al_payload["acceptance_pack_path"] = str(al_acceptance_pack_path)
+    for target in al_payload["targets"]:
+        target["system_config_path"] = str(
+            (al_benchmark_example.parent / target["system_config_path"]).resolve()
+        )
+        if target["target_id"] == "hosted_generation":
+            target["campaign_spec_path"] = str(hosted_campaign_spec_path)
+        elif target["target_id"] == "local_generation":
+            target["campaign_spec_path"] = str(local_campaign_spec_path)
+    al_runtime_spec_path = tmp_path / "al_runtime_benchmark.yaml"
+    al_runtime_spec_path.write_text(yaml.safe_dump(al_payload, sort_keys=False), encoding="utf-8")
+
+    al_spec = load_serving_benchmark_spec(al_runtime_spec_path)
+    assert al_spec.benchmark_id == "al_cu_fe_serving_v1"
+    assert [target.target_id for target in al_spec.targets] == [
+        "hosted_generation",
+        "local_generation",
+        "specialized_assessment",
+    ]
+    specialized_target = next(
+        target for target in al_spec.targets if target.target_id == "specialized_assessment"
+    )
+    assert specialized_target.workflow_role == "llm_evaluate"
+    assert specialized_target.batch == "top1"
+    assert specialized_target.evaluation_model_lane == "specialized_materials"
+
+    sc_acceptance_pack_path = _write_llm_acceptance_pack(tmp_path / "sc_workspace", system="Sc-Zn")
+    sc_campaign_spec_path = _write_llm_campaign_spec(
+        tmp_path / "sc_local_campaign",
+        sc_zn_local_config_path,
+    )
+    sc_payload = load_yaml(sc_benchmark_example)
+    sc_payload["acceptance_pack_path"] = str(sc_acceptance_pack_path)
+    for target in sc_payload["targets"]:
+        target["system_config_path"] = str(
+            (sc_benchmark_example.parent / target["system_config_path"]).resolve()
+        )
+        if target["workflow_role"] == "campaign_launch":
+            target["campaign_spec_path"] = str(sc_campaign_spec_path)
+    sc_runtime_spec_path = tmp_path / "sc_runtime_benchmark.yaml"
+    sc_runtime_spec_path.write_text(yaml.safe_dump(sc_payload, sort_keys=False), encoding="utf-8")
+
+    sc_spec = load_serving_benchmark_spec(sc_runtime_spec_path)
+    assert sc_spec.benchmark_id == "sc_zn_serving_v1"
+    assert [target.target_id for target in sc_spec.targets] == [
+        "local_generation",
+        "specialized_assessment",
+    ]
+    assert any(
+        target.notes and "compatibility" in target.notes.lower() for target in sc_spec.targets
+    )
 
 
 @pytest.mark.integration
