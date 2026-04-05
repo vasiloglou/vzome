@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 21 Plan 02 Task 1 RED benchmark CLI tests | Added failing `test_llm_serving_benchmark_cli.py` coverage for smoke-only output, strict smoke failure exit code 2, recommendation printing, and `--out` summary override behavior |
 | 2026-04-05 | Phase 21 Plan 01 serving benchmark smoke and summary helpers | Added offline serving-benchmark core helpers that reuse lane resolution and readiness probes, surface explicit no-fallback smoke failures, and build per-target summaries with fastest/cheapest/lowest-friction recommendations |
 | 2026-04-05 | Phase 21 Plan 01 Task 2 RED benchmark-core tests | Added failing `test_llm_serving_benchmark_core.py` coverage for offline launch and evaluation smoke checks, explicit no-fallback failures, and summary recommendations that keep missing metrics explicit |
 | 2026-04-05 | Phase 21 Plan 01 serving benchmark schema and loader contract | Added typed serving-benchmark models, benchmark storage helpers under `data/benchmarks/llm_serving/`, and a shared-context `load_serving_benchmark_spec(...)` loader that rejects mixed-system benchmark targets before execution |
@@ -360,6 +361,8 @@
 
 ### 2026-04-05
 
+- 03:05 EDT — Started Phase 21 Plan 02 Task 1 in TDD RED mode with new benchmark CLI coverage.
+- The failing CLI contract now locks `llm-serving-benchmark` smoke-only output, strict smoke failure semantics, recommendation-line printing, and `--out` summary override behavior before the command exists.
 - 03:00 EDT — Implemented the Phase 21 serving-benchmark core helpers and turned the new smoke/summary tests green.
 - `run_serving_smoke_check(...)` now reuses the shipped serving-lane resolver and readiness probe, records explicit no-fallback failures without dropping operator context, and `build_serving_benchmark_summary(...)` preserves per-target metadata while naming the fastest, cheapest, and lowest-friction targets.
 - 02:58 EDT — Started Phase 21 Plan 01 Task 2 in TDD RED mode with new offline benchmark-core tests.
