@@ -21,6 +21,12 @@ serving surface:
 - operators can compare hosted, local, and specialized lanes inside the same
   governed workflow
 
+Important scope note: off-the-shelf specialized materials models are not
+assumed to understand Zomic notation natively. In this milestone, a
+specialized lane may prove its value through generation-adjacent reasoning,
+synthesis-aware evaluation, or another workflow role that fits the existing
+contracts honestly.
+
 ## Phase Roadmap
 
 ## Phase 19: Local Serving Runtime and Lane Contracts
@@ -93,6 +99,9 @@ across serving modes.
 - The first specialized lane may be stronger for synthesis-aware assessment than
   for raw Zomic generation; the phase should choose the highest-value supported
   role instead of forcing symmetry between tasks.
+- Zomic-native local generation is a likely follow-on milestone once the team
+  has stable hosted/local/specialized serving baselines and can benchmark any
+  adapted checkpoints responsibly.
 
 ## Phase 21: Comparative Benchmarks and Operator Serving Workflow
 

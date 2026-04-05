@@ -26,6 +26,9 @@ Archive references:
 **Goal:** make local and specialized materials-model lanes real execution
 targets inside the shipped operator-governed LLM workflow, without weakening
 the no-DFT, file-backed, approval-gated pipeline.
+Off-the-shelf specialized materials models are not assumed to understand
+Zomic natively; in `v1.2` they may land first as generation-adjacent or
+evaluation-focused lanes.
 
 **Target features:**
 - local serving path for `llm-generate`, campaign launch, and replay
@@ -38,6 +41,8 @@ the no-DFT, file-backed, approval-gated pipeline.
   stable
 - expand campaign automation only after hosted/local/specialized serving paths
   are proven reliable
+- add Zomic-native local generation adaptation or fine-tuned checkpoints only
+  after hosted/local/specialized serving baselines are benchmarked cleanly
 - add larger training and checkpoint-management automation only after serving
   comparison workflows are credible
 
@@ -97,7 +102,8 @@ instead of living in separate prototypes.
 - Add local serving as a first-class LLM execution target inside the shipped
   campaign workflow.
 - Turn specialized materials-model lanes into real workflow behavior, not just
-  metadata on proposals and campaign specs.
+  metadata on proposals and campaign specs, while allowing those lanes to be
+  generation or evaluation focused.
 - Give operators a reproducible way to compare hosted, local, and specialized
   serving paths before any future autonomous execution milestone.
 

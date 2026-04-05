@@ -18,7 +18,8 @@ reinforce each other instead of living in separate prototypes.
 - [ ] **LLM-15**: The platform can use at least one specialized materials model
   path for a real workflow role, such as synthesis-aware evaluation or
   QC-conditioned generation, while remaining additive to the existing LLM
-  workflow.
+  workflow. This does not assume off-the-shelf specialized models are already
+  Zomic-native.
 
 ### Workflow Integration
 
@@ -48,7 +49,8 @@ reinforce each other instead of living in separate prototypes.
   operator-governed workflow remains reliable with the broader serving surface.
 - **LLM-18**: Add training/fine-tuning automation only after local serving and
   comparative benchmark workflows are stable enough to judge new checkpoints
-  responsibly.
+  responsibly, including Zomic-native local generation adaptation and
+  checkpoint management.
 
 ### Platform Expansion
 
