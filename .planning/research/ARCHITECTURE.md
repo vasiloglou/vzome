@@ -1,31 +1,25 @@
-# Architecture Research: v1.2 Local and Specialized LLM Serving MVP
+# Architecture Research: v1.3 Zomic-Native Local Checkpoint MVP
 
-## Integration points
+## Integration Points
 
-- `materials-discovery/src/materials_discovery/common/schema.py`
-  for lane-aware serving config
-- `materials-discovery/src/materials_discovery/llm/runtime.py`
-  for adapter resolution and provider/local dispatch
-- `materials-discovery/src/materials_discovery/llm/generate.py`
-  for additive execution through the existing generation path
-- `materials-discovery/src/materials_discovery/llm/launch.py`
-  for campaign-spec resolution into serving overlays
-- `materials-discovery/src/materials_discovery/llm/replay.py`
-  and `materials-discovery/src/materials_discovery/llm/benchmark.py`
-  for comparability across serving modes
+- `materials_discovery/common/schema.py`
+- `materials_discovery/llm/schema.py`
+- `materials_discovery/llm/runtime.py`
+- `materials_discovery/llm/generate.py`
+- `materials_discovery/llm/launch.py`
+- `materials_discovery/llm/replay.py`
+- `materials_discovery/llm/serving_benchmark.py`
+- serving config files under `configs/`
 
-## Preferred build order
+## New vs Modified
 
-1. Add local-serving contracts and diagnostics.
-2. Make lane resolution real for manual and campaign-driven runs.
-3. Integrate specialized materials lanes into at least one meaningful workflow
-   role.
-4. Add hosted/local/specialized comparison and operator runbook hardening.
+- new: checkpoint metadata and storage contract
+- new: registration and compatibility validation helpers
+- modified: serving-lane resolution to understand adapted checkpoint identity
+- modified: benchmark/report surfaces to compare adapted vs baseline local lanes
 
-## Architectural guardrails
+## Build Order
 
-- preserve `llm-generate` as the single generation engine
-- preserve `llm-launch` and `llm-replay` as wrappers, not forks
-- keep all new serving metadata additive in manifests and lineage payloads
-- avoid coupling the milestone to one exact serving backend at the contract
-  layer
+1. define checkpoint and lineage contracts
+2. integrate one adapted checkpoint into local generation and campaign launch
+3. benchmark adapted vs baseline and document rollback/operator workflow

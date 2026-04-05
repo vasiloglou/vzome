@@ -1,44 +1,46 @@
-# Research Summary: v1.2 Local and Specialized LLM Serving MVP
+# Research Summary: v1.3 Zomic-Native Local Checkpoint MVP
 
 ## Milestone direction
 
-The strongest next milestone is to expand the shipped closed-loop LLM workflow
-from `mock + one hosted seam` into a real serving surface with local execution
-and specialized materials-model lanes.
+The strongest next milestone after `v1.2` is to make at least one
+Zomic-adapted local checkpoint a real workflow artifact rather than leaving
+adaptation outside the governed serving ladder.
 
 ## Stack additions
 
 - No new top-level platform is required.
 - Stay with Python 3.11, Typer, Pydantic, and file-backed manifests.
-- Add a local serving adapter seam and richer lane-aware runtime metadata under
-  `materials_discovery/llm/`.
+- Extend the existing local-serving lane surface with checkpoint registration,
+  lineage, and compatibility checks.
 
 ## Feature table stakes
 
-- local lane execution for `llm-generate`
-- deterministic lane resolution for hosted vs local vs specialized paths
-- auditable provider/model/checkpoint lineage
-- compatibility with `llm-launch`, `llm-replay`, and `llm-compare`
-- operator-visible smoke tests and benchmark comparisons
+- adapted checkpoint registration with auditable lineage
+- deterministic checkpoint-aware serving identity
+- adapted-checkpoint execution through `llm-generate` and campaign launch
+- adapted-vs-baseline benchmark workflow on one shared context
+- operator-visible smoke tests and rollback guidance
 
 ## Architecture guidance
 
-- Extend the existing `llm/runtime.py`, `llm/launch.py`, `llm/replay.py`, and
-  `common/schema.py` surfaces rather than creating a parallel inference stack.
-- Keep serving mode additive to the current closed-loop workflow.
-- Treat specialized materials models as workflow lanes, not as ad hoc one-off
-  scripts.
+- Extend the existing `llm/schema.py`, `llm/runtime.py`, `llm/generate.py`,
+  `llm/launch.py`, `llm/replay.py`, and serving-benchmark surfaces rather than
+  creating a parallel checkpoint pipeline.
+- Keep adapted checkpoints additive to the current lane model.
+- Treat checkpoint metadata and lineage as first-class storage contracts, not
+  as notes hidden in config comments.
 
 ## Watch out for
 
-- hidden fallback from specialized lanes to generic hosted paths
-- local dependency or endpoint drift that only fails after long runs start
-- weak lineage that loses checkpoint or endpoint identity
-- apples-to-oranges comparisons between hosted and local benchmarks
-- scope creep into autonomous execution or training orchestration
+- weak checkpoint lineage that loses base-model or corpus/eval provenance
+- hidden drift between adapted and baseline local lanes
+- overstating Zomic-native improvement without a shared benchmark context
+- coupling milestone scope to full automated training orchestration too early
+- rollback paths that exist in docs but not in actual lane selection behavior
 
 ## Recommended scope boundary
 
-Ship a credible local/specialized serving MVP now. Defer autonomous campaign
-execution and training automation until operators can compare the expanded lane
-surface confidently.
+Ship one credible adapted-checkpoint MVP now. Defer large-scale training
+automation, automated checkpoint promotion, and autonomous campaign execution
+until operators can compare adapted checkpoints confidently inside the shipped
+workflow.

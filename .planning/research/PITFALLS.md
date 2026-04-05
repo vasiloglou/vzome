@@ -1,22 +1,20 @@
-# Pitfalls Research: v1.2 Local and Specialized LLM Serving MVP
+# Pitfall Research: v1.3 Zomic-Native Local Checkpoint MVP
 
-## Common failure modes
+## Main Risks
 
-- **Config drift:** local endpoint or checkpoint configuration changes after
-  approval, but operators only notice once generation starts.
-- **Silent fallback:** a specialized lane request quietly runs on a generic
-  hosted path.
-- **Weak lineage:** manifests record a lane name but not the actual local model
-  identity, endpoint, or checkpoint.
-- **Unfair comparisons:** hosted and local benchmarks are compared without the
-  same acceptance or benchmark context.
-- **Scope creep:** serving expansion drifts into training automation or
-  autonomous execution before the operator workflow is ready.
+- registering checkpoints without enough provenance to reproduce them later
+- comparing adapted checkpoints against a different benchmark context than the
+  baseline lane
+- treating one adapted checkpoint success as proof that training automation is
+  ready for scale
+- hiding checkpoint incompatibility behind late runtime failures
+- claiming Zomic-native improvement without a concrete validity or
+  compile/conversion acceptance surface
 
-## Prevention strategy
+## Prevention
 
-- fail fast on missing local serving prerequisites
-- record both requested lane and resolved runtime identity
-- benchmark all lanes against the same saved context
-- keep replay strict so local/specialized runs stay reproducible
-- defer autonomy and training work explicitly in the milestone scope
+- make checkpoint lineage mandatory and typed
+- require shared benchmark context for adapted-vs-baseline claims
+- keep training automation explicitly out of scope for this milestone
+- fail early on incompatible registration or load attempts
+- document rollback to baseline lanes as an operator-first workflow
