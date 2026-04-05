@@ -28,21 +28,27 @@ Archive references:
 
 ## Current Milestone
 
-There is no active milestone right now.
+`v1.4` — Adapted Checkpoint Lifecycle and Promotion MVP
 
-The most recent milestone, `v1.3`, is archived. The next milestone should be
-opened explicitly once new requirements are chosen.
+**Goal:** make adapted checkpoints manageable as a small auditable fleet
+instead of isolated one-off artifacts, while preserving the shipped operator
+workflow.
 
-**Recommended next step:** `$gsd-new-milestone`
+**Target features:**
+- file-backed lifecycle state for multiple adapted checkpoints per system
+- promotion, pinning, rollback, and retirement semantics for active checkpoint
+  selection
+- benchmark-backed evidence for comparing candidate checkpoints to the current
+  promoted default
 
 ## Later Milestone Candidates
 
-- broaden source coverage or deepen source QA after the adapted-checkpoint
+- add controlled checkpoint training automation only after lifecycle,
+  promotion, and rollback remain reliable across multiple checkpoints
+- expand campaign automation only after promoted-checkpoint selection is stable
+  in operator hands
+- broaden source coverage or deepen source QA after the checkpoint lifecycle
   workflow is stable
-- expand campaign automation only after adapted local generation remains
-  reliable in operator hands
-- add checkpoint management and training automation only after one
-  adapted-checkpoint lane is proven and benchmarked cleanly
 
 ## What This Is
 
@@ -103,8 +109,12 @@ instead of living in separate prototypes.
 
 ### Active
 
-- No active milestone requirements yet.
-- Start the next requirement set with `$gsd-new-milestone`.
+- Add auditable lifecycle state for more than one adapted checkpoint per
+  system instead of treating registration as a single static endpoint.
+- Make promoted, pinned, and retired checkpoint selection explicit in the
+  existing generation, launch, replay, and benchmark workflow.
+- Give operators safe promotion, rollback, and retirement guidance before
+  adding any automated training or checkpoint farming layer.
 
 ### Out of Scope
 
@@ -167,6 +177,7 @@ instead of living in separate prototypes.
 | Archive milestone v1.2 after the proof-chain closure phases | The serving expansion is now shipped, benchmarked, and fully audited | ✓ Good |
 | Start Project 3 v1.3 with Zomic-adapted local checkpoints | The serving surface was stable enough to judge adapted local generation honestly | ✓ Good |
 | Archive milestone v1.3 after direct in-phase verification | The checkpoint workflow now ships with its own proof chain instead of requiring later cleanup phases | ✓ Good |
+| Start Project 3 v1.4 with checkpoint lifecycle and promotion | One adapted checkpoint is now proven, so the next risk is operational curation rather than another one-off lane | ✓ Good |
 
 ## Evolution
 
@@ -186,4 +197,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after archiving milestone v1.3*
+*Last updated: 2026-04-05 after starting milestone v1.4*
