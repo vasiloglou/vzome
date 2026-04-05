@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: milestone
-current_phase: 20
-current_phase_name: Specialized Lane Integration and Workflow Compatibility
+current_phase: 21
+current_phase_name: Comparative Benchmarks and Operator Serving Workflow
 current_plan: Not started
 status: ready_to_plan
-stopped_at: Phase 20 complete; ready to plan Phase 21
-last_updated: "2026-04-05T05:25:24Z"
+stopped_at: Phase 21 context captured; ready to plan
+last_updated: "2026-04-05T05:39:30Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 3
@@ -37,7 +37,7 @@ Phase: 21 (Comparative Benchmarks and Operator Serving Workflow) — READY TO PL
 Plan: Not started
 Status: Ready to plan
 Last activity: 2026-04-05
-Last Activity Description: Phase 20 complete, transitioned to Phase 21
+Last Activity Description: Phase 21 context captured and ready to plan
 
 Progress: [██████----] 66%
 
@@ -79,6 +79,10 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Phase 20]: The first specialized lane is evaluation-primary, and the
   shipped proof now includes one deep system (`Al-Cu-Fe`) plus one thinner
   compatibility proof (`Sc-Zn`).
+
+- [Phase 21]: Comparative benchmarks should use one shared benchmark context,
+  require explicit per-lane smoke tests, and report quality, cost, latency,
+  and operator friction together.
 
 ### Pending Todos
 
