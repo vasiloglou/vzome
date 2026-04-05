@@ -14,7 +14,7 @@ reinforce each other instead of living in separate prototypes.
   edits.
 - [x] **LLM-08**: An operator can approve a proposal and materialize it into a
   file-backed campaign spec that `llm-generate` can execute reproducibly.
-- [ ] **LLM-09**: The platform can replay a saved campaign and recover the same
+- [x] **LLM-09**: The platform can replay a saved campaign and recover the same
   proposal, eval-set, acceptance-pack, and launch inputs for comparison.
 
 ### Workflow Integration
@@ -22,7 +22,7 @@ reinforce each other instead of living in separate prototypes.
 - [x] **LLM-10**: Approved campaigns can launch `llm-generate` and emit
   standard `CandidateRecord` artifacts that continue through the existing
   downstream pipeline.
-- [ ] **LLM-11**: Campaign outcomes can be compared against the originating
+- [x] **LLM-11**: Campaign outcomes can be compared against the originating
   acceptance pack and prior benchmark lane so operators can judge whether the
   loop improved or regressed.
 
@@ -33,7 +33,7 @@ reinforce each other instead of living in separate prototypes.
 - [x] **OPS-06**: Every campaign records lineage from acceptance pack and eval
   set through approved suggestion, generation run, downstream artifacts, and
   operator decisions.
-- [ ] **OPS-07**: The closed-loop workflow ships with an operator runbook and
+- [x] **OPS-07**: The closed-loop workflow ships with an operator runbook and
   safe defaults for dry-run, approval, execution, and replay.
 
 ## v2+ Requirements
@@ -70,9 +70,9 @@ reinforce each other instead of living in separate prototypes.
 | LLM-08 | Phase 14 | Complete |
 | LLM-10 | Phase 14 | Complete |
 | OPS-06 | Phase 14 | Complete |
-| LLM-09 | Phase 15 | Pending |
-| LLM-11 | Phase 15 | Pending |
-| OPS-07 | Phase 15 | Pending |
+| LLM-09 | Phase 15 | Complete |
+| LLM-11 | Phase 15 | Complete |
+| OPS-07 | Phase 15 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 8 total
@@ -81,4 +81,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-03*
-*Last updated: 2026-04-04 after completing Phase 14 audit-gap closure*
+*Last updated: 2026-04-05 after completing Phase 15 audit-gap closure*

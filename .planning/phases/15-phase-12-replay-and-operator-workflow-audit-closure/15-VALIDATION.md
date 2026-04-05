@@ -1,9 +1,9 @@
 ---
 phase: 15
 slug: phase-12-replay-and-operator-workflow-audit-closure
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: automated_complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-04
 ---
 
@@ -46,13 +46,13 @@ created: 2026-04-04
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 15-01-01 | 01 | 1 | LLM-09, LLM-11 | focused regression | `cd materials-discovery && uv run pytest tests/test_llm_replay_core.py tests/test_llm_compare_core.py -x -v` | ✅ | ⬜ pending |
-| 15-01-02 | 01 | 1 | LLM-09, LLM-11, OPS-07 | focused regression | `cd materials-discovery && uv run pytest tests/test_llm_replay_cli.py tests/test_llm_compare_cli.py tests/test_cli.py -x -v` | ✅ | ⬜ pending |
-| 15-01-03 | 01 | 1 | LLM-09, LLM-11, OPS-07 | doc consistency | `git diff --check` | ✅ | ⬜ pending |
-| 15-02-01 | 02 | 2 | LLM-09, LLM-11 | proof matrix | `git diff --check` | ✅ | ⬜ pending |
-| 15-02-02 | 02 | 2 | OPS-07 | proof matrix | `git diff --check` | ✅ | ⬜ pending |
-| 15-03-01 | 03 | 3 | LLM-09, LLM-11, OPS-07 | traceability | `git diff --check` | ✅ | ⬜ pending |
-| 15-03-02 | 03 | 3 | LLM-09, LLM-11, OPS-07 | state handoff | `git diff --check` | ✅ | ⬜ pending |
+| 15-01-01 | 01 | 1 | LLM-09, LLM-11 | focused regression | `cd materials-discovery && uv run pytest tests/test_llm_replay_core.py tests/test_llm_compare_core.py -x -v` | ✅ | ✅ green |
+| 15-01-02 | 01 | 1 | LLM-09, LLM-11, OPS-07 | focused regression | `cd materials-discovery && uv run pytest tests/test_llm_replay_cli.py tests/test_llm_compare_cli.py tests/test_cli.py -x -v` | ✅ | ✅ green |
+| 15-01-03 | 01 | 1 | LLM-09, LLM-11, OPS-07 | doc consistency | `git diff --check` | ✅ | ✅ green |
+| 15-02-01 | 02 | 2 | LLM-09, LLM-11 | proof matrix | `git diff --check` | ✅ | ✅ green |
+| 15-02-02 | 02 | 2 | OPS-07 | proof matrix | `git diff --check` | ✅ | ✅ green |
+| 15-03-01 | 03 | 3 | LLM-09, LLM-11, OPS-07 | traceability | `git diff --check` | ✅ | ✅ green |
+| 15-03-02 | 03 | 3 | LLM-09, LLM-11, OPS-07 | state handoff | `git diff --check` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -60,19 +60,21 @@ created: 2026-04-04
 
 ## Wave 0 Requirements
 
-- [ ] `12-VERIFICATION.md` does not exist yet and must be created by this phase
-- [ ] `12-01-SUMMARY.md` and `12-02-SUMMARY.md` do not exist yet and must be
-  created by this phase
-- [ ] `12-VALIDATION.md` is already green and should only be edited if the new
-  summary chain reveals a real evidence-sync need
-- [ ] `REQUIREMENTS.md` currently maps `LLM-09`, `LLM-11`, and `OPS-07` to
-  Phase 15 as pending closure work; those rows should only flip after proof exists
-- [ ] Any Phase 15 execution that unexpectedly edits `materials-discovery/`
-  must also update `materials-discovery/Progress.md` per `AGENTS.md`
-- [ ] Focused reruns should stay offline/deterministic and must not require
-  live provider access
-- [ ] The milestone audit should not be rerun until Phase 15 closes and state
-  explicitly hands off to `gsd-audit-milestone`
+- [x] `12-VERIFICATION.md` now exists and captures the formal proof matrix for
+  `LLM-09`, `LLM-11`, and `OPS-07`
+- [x] `12-01-SUMMARY.md` and `12-02-SUMMARY.md` now exist and complete the
+  missing Phase 12 summary chain this phase was created to restore
+- [x] `12-VALIDATION.md` stayed green and did not require contradictory edits
+- [x] `REQUIREMENTS.md` Phase 15 rows only flipped after the summary chain and
+  `12-VERIFICATION.md` existed
+- [x] No `materials-discovery/` files changed during Phase 15 execution, so
+  `materials-discovery/Progress.md` did not require an update
+- [x] Focused reruns stayed offline/deterministic and did not require live
+  provider access
+- [x] The milestone audit was not rerun during Phase 15 execution; the handoff
+  remains queued behind state transition to `ready_for_milestone_audit`
+- [x] Phase 15 now leaves behind its own finalized validation artifact and
+  standard per-plan execution summaries
 
 ---
 
@@ -88,14 +90,14 @@ created: 2026-04-04
 
 ## Validation Sign-Off
 
-- [ ] All tasks have focused automated verification or doc-hygiene checks
-- [ ] Sampling continuity: no 2 consecutive evidence updates without either pytest or doc-hygiene verification
-- [ ] Wave 0 captures the actual Phase 12 audit gap, not unrelated implementation work
-- [ ] `12-VERIFICATION.md`, the new summary chain, and `12-VALIDATION.md` tell the same success or blocked story
-- [ ] Phase 15 itself leaves a finalized validation artifact and the standard
+- [x] All tasks have focused automated verification or doc-hygiene checks
+- [x] Sampling continuity: no 2 consecutive evidence updates without either pytest or doc-hygiene verification
+- [x] Wave 0 captures the actual Phase 12 audit gap, not unrelated implementation work
+- [x] `12-VERIFICATION.md`, the new summary chain, and `12-VALIDATION.md` tell the same success story
+- [x] Phase 15 itself leaves a finalized validation artifact and the standard
   per-plan execution summaries expected by the workflow
-- [ ] No watch-mode or long-running background commands are required
-- [ ] Feedback latency < 180s
-- [ ] `nyquist_compliant: true` set in frontmatter by the end of execution
+- [x] No watch-mode or long-running background commands are required
+- [x] Feedback latency < 180s
+- [x] `nyquist_compliant: true` set in frontmatter by the end of execution
 
-**Approval:** pending
+**Approval:** automated verification complete
