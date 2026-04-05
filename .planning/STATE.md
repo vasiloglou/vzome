@@ -4,11 +4,11 @@ milestone: v1.4
 milestone_name: adapted-checkpoint-lifecycle-and-promotion-mvp
 current_phase: 28
 current_phase_name: checkpoint-lifecycle-and-promotion-contracts
-current_plan: 0
-status: ready_to_plan
-stopped_at: v1.4 milestone defined
-last_updated: "2026-04-05T16:05:00Z"
-last_activity: 2026-04-05 -- Started milestone v1.4 and defined the first roadmap
+current_plan: Not started
+status: planning
+stopped_at: Phase 28 context gathered
+last_updated: "2026-04-05T20:56:23Z"
+last_activity: 2026-04-05
 progress:
   total_phases: 3
   completed_phases: 0
@@ -31,13 +31,13 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 Current Phase: 28
 Current Phase Name: Checkpoint Lifecycle and Promotion Contracts
 Total Phases: 3
-Current Plan: none
-Total Plans in Phase: 0
-Phase: not started
-Plan: defining phase strategy
+Current Plan: Not started
+Total Plans in Phase: Not planned yet
+Phase: 28 (Checkpoint Lifecycle and Promotion Contracts) — READY TO PLAN
+Plan: Not started
 Status: Ready to plan
-Last activity: 2026-04-05 -- Started milestone v1.4 and defined the roadmap and requirements
-Last Activity Description: The next step is planning Phase 28 for adapted-checkpoint lifecycle management
+Last activity: 2026-04-05
+Last Activity Description: Phase 28 context gathered and the milestone is ready for planning
 
 Progress: [----------] 0%
 
@@ -77,6 +77,13 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
   no-DFT while adapted-checkpoint count and lifecycle complexity increase.
 - [Milestone v1.4]: Treat promoted, pinned, and retired checkpoints as
   explicit workflow state rather than informal config conventions.
+- [Phase 28]: Use a hybrid lifecycle model with immutable per-checkpoint
+  registration facts plus a central lifecycle index for promoted/default,
+  pinning, retirement, and history.
+- [Phase 28]: Config defines the checkpoint family on a lane; the lifecycle
+  registry resolves the promoted default member when no explicit pin is given.
+- [Phase 28]: Retired checkpoints must never be selected implicitly again, but
+  they remain replayable and auditable.
 
 ### Pending Todos
 
@@ -90,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T16:05:00Z
-Stopped at: v1.4 milestone defined
-Resume file: .planning/ROADMAP.md
+Last session: 2026-04-05T20:56:23Z
+Stopped at: Phase 28 context gathered
+Resume file: .planning/phases/28-checkpoint-lifecycle-and-promotion-contracts/28-CONTEXT.md
