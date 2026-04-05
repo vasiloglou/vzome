@@ -26,8 +26,12 @@ from materials_discovery.llm.campaigns import (
     summarize_campaign_proposals,
 )
 from materials_discovery.llm.checkpoints import (
+    list_checkpoint_family_members,
+    load_checkpoint_lifecycle,
     load_registered_checkpoint,
+    promote_checkpoint,
     register_llm_checkpoint,
+    retire_checkpoint,
     resolve_checkpoint_lane,
 )
 from materials_discovery.llm.compare import (
@@ -253,8 +257,12 @@ __all__ = [
     "build_llm_generate_comparison",
     "build_llm_pipeline_comparison",
     "build_campaign_proposals",
+    "list_checkpoint_family_members",
+    "load_checkpoint_lifecycle",
     "load_registered_checkpoint",
+    "promote_checkpoint",
     "register_llm_checkpoint",
+    "retire_checkpoint",
     "resolve_checkpoint_lane",
     "build_replay_campaign_metadata",
     "build_replay_config",

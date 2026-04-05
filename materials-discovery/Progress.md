@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 28 Task 3 checkpoint lifecycle registry actions | Added family lifecycle loading, auto-enrollment, promotion/retirement mutation guards, and focused registry coverage for stale-write protection plus replay-safe retirement history |
 | 2026-04-05 | Phase 28 Task 2 checkpoint lifecycle storage helpers | Added deterministic checkpoint-family lifecycle paths under `data/llm_checkpoints/families/`, revision-based promotion/retirement artifact naming, and focused registry storage coverage without changing legacy registration paths |
 | 2026-04-05 | Phase 28 Task 1 checkpoint lifecycle schema contract | Added the additive `checkpoint_family` lane selector, shipped the lifecycle/promotion/retirement/pin-selection schema contract, and locked the Wave 1 schema surface in focused LLM checkpoint tests |
 | 2026-04-05 | Phase 27 adapted checkpoint operator workflow docs | Documented `mdisc llm-register-checkpoint`, adapted-lane registration rules, the committed adapted Al-Cu-Fe config and benchmark spec, rollback guidance, and replay-safe checkpoint drift behavior across `RUNBOOK.md`, `configuration-reference.md`, `llm-integration.md`, and `pipeline-stages.md` |
@@ -372,6 +373,8 @@
 
 ### 2026-04-05
 
+- 19:40 EDT — Implemented Phase 28 Plan 02 Task 1 by wiring checkpoint-family lifecycle helpers into the registry layer: lifecycle index loading, candidate auto-enrollment on registration, promotion/retirement actions, and stale-write protection.
+- This slice keeps promoted-default execution deferred, but it makes lifecycle mutations real and auditable with clear operator-facing failures for stale revisions, mismatched family pins, and unsafe retirement attempts.
 - 19:36 EDT — Implemented Phase 28 Plan 01 Task 2 by adding deterministic checkpoint-family storage helpers under `data/llm_checkpoints/families/` plus revision-based promotion and retirement artifact paths.
 - Focused registry coverage now locks `lifecycle.json`, the `actions/` directory layout, revision-stamped lifecycle action filenames, and the guarantee that legacy per-checkpoint `registration.json` paths remain unchanged.
 - 19:31 EDT — Implemented Phase 28 Plan 01 Task 1 by extending the additive checkpoint lane contract with `checkpoint_family` and shipping the typed lifecycle/promotion/retirement/pin-selection schema pass for multi-checkpoint family management.

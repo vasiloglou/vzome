@@ -8,12 +8,21 @@ from pathlib import Path
 from materials_discovery.common.io import load_json_object, load_yaml, workspace_root, write_json_object
 from materials_discovery.common.schema import LlmModelLaneConfig
 from materials_discovery.llm.schema import (
+    LlmCheckpointLifecycleIndex,
+    LlmCheckpointLifecycleMemberSummary,
     LlmCheckpointLineage,
+    LlmCheckpointPromotionSpec,
     LlmCheckpointRegistration,
     LlmCheckpointRegistrationSpec,
     LlmCheckpointRegistrationSummary,
+    LlmCheckpointRetirementSpec,
 )
-from materials_discovery.llm.storage import llm_checkpoint_registration_path
+from materials_discovery.llm.storage import (
+    llm_checkpoint_lifecycle_index_path,
+    llm_checkpoint_promotion_action_path,
+    llm_checkpoint_registration_path,
+    llm_checkpoint_retirement_action_path,
+)
 
 
 def _artifact_root(root: Path | None = None) -> Path:
@@ -70,6 +79,152 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def _update_lifecycle_member(
+    member: LlmCheckpointLifecycleMemberSummary,
+    **updates: object,
+) -> LlmCheckpointLifecycleMemberSummary:
+    payload = member.model_dump(mode="json")
+    payload.update(updates)
+    return LlmCheckpointLifecycleMemberSummary.model_validate(payload)
+
+
+def _update_lifecycle_index(
+    lifecycle: LlmCheckpointLifecycleIndex,
+    **updates: object,
+) -> LlmCheckpointLifecycleIndex:
+    payload = lifecycle.model_dump(mode="json")
+    payload.update(updates)
+    return LlmCheckpointLifecycleIndex.model_validate(payload)
+
+
+def _sorted_lifecycle_members(
+    members: list[LlmCheckpointLifecycleMemberSummary],
+) -> list[LlmCheckpointLifecycleMemberSummary]:
+    return sorted(members, key=lambda member: member.checkpoint_id)
+
+
+def _write_lifecycle_index(lifecycle: LlmCheckpointLifecycleIndex, path: Path) -> None:
+    write_json_object(lifecycle.model_dump(mode="json"), path)
+
+
+def _validate_repo_relative_path(value: str, *, field_name: str) -> None:
+    normalized = value.strip()
+    if normalized.startswith("http://") or normalized.startswith("https://"):
+        raise ValueError(f"{field_name} must use repo-relative paths")
+    if Path(normalized).is_absolute():
+        raise ValueError(f"{field_name} must use repo-relative paths")
+
+
+def _validate_lifecycle_expectations(
+    lifecycle: LlmCheckpointLifecycleIndex,
+    *,
+    expected_revision: int | None,
+    expected_promoted_checkpoint_id: str | None,
+) -> None:
+    if expected_revision is not None and lifecycle.revision != expected_revision:
+        raise ValueError(
+            f"stale lifecycle revision for checkpoint_family '{lifecycle.checkpoint_family}': "
+            f"expected revision {expected_revision} but current revision is {lifecycle.revision}; "
+            "reload the current lifecycle revision and retry"
+        )
+    if (
+        expected_promoted_checkpoint_id is not None
+        and lifecycle.promoted_checkpoint_id != expected_promoted_checkpoint_id
+    ):
+        current_promoted = lifecycle.promoted_checkpoint_id or "none"
+        raise ValueError(
+            f"stale promoted checkpoint for checkpoint_family '{lifecycle.checkpoint_family}': "
+            f"expected '{expected_promoted_checkpoint_id}' but current promoted checkpoint is "
+            f"'{current_promoted}'; reload the current lifecycle revision and retry"
+        )
+
+
+def _find_checkpoint_family_member(
+    lifecycle: LlmCheckpointLifecycleIndex,
+    checkpoint_id: str,
+) -> LlmCheckpointLifecycleMemberSummary:
+    for member in lifecycle.members:
+        if member.checkpoint_id == checkpoint_id:
+            return member
+    raise ValueError(
+        f"checkpoint '{checkpoint_id}' is not registered in checkpoint_family "
+        f"'{lifecycle.checkpoint_family}'"
+    )
+
+
+def load_checkpoint_lifecycle(
+    checkpoint_family: str,
+    *,
+    root: Path | None = None,
+    create: bool = False,
+) -> tuple[LlmCheckpointLifecycleIndex, Path]:
+    lifecycle_path = llm_checkpoint_lifecycle_index_path(checkpoint_family, root=root)
+    if not lifecycle_path.exists():
+        if not create:
+            raise FileNotFoundError(
+                f"checkpoint lifecycle '{checkpoint_family}' not found: {lifecycle_path}"
+            )
+        lifecycle = LlmCheckpointLifecycleIndex(checkpoint_family=checkpoint_family)
+        _write_lifecycle_index(lifecycle, lifecycle_path)
+        return lifecycle, lifecycle_path
+
+    lifecycle = LlmCheckpointLifecycleIndex.model_validate(load_json_object(lifecycle_path))
+    if lifecycle.checkpoint_family != checkpoint_family.strip():
+        raise ValueError(
+            f"lifecycle index mismatch: expected checkpoint_family '{checkpoint_family.strip()}' "
+            f"but found '{lifecycle.checkpoint_family}'"
+        )
+    return lifecycle, lifecycle_path
+
+
+def list_checkpoint_family_members(
+    checkpoint_family: str,
+    *,
+    root: Path | None = None,
+) -> list[LlmCheckpointLifecycleMemberSummary]:
+    lifecycle, _ = load_checkpoint_lifecycle(checkpoint_family, root=root)
+    return _sorted_lifecycle_members(list(lifecycle.members))
+
+
+def _enroll_registered_checkpoint(
+    registration: LlmCheckpointRegistration,
+    registration_path: Path,
+    *,
+    root: Path | None = None,
+) -> None:
+    if registration.checkpoint_family is None:
+        return
+
+    lifecycle, lifecycle_path = load_checkpoint_lifecycle(
+        registration.checkpoint_family,
+        root=root,
+        create=True,
+    )
+    registration_path_for_storage = _path_for_storage(registration_path, root=root)
+    for member in lifecycle.members:
+        if member.checkpoint_id == registration.checkpoint_id:
+            if member.fingerprint != registration.fingerprint:
+                raise ValueError(
+                    f"checkpoint '{registration.checkpoint_id}' already exists in checkpoint_family "
+                    f"'{registration.checkpoint_family}' with a different fingerprint"
+                )
+            return
+
+    new_member = LlmCheckpointLifecycleMemberSummary(
+        checkpoint_id=registration.checkpoint_id,
+        fingerprint=registration.fingerprint,
+        registration_path=registration_path_for_storage,
+        lifecycle_state="candidate",
+        registered_at_utc=registration.created_at_utc,
+    )
+    updated_lifecycle = _update_lifecycle_index(
+        lifecycle,
+        revision=lifecycle.revision + 1,
+        members=_sorted_lifecycle_members([*lifecycle.members, new_member]),
+    )
+    _write_lifecycle_index(updated_lifecycle, lifecycle_path)
+
+
 def load_registered_checkpoint(
     checkpoint_id: str,
     *,
@@ -121,11 +276,34 @@ def register_llm_checkpoint(
         }
     )
     fingerprint = _checkpoint_fingerprint(normalized_spec)
+    registration_path = llm_checkpoint_registration_path(normalized_spec.checkpoint_id, root=root)
+    checkpoint_family = normalized_spec.checkpoint_family
+    created_at_utc = _utc_now()
+    if registration_path.exists():
+        existing = LlmCheckpointRegistration.model_validate(load_json_object(registration_path))
+        if existing.fingerprint != fingerprint:
+            raise ValueError(
+                f"checkpoint_id '{normalized_spec.checkpoint_id}' is already registered with a different fingerprint"
+            )
+        created_at_utc = existing.created_at_utc
+        if existing.checkpoint_family is not None and checkpoint_family is None:
+            checkpoint_family = existing.checkpoint_family
+        elif (
+            existing.checkpoint_family is not None
+            and checkpoint_family is not None
+            and existing.checkpoint_family != checkpoint_family
+        ):
+            raise ValueError(
+                f"checkpoint_id '{normalized_spec.checkpoint_id}' is already registered in "
+                f"checkpoint_family '{existing.checkpoint_family}'"
+            )
+
     registration = LlmCheckpointRegistration(
         checkpoint_id=normalized_spec.checkpoint_id,
+        checkpoint_family=checkpoint_family,
         system=normalized_spec.system,
         template_family=normalized_spec.template_family,
-        created_at_utc=_utc_now(),
+        created_at_utc=created_at_utc,
         adapter=normalized_spec.adapter,
         provider=normalized_spec.provider,
         model=normalized_spec.model,
@@ -142,20 +320,139 @@ def register_llm_checkpoint(
         notes=normalized_spec.notes,
     )
 
-    registration_path = llm_checkpoint_registration_path(registration.checkpoint_id, root=root)
-    if registration_path.exists():
-        existing = LlmCheckpointRegistration.model_validate(load_json_object(registration_path))
-        if existing.fingerprint != registration.fingerprint:
-            raise ValueError(
-                f"checkpoint_id '{registration.checkpoint_id}' is already registered with a different fingerprint"
-            )
-
     write_json_object(registration.model_dump(mode="json"), registration_path)
+    _enroll_registered_checkpoint(registration, registration_path, root=root)
     return LlmCheckpointRegistrationSummary(
         checkpoint_id=registration.checkpoint_id,
+        checkpoint_family=registration.checkpoint_family,
         fingerprint=registration.fingerprint,
         registration_path=str(registration_path),
     )
+
+
+def promote_checkpoint(
+    spec_path: Path,
+    *,
+    root: Path | None = None,
+) -> LlmCheckpointLifecycleIndex:
+    spec = LlmCheckpointPromotionSpec.model_validate(load_yaml(spec_path.resolve()))
+    for evidence_path in spec.evidence_paths:
+        _validate_repo_relative_path(evidence_path, field_name="evidence_paths")
+
+    lifecycle, lifecycle_path = load_checkpoint_lifecycle(spec.checkpoint_family, root=root)
+    _validate_lifecycle_expectations(
+        lifecycle,
+        expected_revision=spec.expected_revision,
+        expected_promoted_checkpoint_id=spec.expected_promoted_checkpoint_id,
+    )
+    target_member = _find_checkpoint_family_member(lifecycle, spec.checkpoint_id)
+    if (
+        lifecycle.promoted_checkpoint_id == spec.checkpoint_id
+        and target_member.lifecycle_state == "promoted"
+    ):
+        return lifecycle
+
+    new_revision = lifecycle.revision + 1
+    action_path = llm_checkpoint_promotion_action_path(
+        spec.checkpoint_family,
+        spec.checkpoint_id,
+        revision=new_revision,
+        root=root,
+    )
+    action_path_for_storage = _path_for_storage(action_path, root=root)
+    promoted_at_utc = _utc_now()
+    updated_members: list[LlmCheckpointLifecycleMemberSummary] = []
+    for member in lifecycle.members:
+        if member.checkpoint_id == spec.checkpoint_id:
+            updated_members.append(
+                _update_lifecycle_member(
+                    member,
+                    lifecycle_state="promoted",
+                    promoted_at_utc=promoted_at_utc,
+                    retired_at_utc=None,
+                    retirement_reason=None,
+                    last_action_path=action_path_for_storage,
+                )
+            )
+            continue
+        if member.lifecycle_state == "promoted":
+            updated_members.append(
+                _update_lifecycle_member(
+                    member,
+                    lifecycle_state="candidate",
+                    last_action_path=action_path_for_storage,
+                )
+            )
+            continue
+        updated_members.append(member)
+
+    updated_lifecycle = _update_lifecycle_index(
+        lifecycle,
+        revision=new_revision,
+        promoted_checkpoint_id=spec.checkpoint_id,
+        members=_sorted_lifecycle_members(updated_members),
+        action_history_paths=[*lifecycle.action_history_paths, action_path_for_storage],
+    )
+    write_json_object(spec.model_dump(mode="json"), action_path)
+    _write_lifecycle_index(updated_lifecycle, lifecycle_path)
+    return updated_lifecycle
+
+
+def retire_checkpoint(
+    spec_path: Path,
+    *,
+    root: Path | None = None,
+) -> LlmCheckpointLifecycleIndex:
+    spec = LlmCheckpointRetirementSpec.model_validate(load_yaml(spec_path.resolve()))
+    lifecycle, lifecycle_path = load_checkpoint_lifecycle(spec.checkpoint_family, root=root)
+    _validate_lifecycle_expectations(
+        lifecycle,
+        expected_revision=spec.expected_revision,
+        expected_promoted_checkpoint_id=spec.expected_promoted_checkpoint_id,
+    )
+    if lifecycle.promoted_checkpoint_id == spec.checkpoint_id:
+        raise ValueError(
+            f"cannot retire currently promoted checkpoint '{spec.checkpoint_id}' in "
+            f"checkpoint_family '{spec.checkpoint_family}'; promote a different checkpoint first"
+        )
+
+    target_member = _find_checkpoint_family_member(lifecycle, spec.checkpoint_id)
+    if target_member.lifecycle_state == "retired":
+        return lifecycle
+
+    new_revision = lifecycle.revision + 1
+    action_path = llm_checkpoint_retirement_action_path(
+        spec.checkpoint_family,
+        spec.checkpoint_id,
+        revision=new_revision,
+        root=root,
+    )
+    action_path_for_storage = _path_for_storage(action_path, root=root)
+    retired_at_utc = _utc_now()
+    updated_members: list[LlmCheckpointLifecycleMemberSummary] = []
+    for member in lifecycle.members:
+        if member.checkpoint_id == spec.checkpoint_id:
+            updated_members.append(
+                _update_lifecycle_member(
+                    member,
+                    lifecycle_state="retired",
+                    retired_at_utc=retired_at_utc,
+                    retirement_reason=spec.reason,
+                    last_action_path=action_path_for_storage,
+                )
+            )
+            continue
+        updated_members.append(member)
+
+    updated_lifecycle = _update_lifecycle_index(
+        lifecycle,
+        revision=new_revision,
+        members=_sorted_lifecycle_members(updated_members),
+        action_history_paths=[*lifecycle.action_history_paths, action_path_for_storage],
+    )
+    write_json_object(spec.model_dump(mode="json"), action_path)
+    _write_lifecycle_index(updated_lifecycle, lifecycle_path)
+    return updated_lifecycle
 
 
 def resolve_checkpoint_lane(
@@ -175,6 +472,15 @@ def resolve_checkpoint_lane(
         if lane_config.require_checkpoint_registration:
             raise
         return lane_config, None
+    if (
+        lane_config.checkpoint_family is not None
+        and registration.checkpoint_family != lane_config.checkpoint_family
+    ):
+        raise ValueError(
+            f"checkpoint '{registration.checkpoint_id}' does not belong to checkpoint_family "
+            f"'{lane_config.checkpoint_family}'; reload the current lifecycle revision and retry "
+            "with a matching checkpoint pin"
+        )
 
     if lane_config.adapter != registration.adapter:
         raise ValueError(
@@ -217,6 +523,7 @@ def resolve_checkpoint_lane(
     )
     checkpoint_lineage = LlmCheckpointLineage(
         checkpoint_id=registration.checkpoint_id,
+        checkpoint_family=registration.checkpoint_family,
         registration_path=_path_for_storage(registration_path, root=root),
         fingerprint=registration.fingerprint,
         base_model=registration.base_model,
