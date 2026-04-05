@@ -9,6 +9,10 @@ from typer.testing import CliRunner
 from materials_discovery.cli import app
 
 
+def _workspace() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
 def _write_lineage_files(root: Path) -> None:
     (root / "lineage").mkdir(parents=True, exist_ok=True)
     for name in (
@@ -342,6 +346,75 @@ def test_llm_retire_checkpoint_cli_returns_code_2_for_unsafe_retirement(
     assert result.exit_code == 2
     assert "llm-retire-checkpoint failed:" in result.stderr
     assert "promote a different checkpoint first" in result.stderr
+
+
+def test_committed_checkpoint_lifecycle_example_specs_validate_and_run_through_cli(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    runner = CliRunner()
+    _write_lineage_files(tmp_path)
+    promotion_spec = _workspace() / "configs" / "llm" / "al_cu_fe_checkpoint_promotion.yaml"
+    retirement_spec = _workspace() / "configs" / "llm" / "al_cu_fe_checkpoint_retirement.yaml"
+    promotion_payload = yaml.safe_load(promotion_spec.read_text(encoding="utf-8"))
+    retirement_payload = yaml.safe_load(retirement_spec.read_text(encoding="utf-8"))
+
+    monkeypatch.setattr("materials_discovery.llm.checkpoints.workspace_root", lambda: tmp_path)
+    monkeypatch.setattr("materials_discovery.llm.storage.workspace_root", lambda: tmp_path)
+
+    assert promotion_payload["checkpoint_family"] == "adapted-al-cu-fe"
+    assert retirement_payload["checkpoint_family"] == "adapted-al-cu-fe"
+    assert "placeholder" in promotion_payload["note"].lower()
+    assert "placeholder" in retirement_payload["note"].lower()
+
+    assert (
+        runner.invoke(
+            app,
+            [
+                "llm-register-checkpoint",
+                "--spec",
+                str(
+                    _write_spec(
+                        tmp_path,
+                        checkpoint_id="ckpt-al-cu-fe-zomic-adapted",
+                        checkpoint_family="adapted-al-cu-fe",
+                    )
+                ),
+            ],
+        ).exit_code
+        == 0
+    )
+    assert (
+        runner.invoke(
+            app,
+            [
+                "llm-register-checkpoint",
+                "--spec",
+                str(
+                    _write_spec(
+                        tmp_path,
+                        checkpoint_id="ckpt-al-cu-fe-zomic-adapted-legacy",
+                        checkpoint_family="adapted-al-cu-fe",
+                    )
+                ),
+            ],
+        ).exit_code
+        == 0
+    )
+
+    promote_result = runner.invoke(
+        app,
+        ["llm-promote-checkpoint", "--spec", str(promotion_spec)],
+    )
+    retire_result = runner.invoke(
+        app,
+        ["llm-retire-checkpoint", "--spec", str(retirement_spec)],
+    )
+
+    assert promote_result.exit_code == 0
+    assert retire_result.exit_code == 0
+    assert json.loads(promote_result.stdout)["revision"] == 3
+    assert json.loads(retire_result.stdout)["revision"] == 4
 
 
 def test_llm_register_checkpoint_cli_returns_code_2_for_missing_lineage(

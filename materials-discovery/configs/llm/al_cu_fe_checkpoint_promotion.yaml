@@ -1,0 +1,10 @@
+checkpoint_family: adapted-al-cu-fe
+checkpoint_id: ckpt-al-cu-fe-zomic-adapted
+evidence_paths:
+  - materials-discovery/data/benchmarks/llm_serving/adapted_placeholder/benchmark_summary.json
+  - materials-discovery/data/benchmarks/llm_acceptance/adapted_placeholder/acceptance_pack.json
+expected_revision: 2
+note: >
+  Illustrative repo-relative placeholder evidence paths for the first promoted
+  Al-Cu-Fe adapted checkpoint. Replace them with real benchmark outputs before
+  applying promotion in a live workspace.

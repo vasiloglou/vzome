@@ -8,7 +8,11 @@ from pydantic import ValidationError
 from materials_discovery.common.io import load_yaml, write_json_object, write_jsonl
 from materials_discovery.common.manifest import config_sha256
 from materials_discovery.common.schema import SystemConfig
-from materials_discovery.llm.checkpoints import register_llm_checkpoint
+from materials_discovery.llm.checkpoints import (
+    load_registered_checkpoint,
+    register_llm_checkpoint,
+    retire_checkpoint,
+)
 from materials_discovery.llm.replay import (
     build_replay_campaign_metadata,
     build_replay_config,
@@ -44,7 +48,13 @@ def _system_config(config_name: str = "al_cu_fe_llm_mock.yaml") -> tuple[SystemC
     return SystemConfig.model_validate(load_yaml(config_path)), config_path
 
 
-def _register_checkpoint_for_test(root: Path, *, checkpoint_id: str, model: str) -> None:
+def _register_checkpoint_for_test(
+    root: Path,
+    *,
+    checkpoint_id: str,
+    model: str,
+    checkpoint_family: str | None = None,
+) -> None:
     lineage_dir = root / "lineage"
     lineage_dir.mkdir(parents=True, exist_ok=True)
     for name in (
@@ -59,6 +69,11 @@ def _register_checkpoint_for_test(root: Path, *, checkpoint_id: str, model: str)
         yaml.safe_dump(
             {
                 "checkpoint_id": checkpoint_id,
+                **(
+                    {}
+                    if checkpoint_family is None
+                    else {"checkpoint_family": checkpoint_family}
+                ),
                 "system": "Al-Cu-Fe",
                 "template_family": "icosahedral_approximant_1_1",
                 "adapter": "openai_compat_v1",
@@ -79,6 +94,30 @@ def _register_checkpoint_for_test(root: Path, *, checkpoint_id: str, model: str)
         encoding="utf-8",
     )
     register_llm_checkpoint(spec_path, root=root)
+
+
+def _write_retirement_spec(
+    root: Path,
+    *,
+    checkpoint_family: str,
+    checkpoint_id: str,
+    expected_revision: int,
+) -> Path:
+    spec_path = root / f"{checkpoint_id}-retirement.yaml"
+    spec_path.write_text(
+        yaml.safe_dump(
+            {
+                "checkpoint_family": checkpoint_family,
+                "checkpoint_id": checkpoint_id,
+                "reason": "superseded",
+                "expected_revision": expected_revision,
+                "note": "Illustrative repo-relative placeholder retirement example.",
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    return spec_path
 
 
 def _write_launch_bundle(
@@ -698,6 +737,78 @@ def test_build_replay_config_rejects_registered_checkpoint_fingerprint_drift(
 
     with pytest.raises(ValueError, match="fingerprint drift"):
         build_replay_config(bundle, current_config)
+
+
+def test_build_replay_config_keeps_retired_checkpoint_replayable_by_fingerprint(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("materials_discovery.llm.checkpoints.workspace_root", lambda: tmp_path)
+    monkeypatch.setattr("materials_discovery.llm.storage.workspace_root", lambda: tmp_path)
+    _register_checkpoint_for_test(
+        tmp_path,
+        checkpoint_id="ckpt-al-cu-fe-zomic-adapted",
+        checkpoint_family="adapted-al-cu-fe",
+        model="zomic-al-cu-fe-adapted-v1",
+    )
+    registration, _ = load_registered_checkpoint("ckpt-al-cu-fe-zomic-adapted", root=tmp_path)
+
+    launch_summary_path = _write_launch_bundle(
+        tmp_path,
+        config_name="al_cu_fe_llm_adapted.yaml",
+        requested_model_lanes=["general_purpose"],
+        resolved_model_lane="general_purpose",
+        resolved_model_lane_source="configured_lane",
+        serving_identity={
+            "requested_model_lane": "general_purpose",
+            "resolved_model_lane": "general_purpose",
+            "resolved_model_lane_source": "configured_lane",
+            "adapter": "openai_compat_v1",
+            "provider": "openai_compat",
+            "model": "zomic-al-cu-fe-adapted-v1",
+            "effective_api_base": "http://localhost:8000",
+            "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+            "model_revision": "adapted-dev-2026-04-05",
+            "local_model_path": "/opt/models/zomic-al-cu-fe-adapted-v1",
+            "checkpoint_lineage": {
+                "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                "checkpoint_family": "adapted-al-cu-fe",
+                "registration_path": "data/llm_checkpoints/ckpt-al-cu-fe-zomic-adapted/registration.json",
+                "fingerprint": registration.fingerprint,
+                "base_model": "zomic-general-local-v1",
+                "base_model_revision": "local-dev-2026-04-05",
+                "adaptation_method": "lora",
+                "adaptation_artifact_path": "lineage/adapter_manifest.json",
+                "corpus_manifest_path": "lineage/corpus_manifest.json",
+                "eval_set_manifest_path": "lineage/eval_manifest.json",
+                "acceptance_pack_path": "lineage/acceptance_pack.json",
+            },
+        },
+    )
+    retire_checkpoint(
+        _write_retirement_spec(
+            tmp_path,
+            checkpoint_family="adapted-al-cu-fe",
+            checkpoint_id="ckpt-al-cu-fe-zomic-adapted",
+            expected_revision=1,
+        ),
+        root=tmp_path,
+    )
+    bundle = load_campaign_launch_bundle(launch_summary_path, root=tmp_path)
+    current_config, _ = _system_config("al_cu_fe_llm_adapted.yaml")
+    assert current_config.llm_generate is not None
+    current_config.llm_generate.model_lanes["general_purpose"].checkpoint_family = (
+        "adapted-al-cu-fe"
+    )
+
+    replay_config = build_replay_config(bundle, current_config)
+    replay_identity = build_replay_serving_identity(bundle, current_config)
+
+    assert replay_config.backend.llm_model == "zomic-al-cu-fe-adapted-v1"
+    assert replay_identity.checkpoint_id == "ckpt-al-cu-fe-zomic-adapted"
+    assert replay_identity.checkpoint_lineage is not None
+    assert replay_identity.checkpoint_lineage.fingerprint == registration.fingerprint
+    assert replay_identity.checkpoint_lineage.checkpoint_family == "adapted-al-cu-fe"
 
 
 def test_committed_local_serving_configs_validate_without_live_server() -> None:

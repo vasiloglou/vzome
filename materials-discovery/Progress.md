@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 28 Task 5 lifecycle example specs and replay-proof retirement | Added committed promotion/retirement action examples, proved retired checkpoints remain replay-safe by fingerprint, and kept the lifecycle CLI fixtures operational with placeholder evidence paths |
 | 2026-04-05 | Phase 28 Task 4 checkpoint lifecycle CLI surface | Added `llm-list-checkpoints`, `llm-promote-checkpoint`, and `llm-retire-checkpoint` with structured JSON, clear stale-write remediation, and repo-level CLI coverage for lifecycle command discovery |
 | 2026-04-05 | Phase 28 Task 3 checkpoint lifecycle registry actions | Added family lifecycle loading, auto-enrollment, promotion/retirement mutation guards, and focused registry coverage for stale-write protection plus replay-safe retirement history |
 | 2026-04-05 | Phase 28 Task 2 checkpoint lifecycle storage helpers | Added deterministic checkpoint-family lifecycle paths under `data/llm_checkpoints/families/`, revision-based promotion/retirement artifact naming, and focused registry storage coverage without changing legacy registration paths |
@@ -374,6 +375,8 @@
 
 ### 2026-04-05
 
+- 19:51 EDT — Implemented Phase 28 Plan 03 Task 1 by adding committed promotion and retirement specs for the `adapted-al-cu-fe` family and extending replay compatibility coverage so retired checkpoints stay auditable by registration fingerprint.
+- The example action specs use illustrative repo-relative evidence paths on purpose, and the tests are being wired so those files are real CLI fixtures rather than docs-only placeholders.
 - 19:46 EDT — Implemented Phase 28 Plan 02 Task 2 by adding the operator-facing lifecycle CLI surface for listing family members, promoting checkpoints from typed specs, and retiring checkpoints with clear stale-write remediation.
 - This command layer stays thin over the registry helpers so the lifecycle state logic remains file-backed in one place while the CLI preserves repo-standard JSON success output and exit-code-2 failure behavior.
 - 19:40 EDT — Implemented Phase 28 Plan 02 Task 1 by wiring checkpoint-family lifecycle helpers into the registry layer: lifecycle index loading, candidate auto-enrollment on registration, promotion/retirement actions, and stale-write protection.

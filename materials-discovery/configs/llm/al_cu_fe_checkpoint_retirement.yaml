@@ -1,0 +1,10 @@
+checkpoint_family: adapted-al-cu-fe
+checkpoint_id: ckpt-al-cu-fe-zomic-adapted-legacy
+reason: superseded
+expected_revision: 3
+expected_promoted_checkpoint_id: ckpt-al-cu-fe-zomic-adapted
+replacement_checkpoint_id: ckpt-al-cu-fe-zomic-adapted
+note: >
+  Illustrative repo-relative placeholder retirement example for a superseded
+  Al-Cu-Fe adapted checkpoint after the newer promoted member has already taken
+  over the family default.
