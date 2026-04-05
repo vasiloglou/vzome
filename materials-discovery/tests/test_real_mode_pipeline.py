@@ -9,7 +9,7 @@ import yaml
 from typer.testing import CliRunner
 
 from materials_discovery.cli import app
-from materials_discovery.common.io import load_yaml, write_json_object
+from materials_discovery.common.io import load_yaml, write_json_object, write_jsonl
 from materials_discovery.common.manifest import config_sha256
 from materials_discovery.common.schema import (
     CandidateRecord,
@@ -328,6 +328,95 @@ def _write_specialized_report_artifacts(
         },
         reports_dir / f"{system_slug}_report.json",
     )
+
+
+def _write_hosted_llm_config(tmp_path: Path, *, base_config_path: Path) -> Path:
+    payload = load_yaml(base_config_path)
+    payload["backend"]["llm_adapter"] = "anthropic_api_v1"
+    payload["backend"]["llm_provider"] = "anthropic"
+    payload["backend"]["llm_model"] = "claude-hosted-v1"
+    payload["backend"]["llm_api_base"] = None
+    payload["llm_generate"]["model_lanes"]["general_purpose"] = {
+        "adapter": "anthropic_api_v1",
+        "provider": "anthropic",
+        "model": "claude-hosted-v1",
+    }
+    config_path = tmp_path / "al_cu_fe_llm_hosted.yaml"
+    config_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    return config_path
+
+
+def _retag_llm_campaign_spec(
+    spec_path: Path,
+    *,
+    campaign_id: str,
+    proposal_id: str,
+    approval_id: str,
+    preferred_model_lane: str,
+) -> None:
+    payload = json.loads(spec_path.read_text(encoding="utf-8"))
+    payload["campaign_id"] = campaign_id
+    payload["proposal_id"] = proposal_id
+    payload["approval_id"] = approval_id
+    payload["actions"][0]["preferred_model_lane"] = preferred_model_lane
+    spec_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def _write_serving_benchmark_spec(
+    tmp_path: Path,
+    *,
+    benchmark_id: str,
+    acceptance_pack_path: Path,
+    hosted_config_path: Path,
+    hosted_spec_path: Path,
+    local_config_path: Path,
+    local_spec_path: Path,
+    evaluate_batch: str = "top1",
+) -> Path:
+    spec_path = tmp_path / "serving_benchmark.yaml"
+    spec_path.write_text(
+        yaml.safe_dump(
+            {
+                "benchmark_id": benchmark_id,
+                "acceptance_pack_path": str(acceptance_pack_path),
+                "targets": [
+                    {
+                        "target_id": "hosted_generation",
+                        "label": "Hosted generation",
+                        "workflow_role": "campaign_launch",
+                        "system_config_path": str(hosted_config_path),
+                        "campaign_spec_path": str(hosted_spec_path),
+                        "generation_model_lane": "general_purpose",
+                        "estimated_cost_usd": 1.25,
+                        "operator_friction_tier": "low",
+                    },
+                    {
+                        "target_id": "local_generation",
+                        "label": "Local generation",
+                        "workflow_role": "campaign_launch",
+                        "system_config_path": str(local_config_path),
+                        "campaign_spec_path": str(local_spec_path),
+                        "generation_model_lane": "general_purpose",
+                        "estimated_cost_usd": 0.08,
+                        "operator_friction_tier": "medium",
+                    },
+                    {
+                        "target_id": "specialized_assessment",
+                        "label": "Specialized assessment",
+                        "workflow_role": "llm_evaluate",
+                        "system_config_path": str(local_config_path),
+                        "batch": evaluate_batch,
+                        "evaluation_model_lane": "specialized_materials",
+                        "estimated_cost_usd": 0.03,
+                        "operator_friction_tier": "high",
+                    },
+                ],
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    return spec_path
 
 
 @pytest.mark.integration
@@ -678,6 +767,246 @@ def test_real_mode_sc_zn_specialized_evaluation_lineage_keeps_launch_replay_comp
     )
     assert "Generation lane: general_purpose (configured_lane)" in compare.stdout
     assert "Evaluation lane: specialized_materials (configured_lane)" in compare.stdout
+
+
+@pytest.mark.integration
+def test_real_mode_llm_serving_benchmark_compares_hosted_local_and_specialized_targets_offline(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    runner = CliRunner()
+    repo_workspace = Path(__file__).resolve().parents[1]
+    artifact_workspace = tmp_path / "workspace"
+    local_config_path = repo_workspace / "configs" / "systems" / "al_cu_fe_llm_local.yaml"
+    hosted_config_path = _write_hosted_llm_config(tmp_path, base_config_path=local_config_path)
+    acceptance_pack_path = _write_llm_acceptance_pack(artifact_workspace, system="Al-Cu-Fe")
+
+    (tmp_path / "local").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "hosted").mkdir(parents=True, exist_ok=True)
+    local_spec_path = _write_llm_campaign_spec(tmp_path / "local", local_config_path)
+    hosted_spec_path = _write_llm_campaign_spec(tmp_path / "hosted", hosted_config_path)
+    _retag_llm_campaign_spec(
+        local_spec_path,
+        campaign_id="campaign-local",
+        proposal_id="proposal-local",
+        approval_id="approval-local",
+        preferred_model_lane="specialized_materials",
+    )
+    _retag_llm_campaign_spec(
+        hosted_spec_path,
+        campaign_id="campaign-hosted",
+        proposal_id="proposal-hosted",
+        approval_id="approval-hosted",
+        preferred_model_lane="specialized_materials",
+    )
+    benchmark_spec_path = _write_serving_benchmark_spec(
+        tmp_path,
+        benchmark_id="al_cu_fe_serving_v1",
+        acceptance_pack_path=acceptance_pack_path,
+        hosted_config_path=hosted_config_path,
+        hosted_spec_path=hosted_spec_path,
+        local_config_path=local_config_path,
+        local_spec_path=local_spec_path,
+    )
+
+    ranked_candidate = CandidateRecord(
+        candidate_id="ranked_001",
+        system="Al-Cu-Fe",
+        template_family="icosahedral_approximant_1_1",
+        cell={
+            "a": 14.2,
+            "b": 14.2,
+            "c": 14.2,
+            "alpha": 90.0,
+            "beta": 90.0,
+            "gamma": 90.0,
+        },
+        sites=[
+            SiteRecord(
+                label="S01",
+                qphi=((0, 0), (1, 0), (1, 0)),
+                species="Al",
+                occ=1.0,
+                fractional_position=(0.2, 0.2, 0.2),
+                cartesian_position=(2.84, 2.84, 2.84),
+            )
+        ],
+        composition={"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+        screen={"model": "MACE"},
+        digital_validation=DigitalValidationRecord(status="passed", passed_checks=True),
+        provenance={"source": "ranked"},
+    )
+    write_jsonl(
+        [ranked_candidate.model_dump(mode="json")],
+        artifact_workspace / "data" / "ranked" / "al_cu_fe_ranked.jsonl",
+    )
+
+    monkeypatch.setattr("materials_discovery.cli.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr(
+        "materials_discovery.llm.serving_benchmark.workspace_root",
+        lambda: artifact_workspace,
+    )
+    monkeypatch.setattr(
+        "materials_discovery.llm.generate.workspace_root",
+        lambda: artifact_workspace,
+    )
+    monkeypatch.setattr(
+        "materials_discovery.llm.evaluate.workspace_root",
+        lambda: artifact_workspace,
+    )
+
+    class _FakeAdapter:
+        def generate(self, request) -> str:
+            if type(request).__name__ == "LlmEvaluationRequest":
+                return (
+                    "{\"synthesizability_score\":0.81,\"precursor_hints\":[\"Al powder\"],"
+                    "\"anomaly_flags\":[],\"literature_context\":\"demo\","
+                    "\"rationale\":\"specialized benchmark\"}"
+                )
+            return "label benchmark.demo\n"
+
+    def _fake_compile(
+        zomic_text: str,
+        *,
+        prototype_key: str,
+        system_name: str,
+        template_family: str,
+        source_qphi_bounds=None,
+        artifact_root: Path | None = None,
+    ) -> dict[str, object]:
+        del zomic_text, system_name, template_family, source_qphi_bounds
+        raw_export_path = None
+        orbit_library_path = None
+        if artifact_root is not None:
+            artifact_root.mkdir(parents=True, exist_ok=True)
+            raw_export_path = artifact_root / f"{prototype_key}.raw.json"
+            orbit_library_path = artifact_root / f"{prototype_key}.json"
+            raw_export_path.write_text("{}", encoding="utf-8")
+            orbit_library_path.write_text("{}", encoding="utf-8")
+        return {
+            "parse_status": "passed",
+            "compile_status": "passed",
+            "error_kind": None,
+            "raw_export_path": None if raw_export_path is None else str(raw_export_path),
+            "orbit_library_path": None if orbit_library_path is None else str(orbit_library_path),
+            "cell_scale_used": 10.0,
+            "geometry_equivalence": None,
+            "geometry_error": None,
+            "error_message": None,
+        }
+
+    def _fake_candidate_from_prototype_library(
+        config: SystemConfig,
+        *,
+        seed: int,
+        candidate_index: int,
+        template_override_path: Path,
+        extra_provenance: dict[str, object] | None = None,
+    ) -> CandidateRecord:
+        del seed, template_override_path
+        provenance = {"source": "llm"}
+        if extra_provenance:
+            provenance.update(extra_provenance)
+        return CandidateRecord(
+            candidate_id=f"md_{candidate_index:06d}",
+            system=config.system_name,
+            template_family=config.template_family,
+            cell={
+                "a": 14.2,
+                "b": 14.2,
+                "c": 14.2,
+                "alpha": 90.0,
+                "beta": 90.0,
+                "gamma": 90.0,
+            },
+            sites=[
+                SiteRecord(
+                    label="S01",
+                    qphi=((0, 0), (1, 0), (1, 0)),
+                    species="Al",
+                    occ=1.0,
+                    fractional_position=(0.2, 0.2, 0.2),
+                    cartesian_position=(2.84, 2.84, 2.84),
+                )
+            ],
+            composition={"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            screen={"model": "MACE", "energy_per_atom_ev": -3.0},
+            digital_validation=DigitalValidationRecord(status="pending"),
+            provenance=provenance,
+        )
+
+    monkeypatch.setattr(
+        "materials_discovery.llm.serving_benchmark.validate_llm_adapter_ready",
+        lambda adapter, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "materials_discovery.llm.evaluate.validate_llm_adapter_ready",
+        lambda adapter, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "materials_discovery.llm.generate.resolve_llm_adapter",
+        lambda mode, backend=None, llm_generate=None: _FakeAdapter(),
+    )
+    monkeypatch.setattr(
+        "materials_discovery.llm.evaluate.resolve_llm_adapter",
+        lambda mode, backend=None: _FakeAdapter(),
+    )
+    monkeypatch.setattr("materials_discovery.llm.generate.compile_zomic_script", _fake_compile)
+    monkeypatch.setattr(
+        "materials_discovery.llm.generate.build_candidate_from_prototype_library",
+        _fake_candidate_from_prototype_library,
+    )
+
+    result = runner.invoke(
+        app,
+        ["llm-serving-benchmark", "--spec", str(benchmark_spec_path)],
+    )
+
+    assert result.exit_code == 0, (
+        f"llm-serving-benchmark failed:\n{result.stdout}\n{result.stderr}"
+    )
+    assert "Benchmark summary:" in result.stdout
+
+    summary_path = (
+        artifact_workspace
+        / "data"
+        / "benchmarks"
+        / "llm_serving"
+        / "al_cu_fe_serving_v1"
+        / "benchmark_summary.json"
+    )
+    assert summary_path.exists()
+
+    summary_payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    targets = {row["target_id"]: row for row in summary_payload["targets"]}
+    assert set(targets) == {
+        "hosted_generation",
+        "local_generation",
+        "specialized_assessment",
+    }
+
+    hosted_launch_summary_path = Path(targets["hosted_generation"]["launch_summary_path"])
+    local_launch_summary_path = Path(targets["local_generation"]["launch_summary_path"])
+    compare_path = Path(targets["hosted_generation"]["comparison_path"])
+    evaluate_summary_path = Path(targets["specialized_assessment"]["evaluate_summary_path"])
+    assert hosted_launch_summary_path.exists()
+    assert local_launch_summary_path.exists()
+    assert compare_path.exists()
+    assert evaluate_summary_path.exists()
+
+    assert targets["hosted_generation"]["smoke_checks"][0]["serving_identity"]["model"] == (
+        "claude-hosted-v1"
+    )
+    assert targets["local_generation"]["smoke_checks"][0]["serving_identity"]["model"] == (
+        "zomic-general-local-v1"
+    )
+    assert targets["specialized_assessment"]["quality_metrics"]["synthesizability_mean"] == 0.81
+    assert "parse_success_rate" not in targets["specialized_assessment"]["quality_metrics"]
+
+    hosted_spec_payload = json.loads(hosted_spec_path.read_text(encoding="utf-8"))
+    assert hosted_spec_payload["actions"][0]["preferred_model_lane"] == "specialized_materials"
+    hosted_launch_payload = json.loads(hosted_launch_summary_path.read_text(encoding="utf-8"))
+    assert hosted_launch_payload["resolved_model_lane"] == "general_purpose"
 
 
 @pytest.mark.integration

@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 21 Plan 02 Task 2 RED benchmark integration proof | Added failing offline `test_real_mode_pipeline.py` coverage for one shared-context serving benchmark spanning hosted launch, local launch, and specialized evaluation targets while preserving on-disk campaign specs |
 | 2026-04-05 | Phase 21 Plan 02 benchmark CLI and strict smoke orchestration | Added the `llm-serving-benchmark` CLI command, wrote typed smoke artifacts before benchmark continuation, enforced exit code 2 on strict smoke failures, and supported summary-path overrides for operator benchmarks |
 | 2026-04-05 | Phase 21 Plan 02 Task 1 RED benchmark CLI tests | Added failing `test_llm_serving_benchmark_cli.py` coverage for smoke-only output, strict smoke failure exit code 2, recommendation printing, and `--out` summary override behavior |
 | 2026-04-05 | Phase 21 Plan 01 serving benchmark smoke and summary helpers | Added offline serving-benchmark core helpers that reuse lane resolution and readiness probes, surface explicit no-fallback smoke failures, and build per-target summaries with fastest/cheapest/lowest-friction recommendations |
@@ -362,6 +363,8 @@
 
 ### 2026-04-05
 
+- 03:18 EDT — Started Phase 21 Plan 02 Task 2 in TDD RED mode with the real offline serving-benchmark proof.
+- The new integration coverage now locks one shared-context benchmark run across hosted launch, local launch, and specialized evaluation targets, while also checking that benchmark lane overrides do not mutate the source campaign spec on disk.
 - 03:12 EDT — Implemented the first Wave 2 benchmark CLI path and turned the new command tests green.
 - `llm-serving-benchmark` now delegates to a typed orchestration entrypoint, always writes the smoke artifact first, stops with exit code 2 on strict smoke failures, and prints concise smoke or recommendation output plus the artifact path operators need next.
 - 03:05 EDT — Started Phase 21 Plan 02 Task 1 in TDD RED mode with new benchmark CLI coverage.
