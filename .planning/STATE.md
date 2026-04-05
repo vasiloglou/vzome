@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 15
 current_phase_name: phase-12-replay-and-operator-workflow-audit-closure
 current_plan: 0
-status: ready_to_plan
-stopped_at: Phase 14 complete
-last_updated: "2026-04-04T20:51:28Z"
-last_activity: 2026-04-04 -- Phase 14 complete; Phase 15 ready to plan
+status: ready_to_execute
+stopped_at: Phase 15 planned
+last_updated: "2026-04-04T21:28:00Z"
+last_activity: 2026-04-04 -- Planned Phase 15 from the v1.1 milestone audit gaps
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 15
+  total_plans: 18
   completed_plans: 15
-  percent: 100
+  percent: 83
 ---
 
 # Project State
@@ -24,7 +24,7 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-03)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 15 planning for the final v1.1 audit gap closure
+**Current focus:** Phase 15 execution readiness for the final v1.1 audit gap closure
 
 ## Current Position
 
@@ -32,14 +32,14 @@ Current Phase: 15
 Current Phase Name: phase-12-replay-and-operator-workflow-audit-closure
 Total Phases: 6
 Current Plan: 0
-Total Plans in Phase: 0
+Total Plans in Phase: 3
 Phase: 15 of 15
-Plan: 0 of 0
-Status: Phase 14 complete; Phase 15 ready to plan
-Last activity: 2026-04-04 -- Phase 14 complete; Phase 15 ready to plan
-Last Activity Description: Phase 11 validation and verification artifacts are now audit-ready, and traceability has been restored for LLM-08, LLM-10, and OPS-06
+Plan: 0 of 3
+Status: Phase 15 planned; ready to execute
+Last activity: 2026-04-04 -- Planned Phase 15 from the v1.1 milestone audit gaps
+Last Activity Description: Phase 15 now has a three-wave closure plan to restore the missing Phase 12 summary chain, create 12-VERIFICATION.md, and restore LLM-09, LLM-11, and OPS-07 traceability before rerunning the milestone audit
 
-Progress: [██████████] 100%
+Progress: [████████▎ ] 83%
 
 ## Performance Metrics
 
