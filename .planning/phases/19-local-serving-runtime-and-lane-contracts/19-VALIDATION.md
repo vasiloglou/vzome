@@ -1,9 +1,9 @@
 ---
 phase: 19
 slug: local-serving-runtime-and-lane-contracts
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-05
 ---
 
@@ -19,7 +19,7 @@ created: 2026-04-05
 |----------|-------|
 | **Framework** | pytest |
 | **Config file** | `materials-discovery/pyproject.toml` |
-| **Quick run command** | `cd materials-discovery && uv run pytest tests/test_llm_runtime.py tests/test_llm_generate_core.py tests/test_llm_generate_cli.py tests/test_llm_launch_core.py tests/test_llm_launch_cli.py tests/test_cli.py tests/test_llm_replay_core.py -x -v` |
+| **Quick run command** | `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py tests/test_llm_runtime.py tests/test_llm_generate_core.py tests/test_llm_generate_cli.py tests/test_llm_launch_core.py tests/test_llm_launch_cli.py tests/test_llm_replay_core.py tests/test_cli.py -x -v` |
 | **Full suite command** | `cd materials-discovery && uv run pytest` |
 | **Estimated runtime** | ~45-240 seconds depending on focused slice vs full suite |
 
@@ -40,12 +40,12 @@ created: 2026-04-05
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 19-01-01 | 01 | 1 | LLM-14, OPS-08 | schema/unit | `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py -x -v` | ✅ | ⬜ pending |
-| 19-01-02 | 01 | 1 | LLM-13, OPS-08 | runtime/unit | `cd materials-discovery && uv run pytest tests/test_llm_runtime.py -x -v` | ✅ | ⬜ pending |
-| 19-02-01 | 02 | 2 | LLM-13, LLM-14 | core/integration | `cd materials-discovery && uv run pytest tests/test_llm_generate_core.py tests/test_llm_launch_core.py -x -v` | ✅ | ⬜ pending |
-| 19-02-02 | 02 | 2 | LLM-13, LLM-14, OPS-08 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_generate_cli.py tests/test_llm_launch_cli.py tests/test_cli.py -x -v` | ✅ | ⬜ pending |
-| 19-03-01 | 03 | 3 | LLM-14, OPS-08 | replay/config | `cd materials-discovery && uv run pytest tests/test_llm_replay_core.py tests/test_llm_runtime.py -x -v` | ✅ | ⬜ pending |
-| 19-03-02 | 03 | 3 | LLM-13, OPS-08 | compatibility | `cd materials-discovery && uv run pytest tests/test_llm_generate_cli.py tests/test_cli.py -x -v` | ✅ | ⬜ pending |
+| 19-01-01 | 01 | 1 | LLM-14, OPS-08 | schema/unit | `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py -x -v` | ✅ | ✅ green |
+| 19-01-02 | 01 | 1 | LLM-13, OPS-08 | runtime/unit | `cd materials-discovery && uv run pytest tests/test_llm_runtime.py -x -v` | ✅ | ✅ green |
+| 19-02-01 | 02 | 2 | LLM-13, LLM-14 | core/integration | `cd materials-discovery && uv run pytest tests/test_llm_generate_core.py tests/test_llm_launch_core.py -x -v` | ✅ | ✅ green |
+| 19-02-02 | 02 | 2 | LLM-13, LLM-14, OPS-08 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_generate_cli.py tests/test_llm_launch_cli.py tests/test_cli.py -x -v` | ✅ | ✅ green |
+| 19-03-01 | 03 | 3 | LLM-14, OPS-08 | replay/config | `cd materials-discovery && uv run pytest tests/test_llm_replay_core.py tests/test_llm_runtime.py -x -v` | ✅ | ✅ green |
+| 19-03-02 | 03 | 3 | LLM-13, OPS-08 | compatibility | `cd materials-discovery && uv run pytest tests/test_llm_generate_cli.py tests/test_cli.py -x -v` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -53,13 +53,13 @@ created: 2026-04-05
 
 ## Wave 0 Requirements
 
-- [ ] `materials-discovery/tests/test_llm_runtime.py` — extend coverage for the local OpenAI-compatible adapter, lazy `httpx` import, readiness probes, default `/v1/models` probe behavior, supported response-shape parsing, endpoint validation, and operator-facing failure messages
-- [ ] `materials-discovery/tests/test_llm_launch_schema.py` — cover additive config fields, lane-source compatibility, explicit fallback config, serving-identity normalization, and the fact that new writes may populate `serving_identity` while legacy artifacts still deserialize with `serving_identity=None`
-- [ ] `materials-discovery/tests/test_llm_generate_core.py` and `materials-discovery/tests/test_llm_generate_cli.py` — cover manual `--model-lane` selection, shared precedence (`CLI > config default > explicit fallback > backend default`), standard manifest compatibility, and local-lane preflight behavior without live provider calls
-- [ ] `materials-discovery/tests/test_llm_launch_core.py` and `materials-discovery/tests/test_llm_launch_cli.py` — cover launch-time lane resolution, explicit fallback semantics, and local-lane diagnostics
-- [ ] `materials-discovery/tests/test_llm_replay_core.py` — verify new serving-identity fields do not break strict replay config rebuilds and fail clearly on hard local identity mismatch while surfacing transport/environment drift distinctly
-- [ ] All local-serving tests must remain offline and deterministic via monkeypatched HTTP or committed fixtures; no live local server is required in CI
-- [ ] Any Phase 19 execution that changes `materials-discovery/` must update `materials-discovery/Progress.md` per repo policy
+- [x] `materials-discovery/tests/test_llm_runtime.py` — covers the local OpenAI-compatible adapter, lazy `httpx` import, readiness probes, default `/v1/models` probe behavior, supported response-shape parsing, endpoint validation, and operator-facing failure messages
+- [x] `materials-discovery/tests/test_llm_launch_schema.py` — covers additive config fields, lane-source compatibility, explicit fallback config, serving-identity normalization, and the fact that new writes may populate `serving_identity` while legacy artifacts still deserialize with `serving_identity=None`
+- [x] `materials-discovery/tests/test_llm_generate_core.py` and `materials-discovery/tests/test_llm_generate_cli.py` — cover manual `--model-lane` selection, shared precedence (`CLI > config default > explicit fallback > backend default`), standard manifest compatibility, and local-lane preflight behavior without live provider calls
+- [x] `materials-discovery/tests/test_llm_launch_core.py` and `materials-discovery/tests/test_llm_launch_cli.py` — cover launch-time lane resolution, explicit fallback semantics, and local-lane diagnostics
+- [x] `materials-discovery/tests/test_llm_replay_core.py` — verifies new serving-identity fields do not break strict replay config rebuilds and fail clearly on hard local identity mismatch while surfacing transport/environment drift distinctly
+- [x] All local-serving tests remain offline and deterministic via monkeypatched HTTP or committed fixtures; no live local server is required in CI
+- [x] Phase 22 only touched planning artifacts, so `materials-discovery/Progress.md` did not need an update during audit closure
 
 *Existing pytest infrastructure covers the repo. Wave 0 is about local-serving contract coverage, not tooling installation.*
 
@@ -75,13 +75,28 @@ created: 2026-04-05
 
 ---
 
+## Evidence Refresh
+
+- Focused rerun completed during Phase 22:
+  - `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py tests/test_llm_runtime.py tests/test_llm_generate_core.py tests/test_llm_generate_cli.py tests/test_llm_launch_core.py tests/test_llm_launch_cli.py tests/test_llm_replay_core.py tests/test_cli.py -x -v`
+  - Result: `70 passed in 1.17s`
+- Shipped full-suite evidence retained from `19-03-SUMMARY.md`:
+  - `cd materials-discovery && uv run pytest`
+  - Result: `388 passed, 3 skipped, 1 warning in 64.27s`
+- Retroactive finalization note:
+  - This validation artifact was finalized by Phase 22 to close the v1.2
+    milestone audit gap after the underlying serving behavior had already
+    shipped.
+
+---
+
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all new Phase 19 seams
-- [ ] No watch-mode or long-running background commands are required
-- [ ] Feedback latency < 240s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all new Phase 19 seams
+- [x] No watch-mode or long-running background commands are required
+- [x] Feedback latency < 240s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** automated verification complete
