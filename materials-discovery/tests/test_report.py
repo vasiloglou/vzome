@@ -241,6 +241,18 @@ def test_report_surfaces_llm_assessment_when_present(tmp_path: Path) -> None:
         "rationale": "Validation signals look consistent.",
         "error_kind": None,
         "error_message": None,
+        "requested_model_lanes": ["specialized_materials"],
+        "resolved_model_lane": "specialized_materials",
+        "resolved_model_lane_source": "configured_lane",
+        "serving_identity": {
+            "requested_model_lane": "specialized_materials",
+            "resolved_model_lane": "specialized_materials",
+            "resolved_model_lane_source": "configured_lane",
+            "adapter": "openai_compat_v1",
+            "provider": "openai_compat",
+            "model": "materials-al-cu-fe-specialist-v1",
+            "effective_api_base": "http://localhost:8000",
+        },
     }
 
     patterns = simulate_powder_xrd_patterns([ranked_candidate])
@@ -250,6 +262,11 @@ def test_report_surfaces_llm_assessment_when_present(tmp_path: Path) -> None:
     entry = report["entries"][0]
     assert entry["llm_assessment"]["status"] == "passed"
     assert entry["llm_assessment"]["synthesizability_score"] == pytest.approx(0.74)
+    assert entry["llm_assessment"]["resolved_model_lane"] == "specialized_materials"
+    assert (
+        entry["evidence"]["llm_assessment"]["serving_identity"]["model"]
+        == "materials-al-cu-fe-specialist-v1"
+    )
     assert entry["evidence"]["llm_assessment"]["literature_context"].startswith("Matches known")
     assert report["summary"]["llm_assessed_count"] == 1
     assert report["summary"]["llm_synthesizability_mean"] == pytest.approx(0.74)

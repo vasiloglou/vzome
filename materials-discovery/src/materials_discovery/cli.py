@@ -959,6 +959,7 @@ def llm_generate_command(
 def llm_evaluate_command(
     config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
     batch: str = typer.Option("all", "--batch"),
+    model_lane: str | None = typer.Option(None, "--model-lane"),
     out: Path | None = typer.Option(None, "--out", exists=False, dir_okay=False),
 ) -> None:
     """Assess ranked candidates with the LLM provider seam and write additive artifacts."""
@@ -977,6 +978,7 @@ def llm_evaluate_command(
             system_config,
             out_path,
             batch=batch,
+            requested_model_lane=model_lane,
         )
         metrics = {
             "input_count": summary.input_count,

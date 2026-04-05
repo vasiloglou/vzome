@@ -280,6 +280,7 @@ def _write_stage_artifacts(
     launch_summary_path: Path,
     include_validation: bool = True,
     include_report: bool = True,
+    include_specialized_evaluation_lineage: bool = False,
 ) -> None:
     lineage = {
         "llm_campaign": {
@@ -336,6 +337,29 @@ def _write_stage_artifacts(
             {"llm_synthesizability_mean": 0.61, "release_gate_ready": True},
             calibration_dir / "al_cu_fe_report_calibration.json",
         )
+        report_payload = {"entries": []}
+        if include_specialized_evaluation_lineage:
+            report_payload["entries"] = [
+                {
+                    "candidate_id": "cand-001",
+                    "llm_assessment": {
+                        "status": "passed",
+                        "requested_model_lanes": ["specialized_materials"],
+                        "resolved_model_lane": "specialized_materials",
+                        "resolved_model_lane_source": "configured_lane",
+                        "serving_identity": {
+                            "requested_model_lane": "specialized_materials",
+                            "resolved_model_lane": "specialized_materials",
+                            "resolved_model_lane_source": "configured_lane",
+                            "adapter": "openai_compat_v1",
+                            "provider": "openai_compat",
+                            "model": "materials-al-cu-fe-specialist-v1",
+                            "effective_api_base": "http://localhost:8000",
+                        },
+                    },
+                }
+            ]
+        write_json_object(report_payload, root / "data" / "reports" / "al_cu_fe_report.json")
 
 
 def test_cli_llm_compare_with_prior_launch(tmp_path: Path, monkeypatch) -> None:
@@ -351,7 +375,12 @@ def test_cli_llm_compare_with_prior_launch(tmp_path: Path, monkeypatch) -> None:
         launch_id="launch-002",
         created_at_utc="2026-04-04T19:00:00Z",
     )
-    _write_stage_artifacts(tmp_path, launch_id="launch-002", launch_summary_path=current_launch)
+    _write_stage_artifacts(
+        tmp_path,
+        launch_id="launch-002",
+        launch_summary_path=current_launch,
+        include_specialized_evaluation_lineage=True,
+    )
 
     monkeypatch.setattr("materials_discovery.cli.workspace_root", lambda: tmp_path)
 
@@ -361,6 +390,7 @@ def test_cli_llm_compare_with_prior_launch(tmp_path: Path, monkeypatch) -> None:
     )
 
     assert result.exit_code == 0
+    assert "Evaluation lane: specialized_materials (configured_lane)" in result.stdout
     assert "Prior launch baseline: launch-001" in result.stdout
     assert "vs acceptance parse_success_rate: +0.200000" in result.stdout
     assert llm_campaign_outcome_snapshot_path("campaign-001", "launch-002", root=tmp_path).exists()

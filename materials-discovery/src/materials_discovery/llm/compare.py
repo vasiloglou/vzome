@@ -17,6 +17,7 @@ from materials_discovery.llm.schema import (
     LlmCampaignComparisonResult,
     LlmCampaignLaunchSummary,
     LlmCampaignOutcomeSnapshot,
+    LlmServingIdentity,
     OUTCOME_METRIC_KEYS,
 )
 from materials_discovery.llm.storage import (
@@ -39,6 +40,58 @@ def _resolve_artifact_path(path_str: str, *, root: Path | None = None) -> Path:
 
 def _system_slug(system: str) -> str:
     return system.lower().replace("-", "_")
+
+
+def _normalize_requested_model_lanes(raw_value: object) -> list[str]:
+    if not isinstance(raw_value, list):
+        return []
+    requested: list[str] = []
+    for value in raw_value:
+        if not isinstance(value, str):
+            continue
+        stripped = value.strip()
+        if stripped and stripped not in requested:
+            requested.append(stripped)
+    return requested
+
+
+def _extract_evaluation_lineage(
+    *,
+    root_path: Path,
+    system_slug: str,
+) -> tuple[list[str], str | None, str | None, LlmServingIdentity | None]:
+    report_path = root_path / "data" / "reports" / f"{system_slug}_report.json"
+    if not report_path.exists():
+        return [], None, None, None
+
+    report_payload = load_json_object(report_path)
+    entries = report_payload.get("entries")
+    if not isinstance(entries, list):
+        return [], None, None, None
+
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        raw_assessment = entry.get("llm_assessment")
+        if not isinstance(raw_assessment, dict):
+            continue
+        raw_serving_identity = raw_assessment.get("serving_identity")
+        serving_identity = None
+        if isinstance(raw_serving_identity, dict):
+            serving_identity = LlmServingIdentity.model_validate(raw_serving_identity)
+        resolved_lane = raw_assessment.get("resolved_model_lane")
+        resolved_source = raw_assessment.get("resolved_model_lane_source")
+        return (
+            _normalize_requested_model_lanes(raw_assessment.get("requested_model_lanes")),
+            resolved_lane.strip() if isinstance(resolved_lane, str) and resolved_lane.strip() else None,
+            (
+                resolved_source.strip()
+                if isinstance(resolved_source, str) and resolved_source.strip()
+                else None
+            ),
+            serving_identity,
+        )
+    return [], None, None, None
 
 
 def _metric_float(value: object) -> float | None:
@@ -163,6 +216,10 @@ def build_campaign_outcome_snapshot(
     novelty_score_mean: float | None = None
     synthesizability_mean: float | None = None
     report_release_gate_ready: bool | None = None
+    evaluation_requested_model_lanes: list[str] = []
+    evaluation_resolved_model_lane: str | None = None
+    evaluation_resolved_model_lane_source: str | None = None
+    evaluation_serving_identity: LlmServingIdentity | None = None
 
     screen_manifest_path = root_path / "data" / "manifests" / f"{system_slug}_screen_manifest.json"
     if _matching_manifest(screen_manifest_path, launch_id) is not None:
@@ -212,6 +269,12 @@ def build_campaign_outcome_snapshot(
             )
             report_release_gate_ready = bool(report_calibration.get("release_gate_ready"))
             stage_manifest_paths["report"] = str(report_manifest_path)
+        (
+            evaluation_requested_model_lanes,
+            evaluation_resolved_model_lane,
+            evaluation_resolved_model_lane_source,
+            evaluation_serving_identity,
+        ) = _extract_evaluation_lineage(root_path=root_path, system_slug=system_slug)
         pipeline_manifest_path = root_path / "data" / "manifests" / f"{system_slug}_pipeline_manifest.json"
         if _matching_manifest(pipeline_manifest_path, launch_id) is not None:
             stage_manifest_paths["pipeline"] = str(pipeline_manifest_path)
@@ -230,6 +293,10 @@ def build_campaign_outcome_snapshot(
         requested_model_lanes=list(bundle.launch_summary.requested_model_lanes),
         resolved_model_lane=bundle.launch_summary.resolved_model_lane,
         resolved_model_lane_source=bundle.launch_summary.resolved_model_lane_source,
+        evaluation_requested_model_lanes=evaluation_requested_model_lanes,
+        evaluation_resolved_model_lane=evaluation_resolved_model_lane,
+        evaluation_resolved_model_lane_source=evaluation_resolved_model_lane_source,
+        evaluation_serving_identity=evaluation_serving_identity,
         parse_success_rate=round(parse_success_rate, 6),
         compile_success_rate=round(compile_success_rate, 6),
         generation_success_rate=round(generation_success_rate, 6),
@@ -293,6 +360,11 @@ def _summary_lines(
             f"{current_outcome.system} campaign {current_outcome.campaign_id} "
             f"launch {current_outcome.launch_id} ({comparison_id})"
         ),
+        (
+            "Generation lane: "
+            f"{current_outcome.resolved_model_lane} "
+            f"({current_outcome.resolved_model_lane_source})"
+        ),
         f"Acceptance baseline loaded for {acceptance_baseline.system}.",
         (
             f"Prior launch baseline: {prior_outcome.launch_id}"
@@ -300,6 +372,12 @@ def _summary_lines(
             else "Prior launch baseline: none"
         ),
     ]
+    if current_outcome.evaluation_resolved_model_lane is not None:
+        lines.append(
+            "Evaluation lane: "
+            f"{current_outcome.evaluation_resolved_model_lane} "
+            f"({current_outcome.evaluation_resolved_model_lane_source})"
+        )
     for metric_name in OUTCOME_METRIC_KEYS:
         if metric_name in delta_vs_acceptance:
             lines.append(

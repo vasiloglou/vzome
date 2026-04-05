@@ -283,6 +283,7 @@ def _write_stage_artifacts(
     launch_summary_path: Path,
     include_validation: bool = True,
     include_report: bool = True,
+    include_specialized_evaluation_lineage: bool = False,
 ) -> None:
     lineage = {
         "llm_campaign": {
@@ -350,6 +351,31 @@ def _write_stage_artifacts(
             },
             calibration_dir / "al_cu_fe_report_calibration.json",
         )
+        report_payload = {"entries": []}
+        if include_specialized_evaluation_lineage:
+            report_payload["entries"] = [
+                {
+                    "candidate_id": "cand-001",
+                    "llm_assessment": {
+                        "status": "passed",
+                        "run_id": "eval-demo",
+                        "requested_model_lanes": ["specialized_materials"],
+                        "resolved_model_lane": "specialized_materials",
+                        "resolved_model_lane_source": "configured_lane",
+                        "serving_identity": {
+                            "requested_model_lane": "specialized_materials",
+                            "resolved_model_lane": "specialized_materials",
+                            "resolved_model_lane_source": "configured_lane",
+                            "adapter": "openai_compat_v1",
+                            "provider": "openai_compat",
+                            "model": "materials-al-cu-fe-specialist-v1",
+                            "effective_api_base": "http://localhost:8000",
+                            "checkpoint_id": "ckpt-al-cu-fe-specialist",
+                        },
+                    },
+                }
+            ]
+        write_json_object(report_payload, root / "data" / "reports" / "al_cu_fe_report.json")
         write_json_object(
             {
                 "stage": "pipeline",
@@ -364,7 +390,12 @@ def test_build_campaign_outcome_snapshot_persists_launch_and_downstream_metrics(
     tmp_path: Path,
 ) -> None:
     launch_summary_path = _write_launch_bundle(tmp_path)
-    _write_stage_artifacts(tmp_path, launch_id="launch-001", launch_summary_path=launch_summary_path)
+    _write_stage_artifacts(
+        tmp_path,
+        launch_id="launch-001",
+        launch_summary_path=launch_summary_path,
+        include_specialized_evaluation_lineage=True,
+    )
     bundle = load_campaign_launch_bundle(launch_summary_path, root=tmp_path)
 
     snapshot = build_campaign_outcome_snapshot(bundle, root=tmp_path)
@@ -379,6 +410,11 @@ def test_build_campaign_outcome_snapshot_persists_launch_and_downstream_metrics(
     assert snapshot.novelty_score_mean == 0.33
     assert snapshot.synthesizability_mean == 0.61
     assert snapshot.report_release_gate_ready is True
+    assert snapshot.evaluation_requested_model_lanes == ["specialized_materials"]
+    assert snapshot.evaluation_resolved_model_lane == "specialized_materials"
+    assert snapshot.evaluation_resolved_model_lane_source == "configured_lane"
+    assert snapshot.evaluation_serving_identity is not None
+    assert snapshot.evaluation_serving_identity.model == "materials-al-cu-fe-specialist-v1"
     assert snapshot.missing_metrics == []
     assert set(snapshot.stage_manifest_paths) >= {"screen", "hifi_validate", "hifi_rank", "report"}
 

@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 20 Plan 02 specialized evaluation workflow compatibility | Added `llm-evaluate --model-lane`, turned `al_cu_fe_llm_local.yaml` into the real specialized evaluation proof config, propagated additive evaluation-lane lineage into campaign outcome snapshots and compare output, and kept focused Wave 2 regressions green at `4 passed` plus `32 passed` |
 | 2026-04-05 | Phase 20 Plan 01 specialized evaluation lane foundation | Added additive `llm_evaluate.model_lane` support, typed evaluation serving identity on assessments and run manifests, a new `llm/specialist.py` payload seam, lane-aware `llm-evaluate` core reuse of shared serving resolution, and focused schema coverage that passed at `5 passed` |
 | 2026-04-05 | Phase 19 Plan 01 local-serving schema and runtime foundation | Added additive local-serving backend and lane config fields, typed `LlmServingIdentity` support for run/launch artifacts, an `openai_compat_v1` runtime adapter with readiness probes, and focused schema/runtime regressions that passed at `20 passed` |
 | 2026-04-05 | Phase 19 Plan 02 lane-aware local serving integration | Added shared serving-lane resolution for manual generation and campaign launch, threaded additive serving identity into run and launch artifacts, added `llm-generate --model-lane` plus local-serving preflight diagnostics, and kept focused generate/launch CLI regressions green at `40 passed` |
@@ -375,6 +376,10 @@
 - Added additive `llm_evaluate.model_lane` handling in `common/schema.py`, extended evaluation artifacts with requested/resolved lane lineage plus typed `serving_identity`, and rebuilt `LlmEvaluateSummary` typing without breaking legacy manifests.
 - Added `llm/specialist.py` with a thin structure-oriented specialized payload seam, then taught `llm/evaluate.py` to reuse the shared serving-lane resolver and readiness validation path from Phase 19 before writing enriched `llm_assessment` provenance.
 - Extended `tests/test_llm_evaluate_schema.py` to cover lane config normalization, legacy artifact reads, specialized prompt routing, and backend-default preservation; focused verification passed with `5 passed`.
+- 01:12 EDT — Implemented the Phase 20 Plan 02 operator and comparison compatibility layer.
+- Added `mdisc llm-evaluate --model-lane ...`, made `configs/systems/al_cu_fe_llm_local.yaml` declare `llm_evaluate.model_lane: specialized_materials`, and proved explicit configured-fallback vs hard-failure behavior fully offline in `tests/test_llm_evaluate_cli.py`.
+- Extended `llm/compare.py` and `llm/schema.py` so campaign outcome snapshots now keep generation-lane identity distinct from additive evaluation-lane identity sourced from `llm_assessment` provenance, and updated compare CLI output to surface that distinction clearly for operators.
+- Extended compare/report regressions so specialized evaluation serving identity now remains visible through compare snapshots, compare CLI summaries, and report evidence without creating a specialized-only artifact path; focused verification passed with `4 passed` for `tests/test_llm_evaluate_cli.py` plus `32 passed` across compare/report/replay coverage.
 
 ### 2026-04-04
 

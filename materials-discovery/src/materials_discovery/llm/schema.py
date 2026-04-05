@@ -1576,6 +1576,10 @@ class LlmCampaignOutcomeSnapshot(BaseModel):
     requested_model_lanes: list[str] = Field(default_factory=list)
     resolved_model_lane: str
     resolved_model_lane_source: str
+    evaluation_requested_model_lanes: list[str] = Field(default_factory=list)
+    evaluation_resolved_model_lane: str | None = None
+    evaluation_resolved_model_lane_source: ResolvedModelLaneSource | None = None
+    evaluation_serving_identity: LlmServingIdentity | None = None
     parse_success_rate: float
     compile_success_rate: float
     generation_success_rate: float
@@ -1602,10 +1606,15 @@ class LlmCampaignOutcomeSnapshot(BaseModel):
     def validate_required_strings(cls, value: str) -> str:
         return _require_non_blank_string(value)
 
-    @field_validator("requested_model_lanes")
+    @field_validator("requested_model_lanes", "evaluation_requested_model_lanes")
     @classmethod
     def normalize_requested_model_lanes(cls, values: Sequence[str]) -> list[str]:
         return _normalize_string_list(values)
+
+    @field_validator("evaluation_resolved_model_lane")
+    @classmethod
+    def normalize_optional_evaluation_lane(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
 
     @field_validator("missing_metrics")
     @classmethod
