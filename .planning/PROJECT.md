@@ -2,32 +2,31 @@
 
 ## Current State
 
-`v1.0` is shipped.
+`v1.0` and `v1.1` are shipped.
 
-The shipped milestone delivered all three linked workstreams:
+The shipped milestones delivered all three linked workstreams and the first
+operator-governed closed-loop LLM campaign loop:
 - multi-source materials ingestion
 - reference-aware no-DFT materials discovery
 - the first complete Zomic-centered LLM ladder from corpus through acceptance
+- the proposal -> approval -> launch -> replay -> compare campaign workflow
 
 Archive references:
 - `.planning/milestones/v1.0-ROADMAP.md`
 - `.planning/milestones/v1.0-REQUIREMENTS.md`
 - `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
+- `.planning/milestones/v1.1-ROADMAP.md`
+- `.planning/milestones/v1.1-REQUIREMENTS.md`
+- `.planning/milestones/v1.1-MILESTONE-AUDIT.md`
 
-## Current Milestone: v1.1 Closed-Loop LLM Campaign MVP
+## Current Milestone
 
-**Goal:** turn the shipped dry-run `llm-suggest` surface into an
-operator-governed, replayable closed-loop campaign workflow that can launch and
-compare LLM discovery runs without bypassing existing acceptance and no-DFT
-guardrails.
+There is no active milestone right now.
 
-**Target features:**
-- materialize acceptance-pack-driven suggestions into typed campaign proposals
-  and reproducible campaign specs
-- require explicit operator approval before any suggestion launches a new LLM
-  generation campaign
-- replay and compare campaign outcomes against the originating acceptance pack
-  and downstream benchmark artifacts
+The most recent milestone, `v1.1`, is archived. The next milestone should be
+opened explicitly once new requirements are chosen.
+
+**Recommended next step:** `$gsd-new-milestone`
 
 ## Later Milestone Candidates
 
@@ -84,15 +83,14 @@ instead of living in separate prototypes.
 - Validated in Phases 6-9: The LLM ladder is now complete through corpus
   building, constrained generation, additive evaluation, acceptance packs, and
   a dry-run `llm-suggest` advisory surface.
+- Validated in v1.1: the dry-run suggestion surface now extends through
+  proposal, approval, launch, replay, compare, and operator documentation with
+  a complete verification chain.
 
 ### Active
 
-- Turn `llm-suggest` into an operator-approved closed-loop campaign surface over
-  composition regions and Zomic motif edits.
-- Preserve file-backed reproducibility, provenance, and explicit approval before
-  any suggestion mutates generation inputs or campaign state.
-- Benchmark campaign outcomes against the originating acceptance pack and
-  existing downstream discovery artifacts.
+- No active milestone requirements yet.
+- Start the next requirement set with `$gsd-new-milestone`.
 
 ### Out of Scope
 
@@ -170,4 +168,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 after starting milestone v1.1*
+*Last updated: 2026-04-05 after archiving milestone v1.1*

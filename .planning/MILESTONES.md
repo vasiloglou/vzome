@@ -1,5 +1,28 @@
 # Milestones
 
+## v1.1 — Closed-Loop LLM Campaign MVP
+
+**Status:** Shipped on 2026-04-05
+**Phases:** 10-18
+**Plans:** 27
+
+### Highlights
+
+- Turned the dry-run `llm-suggest` surface into typed campaign proposals,
+  approval artifacts, and self-contained campaign specs.
+- Launched approved campaigns through the existing `llm-generate` path while
+  preserving downstream manifests and campaign lineage.
+- Added `llm-replay`, `llm-compare`, and the operator runbook for the full
+  safe closed-loop workflow.
+- Closed the full milestone proof chain with verification for Phases 10-15 and
+  self-verifying cleanup phases 16-18.
+
+### Archives
+
+- `.planning/milestones/v1.1-ROADMAP.md`
+- `.planning/milestones/v1.1-REQUIREMENTS.md`
+- `.planning/milestones/v1.1-MILESTONE-AUDIT.md`
+
 ## v1.0 — Materials Design Program
 
 **Status:** Shipped on 2026-04-03  

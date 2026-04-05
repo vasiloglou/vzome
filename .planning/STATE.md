@@ -5,10 +5,10 @@ milestone_name: milestone
 current_phase: 18
 current_phase_name: phase-15-self-verification-closure
 current_plan: 3
-status: ready_for_milestone_audit
-stopped_at: Phase 18 complete
-last_updated: "2026-04-05T02:36:00.000Z"
-last_activity: 2026-04-05 -- Phase 18 closed the final v1.1 documentary debt; next step milestone audit
+status: milestone_archived
+stopped_at: v1.1 milestone archived
+last_updated: "2026-04-05T02:55:00.000Z"
+last_activity: 2026-04-05 -- Archived milestone v1.1 after a clean audit
 progress:
   total_phases: 9
   completed_phases: 9
@@ -24,20 +24,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-03)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Milestone audit rerun after all v1.1 documentary debt closed
+**Current focus:** No active milestone
 
 ## Current Position
 
-Current Phase: 18
-Current Phase Name: phase-15-self-verification-closure
+Current Phase: none
+Current Phase Name: none
 Total Phases: 9
-Current Plan: 3
-Total Plans in Phase: 3
-Phase: 18 of 18
-Plan: 3 of 3
-Status: Ready for milestone audit
-Last activity: 2026-04-05 -- Phase 18 closed the final v1.1 documentary debt; next step milestone audit
-Last Activity Description: All v1.1 phases are now self-verifying and the milestone is ready for a clean audit rerun
+Current Plan: none
+Total Plans in Phase: 0
+Phase: milestone archived
+Plan: milestone archived
+Status: Milestone archived
+Last activity: 2026-04-05 -- Archived milestone v1.1 after a clean audit
+Last Activity Description: The roadmap and requirements are archived; the next explicit action is starting a new milestone
 
 Progress: [██████████] 100%
 
@@ -184,6 +184,7 @@ Decisions are logged in `PROJECT.md` and the Phase 1 context files. Recent decis
 - [Phase 16-phase-13-self-verification-and-validation-closure]: Finalize 13-VALIDATION.md, create 13-VERIFICATION.md, and keep the cleanup loop from recurring.
 - [Phase 17-phase-14-self-verification-and-validation-closure]: Finalize 14-VALIDATION.md, create 14-VERIFICATION.md, and keep the cleanup loop from recurring.
 - [Phase 18-phase-15-self-verification-closure]: Add 15-VERIFICATION.md and return the milestone to audit-ready state with no remaining documentary debt.
+- [Milestone v1.1 archived]: The roadmap, requirements, and audit are now archived under `.planning/milestones/` and no active milestone remains.
 
 ### Pending Todos
 
@@ -195,6 +196,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T02:36:00Z
-Stopped at: Phase 18 complete
-Resume file: .planning/phases/18-phase-15-self-verification-closure/18-03-SUMMARY.md
+Last session: 2026-04-05T02:55:00Z
+Stopped at: v1.1 milestone archived
+Resume file: .planning/milestones/v1.1-ROADMAP.md
