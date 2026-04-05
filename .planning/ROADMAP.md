@@ -135,6 +135,112 @@ through comparative benchmarks, smoke tests, and a stable runbook.
 - Fully autonomous campaign execution remains out of scope until the expanded
   serving surface proves reliable in operator hands.
 
+## Phase 22: Phase 19 Verification and Validation Audit Closure
+
+**Goal:** close the audit gaps left after Phase 19 by formalizing local-serving
+runtime proof, finalizing Nyquist state, and restoring honest requirement
+traceability for the local-serving lane foundation.
+
+**Deliverables**
+
+- `19-VERIFICATION.md` with requirement-level proof for local serving, lane
+  resolution, and operator diagnostics
+- finalized `19-VALIDATION.md` with explicit Nyquist/verification status
+- refreshed traceability and requirement state for `LLM-13`, `LLM-14`, and
+  `OPS-08`
+- audit-ready evidence map back to Phase 19 summaries, focused tests, and full
+  suite results
+
+**Primary requirements**
+
+- `LLM-13`, `LLM-14`, `OPS-08`
+
+**Success criteria**
+
+1. Phase 19 has a formal verification artifact that closes the missing-proof
+   gap identified in the v1.2 audit.
+2. `19-VALIDATION.md` no longer remains in draft state and accurately reflects
+   the shipped verification evidence.
+3. Requirement traceability no longer claims Phase 19 is complete without
+   explicit verification support.
+4. The audit can consume Phase 19 evidence without reconstructing proof from
+   summaries alone.
+
+**Notes**
+
+- This is a gap-closure phase created directly from the v1.2 milestone audit.
+
+## Phase 23: Phase 20 Verification Audit Closure
+
+**Goal:** close the audit gaps left after Phase 20 by formalizing specialized
+lane proof and restoring honest requirement traceability for workflow
+compatibility and serving lineage.
+
+**Deliverables**
+
+- `20-VERIFICATION.md` with requirement-level proof for specialized-lane
+  behavior, replay/compare compatibility, and serving lineage
+- any validation or summary refresh needed to keep the Phase 20 proof chain
+  audit-ready
+- refreshed traceability and requirement state for `LLM-15`, `LLM-16`, and
+  `OPS-09`
+- audit-ready evidence map back to Phase 20 summaries, compare/replay tests,
+  and full suite results
+
+**Primary requirements**
+
+- `LLM-15`, `LLM-16`, `OPS-09`
+
+**Success criteria**
+
+1. Phase 20 has a formal verification artifact that proves the specialized
+   lane has a real workflow role and preserves compatibility across the shipped
+   workflow.
+2. Serving lineage for local and specialized runs is documented in an
+   audit-ready form.
+3. Requirement traceability reflects the closure work instead of stale pending
+   status.
+4. The audit can verify Phase 20 without re-deriving evidence from multiple
+   summaries by hand.
+
+**Notes**
+
+- This is a gap-closure phase created directly from the v1.2 milestone audit.
+
+## Phase 24: Phase 21 Verification and Validation Audit Closure
+
+**Goal:** close the audit gaps left after Phase 21 by formalizing benchmark and
+operator-workflow proof, finalizing Nyquist state, and restoring honest
+requirement traceability for the serving-benchmark workflow.
+
+**Deliverables**
+
+- `21-VERIFICATION.md` with requirement-level proof for comparative
+  benchmarks, smoke-test posture, and operator workflow guidance
+- finalized `21-VALIDATION.md` with explicit Nyquist/verification status
+- refreshed traceability and requirement state for `LLM-17` and `OPS-10`
+- audit-ready evidence map back to Phase 21 summaries, benchmark CLI tests,
+  and full suite results
+
+**Primary requirements**
+
+- `LLM-17`, `OPS-10`
+
+**Success criteria**
+
+1. Phase 21 has a formal verification artifact that proves hosted, local, and
+   specialized serving can be benchmarked through one operator-facing workflow.
+2. `21-VALIDATION.md` no longer remains in draft state and accurately reflects
+   the shipped benchmark evidence.
+3. Requirement traceability reflects the closure work instead of stale pending
+   status.
+4. The milestone can be rerun through audit without the current Phase 21 proof
+   gap.
+
+**Notes**
+
+- This is a gap-closure phase created directly from the v1.2 milestone audit.
+
 ## Scope Boundaries
 
 - This milestone does **not** add fully autonomous campaign execution.
