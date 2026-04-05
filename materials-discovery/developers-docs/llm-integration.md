@@ -451,6 +451,48 @@ The milestone remains deliberately narrow:
   milestone
 - the workflow stays CLI-first, file-backed, and operator-governed
 
+#### Phase 28: Checkpoint Lifecycle and Promotion Contract
+
+Phase 28 adds the first multi-checkpoint lifecycle layer without yet changing
+runtime default resolution:
+
+- immutable checkpoint registration still lives at
+  `data/llm_checkpoints/{checkpoint_id}/registration.json`
+- mutable family lifecycle state now lives at
+  `data/llm_checkpoints/families/{checkpoint_family}/lifecycle.json`
+- promotion and retirement actions are written as revision-stamped artifacts
+  under `data/llm_checkpoints/families/{checkpoint_family}/actions/`
+
+The operator surface is intentionally small and explicit:
+
+- `mdisc llm-list-checkpoints --checkpoint-family ...`
+- `mdisc llm-promote-checkpoint --spec ...`
+- `mdisc llm-retire-checkpoint --spec ...`
+
+Those commands make lifecycle state auditable without weakening replay:
+
+- `checkpoint_family` selects the family registry
+- `checkpoint_id` can still act as an explicit member pin inside that family
+- retired checkpoints are no longer implicitly selectable, but replay still
+  resolves by immutable registration plus checkpoint fingerprint identity
+- demotion happens by promoting a different checkpoint; there is no separate
+  demote command in Phase 28
+
+The committed example action specs under `configs/llm/` use illustrative
+repo-relative placeholder evidence paths. They are structural examples and CLI
+fixtures, not claimed benchmark results.
+
+The Phase 28 boundary is deliberate:
+
+- promoted-default execution through `llm-generate`, `llm-launch`, and
+  `llm-replay` is deferred to Phase 29
+- workflow pin resolution from family state is also deferred to Phase 29
+- RUNBOOK-level promotion/demotion workflow guidance stays deferred until that
+  execution integration exists
+
+This keeps Phase 28 honest: lifecycle state is now real, file-backed, and
+operator-usable, but it is not yet a silent runtime default-selection system.
+
 ### 3.2 Backend Adapter for LLM
 
 Following the existing adapter pattern:

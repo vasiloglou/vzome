@@ -150,9 +150,72 @@ llm_generate:
       provider: openai_compat
       model: zomic-al-cu-fe-adapted-v1
       api_base: http://localhost:8000
+      checkpoint_family: adapted-al-cu-fe
       checkpoint_id: ckpt-al-cu-fe-zomic-adapted
       require_checkpoint_registration: true
 ```
+
+### Checkpoint family lifecycle (Phase 28)
+
+Phase 28 adds a second layer on top of immutable checkpoint registration:
+
+- `checkpoint_family` on a lane selects the mutable family registry under
+  `data/llm_checkpoints/families/{checkpoint_family}/`
+- `checkpoint_id` remains optional and additive
+- when both are set, `checkpoint_id` is an explicit pin inside the declared
+  family rather than a separate default-selection mechanism
+- if the pinned `checkpoint_id` does not belong to the declared
+  `checkpoint_family`, lane resolution fails clearly instead of silently
+  falling back
+
+The family registry is intentionally hybrid:
+
+- immutable per-checkpoint facts still live in
+  `data/llm_checkpoints/{checkpoint_id}/registration.json`
+- mutable lifecycle state lives in
+  `data/llm_checkpoints/families/{checkpoint_family}/lifecycle.json`
+- promotion and retirement actions are written as revision-stamped artifacts in
+  `data/llm_checkpoints/families/{checkpoint_family}/actions/`
+
+Phase 28 ships three operator-facing lifecycle commands:
+
+- `uv run mdisc llm-list-checkpoints --checkpoint-family adapted-al-cu-fe`
+- `uv run mdisc llm-promote-checkpoint --spec configs/llm/al_cu_fe_checkpoint_promotion.yaml`
+- `uv run mdisc llm-retire-checkpoint --spec configs/llm/al_cu_fe_checkpoint_retirement.yaml`
+
+`llm-list-checkpoints` returns structured JSON with:
+
+- `checkpoint_family`
+- `revision`
+- `members[]`, where each member includes `checkpoint_id`, `fingerprint`,
+  `lifecycle_state`, `promoted_at`, and `retired_at`
+
+Lifecycle actions use a monotonic integer revision for stale-write protection.
+Operators should reload the current family state before retrying any failed
+promotion or retirement.
+
+Retirement semantics are strict:
+
+- retired checkpoints are no longer implicitly selectable for future default
+  resolution
+- retired checkpoints remain replayable and auditable because registration and
+  checkpoint fingerprint identity stay immutable
+- demotion happens by promoting a different checkpoint; there is no separate
+  `llm-demote-checkpoint` command in Phase 28
+
+The committed example promotion and retirement specs under `configs/llm/` use
+illustrative repo-relative placeholder evidence paths on purpose. They show the
+contract shape and CLI workflow, but future phases must replace those
+placeholders with real benchmark or evaluation artifacts before claiming a
+production promotion decision.
+
+Important Phase 28 boundary:
+
+- `checkpoint_family` is a contract and CLI-management surface in this phase
+- `llm-generate`, `llm-launch`, and `llm-replay` do not yet resolve promoted
+  defaults from family state alone
+- workflow-integrated RUNBOOK guidance for promotion/demotion stays deferred to
+  Phase 29
 
 `llm-evaluate` now uses the same lane family additively:
 
