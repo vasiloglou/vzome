@@ -28,6 +28,7 @@ created: 2026-04-05
 ## Sampling Rate
 
 - **After Wave 1 runtime/schema work:** Run `cd materials-discovery && uv run pytest tests/test_llm_runtime.py tests/test_llm_launch_schema.py -x -v`
+- **Before starting Wave 2:** Run `cd materials-discovery && uv run pytest`
 - **After Wave 2 manual-generate / launch work:** Run `cd materials-discovery && uv run pytest tests/test_llm_generate_core.py tests/test_llm_generate_cli.py tests/test_llm_launch_core.py tests/test_llm_launch_cli.py tests/test_cli.py -x -v`
 - **After Wave 3 replay/docs/config work:** Run `cd materials-discovery && uv run pytest tests/test_llm_replay_core.py tests/test_llm_runtime.py tests/test_llm_generate_cli.py tests/test_cli.py -x -v`
 - **Before `$gsd-verify-work`:** Full suite must be green
@@ -52,11 +53,11 @@ created: 2026-04-05
 
 ## Wave 0 Requirements
 
-- [ ] `materials-discovery/tests/test_llm_runtime.py` — extend coverage for the local OpenAI-compatible adapter, lazy `httpx` import, readiness probes, endpoint validation, and operator-facing failure messages
-- [ ] `materials-discovery/tests/test_llm_launch_schema.py` — cover additive config fields, lane-source compatibility, explicit fallback config, and serving-identity normalization
-- [ ] `materials-discovery/tests/test_llm_generate_core.py` and `materials-discovery/tests/test_llm_generate_cli.py` — cover manual `--model-lane` selection, standard manifest compatibility, and local-lane preflight behavior without live provider calls
+- [ ] `materials-discovery/tests/test_llm_runtime.py` — extend coverage for the local OpenAI-compatible adapter, lazy `httpx` import, readiness probes, default `/v1/models` probe behavior, supported response-shape parsing, endpoint validation, and operator-facing failure messages
+- [ ] `materials-discovery/tests/test_llm_launch_schema.py` — cover additive config fields, lane-source compatibility, explicit fallback config, serving-identity normalization, and the fact that new writes may populate `serving_identity` while legacy artifacts still deserialize with `serving_identity=None`
+- [ ] `materials-discovery/tests/test_llm_generate_core.py` and `materials-discovery/tests/test_llm_generate_cli.py` — cover manual `--model-lane` selection, shared precedence (`CLI > config default > explicit fallback > backend default`), standard manifest compatibility, and local-lane preflight behavior without live provider calls
 - [ ] `materials-discovery/tests/test_llm_launch_core.py` and `materials-discovery/tests/test_llm_launch_cli.py` — cover launch-time lane resolution, explicit fallback semantics, and local-lane diagnostics
-- [ ] `materials-discovery/tests/test_llm_replay_core.py` — verify new serving-identity fields do not break strict replay config rebuilds and fail clearly on incompatible local identity drift
+- [ ] `materials-discovery/tests/test_llm_replay_core.py` — verify new serving-identity fields do not break strict replay config rebuilds and fail clearly on hard local identity mismatch while surfacing transport/environment drift distinctly
 - [ ] All local-serving tests must remain offline and deterministic via monkeypatched HTTP or committed fixtures; no live local server is required in CI
 - [ ] Any Phase 19 execution that changes `materials-discovery/` must update `materials-discovery/Progress.md` per repo policy
 
