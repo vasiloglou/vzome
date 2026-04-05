@@ -4,6 +4,8 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 20 full-suite projection metadata normalization | Rounded `projection2zomic` composition metadata deterministically so the inherited PyQCstrc projection regression stays exact-value stable under the expanded full-suite run |
+| 2026-04-05 | Phase 20 Plan 03 Sc-Zn compatibility proof and specialized-lane docs | Added `llm_evaluate` specialized-lane config to `sc_zn_llm_local.yaml`, proved offline `Sc-Zn` launch/replay/compare compatibility with injected specialized evaluation lineage, documented `llm_evaluate.model_lane` plus a concrete OpenAI-compatible specialist endpoint recipe, and kept the Wave 3 real-mode/CLI regressions green |
 | 2026-04-05 | Phase 20 Plan 02 specialized evaluation workflow compatibility | Added `llm-evaluate --model-lane`, turned `al_cu_fe_llm_local.yaml` into the real specialized evaluation proof config, propagated additive evaluation-lane lineage into campaign outcome snapshots and compare output, and kept focused Wave 2 regressions green at `4 passed` plus `32 passed` |
 | 2026-04-05 | Phase 20 Plan 01 specialized evaluation lane foundation | Added additive `llm_evaluate.model_lane` support, typed evaluation serving identity on assessments and run manifests, a new `llm/specialist.py` payload seam, lane-aware `llm-evaluate` core reuse of shared serving resolution, and focused schema coverage that passed at `5 passed` |
 | 2026-04-05 | Phase 19 Plan 01 local-serving schema and runtime foundation | Added additive local-serving backend and lane config fields, typed `LlmServingIdentity` support for run/launch artifacts, an `openai_compat_v1` runtime adapter with readiness probes, and focused schema/runtime regressions that passed at `20 passed` |
@@ -354,6 +356,8 @@
 
 ### 2026-04-05
 
+- 01:24 EDT — Rounded `projection2zomic` composition metadata deterministically after the Phase 20 full-suite run exposed exact-value float noise in the inherited PyQCstrc regression.
+- 01:18 EDT — Closed Phase 20 Plan 03 with the `Sc-Zn` thin compatibility proof, additive specialized-lane docs, and an offline launch/replay/compare regression that preserves distinct generation-vs-evaluation lineage.
 - 00:10 EDT — Implemented the Phase 19 Plan 01 local-serving contract foundation.
 - Added additive backend transport fields (`llm_request_timeout_s`, `llm_probe_timeout_s`, `llm_probe_path`), lane identity fields (`checkpoint_id`, `model_revision`, `local_model_path`), and optional `default_model_lane` / `fallback_model_lane` support in `common/schema.py`.
 - Extended `llm/schema.py` with typed `LlmServingIdentity`, broader lane-source compatibility, and optional nested serving identity on run and launch artifacts while keeping legacy artifacts readable without that field.

@@ -47,3 +47,8 @@ llm_generate:
       checkpoint_id: ckpt-sc-zn-specialist
       model_revision: local-dev-2026-04-05
       local_model_path: /opt/models/materials-sc-zn-specialist-v1
+llm_evaluate:
+  prompt_template: materials_assess_v1
+  temperature: 0.2
+  max_tokens: 1024
+  model_lane: specialized_materials

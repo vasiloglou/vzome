@@ -614,7 +614,7 @@ precursor suggestions, anomaly detection, and short literature-style context.
 ### CLI syntax
 
 ```
-mdisc llm-evaluate --config PATH [--batch BATCH]
+mdisc llm-evaluate --config PATH [--batch BATCH] [--model-lane LANE] [--out PATH]
 ```
 
 ### Arguments
@@ -623,6 +623,7 @@ mdisc llm-evaluate --config PATH [--batch BATCH]
 |---|---|---|---|---|
 | `--config` | PATH | Yes | -- | Path to the YAML system configuration file |
 | `--batch` | STR | No | `"all"` | Batch selector (same semantics as `hifi-validate`) |
+| `--model-lane` | STR | No | `None` | Optional evaluation-lane override (`general_purpose` or `specialized_materials`) |
 | `--out` | PATH | No | computed | Output JSONL override |
 
 ### Inputs
@@ -635,21 +636,33 @@ mdisc llm-evaluate --config PATH [--batch BATCH]
 
 1. **Load configuration.** Parse and validate `SystemConfig`.
 2. **Load ranked candidates.** Read the ranked JSONL and optionally select `all` or `topN`.
-3. **Resolve LLM backend.** Select the evaluation LLM adapter from config (typically
-   a general-purpose model like Claude or GPT-4, not the fine-tuned Zomic model).
-4. **For each candidate:**
+3. **Resolve evaluation lane.** Use the explicit precedence contract:
+   CLI `--model-lane` > `llm_evaluate.model_lane` > shared `llm_generate`
+   lane defaults/fallbacks > backend default tuple.
+4. **Resolve LLM backend.** Select the adapter/provider/model tuple from the
+   resolved lane. Evaluation reuses the same `llm_generate.model_lanes`
+   registry; it does not maintain a second lane registry.
+5. **Run local-serving readiness checks when needed.** For `openai_compat_v1`,
+   probe the configured endpoint before assessment begins. The endpoint must
+   already be running.
+6. **For each candidate:**
    a. Serialize structure, composition, and validation results as a structured prompt.
-   b. LLM assesses synthesizability (inspired by CSLLM: can this be made in a lab?).
-   c. LLM suggests chemical precursors for synthesis.
-   d. LLM checks for anomalies (inconsistent validation results, unusual compositions).
-   e. LLM provides literature context (does this match known QC families?).
-5. **Attach assessments.** Add `llm_assessment` block to each CandidateRecord.
-6. **Write output.** Serialize enriched candidates to output JSONL.
-7. **Persist audit artifacts.** Write `requests.jsonl`, `assessments.jsonl`, raw responses,
+   b. When the resolved lane is `specialized_materials`, switch to the thinner
+      Phase 20 specialist payload seam instead of sending the same generic
+      prompt shape.
+   c. LLM assesses synthesizability (inspired by CSLLM: can this be made in a lab?).
+   d. LLM suggests chemical precursors for synthesis.
+   e. LLM checks for anomalies (inconsistent validation results, unusual compositions).
+   f. LLM provides literature context (does this match known QC families?).
+7. **Attach assessments.** Add `llm_assessment` to each `CandidateRecord`,
+   including additive requested/resolved lane identity plus typed
+   `serving_identity`.
+8. **Write output.** Serialize enriched candidates to output JSONL.
+9. **Persist audit artifacts.** Write `requests.jsonl`, `assessments.jsonl`, raw responses,
    and `run_manifest.json` under `data/llm_evaluations/`.
-8. **Write calibration.** Record assessed/failed counts and success rate.
-9. **Write manifest.** Stage manifest with `stage="llm_evaluate"`.
-10. **Emit summary.** Print `LlmEvaluateSummary` as JSON to stdout.
+10. **Write calibration.** Record assessed/failed counts and success rate.
+11. **Write manifest.** Stage manifest with `stage="llm_evaluate"`.
+12. **Emit summary.** Print `LlmEvaluateSummary` as JSON to stdout.
 
 ### Artifacts
 
@@ -665,6 +678,15 @@ mdisc llm-evaluate --config PATH [--batch BATCH]
 ### Return type
 
 `LlmEvaluateSummary` (JSON to stdout).
+
+### Compatibility notes
+
+- Generation and evaluation may intentionally use different lanes in the same
+  config. Phase 20 uses this to keep generation on `general_purpose` while
+  routing `llm-evaluate` through `specialized_materials`.
+- Compare and report keep the existing artifact roots, but they now surface
+  additive generation-lane and evaluation-lane lineage separately when
+  `llm_assessment` provenance is present.
 
 ---
 

@@ -14,11 +14,11 @@ Zomic-authored generation, and Phase 19 local-serving examples:
 | `al_cu_fe_real.yaml` | Fixture-backed real mode | real |
 | `al_cu_fe_exec.yaml` | Exec adapter real mode with subprocess commands | real |
 | `al_cu_fe_native.yaml` | Native provider real mode with in-process MLIP | real |
-| `al_cu_fe_llm_local.yaml` | Local OpenAI-compatible serving example with lane-aware LLM generation | real |
+| `al_cu_fe_llm_local.yaml` | Local OpenAI-compatible serving example with lane-aware generation plus the deep specialized-evaluation proof | real |
 | `al_pd_mn.yaml` | Alternative ternary system (decagonal) | mock |
 | `sc_zn.yaml` | Binary system (cubic) | mock |
 | `sc_zn_zomic.yaml` | Binary system generated from a Zomic-authored prototype bridge | mock |
-| `sc_zn_llm_local.yaml` | Local OpenAI-compatible serving example with a seeded cubic-proxy LLM lane | real |
+| `sc_zn_llm_local.yaml` | Local OpenAI-compatible serving example with seeded cubic generation and the thinner specialized-evaluation compatibility proof | real |
 
 ---
 
@@ -39,6 +39,7 @@ Zomic-authored generation, and Phase 19 local-serving examples:
 | `zomic_design` | `str \| None` | `None` | Optional workspace-root-relative path to a `ZomicDesignConfig` YAML file. When set, `generate` exports the design and then loads the resulting orbit library automatically. |
 | `backend` | `BackendConfig` | mock-mode defaults | Backend configuration block. When omitted, defaults to mock mode with fixture adapters. See the BackendConfig section below. |
 | `llm_generate` | `LlmGenerateConfig \| None` | `None` | Optional Phase 7 inference block. When omitted, the config is not enabled for `mdisc llm-generate`. |
+| `llm_evaluate` | `LlmEvaluateConfig \| None` | `None` | Optional Phase 8 / Phase 20 assessment block. When omitted, the config is not enabled for `mdisc llm-evaluate`. |
 
 ### Validation rules
 
@@ -51,7 +52,7 @@ Zomic-authored generation, and Phase 19 local-serving examples:
 
 - `prototype_library` and `zomic_design` are resolved relative to the materials-discovery workspace root.
 - Paths inside a Zomic design YAML (`zomic_file`, `export_path`, `raw_export_path`) are resolved relative to the design YAML file itself.
-- `llm_generate.seed_zomic` and `llm_generate.artifact_root` are resolved relative to the materials-discovery workspace root.
+- `llm_generate.seed_zomic`, `llm_generate.artifact_root`, and `llm_evaluate.artifact_root` are resolved relative to the materials-discovery workspace root.
 
 ### LlmGenerateConfig Reference
 
@@ -102,6 +103,85 @@ Important boundary:
 `specialized_materials` lanes are intentionally broader than "direct Zomic
 generator." In `v1.2`, a specialized lane may be generation-adjacent or
 evaluation-focused rather than Zomic-native.
+
+`llm-evaluate` now uses the same lane family additively:
+
+- `mdisc llm-evaluate --model-lane general_purpose`
+- `mdisc llm-evaluate --model-lane specialized_materials`
+
+Evaluation and generation may intentionally use different lanes in the same
+config. Phase 20 uses exactly that pattern: generation can stay on
+`general_purpose` while `llm_evaluate.model_lane` selects
+`specialized_materials` for synthesis-aware assessment.
+
+### LlmEvaluateConfig Reference
+
+`LlmEvaluateConfig` is the additive assessment block used by
+`mdisc llm-evaluate`. It preserves the standard ranked -> report workflow while
+allowing evaluation to resolve a different serving lane than generation.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `prompt_template` | `str` | `"materials_assess_v1"` | Prompt template identifier for structured candidate assessment. Must not be blank. |
+| `temperature` | `float` | `0.2` | Sampling temperature for assessment completions. Must be `>= 0`. |
+| `max_tokens` | `int` | `1024` | Maximum provider output tokens for one assessment. Must be `> 0`. |
+| `model_lane` | `"general_purpose"` \| `"specialized_materials"` \| `None` | `None` | Default evaluation lane when `mdisc llm-evaluate` is invoked without `--model-lane`. |
+| `artifact_root` | `str \| None` | `None` | Optional override for the evaluation-run artifact root. |
+| `persist_raw_responses` | `bool` | `True` | Whether raw provider responses remain in `data/llm_evaluations/`. |
+| `fixture_outputs` | `list[str]` | `[]` | Deterministic mock outputs used by fixture-backed tests. Blank entries are stripped. |
+
+Evaluation lane resolution is explicit:
+
+1. CLI `--model-lane`
+2. `llm_evaluate.model_lane`
+3. shared `llm_generate` lane contract (`default_model_lane`, then `fallback_model_lane`)
+4. backend default tuple
+
+That shared resolver is deliberate. There is only one lane registry:
+`llm_generate.model_lanes`. `llm_evaluate.model_lane` chooses from that same
+registry instead of creating a second set of provider definitions.
+
+#### Specialized Endpoint Recipe
+
+Phase 20 assumes the specialized endpoint is already running and reachable
+through an OpenAI-compatible API surface. A minimal operator setup looks like:
+
+```yaml
+backend:
+  mode: real
+  llm_adapter: openai_compat_v1
+  llm_provider: openai_compat
+  llm_model: zomic-general-local-v1
+  llm_api_base: http://localhost:8000
+  llm_probe_path: /v1/models
+llm_generate:
+  default_model_lane: general_purpose
+  model_lanes:
+    general_purpose:
+      adapter: openai_compat_v1
+      provider: openai_compat
+      model: zomic-general-local-v1
+      api_base: http://localhost:8000
+    specialized_materials:
+      adapter: openai_compat_v1
+      provider: openai_compat
+      model: materials-specialist-v1
+      api_base: http://specialist.example.internal:8000
+      checkpoint_id: ckpt-materials-specialist
+      model_revision: 2026-04-05
+llm_evaluate:
+  model_lane: specialized_materials
+```
+
+Before running `mdisc llm-evaluate`, verify the endpoint directly:
+
+```bash
+curl http://specialist.example.internal:8000/v1/models
+```
+
+The example above is operational guidance, not a CI dependency. The endpoint
+may be local or remote, but `mdisc` expects an already-running
+OpenAI-compatible surface and does not start the serving process for you.
 
 ---
 

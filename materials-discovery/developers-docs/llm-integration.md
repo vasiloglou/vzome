@@ -192,9 +192,11 @@ is no "approximately right" failure mode that could poison the pipeline.
   `run_manifest.json`) under `data/llm_evaluations/`
 - Can be used by `mdisc report` for experiment-facing summaries
 
-**Key design choice:** This stage uses a general-purpose LLM (e.g., Claude, GPT-4)
-with prompt engineering rather than a fine-tuned model, since it needs broad chemistry
-knowledge rather than Zomic-specific generation ability.
+**Key design choice:** The default evaluation lane is still a general-purpose
+LLM with prompt engineering, but Phase 20 adds an honest
+`specialized_materials` evaluation lane. That specialized lane is
+evaluation-primary: it can add synthesis-aware or structure-aware assessment
+without claiming mature direct Zomic generation.
 
 #### `mdisc llm-suggest` — LLM-Guided Acceptance Suggestions (Phase 9 Dry Run)
 
@@ -338,6 +340,30 @@ Specialized lane scope is also explicit:
 - in `v1.2`, a specialized lane may prove useful through generation-adjacent
   reasoning or evaluation support instead of direct Zomic generation
 
+#### Phase 20: Specialized Lane Integration and Workflow Compatibility
+
+Phase 20 makes the first specialized lane operational without overstating what
+off-the-shelf materials models can do:
+
+- `Al-Cu-Fe` is the deeper proof that a `specialized_materials` lane can take
+  a real workflow role through `llm-evaluate`
+- `Sc-Zn` is the thinner compatibility proof that launch, replay, compare, and
+  lineage still hold when that evaluation lane is present on a second system
+- generation, launch, and replay remain compatible with the existing lane-aware
+  runtime, but the specialist contribution is intentionally
+  **evaluation-primary**
+- compare and report now preserve distinct generation-lane and
+  evaluation-lane lineage so operators can see which model family generated a
+  candidate and which one assessed it
+
+This milestone boundary matters:
+
+- Phase 20 does **not** claim that off-the-shelf specialized materials models
+  are already strong direct Zomic generators
+- Phase 20 does **not** fork the pipeline into a special-purpose artifact tree
+- Zomic-native local generation remains a later milestone once hosted, local,
+  and specialized baselines can be compared honestly
+
 ### 3.2 Backend Adapter for LLM
 
 Following the existing adapter pattern:
@@ -389,9 +415,9 @@ GENERATE (Z[phi] + Zomic bridge)                              |
                     ┌────┴────┐
                     v         v
             LLM-EVALUATE   HIFI-RANK
-            (synthesizability,    |
-             precursors,          |
-             anomalies)           |
+            (general-purpose or   |
+             specialized lane     |
+             assessment)          |
                     |             |
                     └──────┬──────┘
                            v

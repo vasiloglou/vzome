@@ -8,7 +8,11 @@ from materials_discovery.llm.converters.record2zomic import candidate_to_zomic
 
 def projection_payload_to_zomic(payload: dict[str, Any]) -> Any:
     positions = payload.get("positions", [])
-    composition = payload.get("composition") or {}
+    raw_composition = payload.get("composition") or {}
+    composition = {
+        str(species): round(float(value), 6)
+        for species, value in raw_composition.items()
+    }
     model_id = str(payload.get("model_id", "pyqcstrc_projection"))
     system = str(payload.get("system", "Unknown"))
     candidate = CandidateRecord.model_validate(
@@ -49,8 +53,20 @@ def projection_payload_to_zomic(payload: dict[str, Any]) -> Any:
             "source_record_id": model_id,
         }
     )
+    normalized_composition = None
+    if example.composition is not None:
+        normalized_composition = {
+            str(species): round(float(value), 6)
+            for species, value in example.composition.items()
+        }
     properties = dict(example.properties)
     properties["coordinate_system"] = payload.get("coordinate_system")
     properties["source_model_id"] = model_id
     properties["projection_source"] = payload.get("source")
-    return example.model_copy(update={"provenance": provenance, "properties": properties})
+    return example.model_copy(
+        update={
+            "provenance": provenance,
+            "composition": normalized_composition,
+            "properties": properties,
+        }
+    )
