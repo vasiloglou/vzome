@@ -6,9 +6,9 @@ current_phase: 15
 current_phase_name: phase-12-replay-and-operator-workflow-audit-closure
 current_plan: 0
 status: ready_to_execute
-stopped_at: Phase 15 planned
-last_updated: "2026-04-04T21:28:00Z"
-last_activity: 2026-04-04 -- Planned Phase 15 from the v1.1 milestone audit gaps
+stopped_at: Phase 15 replanned after review
+last_updated: "2026-04-05T00:30:02Z"
+last_activity: 2026-04-04 -- Replanned Phase 15 after cross-AI review feedback
 progress:
   total_phases: 6
   completed_phases: 5
@@ -35,9 +35,9 @@ Current Plan: 0
 Total Plans in Phase: 3
 Phase: 15 of 15
 Plan: 0 of 3
-Status: Phase 15 planned; ready to execute
-Last activity: 2026-04-04 -- Planned Phase 15 from the v1.1 milestone audit gaps
-Last Activity Description: Phase 15 now has a three-wave closure plan to restore the missing Phase 12 summary chain, create 12-VERIFICATION.md, and restore LLM-09, LLM-11, and OPS-07 traceability before rerunning the milestone audit
+Status: Phase 15 replanned after review; ready to execute
+Last activity: 2026-04-04 -- Replanned Phase 15 after cross-AI review feedback
+Last Activity Description: Phase 15 now explicitly requires summary-schema parity with 12-03, extension-safe authoring of 12-VERIFICATION.md, and finalization of 15-VALIDATION.md before handing off to the milestone audit
 
 Progress: [████████▎ ] 83%
 

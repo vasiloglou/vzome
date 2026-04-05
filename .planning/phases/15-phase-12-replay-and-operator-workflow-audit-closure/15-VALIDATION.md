@@ -92,6 +92,8 @@ created: 2026-04-04
 - [ ] Sampling continuity: no 2 consecutive evidence updates without either pytest or doc-hygiene verification
 - [ ] Wave 0 captures the actual Phase 12 audit gap, not unrelated implementation work
 - [ ] `12-VERIFICATION.md`, the new summary chain, and `12-VALIDATION.md` tell the same success or blocked story
+- [ ] Phase 15 itself leaves a finalized validation artifact and the standard
+  per-plan execution summaries expected by the workflow
 - [ ] No watch-mode or long-running background commands are required
 - [ ] Feedback latency < 180s
 - [ ] `nyquist_compliant: true` set in frontmatter by the end of execution
