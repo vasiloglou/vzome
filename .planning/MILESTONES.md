@@ -1,5 +1,30 @@
 # Milestones
 
+## v1.2 — Local and Specialized LLM Serving MVP
+
+**Status:** Shipped on 2026-04-05
+**Phases:** 19-24
+**Plans:** 18
+
+### Highlights
+
+- Landed an additive local-serving runtime and deterministic serving-lane
+  contract for `llm-generate`, campaign launch, and replay.
+- Added a real `specialized_materials` workflow lane with evaluation-primary
+  behavior, auditable serving lineage, and compatibility through compare,
+  replay, and report surfaces.
+- Shipped hosted vs local vs specialized serving benchmarks, smoke-first
+  operator workflow docs, and committed example configs for the serving
+  comparison path.
+- Closed the full v1.2 proof chain with formal verification for Phases 19-21
+  and self-verifying audit-closure phases 22-24.
+
+### Archives
+
+- `.planning/milestones/v1.2-ROADMAP.md`
+- `.planning/milestones/v1.2-REQUIREMENTS.md`
+- `.planning/milestones/v1.2-MILESTONE-AUDIT.md`
+
 ## v1.1 — Closed-Loop LLM Campaign MVP
 
 **Status:** Shipped on 2026-04-05
@@ -25,8 +50,8 @@
 
 ## v1.0 — Materials Design Program
 
-**Status:** Shipped on 2026-04-03  
-**Phases:** 1-9  
+**Status:** Shipped on 2026-04-03
+**Phases:** 1-9
 **Plans:** 26
 
 ### Highlights

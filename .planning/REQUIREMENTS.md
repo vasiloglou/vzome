@@ -1,91 +1,15 @@
 # Requirements: Materials Design Program
 
-**Defined:** 2026-04-05
-**Core Value:** Build one reproducible system where trusted materials data,
-physically grounded no-DFT validation, and LLM-guided structure generation
-reinforce each other instead of living in separate prototypes.
+**Active milestone:** none
 
-## v1.2 Requirements
+There is no active milestone requirement set right now.
 
-### LLM Serving
+Archived requirements:
 
-- [x] **LLM-13**: An operator can run `mdisc llm-generate` against a configured
-  local serving lane for Zomic generation without changing standard
-  `CandidateRecord` or `llm_generate` manifest contracts.
-- [x] **LLM-14**: Manual generation and approved campaigns can target
-  configured `general_purpose` and `specialized_materials` lanes with
-  deterministic resolution and recorded lane-selection provenance.
-- [x] **LLM-15**: The platform can use at least one specialized materials model
-  path for a real workflow role, such as synthesis-aware evaluation or
-  QC-conditioned generation, while remaining additive to the existing LLM
-  workflow. This does not assume off-the-shelf specialized models are already
-  Zomic-native.
+- `.planning/milestones/v1.2-REQUIREMENTS.md`
+- `.planning/milestones/v1.1-REQUIREMENTS.md`
+- `.planning/milestones/v1.0-REQUIREMENTS.md`
 
-### Workflow Integration
+Start the next milestone with:
 
-- [x] **LLM-16**: `llm-launch`, `llm-replay`, and `llm-compare` remain
-  compatible when the originating run used a local or specialized lane.
-- [x] **LLM-17**: The platform can benchmark hosted, local, and specialized
-  lanes against the same acceptance-pack or benchmark context so operators can
-  judge quality, cost, and workflow tradeoffs.
-
-### Operations and Governance
-
-- [x] **OPS-08**: Local and specialized serving configs fail early with clear
-  diagnostics for missing model files, missing endpoints, incompatible lane
-  selections, or unavailable runtime dependencies.
-- [x] **OPS-09**: Every local or specialized run records auditable serving
-  lineage including adapter type, provider/model lane, model identifier or
-  checkpoint, runtime endpoint or path, and launch/replay provenance.
-- [x] **OPS-10**: The workflow ships with an operator runbook for setup, smoke
-  tests, lane fallback, and reproducible benchmark comparison across hosted and
-  local/specialized serving paths.
-
-## v2+ Requirements
-
-### LLM Expansion
-
-- **LLM-12**: Add optional autonomous campaign execution only after the
-  operator-governed workflow remains reliable with the broader serving surface.
-- **LLM-18**: Add training/fine-tuning automation only after local serving and
-  comparative benchmark workflows are stable enough to judge new checkpoints
-  responsibly, including Zomic-native local generation adaptation and
-  checkpoint management.
-
-### Platform Expansion
-
-- **PIPE-06**: Add more target chemistries beyond the current QC-centered
-  systems.
-- **PIPE-07**: Add automated release gates and benchmark dashboards for every
-  source/backend/serving combination.
-
-## Out of Scope
-
-| Feature | Reason |
-|---------|--------|
-| Fully autonomous campaign execution in v1.2 | Operator approval and manual continuation are still the safety boundary |
-| Foundation-model training from scratch | Too expensive and premature before serving and comparison workflows mature |
-| New chemistry breadth as the headline | The milestone focus is Project 3 serving depth, not expanding system coverage |
-| UI-first orchestration surface | The existing CLI and file-backed artifacts remain the right control surface |
-
-## Traceability
-
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| LLM-13 | Phase 22 | Complete |
-| LLM-14 | Phase 22 | Complete |
-| OPS-08 | Phase 22 | Complete |
-| LLM-15 | Phase 23 | Complete |
-| LLM-16 | Phase 23 | Complete |
-| OPS-09 | Phase 23 | Complete |
-| LLM-17 | Phase 24 | Complete |
-| OPS-10 | Phase 24 | Complete |
-
-**Coverage:**
-- v1.2 requirements: 8 total
-- Mapped to phases: 8
-- Unmapped: 0
-
----
-*Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 after closing the Phase 21 audit gap*
+- `$gsd-new-milestone`
