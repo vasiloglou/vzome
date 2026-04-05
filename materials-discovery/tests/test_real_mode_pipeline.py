@@ -438,6 +438,8 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     assert hosted_config.llm_generate.max_attempts == 2
 
     al_acceptance_pack_path = _write_llm_acceptance_pack(tmp_path / "al_workspace", system="Al-Cu-Fe")
+    (tmp_path / "al_hosted_campaign").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "al_local_campaign").mkdir(parents=True, exist_ok=True)
     hosted_campaign_spec_path = _write_llm_campaign_spec(
         tmp_path / "al_hosted_campaign",
         hosted_config_path,
@@ -474,6 +476,7 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     assert specialized_target.evaluation_model_lane == "specialized_materials"
 
     sc_acceptance_pack_path = _write_llm_acceptance_pack(tmp_path / "sc_workspace", system="Sc-Zn")
+    (tmp_path / "sc_local_campaign").mkdir(parents=True, exist_ok=True)
     sc_campaign_spec_path = _write_llm_campaign_spec(
         tmp_path / "sc_local_campaign",
         sc_zn_local_config_path,

@@ -1,0 +1,21 @@
+benchmark_id: sc_zn_serving_v1
+acceptance_pack_path: ../../data/benchmarks/llm_acceptance/sc_zn_pack_v1/acceptance_pack.json
+targets:
+  - target_id: local_generation
+    label: Local generation
+    workflow_role: campaign_launch
+    system_config_path: ../systems/sc_zn_llm_local.yaml
+    campaign_spec_path: ../../data/llm_campaigns/sc_zn_serving_local/campaign_spec.json
+    generation_model_lane: general_purpose
+    estimated_cost_usd: 0.02
+    operator_friction_tier: medium
+    notes: Thin compatibility example for the Sc-Zn local generation lane.
+  - target_id: specialized_assessment
+    label: Specialized assessment
+    workflow_role: llm_evaluate
+    system_config_path: ../systems/sc_zn_llm_local.yaml
+    batch: top1
+    evaluation_model_lane: specialized_materials
+    estimated_cost_usd: 0.04
+    operator_friction_tier: high
+    notes: Thin compatibility example for the Sc-Zn evaluation-primary specialist lane.

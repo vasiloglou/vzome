@@ -1,0 +1,31 @@
+system_name: Al-Cu-Fe
+template_family: icosahedral_approximant_1_1
+species:
+  - Al
+  - Cu
+  - Fe
+composition_bounds:
+  Al:
+    min: 0.60
+    max: 0.80
+  Cu:
+    min: 0.10
+    max: 0.25
+  Fe:
+    min: 0.05
+    max: 0.20
+coeff_bounds:
+  min: -3
+  max: 3
+seed: 17
+default_count: 5
+backend:
+  mode: real
+  llm_adapter: anthropic_api_v1
+  llm_provider: anthropic
+  llm_model: hosted-general-placeholder
+llm_generate:
+  prompt_template: zomic_generate_v1
+  temperature: 0.2
+  max_tokens: 1024
+  max_attempts: 2

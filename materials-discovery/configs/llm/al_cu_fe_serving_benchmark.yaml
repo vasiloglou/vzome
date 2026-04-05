@@ -1,0 +1,30 @@
+benchmark_id: al_cu_fe_serving_v1
+acceptance_pack_path: ../../data/benchmarks/llm_acceptance/pack_v1/acceptance_pack.json
+targets:
+  - target_id: hosted_generation
+    label: Hosted generation
+    workflow_role: campaign_launch
+    system_config_path: ../systems/al_cu_fe_llm_hosted.yaml
+    campaign_spec_path: ../../data/llm_campaigns/al_cu_fe_serving_hosted/campaign_spec.json
+    generation_model_lane: general_purpose
+    estimated_cost_usd: 0.35
+    operator_friction_tier: low
+    notes: Uses the hosted general-purpose baseline for cross-lane comparison.
+  - target_id: local_generation
+    label: Local generation
+    workflow_role: campaign_launch
+    system_config_path: ../systems/al_cu_fe_llm_local.yaml
+    campaign_spec_path: ../../data/llm_campaigns/al_cu_fe_serving_local/campaign_spec.json
+    generation_model_lane: general_purpose
+    estimated_cost_usd: 0.03
+    operator_friction_tier: medium
+    notes: Runs the same generation workflow through the local OpenAI-compatible lane.
+  - target_id: specialized_assessment
+    label: Specialized assessment
+    workflow_role: llm_evaluate
+    system_config_path: ../systems/al_cu_fe_llm_local.yaml
+    batch: top1
+    evaluation_model_lane: specialized_materials
+    estimated_cost_usd: 0.05
+    operator_friction_tier: high
+    notes: Evaluation-primary specialized lane on the same shared acceptance-pack context.
