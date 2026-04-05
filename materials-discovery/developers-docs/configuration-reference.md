@@ -4,7 +4,9 @@
 
 Each materials-discovery pipeline run is driven by a single YAML configuration file. These files live in `configs/systems/` and are deserialized into a `SystemConfig` Pydantic model defined in `src/materials_discovery/common/schema.py`. The config controls which chemical system to explore, how candidate structures are generated, and which backend adapters perform validation work.
 
-The repository ships seven config files that form a progression from minimal mock-mode testing through full native-provider execution plus Zomic-authored generation:
+The repository ships a representative set of configs that form a progression
+from minimal mock-mode testing through full native-provider execution,
+Zomic-authored generation, and Phase 19 local-serving examples:
 
 | File | Purpose | Backend mode |
 |---|---|---|
@@ -12,9 +14,11 @@ The repository ships seven config files that form a progression from minimal moc
 | `al_cu_fe_real.yaml` | Fixture-backed real mode | real |
 | `al_cu_fe_exec.yaml` | Exec adapter real mode with subprocess commands | real |
 | `al_cu_fe_native.yaml` | Native provider real mode with in-process MLIP | real |
+| `al_cu_fe_llm_local.yaml` | Local OpenAI-compatible serving example with lane-aware LLM generation | real |
 | `al_pd_mn.yaml` | Alternative ternary system (decagonal) | mock |
 | `sc_zn.yaml` | Binary system (cubic) | mock |
 | `sc_zn_zomic.yaml` | Binary system generated from a Zomic-authored prototype bridge | mock |
+| `sc_zn_llm_local.yaml` | Local OpenAI-compatible serving example with a seeded cubic-proxy LLM lane | real |
 
 ---
 
@@ -62,13 +66,42 @@ selection in `BackendConfig`.
 | `max_tokens` | `int` | `2048` | Maximum provider output tokens for a single attempt. Must be `> 0`. |
 | `max_attempts` | `int` | `3` | Retry budget multiplier used by `llm-generate`. Must be `>= 1`. |
 | `seed_zomic` | `str \| None` | `None` | Optional seed-script path for controlled variation runs. |
+| `example_pack_path` | `str \| None` | `None` | Optional eval/example pack used to condition the prompt. |
+| `max_conditioning_examples` | `int` | `3` | Cap on how many conditioning examples may be injected into one prompt. Must be `>= 1`. |
 | `artifact_root` | `str \| None` | `None` | Optional override for the run-artifact root. |
 | `persist_raw_completions` | `bool` | `True` | Whether raw model completions are retained in run artifacts. |
 | `fixture_outputs` | `list[str]` | `[]` | Deterministic mock outputs used by `llm_fixture_v1`. Blank entries are stripped. |
+| `default_model_lane` | `"general_purpose"` \| `"specialized_materials"` \| `None` | `None` | Default serving lane used when `mdisc llm-generate` is invoked without `--model-lane`. |
+| `fallback_model_lane` | `"general_purpose"` \| `"specialized_materials"` \| `None` | `None` | Explicit fallback lane. Only consulted when the requested/default lane is unavailable. |
+| `model_lanes` | `dict[str, LlmModelLaneConfig]` | `{}` | Optional lane-specific serving identities keyed by `general_purpose` and `specialized_materials`. |
 
 If `llm_generate` is omitted or explicitly `null`, the system config remains
 valid but `mdisc llm-generate` should treat the config as not enabled for LLM
 generation.
+
+### Local-serving lane notes
+
+Phase 19 adds an additive local-serving seam for `mdisc llm-generate`:
+
+- `mdisc llm-generate --model-lane general_purpose`
+- `mdisc llm-generate --model-lane specialized_materials`
+
+Resolution order is explicit and shared with `llm-launch`:
+
+1. CLI-requested lane
+2. `llm_generate.default_model_lane`
+3. `llm_generate.fallback_model_lane`
+4. backend default tuple
+
+Important boundary:
+
+- the local server must already be running
+- the CLI validates configuration and readiness
+- the CLI does **not** launch or supervise the local inference process
+
+`specialized_materials` lanes are intentionally broader than "direct Zomic
+generator." In `v1.2`, a specialized lane may be generation-adjacent or
+evaluation-focused rather than Zomic-native.
 
 ---
 
@@ -138,8 +171,19 @@ materials generator.
 | `xrd_provider` | `str \| None` | `None` | *unchanged (None)* | `"pinned"` |
 | `llm_model` | `str \| None` | `None` | *unchanged (None)* | *no auto-default* |
 | `llm_api_base` | `str \| None` | `None` | *unchanged (None)* | *no auto-default* |
+| `llm_request_timeout_s` | `float` | `120.0` | `120.0` | `120.0` |
+| `llm_probe_timeout_s` | `float` | `5.0` | `5.0` | `5.0` |
+| `llm_probe_path` | `str \| None` | `None` | `None` | `None` |
 
 Auto-defaulting is applied by a `model_validator` on `BackendConfig`. When a field is explicitly set in the YAML, the explicit value takes precedence over the auto-default. In mock mode `ingest_adapter`, `llm_adapter`, and `llm_provider` are auto-defaulted. In real mode the Phase 7 hosted-provider lane does **not** auto-default `llm_provider` or `llm_model`; real hosted configs must set those fields explicitly.
+
+Phase 19 adds the `openai_compat_v1` local-serving seam on top of these same
+fields. In that mode:
+
+- `llm_api_base` points at an already-running OpenAI-compatible endpoint
+- `llm_probe_path` defaults to `/v1/models` when omitted
+- readiness errors should be treated as local-server setup issues, not as a
+  signal that the CLI will start the server for you
 
 For a detailed explanation of adapters, providers, and the dispatch logic, see [backend-system.md](backend-system.md).
 

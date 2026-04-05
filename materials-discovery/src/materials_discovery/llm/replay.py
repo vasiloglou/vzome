@@ -12,6 +12,7 @@ from materials_discovery.llm.schema import (
     LlmCampaignSpec,
     LlmGenerationRequest,
     LlmRunManifest,
+    LlmServingIdentity,
 )
 
 
@@ -28,6 +29,205 @@ def _resolve_artifact_path(path_str: str, *, root: Path | None = None) -> Path:
 
 def _load_object(path: Path) -> dict[str, Any]:
     return load_json_object(path)
+
+
+def _current_backend_tuple(config: SystemConfig) -> tuple[str, str, str, str | None]:
+    if config.backend.mode == "mock":
+        return (
+            config.backend.llm_adapter or "llm_fixture_v1",
+            config.backend.llm_provider or "mock",
+            config.backend.llm_model or "fixture",
+            config.backend.llm_api_base,
+        )
+    return (
+        config.backend.llm_adapter or "anthropic_api_v1",
+        config.backend.llm_provider or "anthropic",
+        config.backend.llm_model or "fixture",
+        config.backend.llm_api_base,
+    )
+
+
+def _recorded_serving_identity(bundle: CampaignLaunchBundle) -> LlmServingIdentity:
+    if bundle.resolved_launch.serving_identity is not None:
+        return bundle.resolved_launch.serving_identity.model_copy(deep=True)
+    if bundle.launch_summary.serving_identity is not None:
+        return bundle.launch_summary.serving_identity.model_copy(deep=True)
+    if bundle.run_manifest.serving_identity is not None:
+        return bundle.run_manifest.serving_identity.model_copy(deep=True)
+
+    requested_lane = next(iter(bundle.launch_summary.requested_model_lanes), None)
+    return LlmServingIdentity(
+        requested_model_lane=requested_lane,
+        resolved_model_lane=bundle.launch_summary.resolved_model_lane,
+        resolved_model_lane_source=bundle.launch_summary.resolved_model_lane_source,
+        adapter=bundle.run_manifest.adapter_key,
+        provider=bundle.run_manifest.provider,
+        model=bundle.run_manifest.model,
+    )
+
+
+def _has_explicit_serving_identity(bundle: CampaignLaunchBundle) -> bool:
+    return any(
+        identity is not None
+        for identity in (
+            bundle.resolved_launch.serving_identity,
+            bundle.launch_summary.serving_identity,
+            bundle.run_manifest.serving_identity,
+        )
+    )
+
+
+def _hard_identity_matches(
+    recorded: LlmServingIdentity,
+    *,
+    adapter: str,
+    provider: str,
+    model: str,
+    checkpoint_id: str | None,
+) -> bool:
+    if adapter != recorded.adapter or provider != recorded.provider or model != recorded.model:
+        return False
+    if recorded.checkpoint_id is not None and checkpoint_id != recorded.checkpoint_id:
+        return False
+    return True
+
+
+def _format_identity(
+    *,
+    adapter: str,
+    provider: str,
+    model: str,
+    checkpoint_id: str | None,
+) -> str:
+    parts = [
+        f"adapter={adapter}",
+        f"provider={provider}",
+        f"model={model}",
+    ]
+    if checkpoint_id is not None:
+        parts.append(f"checkpoint_id={checkpoint_id}")
+    return ", ".join(parts)
+
+
+def build_replay_serving_identity(
+    bundle: CampaignLaunchBundle,
+    current_config: SystemConfig,
+) -> LlmServingIdentity:
+    recorded = _recorded_serving_identity(bundle)
+    lane_source = recorded.resolved_model_lane_source
+    llm_generate = current_config.llm_generate
+    if llm_generate is None:
+        raise ValueError("config.llm_generate must be configured for replay")
+
+    if not _has_explicit_serving_identity(bundle):
+        return LlmServingIdentity(
+            requested_model_lane=recorded.requested_model_lane,
+            resolved_model_lane=(
+                "general_purpose"
+                if recorded.resolved_model_lane_source == "baseline_fallback"
+                else recorded.resolved_model_lane
+            ),
+            resolved_model_lane_source=(
+                "backend_default"
+                if recorded.resolved_model_lane_source == "baseline_fallback"
+                else recorded.resolved_model_lane_source
+            ),
+            adapter=recorded.adapter,
+            provider=recorded.provider,
+            model=recorded.model,
+            effective_api_base=current_config.backend.llm_api_base,
+        )
+
+    if lane_source in {"configured_lane", "default_lane", "configured_fallback"}:
+        lane_config = llm_generate.model_lanes.get(recorded.resolved_model_lane)
+        backend_adapter, backend_provider, backend_model, backend_api_base = _current_backend_tuple(
+            current_config
+        )
+        backend_matches = _hard_identity_matches(
+            recorded,
+            adapter=backend_adapter,
+            provider=backend_provider,
+            model=backend_model,
+            checkpoint_id=None,
+        )
+        if lane_config is None:
+            if backend_matches:
+                return LlmServingIdentity(
+                    requested_model_lane=recorded.requested_model_lane,
+                    resolved_model_lane=recorded.resolved_model_lane,
+                    resolved_model_lane_source="backend_default",
+                    adapter=backend_adapter,
+                    provider=backend_provider,
+                    model=backend_model,
+                    effective_api_base=backend_api_base,
+                )
+            raise ValueError(
+                "replay hard serving identity drift: "
+                f"resolved lane '{recorded.resolved_model_lane}' is no longer configured "
+                f"for recorded {_format_identity(**recorded.model_dump(include={'adapter', 'provider', 'model', 'checkpoint_id'}))}. "
+                "Endpoint, revision, and local-path drift are allowed; model or checkpoint drift is not."
+            )
+        if not _hard_identity_matches(
+            recorded,
+            adapter=lane_config.adapter,
+            provider=lane_config.provider,
+            model=lane_config.model,
+            checkpoint_id=lane_config.checkpoint_id,
+        ):
+            if backend_matches:
+                return LlmServingIdentity(
+                    requested_model_lane=recorded.requested_model_lane,
+                    resolved_model_lane=recorded.resolved_model_lane,
+                    resolved_model_lane_source="backend_default",
+                    adapter=backend_adapter,
+                    provider=backend_provider,
+                    model=backend_model,
+                    effective_api_base=backend_api_base,
+                )
+            raise ValueError(
+                "replay hard serving identity drift: "
+                f"recorded {_format_identity(**recorded.model_dump(include={'adapter', 'provider', 'model', 'checkpoint_id'}))} "
+                f"but current lane '{recorded.resolved_model_lane}' resolves to "
+                f"{_format_identity(adapter=lane_config.adapter, provider=lane_config.provider, model=lane_config.model, checkpoint_id=lane_config.checkpoint_id)}. "
+                "Endpoint, revision, and local-path drift are allowed; model or checkpoint drift is not."
+            )
+        return LlmServingIdentity(
+            requested_model_lane=recorded.requested_model_lane,
+            resolved_model_lane=recorded.resolved_model_lane,
+            resolved_model_lane_source=recorded.resolved_model_lane_source,
+            adapter=lane_config.adapter,
+            provider=lane_config.provider,
+            model=lane_config.model,
+            effective_api_base=lane_config.api_base,
+            checkpoint_id=lane_config.checkpoint_id,
+            model_revision=lane_config.model_revision,
+            local_model_path=lane_config.local_model_path,
+        )
+
+    adapter, provider, model, api_base = _current_backend_tuple(current_config)
+    if not _hard_identity_matches(
+        recorded,
+        adapter=adapter,
+        provider=provider,
+        model=model,
+        checkpoint_id=None,
+    ):
+        raise ValueError(
+            "replay hard serving identity drift: "
+            f"recorded {_format_identity(**recorded.model_dump(include={'adapter', 'provider', 'model', 'checkpoint_id'}))} "
+            f"but current backend default resolves to "
+            f"{_format_identity(adapter=adapter, provider=provider, model=model, checkpoint_id=None)}. "
+            "Endpoint drift is allowed; model or checkpoint drift is not."
+        )
+    return LlmServingIdentity(
+        requested_model_lane=recorded.requested_model_lane,
+        resolved_model_lane="general_purpose",
+        resolved_model_lane_source="backend_default",
+        adapter=adapter,
+        provider=provider,
+        model=model,
+        effective_api_base=api_base,
+    )
 
 
 @dataclass(frozen=True)
@@ -130,26 +330,6 @@ def load_campaign_launch_bundle(
     )
 
 
-def _resolved_api_base(bundle: CampaignLaunchBundle, current_config: SystemConfig) -> str | None:
-    llm_generate = current_config.llm_generate
-    if llm_generate is not None:
-        lane_config = llm_generate.model_lanes.get(bundle.resolved_launch.resolved_model_lane)
-        if lane_config is not None:
-            if (
-                lane_config.adapter == bundle.resolved_launch.resolved_adapter
-                and lane_config.provider == bundle.resolved_launch.resolved_provider
-                and lane_config.model == bundle.resolved_launch.resolved_model
-            ):
-                return lane_config.api_base
-    if (
-        current_config.backend.llm_adapter == bundle.run_manifest.adapter_key
-        and current_config.backend.llm_provider == bundle.run_manifest.provider
-        and current_config.backend.llm_model == bundle.run_manifest.model
-    ):
-        return current_config.backend.llm_api_base
-    return current_config.backend.llm_api_base
-
-
 def build_replay_config(
     bundle: CampaignLaunchBundle,
     current_config: SystemConfig,
@@ -168,10 +348,11 @@ def build_replay_config(
         for species, bound in bundle.resolved_launch.resolved_composition_bounds.items()
     }
 
-    replay_config.backend.llm_adapter = bundle.run_manifest.adapter_key
-    replay_config.backend.llm_provider = bundle.run_manifest.provider
-    replay_config.backend.llm_model = bundle.run_manifest.model
-    replay_config.backend.llm_api_base = _resolved_api_base(bundle, current_config)
+    serving_identity = build_replay_serving_identity(bundle, current_config)
+    replay_config.backend.llm_adapter = serving_identity.adapter
+    replay_config.backend.llm_provider = serving_identity.provider
+    replay_config.backend.llm_model = serving_identity.model
+    replay_config.backend.llm_api_base = serving_identity.effective_api_base
 
     replay_config.llm_generate.prompt_template = bundle.run_manifest.prompt_template
     replay_config.llm_generate.temperature = bundle.prompt_request.temperature

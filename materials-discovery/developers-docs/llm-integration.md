@@ -312,6 +312,32 @@ Phase 12 still keeps the workflow additive:
 - downstream stages such as `screen`, `hifi-validate`, `hifi-rank`, and
   `report` remain manual/operator-driven
 
+#### Phase 19: Local Serving Runtime and Lane Contracts
+
+Phase 19 extends the shipped LLM workflow with a lane-aware serving seam rather
+than a second generation engine:
+
+- `openai_compat_v1` is the first local-serving adapter contract
+- `mdisc llm-generate --model-lane ...` and `mdisc llm-launch` now resolve
+  lanes through the same precedence contract
+- run manifests, resolved launch artifacts, and replay bundles can carry richer
+  `serving_identity` data including endpoint, checkpoint, revision, and local
+  model-path hints
+
+The Phase 19 boundary is intentionally narrow:
+
+- the local server must already be running
+- the CLI performs readiness checks and records serving identity
+- the CLI does **not** start or supervise the inference process
+
+Specialized lane scope is also explicit:
+
+- a `specialized_materials` lane is first-class in the workflow contract
+- off-the-shelf specialized materials models are **not** assumed to understand
+  Zomic natively
+- in `v1.2`, a specialized lane may prove useful through generation-adjacent
+  reasoning or evaluation support instead of direct Zomic generation
+
 ### 3.2 Backend Adapter for LLM
 
 Following the existing adapter pattern:

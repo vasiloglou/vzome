@@ -541,7 +541,7 @@ on composition constraints.
 ### CLI syntax
 
 ```
-mdisc llm-generate --config PATH --count INT [--seed-zomic PATH] [--temperature FLOAT] [--out PATH]
+mdisc llm-generate --config PATH --count INT [--seed-zomic PATH] [--temperature FLOAT] [--model-lane LANE] [--out PATH]
 ```
 
 ### Arguments
@@ -552,35 +552,44 @@ mdisc llm-generate --config PATH --count INT [--seed-zomic PATH] [--temperature 
 | `--count` | INT | Yes (min=1) | -- | Number of candidates to generate |
 | `--seed-zomic` | PATH | No | `None` | Optional seed Zomic script to extend or vary |
 | `--temperature` | FLOAT | No | `0.7` | LLM sampling temperature |
+| `--model-lane` | STR | No | `None` | Optional serving-lane override (`general_purpose` or `specialized_materials`) |
 | `--out` | PATH | No | `data/candidates/{slug}_candidates.jsonl` | Output path |
 
 ### Internal steps
 
 1. **Load configuration.** Parse and validate `SystemConfig`.
-2. **Resolve LLM backend.** Select the configured adapter from `BackendConfig`
-   (currently mock or the first hosted-provider seam).
-3. **Validate optional seed input.** If `--seed-zomic` or
+2. **Resolve serving lane.** Use the explicit Phase 19 precedence contract:
+   CLI `--model-lane` > `llm_generate.default_model_lane` >
+   `llm_generate.fallback_model_lane` > backend default tuple.
+3. **Resolve LLM backend.** Select the effective adapter/provider/model tuple
+   from the resolved lane or backend default.
+4. **Run local-serving readiness checks when needed.** For `openai_compat_v1`,
+   probe the configured endpoint before generation attempts begin. The local
+   server must already be running; `mdisc` does not launch it for you.
+5. **Validate optional seed input.** If `--seed-zomic` or
    `llm_generate.seed_zomic` is present, load the seed script and validate it
    once through the compile bridge before any provider call.
-4. **Format prompt.** Build a config-driven prompt containing system name,
+6. **Format prompt.** Build a config-driven prompt containing system name,
    template family, composition bounds, and an optional `SEED_ZOMIC` block.
-5. **Run bounded retries.** Attempt up to `requested_count * max_attempts`
+7. **Run bounded retries.** Attempt up to `requested_count * max_attempts`
    generations. Every raw completion is persisted even if provider, parse,
    compile, or conversion fails.
-6. **Compile via vZome authority.** For each raw completion, call the Zomic
+8. **Compile via vZome authority.** For each raw completion, call the Zomic
    bridge and record explicit parse/compile status, error classification, and
    persisted raw-export/orbit-library artifact paths.
-7. **Convert valid outputs.** Successful orbit-library outputs are wrapped as
+9. **Convert valid outputs.** Successful orbit-library outputs are wrapped as
    standard `CandidateRecord` rows with additive LLM provenance fields so
    `mdisc screen` can consume them without a schema fork.
-8. **Write run artifacts.** Persist `prompt.json`, `attempts.jsonl`,
+10. **Write run artifacts.** Persist `prompt.json`, `attempts.jsonl`,
    `compile_results.jsonl`, and `run_manifest.json` under
-   `data/llm_runs/{slug}_{request_hash}/`.
-9. **Write calibration.** Record attempt count, parse pass rate, compile pass
+   `data/llm_runs/{slug}_{request_hash}/`. The run manifest now records nested
+   `serving_identity` in addition to the legacy flat adapter/provider/model
+   fields.
+11. **Write calibration.** Record attempt count, parse pass rate, compile pass
    rate, and generation success rate in the calibration JSON.
-10. **Write Stage manifest.** Stage manifest with `stage="llm_generate"` hashes
+12. **Write Stage manifest.** Stage manifest with `stage="llm_generate"` hashes
    the candidates JSONL, calibration JSON, and run manifest.
-11. **Emit summary.** Print `LlmGenerateSummary` as JSON to stdout.
+13. **Emit summary.** Print `LlmGenerateSummary` as JSON to stdout.
 
 ### Artifacts
 
@@ -785,11 +794,15 @@ mdisc llm-launch --campaign-spec PATH [--out PATH]
 3. **Reject config drift before execution.** If the current hash differs from the pinned hash, exit with code 2 and an operator-facing message that includes the config path, the pinned hash, the current hash, and re-approval guidance.
 4. **Create launch wrapper.** Allocate a new `launch_id`, print it immediately to stderr, and resolve the launch artifact directory under `data/llm_campaigns/{campaign_id}/launches/{launch_id}/`.
 5. **Resolve additive overlay.** Call `resolve_campaign_launch(...)` to derive prompt deltas, lane selection, composition-window changes, seed handling, and the resolved provider/model lane without mutating the source YAML.
-6. **Write `resolved_launch.json`.** Persist the resolved overlay before any provider call begins.
-7. **Launch through the existing runtime.** Call `generate_llm_candidates(...)` with the copied config, the resolved additive prompt/campaign metadata, and the requested candidate count from the campaign spec.
-8. **Write standard stage artifacts.** Persist the standard candidate JSONL, calibration JSON, `llm_generate` stage manifest, and the run-level artifacts already produced by `llm-generate`.
-9. **Write `launch_summary.json`.** Record success or failure in the launch wrapper summary and print the typed `LlmCampaignLaunchSummary` JSON to stdout on success.
-10. **Preserve partial artifacts on failure.** If launch fails after wrapper creation, keep any partial outputs and still write a failed launch summary. Phase 11 does not implement `--resume`.
+6. **Run readiness checks when needed.** If the resolved launch uses
+   `openai_compat_v1`, probe the endpoint before generation attempts begin.
+   Local-serving failures name the lane and endpoint; they do not start the
+   server for you.
+7. **Write `resolved_launch.json`.** Persist the resolved overlay before any provider call begins.
+8. **Launch through the existing runtime.** Call `generate_llm_candidates(...)` with the copied config, the resolved additive prompt/campaign metadata, the resolved serving identity, and the requested candidate count from the campaign spec.
+9. **Write standard stage artifacts.** Persist the standard candidate JSONL, calibration JSON, `llm_generate` stage manifest, and the run-level artifacts already produced by `llm-generate`.
+10. **Write `launch_summary.json`.** Record success or failure in the launch wrapper summary and print the typed `LlmCampaignLaunchSummary` JSON to stdout on success.
+11. **Preserve partial artifacts on failure.** If launch fails after wrapper creation, keep any partial outputs and still write a failed launch summary. Phase 11 does not implement `--resume`.
 
 ### Artifacts
 
@@ -867,9 +880,12 @@ mdisc llm-replay --launch-summary PATH
 1. **Load the recorded launch bundle.** Read `launch_summary.json`, `resolved_launch.json`, `run_manifest.json`, and `prompt.json` as a single replay authority.
 2. **Load current config.** Resolve `system_config_path` from the recorded launch, load `SystemConfig`, and compute the current config hash.
 3. **Rebuild the effective replay config.** Reapply the recorded adapter/provider/model, prompt template, resolved composition bounds, seed path, conditioning-example cap, and request count without mutating the source YAML.
+   Phase 19 makes this replay-safe for richer local-serving identity: model and
+   checkpoint drift fail clearly, while endpoint/path drift is treated
+   separately.
 4. **Allocate a fresh launch wrapper.** Create a new `launch_id` and a new launch directory under `data/llm_campaigns/{campaign_id}/launches/{launch_id}/`.
 5. **Write `resolved_launch.json`.** Persist the strict replay wrapper, including `replay_of_launch_id`, `replay_of_launch_summary_path`, and the current config hash.
-6. **Launch through the existing runtime.** Call `generate_llm_candidates(...)` with the rebuilt config and replay metadata.
+6. **Launch through the existing runtime.** Call `generate_llm_candidates(...)` with the rebuilt config, replay metadata, and the resolved replay serving identity so new artifacts do not lose local lane details.
 7. **Write standard stage artifacts.** Persist the normal candidate JSONL, `llm_generate` stage manifest, and run-level artifacts.
 8. **Write `launch_summary.json`.** Record the replay result and point back to the source launch.
 9. **Preserve partial artifacts on failure.** Failed replays still write a failed launch summary; Phase 12 does not implement replay overrides or `--resume`.

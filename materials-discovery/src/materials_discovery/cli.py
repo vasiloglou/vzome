@@ -118,6 +118,7 @@ from materials_discovery.llm.compare import (
 from materials_discovery.llm.replay import (
     build_replay_campaign_metadata,
     build_replay_config,
+    build_replay_serving_identity,
     load_campaign_launch_bundle,
 )
 from materials_discovery.llm.schema import (
@@ -1325,6 +1326,7 @@ def llm_replay_command(
         current_config = _load_system_config(config_path)
         current_hash = config_sha256(current_config)
         replay_config = build_replay_config(source_bundle, current_config)
+        replay_serving_identity = build_replay_serving_identity(source_bundle, current_config)
 
         launch_id = _new_launch_id()
         _emit_error(f"llm-replay starting: {launch_id}")
@@ -1340,13 +1342,12 @@ def llm_replay_command(
         resolved_launch.system_config_path = str(config_path)
         resolved_launch.system_config_hash = source_bundle.campaign_spec.launch_baseline.system_config_hash
         resolved_launch.requested_model_lanes = list(source_bundle.launch_summary.requested_model_lanes)
-        resolved_launch.resolved_model_lane = source_bundle.launch_summary.resolved_model_lane
-        resolved_launch.resolved_model_lane_source = (
-            source_bundle.launch_summary.resolved_model_lane_source
-        )
-        resolved_launch.resolved_adapter = replay_config.backend.llm_adapter or ""
-        resolved_launch.resolved_provider = replay_config.backend.llm_provider or ""
-        resolved_launch.resolved_model = replay_config.backend.llm_model or ""
+        resolved_launch.resolved_model_lane = replay_serving_identity.resolved_model_lane
+        resolved_launch.resolved_model_lane_source = replay_serving_identity.resolved_model_lane_source
+        resolved_launch.resolved_adapter = replay_serving_identity.adapter
+        resolved_launch.resolved_provider = replay_serving_identity.provider
+        resolved_launch.resolved_model = replay_serving_identity.model
+        resolved_launch.serving_identity = replay_serving_identity
         resolved_launch.prompt_instruction_deltas = list(
             source_bundle.run_manifest.prompt_instruction_deltas
         )
@@ -1397,6 +1398,7 @@ def llm_replay_command(
             config_path=config_path,
             prompt_instruction_deltas=list(source_bundle.run_manifest.prompt_instruction_deltas),
             campaign_metadata=campaign_metadata,
+            serving_identity=replay_serving_identity,
         )
 
         metrics = llm_generation_metrics(
@@ -1442,8 +1444,9 @@ def llm_replay_command(
             created_at_utc=datetime.now(UTC).isoformat(),
             requested_count=source_bundle.launch_summary.requested_count,
             requested_model_lanes=list(source_bundle.launch_summary.requested_model_lanes),
-            resolved_model_lane=source_bundle.launch_summary.resolved_model_lane,
-            resolved_model_lane_source=source_bundle.launch_summary.resolved_model_lane_source,
+            resolved_model_lane=replay_serving_identity.resolved_model_lane,
+            resolved_model_lane_source=replay_serving_identity.resolved_model_lane_source,
+            serving_identity=replay_serving_identity,
             resolved_launch_path=str(resolved_launch_path),
             run_manifest_path=summary.run_manifest_path,
             llm_generate_manifest_path=str(llm_generate_manifest_path),
@@ -1472,8 +1475,21 @@ def llm_replay_command(
                 created_at_utc=datetime.now(UTC).isoformat(),
                 requested_count=source_bundle.launch_summary.requested_count,
                 requested_model_lanes=list(source_bundle.launch_summary.requested_model_lanes),
-                resolved_model_lane=source_bundle.launch_summary.resolved_model_lane,
-                resolved_model_lane_source=source_bundle.launch_summary.resolved_model_lane_source,
+                resolved_model_lane=(
+                    source_bundle.launch_summary.resolved_model_lane
+                    if "replay_serving_identity" not in locals()
+                    else replay_serving_identity.resolved_model_lane
+                ),
+                resolved_model_lane_source=(
+                    source_bundle.launch_summary.resolved_model_lane_source
+                    if "replay_serving_identity" not in locals()
+                    else replay_serving_identity.resolved_model_lane_source
+                ),
+                serving_identity=(
+                    None
+                    if "replay_serving_identity" not in locals()
+                    else replay_serving_identity
+                ),
                 resolved_launch_path=str(resolved_launch_path),
                 run_manifest_path=(None if "summary" not in locals() else summary.run_manifest_path),
                 llm_generate_manifest_path=(

@@ -1,0 +1,49 @@
+system_name: Sc-Zn
+template_family: cubic_proxy_1_0
+species:
+  - Sc
+  - Zn
+composition_bounds:
+  Sc:
+    min: 0.15
+    max: 0.40
+  Zn:
+    min: 0.60
+    max: 0.85
+coeff_bounds:
+  min: -2
+  max: 2
+seed: 31
+default_count: 5
+backend:
+  mode: real
+  llm_adapter: openai_compat_v1
+  llm_provider: openai_compat
+  llm_model: zomic-general-local-v1
+  llm_api_base: http://localhost:8000
+  llm_request_timeout_s: 120.0
+  llm_probe_timeout_s: 5.0
+llm_generate:
+  prompt_template: zomic_generate_v1
+  temperature: 0.2
+  max_tokens: 1024
+  max_attempts: 2
+  seed_zomic: designs/zomic/sc_zn_tsai_bridge.zomic
+  default_model_lane: general_purpose
+  fallback_model_lane: general_purpose
+  model_lanes:
+    general_purpose:
+      adapter: openai_compat_v1
+      provider: openai_compat
+      model: zomic-general-local-v1
+      api_base: http://localhost:8000
+      model_revision: local-dev-2026-04-05
+      local_model_path: /opt/models/zomic-general-local-v1
+    specialized_materials:
+      adapter: openai_compat_v1
+      provider: openai_compat
+      model: materials-sc-zn-specialist-v1
+      api_base: http://localhost:8000
+      checkpoint_id: ckpt-sc-zn-specialist
+      model_revision: local-dev-2026-04-05
+      local_model_path: /opt/models/materials-sc-zn-specialist-v1

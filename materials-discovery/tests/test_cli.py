@@ -191,6 +191,7 @@ def test_cli_llm_generate_legacy_no_lane_path_still_succeeds(
 
     assert result.exit_code == 0
     assert out_file.exists()
+    assert '"run_manifest_path":"' in result.stdout
 
 
 def test_cli_llm_launch_missing_spec_returns_2() -> None:

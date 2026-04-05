@@ -6,6 +6,7 @@
 |------|--------|---------|
 | 2026-04-05 | Phase 19 Plan 01 local-serving schema and runtime foundation | Added additive local-serving backend and lane config fields, typed `LlmServingIdentity` support for run/launch artifacts, an `openai_compat_v1` runtime adapter with readiness probes, and focused schema/runtime regressions that passed at `20 passed` |
 | 2026-04-05 | Phase 19 Plan 02 lane-aware local serving integration | Added shared serving-lane resolution for manual generation and campaign launch, threaded additive serving identity into run and launch artifacts, added `llm-generate --model-lane` plus local-serving preflight diagnostics, and kept focused generate/launch CLI regressions green at `40 passed` |
+| 2026-04-05 | Phase 19 Plan 03 replay-safe local serving docs and configs | Added replay-safe handling for richer local serving identity, committed local OpenAI-compatible example configs for Al-Cu-Fe and Sc-Zn, documented the Phase 19 serving contract, and kept focused replay/runtime/CLI regressions green at `38 passed` |
 | 2026-04-04 | Phase 12 Plan 03 replay and compare workflow closeout | Added an offline full closed-loop regression for `llm-suggest -> llm-approve -> llm-launch -> llm-replay -> llm-compare`, extended campaign-lineage tests for replay fields, documented the strict replay/compare operator flow, and re-verified the full suite at 374 passed, 3 skipped |
 | 2026-04-04 | Phase 12 Plan 02 replay and compare CLI | Added strict `mdisc llm-replay --launch-summary ...`, `mdisc llm-compare --launch-summary ...`, replay-aware `llm-generate` lineage, and focused replay/compare CLI coverage while keeping the shared CLI suite green |
 | 2026-04-04 | Phase 12 Plan 01 replay and comparison foundation | Added strict replay bundle loading, replay-config reconstruction helpers, typed outcome/comparison artifacts, deterministic campaign comparison paths, and focused replay/compare core regression coverage |
@@ -363,6 +364,12 @@
 - Updated `generate.py` and `launch.py` so run manifests and resolved launch artifacts record nested `serving_identity` while preserving the existing flat adapter/provider/model fields for compatibility.
 - Extended `tests/test_llm_generate_core.py`, `tests/test_llm_launch_core.py`, `tests/test_llm_generate_cli.py`, `tests/test_llm_launch_cli.py`, and `tests/test_cli.py` to cover explicit lane selection, configured fallback behavior, readiness failures, and backward-compatible no-lane execution.
 - Focused verification passed with `40 passed` across the Plan 02 generate/launch core and CLI regression slice.
+- 23:37 EDT — Implemented the Phase 19 Plan 03 replay-safe local-serving wrap-up.
+- Updated `llm/replay.py` and `llm_replay` flow so replay preserves richer serving identity when present, tolerates endpoint/path drift, rejects hard model or checkpoint drift, and still accepts legacy bundles that only carry the old `baseline_fallback` lane-source value.
+- Added committed operator-facing local configs in `configs/systems/al_cu_fe_llm_local.yaml` and `configs/systems/sc_zn_llm_local.yaml`, both using placeholder `http://localhost:8000` OpenAI-compatible endpoints and explicit lane definitions without implying that `mdisc` starts the server.
+- Extended `tests/test_llm_replay_core.py` for local replay drift classification, committed-config validation, and legacy-bundle compatibility, and tightened `tests/test_cli.py` so the legacy no-lane `llm-generate` path still proves the standard summary shape.
+- Updated `developers-docs/configuration-reference.md`, `developers-docs/llm-integration.md`, and `developers-docs/pipeline-stages.md` with the Phase 19 local-serving contract, including `--model-lane`, explicit fallback rules, recorded serving identity, and the note that specialized-materials lanes are not assumed Zomic-native in `v1.2`.
+- Focused verification passed with `38 passed` across `tests/test_llm_replay_core.py`, `tests/test_llm_runtime.py`, `tests/test_llm_generate_cli.py`, and `tests/test_cli.py`.
 
 ### 2026-04-04
 

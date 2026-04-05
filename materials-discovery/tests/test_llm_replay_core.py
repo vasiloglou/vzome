@@ -11,6 +11,7 @@ from materials_discovery.common.schema import SystemConfig
 from materials_discovery.llm.replay import (
     build_replay_campaign_metadata,
     build_replay_config,
+    build_replay_serving_identity,
     load_campaign_launch_bundle,
 )
 from materials_discovery.llm.schema import (
@@ -19,6 +20,7 @@ from materials_discovery.llm.schema import (
     LlmCampaignLaunchSummary,
     LlmCampaignOutcomeSnapshot,
     LlmCampaignResolvedLaunch,
+    LlmServingIdentity,
 )
 from materials_discovery.llm.storage import (
     llm_acceptance_pack_path,
@@ -45,9 +47,40 @@ def _write_launch_bundle(
     *,
     launch_id: str = "launch-001",
     created_at_utc: str = "2026-04-04T18:00:00Z",
+    config_name: str = "al_cu_fe_llm_mock.yaml",
+    requested_model_lanes: list[str] | None = None,
+    resolved_model_lane: str | None = None,
+    resolved_model_lane_source: str = "configured_lane",
+    serving_identity: dict[str, object] | LlmServingIdentity | None = None,
 ) -> Path:
-    config, config_path = _system_config()
+    config, config_path = _system_config(config_name)
     config_hash = config_sha256(config)
+    requested_model_lanes = ["general_purpose"] if requested_model_lanes is None else requested_model_lanes
+    identity_model = (
+        None
+        if serving_identity is None
+        else (
+            serving_identity
+            if isinstance(serving_identity, LlmServingIdentity)
+            else LlmServingIdentity.model_validate(serving_identity)
+        )
+    )
+    resolved_model_lane = (
+        "general_purpose"
+        if resolved_model_lane is None and identity_model is None
+        else (
+            identity_model.resolved_model_lane
+            if resolved_model_lane is None and identity_model is not None
+            else resolved_model_lane
+        )
+    )
+    adapter = config.backend.llm_adapter or "llm_fixture_v1"
+    provider = config.backend.llm_provider or "mock"
+    model = config.backend.llm_model or "fixture"
+    if identity_model is not None:
+        adapter = identity_model.adapter
+        provider = identity_model.provider
+        model = identity_model.model
     acceptance_pack_path = llm_acceptance_pack_path("pack_v1", root=root)
     write_json_object(
         {
@@ -172,9 +205,9 @@ def _write_launch_bundle(
             {
                 "schema_version": "llm-generation-attempt/v1",
                 "attempt_id": "llm_attempt_0001",
-                "adapter_key": "llm_fixture_v1",
-                "provider": "mock",
-                "model": "fixture-al-cu-fe-v1",
+                "adapter_key": adapter,
+                "provider": provider,
+                "model": model,
                 "temperature": 0.15,
                 "prompt_path": str(prompt_path),
                 "raw_completion_path": str(run_dir / "raw" / "llm_attempt_0001.zomic"),
@@ -216,9 +249,9 @@ def _write_launch_bundle(
             "schema_version": "llm-run-manifest/v1",
             "run_id": run_dir.name,
             "system": "Al-Cu-Fe",
-            "adapter_key": "llm_fixture_v1",
-            "provider": "mock",
-            "model": "fixture-al-cu-fe-v1",
+            "adapter_key": adapter,
+            "provider": provider,
+            "model": model,
             "prompt_template": "zomic_generate_v1",
             "attempt_count": 2,
             "requested_count": 2,
@@ -235,9 +268,14 @@ def _write_launch_bundle(
             "campaign_spec_path": str(campaign_spec_path),
             "proposal_id": "proposal-001",
             "approval_id": "approval-001",
-            "requested_model_lanes": ["general_purpose"],
-            "resolved_model_lane": "general_purpose",
-            "resolved_model_lane_source": "configured_lane",
+            "requested_model_lanes": requested_model_lanes,
+            "resolved_model_lane": resolved_model_lane,
+            "resolved_model_lane_source": resolved_model_lane_source,
+            **(
+                {}
+                if identity_model is None
+                else {"serving_identity": identity_model.model_dump(mode="json")}
+            ),
             "launch_summary_path": str(
                 llm_campaign_launch_summary_path("campaign-001", launch_id, root=root)
             ),
@@ -257,12 +295,17 @@ def _write_launch_bundle(
             "campaign_spec_path": str(campaign_spec_path),
             "system_config_path": str(config_path),
             "system_config_hash": config_hash,
-            "requested_model_lanes": ["general_purpose"],
-            "resolved_model_lane": "general_purpose",
-            "resolved_model_lane_source": "configured_lane",
-            "resolved_adapter": "llm_fixture_v1",
-            "resolved_provider": "mock",
-            "resolved_model": "fixture-al-cu-fe-v1",
+            "requested_model_lanes": requested_model_lanes,
+            "resolved_model_lane": resolved_model_lane,
+            "resolved_model_lane_source": resolved_model_lane_source,
+            "resolved_adapter": adapter,
+            "resolved_provider": provider,
+            "resolved_model": model,
+            **(
+                {}
+                if identity_model is None
+                else {"serving_identity": identity_model.model_dump(mode="json")}
+            ),
             "prompt_instruction_deltas": ["Prefer parser-safe symmetry annotations."],
             "resolved_composition_bounds": {
                 species: bound.model_dump(mode="json")
@@ -288,9 +331,14 @@ def _write_launch_bundle(
             "status": "succeeded",
             "created_at_utc": created_at_utc,
             "requested_count": 2,
-            "requested_model_lanes": ["general_purpose"],
-            "resolved_model_lane": "general_purpose",
-            "resolved_model_lane_source": "configured_lane",
+            "requested_model_lanes": requested_model_lanes,
+            "resolved_model_lane": resolved_model_lane,
+            "resolved_model_lane_source": resolved_model_lane_source,
+            **(
+                {}
+                if identity_model is None
+                else {"serving_identity": identity_model.model_dump(mode="json")}
+            ),
             "resolved_launch_path": str(resolved_launch_path),
             "run_manifest_path": str(run_manifest_path),
             "llm_generate_manifest_path": str(
@@ -476,3 +524,109 @@ def test_load_campaign_launch_bundle_requires_full_bundle(tmp_path: Path) -> Non
 
     with pytest.raises(FileNotFoundError):
         load_campaign_launch_bundle(launch_summary_path, root=tmp_path)
+
+
+def test_build_replay_config_tolerates_transport_drift_for_local_serving_identity(
+    tmp_path: Path,
+) -> None:
+    launch_summary_path = _write_launch_bundle(
+        tmp_path,
+        config_name="al_cu_fe_llm_local.yaml",
+        requested_model_lanes=["specialized_materials"],
+        resolved_model_lane="specialized_materials",
+        resolved_model_lane_source="configured_lane",
+        serving_identity={
+            "requested_model_lane": "specialized_materials",
+            "resolved_model_lane": "specialized_materials",
+            "resolved_model_lane_source": "configured_lane",
+            "adapter": "openai_compat_v1",
+            "provider": "openai_compat",
+            "model": "materials-al-cu-fe-specialist-v1",
+            "effective_api_base": "http://localhost:8000",
+            "checkpoint_id": "ckpt-al-cu-fe-specialist",
+            "model_revision": "local-dev-2026-04-05",
+            "local_model_path": "/opt/models/materials-al-cu-fe-specialist-v1",
+        },
+    )
+    bundle = load_campaign_launch_bundle(launch_summary_path, root=tmp_path)
+    current_config, _ = _system_config("al_cu_fe_llm_local.yaml")
+    assert current_config.llm_generate is not None
+    current_config.llm_generate.model_lanes["specialized_materials"].api_base = "http://localhost:8001"
+    current_config.llm_generate.model_lanes[
+        "specialized_materials"
+    ].model_revision = "local-dev-2026-04-06"
+    current_config.llm_generate.model_lanes[
+        "specialized_materials"
+    ].local_model_path = "/srv/models/materials-al-cu-fe-specialist-v1"
+
+    replay_config = build_replay_config(bundle, current_config)
+    replay_identity = build_replay_serving_identity(bundle, current_config)
+
+    assert replay_config.backend.llm_adapter == "openai_compat_v1"
+    assert replay_config.backend.llm_provider == "openai_compat"
+    assert replay_config.backend.llm_model == "materials-al-cu-fe-specialist-v1"
+    assert replay_config.backend.llm_api_base == "http://localhost:8001"
+    assert replay_identity.effective_api_base == "http://localhost:8001"
+    assert replay_identity.checkpoint_id == "ckpt-al-cu-fe-specialist"
+    assert replay_identity.local_model_path == "/srv/models/materials-al-cu-fe-specialist-v1"
+
+
+def test_build_replay_config_rejects_hard_local_identity_drift(
+    tmp_path: Path,
+) -> None:
+    launch_summary_path = _write_launch_bundle(
+        tmp_path,
+        config_name="al_cu_fe_llm_local.yaml",
+        requested_model_lanes=["specialized_materials"],
+        resolved_model_lane="specialized_materials",
+        resolved_model_lane_source="configured_lane",
+        serving_identity={
+            "requested_model_lane": "specialized_materials",
+            "resolved_model_lane": "specialized_materials",
+            "resolved_model_lane_source": "configured_lane",
+            "adapter": "openai_compat_v1",
+            "provider": "openai_compat",
+            "model": "materials-al-cu-fe-specialist-v1",
+            "effective_api_base": "http://localhost:8000",
+            "checkpoint_id": "ckpt-al-cu-fe-specialist",
+        },
+    )
+    bundle = load_campaign_launch_bundle(launch_summary_path, root=tmp_path)
+    current_config, _ = _system_config("al_cu_fe_llm_local.yaml")
+    assert current_config.llm_generate is not None
+    current_config.llm_generate.model_lanes["specialized_materials"].checkpoint_id = (
+        "ckpt-al-cu-fe-specialist-v2"
+    )
+
+    with pytest.raises(ValueError, match="hard serving identity drift"):
+        build_replay_config(bundle, current_config)
+
+
+def test_committed_local_serving_configs_validate_without_live_server() -> None:
+    for config_name in ("al_cu_fe_llm_local.yaml", "sc_zn_llm_local.yaml"):
+        config, _ = _system_config(config_name)
+        assert config.backend.llm_adapter == "openai_compat_v1"
+        assert config.backend.llm_api_base == "http://localhost:8000"
+        assert config.llm_generate is not None
+        assert config.llm_generate.default_model_lane == "general_purpose"
+        assert config.llm_generate.fallback_model_lane == "general_purpose"
+        assert "specialized_materials" in config.llm_generate.model_lanes
+
+
+def test_legacy_baseline_fallback_launch_bundle_still_replays(tmp_path: Path) -> None:
+    launch_summary_path = _write_launch_bundle(
+        tmp_path,
+        requested_model_lanes=["general_purpose"],
+        resolved_model_lane="general_purpose",
+        resolved_model_lane_source="baseline_fallback",
+    )
+    bundle = load_campaign_launch_bundle(launch_summary_path, root=tmp_path)
+    current_config, _ = _system_config()
+
+    replay_config = build_replay_config(bundle, current_config)
+    replay_identity = build_replay_serving_identity(bundle, current_config)
+
+    assert replay_config.backend.llm_adapter == "llm_fixture_v1"
+    assert replay_config.backend.llm_provider == "mock"
+    assert replay_config.backend.llm_model == "fixture-al-cu-fe-v1"
+    assert replay_identity.resolved_model_lane_source == "backend_default"
