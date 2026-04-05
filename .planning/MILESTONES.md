@@ -1,5 +1,28 @@
 # Milestones
 
+## v1.3 — Zomic-Native Local Checkpoint MVP
+
+**Status:** Shipped on 2026-04-05
+**Phases:** 25-27
+**Plans:** 9
+
+### Highlights
+
+- Added file-backed adapted-checkpoint registration and auditable lineage under
+  `data/llm_checkpoints/`.
+- Integrated the first adapted local checkpoint lane into `llm-generate`,
+  replay-safe serving identity, and the shipped campaign workflow.
+- Added adapted-vs-baseline benchmark comparison plus operator docs for
+  registration, smoke testing, and rollback.
+- Closed the milestone with direct phase verification instead of later
+  audit-gap cleanup phases.
+
+### Archives
+
+- `.planning/milestones/v1.3-ROADMAP.md`
+- `.planning/milestones/v1.3-REQUIREMENTS.md`
+- `.planning/milestones/v1.3-MILESTONE-AUDIT.md`
+
 ## v1.2 — Local and Specialized LLM Serving MVP
 
 **Status:** Shipped on 2026-04-05

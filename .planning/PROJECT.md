@@ -2,7 +2,7 @@
 
 ## Current State
 
-`v1.0`, `v1.1`, and `v1.2` are shipped.
+`v1.0`, `v1.1`, `v1.2`, and `v1.3` are shipped.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -22,27 +22,27 @@ Archive references:
 - `.planning/milestones/v1.2-ROADMAP.md`
 - `.planning/milestones/v1.2-REQUIREMENTS.md`
 - `.planning/milestones/v1.2-MILESTONE-AUDIT.md`
+- `.planning/milestones/v1.3-ROADMAP.md`
+- `.planning/milestones/v1.3-REQUIREMENTS.md`
+- `.planning/milestones/v1.3-MILESTONE-AUDIT.md`
 
 ## Current Milestone
 
-`v1.3` — Zomic-Native Local Checkpoint MVP
+There is no active milestone right now.
 
-**Goal:** make at least one Zomic-adapted local checkpoint a real, auditable,
-benchmarkable execution target inside the shipped operator-governed workflow.
+The most recent milestone, `v1.3`, is archived. The next milestone should be
+opened explicitly once new requirements are chosen.
 
-**Target features:**
-- checkpoint registration and lineage for adapted local model lanes
-- adapted-checkpoint execution through `llm-generate`, `llm-launch`, and replay
-- adapted-vs-baseline benchmark workflow and operator rollback guidance
+**Recommended next step:** `$gsd-new-milestone`
 
 ## Later Milestone Candidates
 
-- broaden source coverage or deepen source QA after the LLM serving surface is
-  stable
-- expand campaign automation only after hosted/local/specialized serving paths
-  are proven reliable in operator hands
-- add larger training and checkpoint-management automation only after serving
-  comparison workflows and the first adapted checkpoint lane are credible
+- broaden source coverage or deepen source QA after the adapted-checkpoint
+  workflow is stable
+- expand campaign automation only after adapted local generation remains
+  reliable in operator hands
+- add checkpoint management and training automation only after one
+  adapted-checkpoint lane is proven and benchmarked cleanly
 
 ## What This Is
 
@@ -97,17 +97,14 @@ instead of living in separate prototypes.
 - Validated in v1.2: local serving, specialized workflow lanes, and
   comparative serving benchmarks are now first-class, audited parts of the
   operator-governed LLM workflow.
+- Validated in v1.3: adapted local checkpoints are now first-class, audited
+  workflow lanes with file-backed registration, replay-safe fingerprinting,
+  adapted-vs-baseline benchmarks, and operator rollback guidance.
 
 ### Active
 
-- Add the first Zomic-adapted local checkpoint lane as a reproducible,
-  file-backed serving target rather than leaving adaptation as an external
-  experiment.
-- Preserve the shipped campaign, replay, compare, and serving-benchmark
-  workflow when adapted checkpoints are introduced.
-- Give operators clear checkpoint registration, smoke-test, rollback, and
-  adapted-vs-baseline comparison guidance before any broader training
-  automation milestone.
+- No active milestone requirements yet.
+- Start the next requirement set with `$gsd-new-milestone`.
 
 ### Out of Scope
 
@@ -168,7 +165,8 @@ instead of living in separate prototypes.
 | Keep the next milestone operator-governed and file-backed | Approval, replay, and provenance matter more right now than additional infrastructure | ✓ Good |
 | Start Project 3 v1.2 with local and specialized serving rather than autonomy | The closed-loop campaign workflow is now stable enough to expand execution depth safely | ✓ Good |
 | Archive milestone v1.2 after the proof-chain closure phases | The serving expansion is now shipped, benchmarked, and fully audited | ✓ Good |
-| Start Project 3 v1.3 with Zomic-adapted local checkpoints | The serving surface is now stable enough to judge adapted local generation honestly | ✓ Good |
+| Start Project 3 v1.3 with Zomic-adapted local checkpoints | The serving surface was stable enough to judge adapted local generation honestly | ✓ Good |
+| Archive milestone v1.3 after direct in-phase verification | The checkpoint workflow now ships with its own proof chain instead of requiring later cleanup phases | ✓ Good |
 
 ## Evolution
 
@@ -188,4 +186,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after starting milestone v1.3*
+*Last updated: 2026-04-05 after archiving milestone v1.3*
