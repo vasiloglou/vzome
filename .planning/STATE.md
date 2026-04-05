@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.2
-milestone_name: local-and-specialized-llm-serving-mvp
+milestone_name: milestone
 current_phase: 19
-current_phase_name: local-serving-runtime-and-lane-contracts
-current_plan: 0
-status: ready_to_plan
-stopped_at: v1.2 milestone defined
-last_updated: "2026-04-05T15:00:00.000Z"
-last_activity: 2026-04-05 -- Started milestone v1.2 and defined the first roadmap
+current_phase_name: Local Serving Runtime and Lane Contracts
+current_plan: none
+status: planning
+stopped_at: Phase 19 context gathered
+last_updated: "2026-04-05T02:44:45.053Z"
+last_activity: 2026-04-05 -- Started milestone v1.2 and defined the roadmap and requirements
 progress:
   total_phases: 3
   completed_phases: 0
@@ -64,10 +64,13 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 
 - [Milestone v1.1 archived]: The operator-governed closed-loop campaign
   workflow is shipped, audited, and archived.
+
 - [Milestone v1.2]: Expand Project 3 through local and specialized serving
   rather than autonomy or chemistry breadth.
+
 - [Milestone v1.2]: Keep the workflow operator-governed, file-backed, and
   no-DFT while serving depth increases.
+
 - [Milestone v1.2]: Treat specialized materials models as real workflow lanes,
   not only metadata on campaign proposals.
 
@@ -83,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T15:00:00Z
-Stopped at: v1.2 milestone defined
-Resume file: .planning/ROADMAP.md
+Last session: 2026-04-05T02:44:45.050Z
+Stopped at: Phase 19 context gathered
+Resume file: .planning/phases/19-local-serving-runtime-and-lane-contracts/19-CONTEXT.md
