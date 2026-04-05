@@ -4,17 +4,17 @@ milestone: v1.4
 milestone_name: adapted-checkpoint-lifecycle-and-promotion-mvp
 current_phase: 28
 current_phase_name: checkpoint-lifecycle-and-promotion-contracts
-current_plan: Not started
-status: ready_to_execute
-stopped_at: Phase 28 planned
-last_updated: "2026-04-05T21:04:08Z"
-last_activity: 2026-04-05
+current_plan: 2
+status: executing
+stopped_at: Phase 28 plan 01 completed
+last_updated: "2026-04-05T23:38:01Z"
+last_activity: 2026-04-05 -- Phase 28 plan 01 completed
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -24,28 +24,28 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 28 - Checkpoint Lifecycle and Promotion Contracts
+**Current focus:** Phase 28 — checkpoint-lifecycle-and-promotion-contracts
 
 ## Current Position
 
 Current Phase: 28
 Current Phase Name: Checkpoint Lifecycle and Promotion Contracts
 Total Phases: 3
-Current Plan: Not started
+Current Plan: 2
 Total Plans in Phase: 3
-Phase: 28 (Checkpoint Lifecycle and Promotion Contracts) — READY TO EXECUTE
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-05
-Last Activity Description: Phase 28 planned and ready to execute
+Phase: 28 (Checkpoint Lifecycle and Promotion Contracts) — EXECUTING
+Plan: 2 of 3
+Status: Executing Phase 28
+Last activity: 2026-04-05 -- Phase 28 plan 01 completed
+Last Activity Description: Phase 28 plan 01 completed
 
-Progress: [----------] 0%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 80
+- Total plans completed: 81
 - Average duration: 12 min
 - Total execution time: archived across prior milestones
 
@@ -66,22 +66,30 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 
 - [Milestone v1.1 archived]: The operator-governed closed-loop campaign
   workflow is shipped, audited, and archived.
+
 - [Milestone v1.2 archived]: Local serving, specialized workflow lanes, and
   hosted/local/specialized benchmark workflows are shipped and fully audited.
+
 - [Milestone v1.3 archived]: Adapted local checkpoint registration,
   generation, benchmark comparison, and rollback guidance are shipped and fully
   audited.
+
 - [Milestone v1.4]: Expand Project 3 through checkpoint lifecycle and
   promotion rather than jumping directly to full training-job automation.
+
 - [Milestone v1.4]: Keep the workflow operator-governed, file-backed, and
   no-DFT while adapted-checkpoint count and lifecycle complexity increase.
+
 - [Milestone v1.4]: Treat promoted, pinned, and retired checkpoints as
   explicit workflow state rather than informal config conventions.
+
 - [Phase 28]: Use a hybrid lifecycle model with immutable per-checkpoint
   registration facts plus a central lifecycle index for promoted/default,
   pinning, retirement, and history.
+
 - [Phase 28]: Config defines the checkpoint family on a lane; the lifecycle
   registry resolves the promoted default member when no explicit pin is given.
+
 - [Phase 28]: Retired checkpoints must never be selected implicitly again, but
   they remain replayable and auditable.
 
@@ -98,5 +106,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-05T20:56:23Z
-Stopped at: Phase 28 planned
-Resume file: .planning/phases/28-checkpoint-lifecycle-and-promotion-contracts/28-01-PLAN.md
+Stopped at: Phase 28 plan 01 completed
+Resume file: .planning/phases/28-checkpoint-lifecycle-and-promotion-contracts/28-02-PLAN.md
