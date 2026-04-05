@@ -242,6 +242,53 @@ def test_resolve_campaign_model_lane_prefers_first_available_requested_lane_in_p
     assert source == "configured_lane"
 
 
+def test_resolve_serving_lane_honors_cli_default_fallback_and_backend_precedence() -> None:
+    from materials_discovery.llm import resolve_serving_lane
+
+    config = _base_config()
+    assert config.llm_generate is not None
+    config.llm_generate.default_model_lane = "specialized_materials"
+    config.llm_generate.fallback_model_lane = "general_purpose"
+
+    resolved_lane, lane_config, source = resolve_serving_lane(
+        "general_purpose",
+        config.llm_generate,
+        config.backend,
+    )
+    assert resolved_lane == "general_purpose"
+    assert lane_config is not None
+    assert source == "configured_lane"
+
+    resolved_lane, lane_config, source = resolve_serving_lane(
+        None,
+        config.llm_generate,
+        config.backend,
+    )
+    assert resolved_lane == "specialized_materials"
+    assert lane_config is not None
+    assert source == "default_lane"
+
+    config.llm_generate.default_model_lane = None
+    resolved_lane, lane_config, source = resolve_serving_lane(
+        None,
+        config.llm_generate,
+        config.backend,
+    )
+    assert resolved_lane == "general_purpose"
+    assert lane_config is not None
+    assert source == "configured_fallback"
+
+    config_no_lanes = _base_config(include_model_lanes=False)
+    resolved_lane, lane_config, source = resolve_serving_lane(
+        None,
+        config_no_lanes.llm_generate,
+        config_no_lanes.backend,
+    )
+    assert resolved_lane == "general_purpose"
+    assert lane_config is None
+    assert source == "backend_default"
+
+
 def test_resolve_campaign_launch_collects_deduped_prompt_deltas_and_updates_conditioning_cap() -> None:
     from materials_discovery.llm import resolve_campaign_launch
 
@@ -322,7 +369,7 @@ def test_resolve_campaign_launch_uses_exact_target_bounds_when_provided() -> Non
         artifact_root=_workspace(),
     )
 
-    assert resolved.resolved_model_lane_source == "baseline_fallback"
+    assert resolved.resolved_model_lane_source == "backend_default"
     assert resolved_config.composition_bounds["Al"] == CompositionBound(min=0.62, max=0.74)
     assert resolved_config.composition_bounds["Cu"] == CompositionBound(min=0.14, max=0.22)
     assert resolved_config.composition_bounds["Fe"] == config.composition_bounds["Fe"]
@@ -417,7 +464,7 @@ def test_resolve_campaign_launch_materializes_seed_from_eval_set_into_launch_dir
     assert expected_seed_path.exists()
     assert expected_seed_path.read_text(encoding="utf-8") == "label same.system\n"
     assert resolved.resolved_seed_zomic_path == str(expected_seed_path)
-    assert resolved.resolved_model_lane_source == "baseline_fallback"
+    assert resolved.resolved_model_lane_source == "backend_default"
     assert resolved_config.llm_generate is not None
     assert resolved_config.llm_generate.seed_zomic == str(expected_seed_path)
 
@@ -448,7 +495,7 @@ def test_resolve_campaign_model_lane_only_falls_back_for_general_purpose_request
     assert requested_lanes == ["general_purpose"]
     assert resolved_lane == "general_purpose"
     assert lane_config is None
-    assert source == "baseline_fallback"
+    assert source == "backend_default"
 
     specialized_spec = _spec(
         config,
@@ -463,5 +510,8 @@ def test_resolve_campaign_model_lane_only_falls_back_for_general_purpose_request
         system_config_path=system_config_path,
     )
 
-    with pytest.raises(ValueError, match="campaign spec requested no configured model lane"):
+    with pytest.raises(
+        ValueError,
+        match="requested model lane 'specialized_materials' is not configured",
+    ):
         resolve_campaign_model_lane(specialized_spec, config)

@@ -47,6 +47,7 @@ from materials_discovery.common.schema import (
     HifiValidateSummary,
     IngestSummary,
     LlmEvaluateSummary,
+    LlmModelLaneConfig,
     ReportSummary,
     ScreenSummary,
     SystemConfig,
@@ -109,7 +110,7 @@ from materials_discovery.llm.campaigns import (
 )
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
-from materials_discovery.llm.launch import resolve_campaign_launch
+from materials_discovery.llm.launch import resolve_campaign_launch, resolve_serving_lane
 from materials_discovery.llm.compare import (
     build_campaign_comparison,
     build_campaign_outcome_snapshot,
@@ -125,6 +126,7 @@ from materials_discovery.llm.schema import (
     LlmCampaignLaunchSummary,
     LlmCampaignProposal,
     LlmCampaignSpec,
+    LlmServingIdentity,
 )
 from materials_discovery.llm.storage import (
     llm_acceptance_approval_path,
@@ -136,6 +138,7 @@ from materials_discovery.llm.storage import (
     llm_campaign_spec_path,
 )
 from materials_discovery.llm.suggest import write_llm_suggestions
+from materials_discovery.llm.runtime import resolve_llm_adapter, validate_llm_adapter_ready
 
 app = typer.Typer(add_completion=False, help="No-DFT materials discovery CLI scaffold")
 
@@ -193,6 +196,81 @@ def _system_slug(system_name: str) -> str:
 def _batch_slug(batch: str) -> str:
     slug = re.sub(r"[^a-zA-Z0-9]+", "_", batch.strip().lower()).strip("_")
     return slug or "batch"
+
+
+def _baseline_llm_runtime_tuple(config: SystemConfig) -> tuple[str, str, str, str | None]:
+    if config.backend.mode == "mock":
+        return (
+            config.backend.llm_adapter or "llm_fixture_v1",
+            config.backend.llm_provider or "mock",
+            config.backend.llm_model or "fixture",
+            config.backend.llm_api_base,
+        )
+    return (
+        config.backend.llm_adapter or "anthropic_api_v1",
+        config.backend.llm_provider or "anthropic",
+        config.backend.llm_model or "fixture",
+        config.backend.llm_api_base,
+    )
+
+
+def _build_serving_identity(
+    config: SystemConfig,
+    *,
+    requested_lane: str | None,
+    resolved_lane: str,
+    lane_source: str,
+    lane_config: LlmModelLaneConfig | None,
+) -> LlmServingIdentity:
+    adapter, provider, model, api_base = _baseline_llm_runtime_tuple(config)
+    checkpoint_id = None
+    model_revision = None
+    local_model_path = None
+    if lane_config is not None:
+        adapter = lane_config.adapter
+        provider = lane_config.provider
+        model = lane_config.model
+        api_base = lane_config.api_base
+        checkpoint_id = lane_config.checkpoint_id
+        model_revision = lane_config.model_revision
+        local_model_path = lane_config.local_model_path
+    return LlmServingIdentity(
+        requested_model_lane=requested_lane,
+        resolved_model_lane=resolved_lane,
+        resolved_model_lane_source=lane_source,
+        adapter=adapter,
+        provider=provider,
+        model=model,
+        effective_api_base=api_base,
+        checkpoint_id=checkpoint_id,
+        model_revision=model_revision,
+        local_model_path=local_model_path,
+    )
+
+
+def _resolve_llm_serving_config(
+    config: SystemConfig,
+    *,
+    requested_lane: str | None,
+) -> tuple[SystemConfig, LlmServingIdentity]:
+    resolved_lane, lane_config, lane_source = resolve_serving_lane(
+        requested_lane,
+        config.llm_generate,
+        config.backend,
+    )
+    serving_identity = _build_serving_identity(
+        config,
+        requested_lane=requested_lane,
+        resolved_lane=resolved_lane,
+        lane_source=lane_source,
+        lane_config=lane_config,
+    )
+    resolved_config = config.model_copy(deep=True)
+    resolved_config.backend.llm_adapter = serving_identity.adapter
+    resolved_config.backend.llm_provider = serving_identity.provider
+    resolved_config.backend.llm_model = serving_identity.model
+    resolved_config.backend.llm_api_base = serving_identity.effective_api_base
+    return resolved_config, serving_identity
 
 
 def _shortlist_rank(candidate: CandidateRecord) -> int:
@@ -801,24 +879,41 @@ def llm_generate_command(
     count: int = typer.Option(..., "--count", min=1),
     seed_zomic: Path | None = typer.Option(None, "--seed-zomic", exists=False, dir_okay=False),
     temperature: float | None = typer.Option(None, "--temperature"),
+    model_lane: str | None = typer.Option(None, "--model-lane"),
     out: Path | None = typer.Option(None, "--out", exists=False, dir_okay=False),
 ) -> None:
     """Generate candidate structures from LLM-produced Zomic text."""
     try:
         system_config = _load_system_config(config)
-        system_slug = _system_slug(system_config.system_name)
+        resolved_config, serving_identity = _resolve_llm_serving_config(
+            system_config,
+            requested_lane=model_lane,
+        )
+        adapter = resolve_llm_adapter(
+            resolved_config.backend.mode,
+            backend=resolved_config.backend,
+            llm_generate=resolved_config.llm_generate,
+        )
+        validate_llm_adapter_ready(
+            adapter,
+            adapter_key=resolved_config.backend.llm_adapter or "llm_fixture_v1",
+            requested_lane=model_lane,
+            resolved_lane=serving_identity.resolved_model_lane,
+        )
+        system_slug = _system_slug(resolved_config.system_name)
 
         default_out = workspace_root() / "data" / "candidates" / f"{system_slug}_candidates.jsonl"
         out_path = out or default_out
         resolved_seed = None if seed_zomic is None else _workspace_path(str(seed_zomic))
 
         summary = generate_llm_candidates(
-            system_config,
+            resolved_config,
             out_path,
             count=count,
             config_path=config,
             seed_zomic_path=resolved_seed,
             temperature_override=temperature,
+            serving_identity=serving_identity,
         )
         metrics = llm_generation_metrics(
             requested_count=summary.requested_count,
@@ -846,9 +941,9 @@ def llm_generate_command(
             output_paths["llm_run_manifest_json"] = Path(summary.run_manifest_path)
         manifest = build_manifest(
             stage="llm_generate",
-            config=system_config,
-            backend_mode=system_config.backend.mode,
-            backend_versions=_backend_versions_for_stage(system_config, "generate"),
+            config=resolved_config,
+            backend_mode=resolved_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(resolved_config, "generate"),
             output_paths=output_paths,
         )
         write_manifest(manifest, manifest_path)
@@ -1052,6 +1147,17 @@ def llm_launch_command(
             launch_id=launch_id,
             artifact_root=workspace_root(),
         )
+        adapter = resolve_llm_adapter(
+            resolved_config.backend.mode,
+            backend=resolved_config.backend,
+            llm_generate=resolved_config.llm_generate,
+        )
+        validate_llm_adapter_ready(
+            adapter,
+            adapter_key=resolved_config.backend.llm_adapter or "llm_fixture_v1",
+            requested_lane=next(iter(resolved_launch.requested_model_lanes), None),
+            resolved_lane=resolved_launch.resolved_model_lane,
+        )
         resolved_launch.effective_candidates_path = str(out_path)
         resolved_launch.output_override_used = out is not None
 
@@ -1094,6 +1200,7 @@ def llm_launch_command(
             config_path=config_path,
             prompt_instruction_deltas=resolved_launch.prompt_instruction_deltas,
             campaign_metadata=campaign_metadata,
+            serving_identity=resolved_launch.serving_identity,
         )
 
         metrics = llm_generation_metrics(
@@ -1174,7 +1281,7 @@ def llm_launch_command(
                     else resolved_launch.resolved_model_lane
                 ),
                 resolved_model_lane_source=(
-                    "baseline_fallback"
+                    "backend_default"
                     if "resolved_launch" not in locals()
                     else resolved_launch.resolved_model_lane_source
                 ),

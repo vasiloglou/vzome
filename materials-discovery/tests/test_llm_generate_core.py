@@ -15,6 +15,7 @@ from materials_discovery.llm.prompting import (
     select_conditioning_examples,
 )
 from materials_discovery.llm.schema import LlmEvalSetExample
+from materials_discovery.llm.schema import LlmServingIdentity
 
 
 def _workspace() -> Path:
@@ -171,6 +172,13 @@ def test_generate_llm_candidates_writes_run_artifacts_and_candidate_records(
     assert (run_dir / "attempts.jsonl").exists()
     assert (run_dir / "compile_results.jsonl").exists()
     assert (run_dir / "run_manifest.json").exists()
+    run_manifest = load_json_object(run_dir / "run_manifest.json")
+    assert run_manifest["requested_model_lanes"] == []
+    assert run_manifest["resolved_model_lane"] == "general_purpose"
+    assert run_manifest["resolved_model_lane_source"] == "backend_default"
+    assert run_manifest["serving_identity"]["resolved_model_lane"] == "general_purpose"
+    assert run_manifest["serving_identity"]["resolved_model_lane_source"] == "backend_default"
+    assert run_manifest["serving_identity"]["adapter"] == "llm_fixture_v1"
 
     candidates = [CandidateRecord.model_validate(row) for row in load_jsonl(output_path)]
     assert len(candidates) == 2
@@ -234,6 +242,18 @@ def test_generate_llm_candidates_records_campaign_metadata_in_run_manifest_and_p
             "resolved_model_lane_source": "configured_lane",
             "launch_summary_path": "data/llm_campaigns/campaign-001/launches/launch-001/launch_summary.json",
         },
+        serving_identity=LlmServingIdentity(
+            requested_model_lane="general_purpose",
+            resolved_model_lane="general_purpose",
+            resolved_model_lane_source="configured_lane",
+            adapter="llm_fixture_v1",
+            provider="mock",
+            model="fixture-zomic-v1",
+            effective_api_base="https://local.example/v1/",
+            checkpoint_id="ckpt-123",
+            model_revision="rev-a",
+            local_model_path="/models/materials",
+        ),
     )
 
     run_manifest = load_json_object(Path(summary.run_manifest_path))
@@ -241,6 +261,8 @@ def test_generate_llm_candidates_records_campaign_metadata_in_run_manifest_and_p
     assert run_manifest["launch_id"] == "launch-001"
     assert run_manifest["resolved_model_lane_source"] == "configured_lane"
     assert run_manifest["conditioning_example_ids"] == []
+    assert run_manifest["serving_identity"]["effective_api_base"] == "https://local.example/v1"
+    assert run_manifest["serving_identity"]["checkpoint_id"] == "ckpt-123"
 
     prompt_payload = load_json_object(Path(summary.run_manifest_path).parent / "prompt.json")
     assert prompt_payload["request"]["prompt_instruction_deltas"] == [

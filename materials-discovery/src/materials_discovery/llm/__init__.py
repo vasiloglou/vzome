@@ -44,6 +44,7 @@ from materials_discovery.llm.launch import (
     materialize_campaign_seed,
     resolve_campaign_launch,
     resolve_campaign_model_lane,
+    resolve_serving_lane,
 )
 from materials_discovery.llm.replay import (
     CampaignLaunchBundle,
@@ -303,6 +304,7 @@ __all__ = [
     "validate_llm_adapter_ready",
     "resolve_campaign_launch",
     "resolve_campaign_model_lane",
+    "resolve_serving_lane",
     "SourceFamily",
     "summarize_corpus_quality",
     "summarize_campaign_proposals",

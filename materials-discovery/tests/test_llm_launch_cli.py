@@ -9,7 +9,7 @@ from materials_discovery.cli import app
 from materials_discovery.common.io import load_yaml, write_json_object, write_jsonl
 from materials_discovery.common.manifest import config_sha256
 from materials_discovery.common.schema import LlmGenerateSummary, SystemConfig
-from materials_discovery.llm.schema import LlmCampaignResolvedLaunch
+from materials_discovery.llm.schema import LlmCampaignResolvedLaunch, LlmServingIdentity
 
 
 def _workspace() -> Path:
@@ -98,6 +98,14 @@ def test_cli_llm_launch_success(monkeypatch, tmp_path: Path) -> None:
             resolved_adapter="llm_fixture_v1",
             resolved_provider="mock",
             resolved_model="fixture-al-cu-fe-v1",
+            serving_identity=LlmServingIdentity(
+                requested_model_lane="general_purpose",
+                resolved_model_lane="general_purpose",
+                resolved_model_lane_source="configured_lane",
+                adapter="llm_fixture_v1",
+                provider="mock",
+                model="fixture-al-cu-fe-v1",
+            ),
             prompt_instruction_deltas=["Prefer parser-safe symmetry annotations."],
             resolved_composition_bounds=config.composition_bounds,
             resolved_example_pack_path=None,
@@ -138,6 +146,8 @@ def test_cli_llm_launch_success(monkeypatch, tmp_path: Path) -> None:
     assert payload["campaign_id"] == "campaign-001"
     assert Path(payload["resolved_launch_path"]).exists()
     assert Path(payload["candidates_path"]) == out_file
+    resolved_payload = json.loads(Path(payload["resolved_launch_path"]).read_text(encoding="utf-8"))
+    assert resolved_payload["serving_identity"]["resolved_model_lane"] == "general_purpose"
 
 
 def test_cli_llm_launch_rejects_config_hash_drift_before_generation(monkeypatch, tmp_path: Path) -> None:
@@ -182,3 +192,95 @@ def test_cli_llm_launch_rejects_config_hash_drift_before_generation(monkeypatch,
     assert str(config_path) in result.stderr
     assert "re-approval may be required" in result.stderr
     assert calls == {"resolve": 0, "generate": 0}
+
+
+def test_cli_llm_launch_surfaces_local_lane_readiness_before_generation(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    runner = CliRunner()
+    config_path = _workspace() / "configs" / "systems" / "al_cu_fe_llm_mock.yaml"
+    config = SystemConfig.model_validate(load_yaml(config_path))
+    config.backend.mode = "real"
+    config.backend.llm_adapter = "openai_compat_v1"
+    config.backend.llm_provider = "openai_compat"
+    config.backend.llm_model = "materials-local-v1"
+    config.backend.llm_api_base = "http://localhost:8000"
+    spec_path = tmp_path / "campaign_spec.json"
+    spec_path.write_text(
+        json.dumps(
+            _campaign_spec_payload(config_path, config_hash=config_sha256(config)),
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    class _Adapter:
+        pass
+
+    monkeypatch.setattr("materials_discovery.cli.workspace_root", lambda: tmp_path)
+    monkeypatch.setattr("materials_discovery.cli._load_system_config", lambda path: config)
+    monkeypatch.setattr("materials_discovery.cli.resolve_llm_adapter", lambda *args, **kwargs: _Adapter())
+
+    def _fake_resolve(spec, system_config, *, campaign_spec_path, launch_id, artifact_root=None):
+        del spec, system_config, artifact_root
+        return config, LlmCampaignResolvedLaunch(
+            launch_id=launch_id,
+            campaign_id="campaign-001",
+            campaign_spec_path=str(campaign_spec_path),
+            system_config_path=str(config_path),
+            system_config_hash=config_sha256(config),
+            requested_model_lanes=["specialized_materials"],
+            resolved_model_lane="specialized_materials",
+            resolved_model_lane_source="configured_lane",
+            resolved_adapter="openai_compat_v1",
+            resolved_provider="openai_compat",
+            resolved_model="materials-local-v1",
+            serving_identity=LlmServingIdentity(
+                requested_model_lane="specialized_materials",
+                resolved_model_lane="specialized_materials",
+                resolved_model_lane_source="configured_lane",
+                adapter="openai_compat_v1",
+                provider="openai_compat",
+                model="materials-local-v1",
+                effective_api_base="http://localhost:8000",
+                checkpoint_id="ckpt-123",
+            ),
+            prompt_instruction_deltas=[],
+            resolved_composition_bounds=config.composition_bounds,
+            resolved_example_pack_path=None,
+            resolved_seed_zomic_path=None,
+        )
+
+    def _fake_ready(adapter, *, adapter_key, requested_lane=None, resolved_lane=None):
+        del adapter
+        raise RuntimeError(
+            f"{adapter_key} readiness probe failed for requested lane '{requested_lane}', "
+            f"resolved lane '{resolved_lane}' at http://localhost:8000/v1/models. "
+            "Confirm the local server is already running."
+        )
+
+    generate_calls = {"count": 0}
+
+    def _fake_generate(*args, **kwargs):
+        del args, kwargs
+        generate_calls["count"] += 1
+        raise AssertionError("generation should not run when readiness fails")
+
+    monkeypatch.setattr("materials_discovery.cli.resolve_campaign_launch", _fake_resolve)
+    monkeypatch.setattr("materials_discovery.cli.validate_llm_adapter_ready", _fake_ready)
+    monkeypatch.setattr("materials_discovery.cli.generate_llm_candidates", _fake_generate)
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-launch",
+            "--campaign-spec",
+            str(spec_path),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "requested lane 'specialized_materials'" in result.stderr
+    assert "http://localhost:8000/v1/models" in result.stderr
+    assert generate_calls["count"] == 0

@@ -5,6 +5,7 @@
 | Date | Change | Details |
 |------|--------|---------|
 | 2026-04-05 | Phase 19 Plan 01 local-serving schema and runtime foundation | Added additive local-serving backend and lane config fields, typed `LlmServingIdentity` support for run/launch artifacts, an `openai_compat_v1` runtime adapter with readiness probes, and focused schema/runtime regressions that passed at `20 passed` |
+| 2026-04-05 | Phase 19 Plan 02 lane-aware local serving integration | Added shared serving-lane resolution for manual generation and campaign launch, threaded additive serving identity into run and launch artifacts, added `llm-generate --model-lane` plus local-serving preflight diagnostics, and kept focused generate/launch CLI regressions green at `40 passed` |
 | 2026-04-04 | Phase 12 Plan 03 replay and compare workflow closeout | Added an offline full closed-loop regression for `llm-suggest -> llm-approve -> llm-launch -> llm-replay -> llm-compare`, extended campaign-lineage tests for replay fields, documented the strict replay/compare operator flow, and re-verified the full suite at 374 passed, 3 skipped |
 | 2026-04-04 | Phase 12 Plan 02 replay and compare CLI | Added strict `mdisc llm-replay --launch-summary ...`, `mdisc llm-compare --launch-summary ...`, replay-aware `llm-generate` lineage, and focused replay/compare CLI coverage while keeping the shared CLI suite green |
 | 2026-04-04 | Phase 12 Plan 01 replay and comparison foundation | Added strict replay bundle loading, replay-config reconstruction helpers, typed outcome/comparison artifacts, deterministic campaign comparison paths, and focused replay/compare core regression coverage |
@@ -356,6 +357,12 @@
 - Added `OpenAICompatLlmAdapter` plus `validate_llm_adapter_ready()` in `llm/runtime.py`, including default `/v1/models` probing, supported OpenAI-compatible response parsing, and operator-facing connectivity failures that tell the user to confirm the local server is already running.
 - Extended `tests/test_llm_launch_schema.py` and `tests/test_llm_runtime.py` to cover API-base normalization, optional serving identity, legacy artifact reads, default probe behavior, and offline local-adapter parsing.
 - Focused verification passed with `20 passed` across `tests/test_llm_launch_schema.py` and `tests/test_llm_runtime.py`.
+- 23:25 EDT — Implemented the Phase 19 Plan 02 lane-aware local-serving execution bridge.
+- Added shared `resolve_serving_lane(...)` semantics so manual `llm-generate` and campaign `llm-launch` both follow the same precedence order: `CLI requested lane > config default > explicit fallback > backend default`.
+- Extended `cli.py` with `llm-generate --model-lane`, early local-serving readiness probes, additive serving-identity construction, and preserved standard summary / manifest output for legacy no-lane configs.
+- Updated `generate.py` and `launch.py` so run manifests and resolved launch artifacts record nested `serving_identity` while preserving the existing flat adapter/provider/model fields for compatibility.
+- Extended `tests/test_llm_generate_core.py`, `tests/test_llm_launch_core.py`, `tests/test_llm_generate_cli.py`, `tests/test_llm_launch_cli.py`, and `tests/test_cli.py` to cover explicit lane selection, configured fallback behavior, readiness failures, and backward-compatible no-lane execution.
+- Focused verification passed with `40 passed` across the Plan 02 generate/launch core and CLI regression slice.
 
 ### 2026-04-04
 

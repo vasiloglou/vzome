@@ -23,6 +23,7 @@ from materials_discovery.llm.schema import (
     LlmGenerationRequest,
     LlmGenerationResult,
     LlmRunManifest,
+    LlmServingIdentity,
 )
 
 
@@ -106,6 +107,7 @@ def generate_llm_candidates(
     temperature_override: float | None = None,
     prompt_instruction_deltas: list[str] | None = None,
     campaign_metadata: dict[str, object] | None = None,
+    serving_identity: LlmServingIdentity | None = None,
 ) -> LlmGenerateSummary:
     if config.llm_generate is None:
         raise ValueError("config.llm_generate must be configured for llm-generate")
@@ -191,6 +193,30 @@ def generate_llm_candidates(
     adapter_key = config.backend.llm_adapter or "llm_fixture_v1"
     provider = config.backend.llm_provider or "mock"
     model = config.backend.llm_model or "fixture"
+    effective_serving_identity = serving_identity
+    if effective_serving_identity is None:
+        effective_serving_identity = LlmServingIdentity(
+            requested_model_lane=(
+                None
+                if campaign_metadata is None
+                else next(iter(campaign_metadata.get("requested_model_lanes", [])), None)
+            ),
+            resolved_model_lane=(
+                "general_purpose"
+                if campaign_metadata is None or campaign_metadata.get("resolved_model_lane") is None
+                else str(campaign_metadata["resolved_model_lane"])
+            ),
+            resolved_model_lane_source=(
+                "backend_default"
+                if campaign_metadata is None
+                or campaign_metadata.get("resolved_model_lane_source") is None
+                else str(campaign_metadata["resolved_model_lane_source"])
+            ),
+            adapter=adapter_key,
+            provider=provider,
+            model=model,
+            effective_api_base=config.backend.llm_api_base,
+        )
 
     attempts: list[LlmGenerationAttempt] = []
     compile_results: list[LlmGenerationResult] = []
@@ -352,16 +378,25 @@ def generate_llm_candidates(
         proposal_id=None if campaign_metadata is None else campaign_metadata.get("proposal_id"),
         approval_id=None if campaign_metadata is None else campaign_metadata.get("approval_id"),
         requested_model_lanes=(
-            [] if campaign_metadata is None else list(campaign_metadata.get("requested_model_lanes", []))
+            list(campaign_metadata.get("requested_model_lanes", []))
+            if campaign_metadata is not None
+            else (
+                []
+                if effective_serving_identity.requested_model_lane is None
+                else [effective_serving_identity.requested_model_lane]
+            )
         ),
         resolved_model_lane=(
-            None if campaign_metadata is None else campaign_metadata.get("resolved_model_lane")
+            campaign_metadata.get("resolved_model_lane")
+            if campaign_metadata is not None
+            else effective_serving_identity.resolved_model_lane
         ),
         resolved_model_lane_source=(
-            None
-            if campaign_metadata is None
-            else campaign_metadata.get("resolved_model_lane_source")
+            campaign_metadata.get("resolved_model_lane_source")
+            if campaign_metadata is not None
+            else effective_serving_identity.resolved_model_lane_source
         ),
+        serving_identity=effective_serving_identity,
         launch_summary_path=(
             None if campaign_metadata is None else campaign_metadata.get("launch_summary_path")
         ),

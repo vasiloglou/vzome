@@ -5,7 +5,9 @@ from typing import Literal
 
 from materials_discovery.common.io import workspace_root
 from materials_discovery.common.schema import (
+    BackendConfig,
     CompositionBound,
+    LlmGenerateConfig,
     LlmModelLaneConfig,
     SystemConfig,
 )
@@ -15,6 +17,8 @@ from materials_discovery.llm.schema import (
     LlmCampaignAction,
     LlmCampaignResolvedLaunch,
     LlmCampaignSpec,
+    LlmServingIdentity,
+    ResolvedModelLaneSource,
 )
 from materials_discovery.llm.storage import (
     llm_campaign_launch_dir,
@@ -59,6 +63,59 @@ def _baseline_backend_tuple(
         config.backend.llm_provider or "mock",
         config.backend.llm_model or "fixture",
         config.backend.llm_api_base,
+    )
+
+
+def _baseline_backend_tuple_from_backend(
+    backend: BackendConfig,
+) -> tuple[str, str, str, str | None]:
+    if backend.mode == "mock":
+        return (
+            backend.llm_adapter or "llm_fixture_v1",
+            backend.llm_provider or "mock",
+            backend.llm_model or "fixture",
+            backend.llm_api_base,
+        )
+    return (
+        backend.llm_adapter or "anthropic_api_v1",
+        backend.llm_provider or "anthropic",
+        backend.llm_model or "fixture",
+        backend.llm_api_base,
+    )
+
+
+def build_serving_identity(
+    *,
+    requested_lane: str | None,
+    resolved_lane: str,
+    lane_source: ResolvedModelLaneSource,
+    backend: BackendConfig,
+    lane_config: LlmModelLaneConfig | None,
+) -> LlmServingIdentity:
+    adapter, provider, model, api_base = _baseline_backend_tuple_from_backend(backend)
+    checkpoint_id = None
+    model_revision = None
+    local_model_path = None
+    if lane_config is not None:
+        adapter = lane_config.adapter
+        provider = lane_config.provider
+        model = lane_config.model
+        api_base = lane_config.api_base
+        checkpoint_id = lane_config.checkpoint_id
+        model_revision = lane_config.model_revision
+        local_model_path = lane_config.local_model_path
+
+    return LlmServingIdentity(
+        requested_model_lane=requested_lane,
+        resolved_model_lane=resolved_lane,
+        resolved_model_lane_source=lane_source,
+        adapter=adapter,
+        provider=provider,
+        model=model,
+        effective_api_base=api_base,
+        checkpoint_id=checkpoint_id,
+        model_revision=model_revision,
+        local_model_path=local_model_path,
     )
 
 
@@ -121,6 +178,59 @@ def _resolved_composition_bounds(
     return bounds
 
 
+def resolve_serving_lane(
+    requested_lane: str | None,
+    llm_generate_config: LlmGenerateConfig | None,
+    backend_config: BackendConfig,
+    *,
+    allow_backend_default: bool = True,
+) -> tuple[str, LlmModelLaneConfig | None, ResolvedModelLaneSource]:
+    del backend_config
+    available_lanes = {} if llm_generate_config is None else llm_generate_config.model_lanes
+
+    if requested_lane is not None:
+        lane_config = available_lanes.get(requested_lane)
+        if lane_config is not None:
+            return requested_lane, lane_config, "configured_lane"
+
+        fallback_lane = (
+            None if llm_generate_config is None else llm_generate_config.fallback_model_lane
+        )
+        if fallback_lane is not None:
+            fallback_config = available_lanes.get(fallback_lane)
+            if fallback_config is None:
+                raise ValueError(
+                    f"fallback model lane '{fallback_lane}' is not configured"
+                )
+            return fallback_lane, fallback_config, "configured_fallback"
+
+        if requested_lane == "general_purpose" and allow_backend_default:
+            return "general_purpose", None, "backend_default"
+
+        raise ValueError(
+            f"requested model lane '{requested_lane}' is not configured and no explicit fallback is available"
+        )
+
+    if llm_generate_config is not None and llm_generate_config.default_model_lane is not None:
+        default_lane = llm_generate_config.default_model_lane
+        default_config = available_lanes.get(default_lane)
+        if default_config is None:
+            raise ValueError(f"default model lane '{default_lane}' is not configured")
+        return default_lane, default_config, "default_lane"
+
+    if llm_generate_config is not None and llm_generate_config.fallback_model_lane is not None:
+        fallback_lane = llm_generate_config.fallback_model_lane
+        fallback_config = available_lanes.get(fallback_lane)
+        if fallback_config is None:
+            raise ValueError(f"fallback model lane '{fallback_lane}' is not configured")
+        return fallback_lane, fallback_config, "configured_fallback"
+
+    if allow_backend_default:
+        return "general_purpose", None, "backend_default"
+
+    raise ValueError("no configured model lane is available and backend default is disabled")
+
+
 def resolve_campaign_model_lane(
     spec: LlmCampaignSpec,
     config: SystemConfig,
@@ -128,7 +238,7 @@ def resolve_campaign_model_lane(
     list[str],
     str,
     LlmModelLaneConfig | None,
-    Literal["configured_lane", "baseline_fallback"],
+    ResolvedModelLaneSource,
 ]:
     requested_lanes = _dedupe_preserve_order(
         [
@@ -137,19 +247,24 @@ def resolve_campaign_model_lane(
             if action.preferred_model_lane is not None
         ]
     )
-    available_lanes = {}
-    if config.llm_generate is not None:
-        available_lanes = config.llm_generate.model_lanes
-
     for lane in requested_lanes:
+        llm_generate_config = config.llm_generate
+        available_lanes = {} if llm_generate_config is None else llm_generate_config.model_lanes
         lane_config = available_lanes.get(lane)
         if lane_config is not None:
-            return requested_lanes, lane, lane_config, "configured_lane"
+            resolved_lane, resolved_config, source = resolve_serving_lane(
+                lane,
+                config.llm_generate,
+                config.backend,
+            )
+            return requested_lanes, resolved_lane, resolved_config, source
 
-    if not requested_lanes or "general_purpose" in requested_lanes:
-        return requested_lanes, "general_purpose", None, "baseline_fallback"
-
-    raise ValueError("campaign spec requested no configured model lane")
+    resolved_lane, lane_config, source = resolve_serving_lane(
+        requested_lanes[0] if requested_lanes else None,
+        config.llm_generate,
+        config.backend,
+    )
+    return requested_lanes, resolved_lane, lane_config, source
 
 
 def materialize_campaign_seed(
@@ -224,11 +339,18 @@ def resolve_campaign_launch(
     resolved_config.llm_generate.seed_zomic = None if resolved_seed is None else str(resolved_seed)
 
     adapter, provider, model, api_base = _baseline_backend_tuple(config)
+    serving_identity = build_serving_identity(
+        requested_lane=requested_lanes[0] if requested_lanes else None,
+        resolved_lane=resolved_lane,
+        lane_source=lane_source,
+        backend=config.backend,
+        lane_config=lane_config,
+    )
     if lane_config is not None:
-        adapter = lane_config.adapter
-        provider = lane_config.provider
-        model = lane_config.model
-        api_base = lane_config.api_base
+        adapter = serving_identity.adapter
+        provider = serving_identity.provider
+        model = serving_identity.model
+        api_base = serving_identity.effective_api_base
 
     resolved_config.backend.llm_adapter = adapter
     resolved_config.backend.llm_provider = provider
@@ -247,6 +369,7 @@ def resolve_campaign_launch(
         resolved_adapter=adapter,
         resolved_provider=provider,
         resolved_model=model,
+        serving_identity=serving_identity,
         prompt_instruction_deltas=prompt_deltas,
         resolved_composition_bounds=resolved_config.composition_bounds,
         resolved_example_pack_path=spec.launch_baseline.example_pack_path,

@@ -8,8 +8,8 @@ from pytest import MonkeyPatch
 from typer.testing import CliRunner
 
 from materials_discovery.cli import app
-from materials_discovery.common.io import load_yaml
-from materials_discovery.common.schema import ZomicExportSummary
+from materials_discovery.common.io import load_yaml, write_jsonl
+from materials_discovery.common.schema import LlmGenerateSummary, ZomicExportSummary
 
 
 def test_cli_ingest_success(tmp_path: Path) -> None:
@@ -146,6 +146,51 @@ def test_cli_llm_generate_missing_seed_returns_2() -> None:
     )
 
     assert result.exit_code == 2
+
+
+def test_cli_llm_generate_legacy_no_lane_path_still_succeeds(
+    monkeypatch: MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = CliRunner()
+    workspace = Path(__file__).resolve().parents[1]
+    config = workspace / "configs" / "systems" / "al_cu_fe_llm_mock.yaml"
+    out_file = tmp_path / "legacy_llm_generate.jsonl"
+    run_manifest = tmp_path / "run_manifest.json"
+    run_manifest.write_text("{}", encoding="utf-8")
+
+    def _fake_generate(system_config, output_path, count, **kwargs):
+        del system_config, count
+        assert kwargs["serving_identity"].resolved_model_lane == "general_purpose"
+        assert kwargs["serving_identity"].resolved_model_lane_source == "backend_default"
+        write_jsonl([], output_path)
+        return LlmGenerateSummary(
+            requested_count=1,
+            generated_count=0,
+            attempt_count=1,
+            parse_pass_count=1,
+            compile_pass_count=0,
+            output_path=str(output_path),
+            run_manifest_path=str(run_manifest),
+        )
+
+    monkeypatch.setattr("materials_discovery.cli.generate_llm_candidates", _fake_generate)
+
+    result = runner.invoke(
+        app,
+        [
+            "llm-generate",
+            "--config",
+            str(config),
+            "--count",
+            "1",
+            "--out",
+            str(out_file),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert out_file.exists()
 
 
 def test_cli_llm_launch_missing_spec_returns_2() -> None:
