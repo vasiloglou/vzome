@@ -25,7 +25,7 @@ reinforce each other instead of living in separate prototypes.
 
 - [x] **LLM-16**: `llm-launch`, `llm-replay`, and `llm-compare` remain
   compatible when the originating run used a local or specialized lane.
-- [ ] **LLM-17**: The platform can benchmark hosted, local, and specialized
+- [x] **LLM-17**: The platform can benchmark hosted, local, and specialized
   lanes against the same acceptance-pack or benchmark context so operators can
   judge quality, cost, and workflow tradeoffs.
 
@@ -37,7 +37,7 @@ reinforce each other instead of living in separate prototypes.
 - [x] **OPS-09**: Every local or specialized run records auditable serving
   lineage including adapter type, provider/model lane, model identifier or
   checkpoint, runtime endpoint or path, and launch/replay provenance.
-- [ ] **OPS-10**: The workflow ships with an operator runbook for setup, smoke
+- [x] **OPS-10**: The workflow ships with an operator runbook for setup, smoke
   tests, lane fallback, and reproducible benchmark comparison across hosted and
   local/specialized serving paths.
 
@@ -78,8 +78,8 @@ reinforce each other instead of living in separate prototypes.
 | LLM-15 | Phase 23 | Complete |
 | LLM-16 | Phase 23 | Complete |
 | OPS-09 | Phase 23 | Complete |
-| LLM-17 | Phase 24 | Pending |
-| OPS-10 | Phase 24 | Pending |
+| LLM-17 | Phase 24 | Complete |
+| OPS-10 | Phase 24 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 8 total
@@ -88,4 +88,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 after closing the Phase 20 audit gap*
+*Last updated: 2026-04-05 after closing the Phase 21 audit gap*

@@ -1,9 +1,9 @@
 ---
 phase: 21
 slug: comparative-benchmarks-and-operator-serving-workflow
-status: draft
+status: complete
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-04-05
 ---
 
@@ -19,7 +19,7 @@ created: 2026-04-05
 |----------|-------|
 | **Framework** | pytest |
 | **Config file** | `materials-discovery/pyproject.toml` |
-| **Quick run command** | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_schema.py tests/test_llm_serving_benchmark_core.py tests/test_llm_serving_benchmark_cli.py -x -v` |
+| **Quick run command** | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_schema.py tests/test_llm_serving_benchmark_core.py tests/test_llm_serving_benchmark_cli.py tests/test_cli.py tests/test_real_mode_pipeline.py -x -v` |
 | **Full suite command** | `cd materials-discovery && uv run pytest` |
 | **Estimated runtime** | ~60-300 seconds depending on focused slice vs full suite |
 
@@ -40,12 +40,12 @@ created: 2026-04-05
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 21-01-01 | 01 | 1 | LLM-17, OPS-10 | schema/unit | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_schema.py -x -v` | ❌ create | ⬜ pending |
-| 21-01-02 | 01 | 1 | LLM-17, OPS-10 | core/unit | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_core.py -x -v` | ❌ create | ⬜ pending |
-| 21-02-01 | 02 | 2 | LLM-17 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_cli.py -x -v` | ❌ create | ⬜ pending |
-| 21-02-02 | 02 | 2 | LLM-17, OPS-10 | end-to-end/integration | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_cli.py tests/test_real_mode_pipeline.py -x -v` | ✅ extend + ❌ create | ⬜ pending |
-| 21-03-01 | 03 | 3 | OPS-10 | docs/config regression | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_cli.py tests/test_cli.py -x -v` | ✅ extend + ❌ create | ⬜ pending |
-| 21-03-02 | 03 | 3 | LLM-17, OPS-10 | real-mode/docs integration | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_cli.py tests/test_cli.py tests/test_real_mode_pipeline.py -x -v` | ✅ extend + ❌ create | ⬜ pending |
+| 21-01-01 | 01 | 1 | LLM-17, OPS-10 | schema/unit | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_schema.py -x -v` | ✅ | ✅ green |
+| 21-01-02 | 01 | 1 | LLM-17, OPS-10 | core/unit | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_core.py -x -v` | ✅ | ✅ green |
+| 21-02-01 | 02 | 2 | LLM-17 | CLI/integration | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_cli.py -x -v` | ✅ | ✅ green |
+| 21-02-02 | 02 | 2 | LLM-17, OPS-10 | end-to-end/integration | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_cli.py tests/test_real_mode_pipeline.py -x -v` | ✅ | ✅ green |
+| 21-03-01 | 03 | 3 | OPS-10 | docs/config regression | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_cli.py tests/test_cli.py -x -v` | ✅ | ✅ green |
+| 21-03-02 | 03 | 3 | LLM-17, OPS-10 | real-mode/docs integration | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_cli.py tests/test_cli.py tests/test_real_mode_pipeline.py -x -v` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -53,18 +53,18 @@ created: 2026-04-05
 
 ## Wave 0 Requirements
 
-- [ ] `materials-discovery/src/materials_discovery/llm/serving_benchmark.py` — provide the typed benchmark/smoke orchestration core rather than burying logic in `cli.py`
-- [ ] `materials-discovery/src/materials_discovery/llm/schema.py` — add typed benchmark spec, smoke artifact, and benchmark result contracts
-- [ ] `materials-discovery/src/materials_discovery/llm/storage.py` — add stable artifact roots under `data/benchmarks/llm_serving/{benchmark_id}/...`
-- [ ] `materials-discovery/tests/test_llm_serving_benchmark_schema.py` — cover shared-context spec rules, target validation, and result serialization
-- [ ] `materials-discovery/tests/test_llm_serving_benchmark_core.py` — cover explicit smoke failures, no silent fallback, and benchmark recommendation summaries
-- [ ] `materials-discovery/tests/test_llm_serving_benchmark_cli.py` — cover `--smoke-only`, normal benchmark execution, and human-readable recommendation output
-- [ ] `materials-discovery/tests/test_real_mode_pipeline.py` — cover one real serving benchmark proof path offline with monkeypatched providers
-- [ ] All serving-benchmark tests must remain offline and deterministic; no live hosted or local model server is required in CI
-- [ ] `load_serving_benchmark_spec(...)` must reject mixed-system benchmark specs by comparing each target system config against the shared acceptance-pack context
-- [ ] `llm_evaluate` benchmark targets must keep their batch or candidate source aligned with the shared acceptance-pack context; unrelated slices must fail clearly
-- [ ] Benchmark summaries must leave role-specific missing metrics explicit rather than fabricating parity between generation and evaluation targets
-- [ ] Any Phase 21 execution that changes `materials-discovery/` must update `materials-discovery/Progress.md` per repo policy
+- [x] `materials-discovery/src/materials_discovery/llm/serving_benchmark.py` — provides the typed benchmark and smoke orchestration core rather than burying logic in `cli.py`
+- [x] `materials-discovery/src/materials_discovery/llm/schema.py` — adds typed benchmark spec, smoke artifact, and benchmark result contracts
+- [x] `materials-discovery/src/materials_discovery/llm/storage.py` — adds stable artifact roots under `data/benchmarks/llm_serving/{benchmark_id}/...`
+- [x] `materials-discovery/tests/test_llm_serving_benchmark_schema.py` — covers shared-context spec rules, target validation, and result serialization
+- [x] `materials-discovery/tests/test_llm_serving_benchmark_core.py` — covers explicit smoke failures, no silent fallback, and benchmark recommendation summaries
+- [x] `materials-discovery/tests/test_llm_serving_benchmark_cli.py` — covers `--smoke-only`, normal benchmark execution, and human-readable recommendation output
+- [x] `materials-discovery/tests/test_real_mode_pipeline.py` — covers one real serving benchmark proof path offline with monkeypatched providers
+- [x] All serving-benchmark tests remain offline and deterministic; no live hosted or local model server is required in CI
+- [x] `load_serving_benchmark_spec(...)` rejects mixed-system benchmark specs by comparing each target system config against the shared acceptance-pack context
+- [x] `llm_evaluate` benchmark targets keep their batch or candidate source aligned with the shared acceptance-pack context; unrelated slices fail clearly
+- [x] Benchmark summaries leave role-specific missing metrics explicit rather than fabricating parity between generation and evaluation targets
+- [x] Phase 24 only touched planning artifacts, so `materials-discovery/Progress.md` did not need an update during audit closure
 
 *Existing pytest infrastructure covers the repo. Wave 0 is about the new serving-benchmark workflow seams, not test tooling installation.*
 
@@ -80,6 +80,20 @@ created: 2026-04-05
 
 ---
 
+## Evidence Refresh
+
+- Focused rerun completed during Phase 24:
+  - `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_schema.py tests/test_llm_serving_benchmark_core.py tests/test_llm_serving_benchmark_cli.py tests/test_cli.py tests/test_real_mode_pipeline.py -x -v`
+  - Result: `40 passed in 26.84s`
+- Shipped full-suite evidence retained from `21-03-SUMMARY.md`:
+  - `cd materials-discovery && uv run pytest`
+  - Result: `410 passed, 3 skipped, 1 warning in 37.07s`
+- Retroactive finalization note:
+  - This validation artifact was finalized by Phase 24 to close the v1.2
+    milestone audit gap after the benchmark workflow had already shipped.
+
+---
+
 ## Validation Sign-Off
 
 - [x] All tasks have `<automated>` verify or Wave 0 dependencies
@@ -89,4 +103,4 @@ created: 2026-04-05
 - [x] Feedback latency < 300s
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending execution
+**Approval:** automated verification complete

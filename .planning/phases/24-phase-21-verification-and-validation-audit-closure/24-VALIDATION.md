@@ -1,9 +1,9 @@
 ---
 phase: 24
 slug: phase-21-verification-and-validation-audit-closure
-status: planned
-nyquist_compliant: false
-wave_0_complete: false
+status: automated_complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-05
 ---
 
@@ -41,12 +41,12 @@ created: 2026-04-05
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 24-01-01 | 01 | 1 | LLM-17, OPS-10 | focused regression | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_schema.py tests/test_llm_serving_benchmark_core.py tests/test_llm_serving_benchmark_cli.py tests/test_cli.py tests/test_real_mode_pipeline.py -x -v` | ✅ | ⬜ pending |
-| 24-01-02 | 01 | 1 | LLM-17, OPS-10 | doc consistency | `git diff --check` | ✅ | ⬜ pending |
-| 24-02-01 | 02 | 2 | LLM-17 | proof matrix | `git diff --check` | ✅ | ⬜ pending |
-| 24-02-02 | 02 | 2 | OPS-10 | proof matrix | `git diff --check` | ✅ | ⬜ pending |
-| 24-03-01 | 03 | 3 | LLM-17, OPS-10 | traceability | `git diff --check` | ✅ | ⬜ pending |
-| 24-03-02 | 03 | 3 | LLM-17, OPS-10 | state + self-closeout | `git diff --check` | ✅ | ⬜ pending |
+| 24-01-01 | 01 | 1 | LLM-17, OPS-10 | focused regression | `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_schema.py tests/test_llm_serving_benchmark_core.py tests/test_llm_serving_benchmark_cli.py tests/test_cli.py tests/test_real_mode_pipeline.py -x -v` | ✅ | ✅ green |
+| 24-01-02 | 01 | 1 | LLM-17, OPS-10 | doc consistency | `git diff --check` | ✅ | ✅ green |
+| 24-02-01 | 02 | 2 | LLM-17 | proof matrix | `git diff --check` | ✅ | ✅ green |
+| 24-02-02 | 02 | 2 | OPS-10 | proof matrix | `git diff --check` | ✅ | ✅ green |
+| 24-03-01 | 03 | 3 | LLM-17, OPS-10 | traceability | `git diff --check` | ✅ | ✅ green |
+| 24-03-02 | 03 | 3 | LLM-17, OPS-10 | state + self-closeout | `git diff --check` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -54,17 +54,17 @@ created: 2026-04-05
 
 ## Wave 0 Requirements
 
-- [ ] `21-VERIFICATION.md` must exist by the end of execution
-- [ ] `21-VALIDATION.md` must move from `status: draft` to an audit-ready
+- [x] `21-VERIFICATION.md` must exist by the end of execution
+- [x] `21-VALIDATION.md` must move from `status: draft` to an audit-ready
   state
-- [ ] `REQUIREMENTS.md` should only move `LLM-17` and `OPS-10` back to complete
+- [x] `REQUIREMENTS.md` should only move `LLM-17` and `OPS-10` back to complete
   after proof exists
-- [ ] No `materials-discovery/` files should change unless the evidence rerun
+- [x] No `materials-discovery/` files should change unless the evidence rerun
   exposes a real mismatch
-- [ ] If `materials-discovery/` changes unexpectedly, `materials-discovery/Progress.md`
+- [x] If `materials-discovery/` changes unexpectedly, `materials-discovery/Progress.md`
   must be updated per `AGENTS.md`
-- [ ] The focused pytest surface must stay offline and deterministic
-- [ ] Phase 24 should finalize its own validation state and leave behind a
+- [x] The focused pytest surface must stay offline and deterministic
+- [x] Phase 24 should finalize its own validation state and leave behind a
   closure verdict so it does not create fresh documentary debt
 
 ---
@@ -78,15 +78,29 @@ created: 2026-04-05
 
 ---
 
+## Evidence Refresh
+
+- Focused rerun completed during Phase 24:
+  - `cd materials-discovery && uv run pytest tests/test_llm_serving_benchmark_schema.py tests/test_llm_serving_benchmark_core.py tests/test_llm_serving_benchmark_cli.py tests/test_cli.py tests/test_real_mode_pipeline.py -x -v`
+  - Result: `40 passed in 26.84s`
+- Shipped full-suite evidence retained from `21-03-SUMMARY.md`:
+  - `cd materials-discovery && uv run pytest`
+  - Result: `410 passed, 3 skipped, 1 warning in 37.07s`
+- Retroactive finalization note:
+  - This validation artifact was finalized by Phase 24 to close the v1.2
+    milestone audit gap after the benchmark workflow had already shipped.
+
+---
+
 ## Validation Sign-Off
 
-- [ ] All tasks have focused automated verification or doc-hygiene checks
-- [ ] Sampling continuity: no 2 consecutive evidence updates without either
+- [x] All tasks have focused automated verification or doc-hygiene checks
+- [x] Sampling continuity: no 2 consecutive evidence updates without either
   pytest or doc-hygiene verification
-- [ ] Wave 0 captures the actual Phase 21 audit gap, not unrelated
+- [x] Wave 0 captures the actual Phase 21 audit gap, not unrelated
   implementation work
-- [ ] No watch-mode or long-running background commands are required
-- [ ] Feedback latency < 300s
-- [ ] `nyquist_compliant: true` set in frontmatter by the end of execution
+- [x] No watch-mode or long-running background commands are required
+- [x] Feedback latency < 300s
+- [x] `nyquist_compliant: true` set in frontmatter by the end of execution
 
-**Approval:** pending
+**Approval:** automated verification complete

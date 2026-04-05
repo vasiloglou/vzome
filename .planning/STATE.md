@@ -4,17 +4,17 @@ milestone: v1.2
 milestone_name: milestone
 current_phase: 24
 current_phase_name: phase-21-verification-and-validation-audit-closure
-current_plan: 0
-status: ready_to_plan
-stopped_at: Phase 23 complete
+current_plan: 3
+status: ready_for_milestone_audit
+stopped_at: Phase 24 complete
 last_updated: "2026-04-05T08:00:07Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 18
-  completed_plans: 15
-  percent: 83
+  completed_plans: 18
+  percent: 100
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 24 — phase-21-verification-and-validation-audit-closure
+**Current focus:** Milestone audit handoff after Phase 24
 
 ## Current Position
 
 Current Phase: 24
 Current Phase Name: phase-21-verification-and-validation-audit-closure
 Total Phases: 6
-Current Plan: 0
+Current Plan: 3
 Total Plans in Phase: 3
-Phase: 24 (phase-21-verification-and-validation-audit-closure) — READY TO PLAN
-Plan: not started
-Status: Phase 23 complete — final audit-closure phase ready to plan
+Phase: 24 (phase-21-verification-and-validation-audit-closure) — COMPLETE
+Plan: 3 of 3
+Status: Final proof gap closed — ready for milestone audit
 Last activity: 2026-04-05
-Last Activity Description: Phase 23 closed the Phase 20 audit gap
+Last Activity Description: Phase 24 closed the Phase 21 audit gap
 
-Progress: [████████░░] 83%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -97,6 +97,9 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Phase 23]: The Phase 20 specialized-lane proof chain is now explicit and
   requirements `LLM-15`, `LLM-16`, and `OPS-09` are restored to complete.
 
+- [Phase 24]: The Phase 21 benchmark and operator-workflow proof chain is now
+  explicit and requirements `LLM-17` and `OPS-10` are restored to complete.
+
 ### Pending Todos
 
 None yet.
@@ -110,5 +113,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-05T05:25:24Z
-Stopped at: Phase 23 complete
+Stopped at: Phase 24 complete
 Resume file: None
