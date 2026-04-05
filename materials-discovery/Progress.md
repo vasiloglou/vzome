@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 21 Plan 01 Task 2 RED benchmark-core tests | Added failing `test_llm_serving_benchmark_core.py` coverage for offline launch and evaluation smoke checks, explicit no-fallback failures, and summary recommendations that keep missing metrics explicit |
 | 2026-04-05 | Phase 21 Plan 01 serving benchmark schema and loader contract | Added typed serving-benchmark models, benchmark storage helpers under `data/benchmarks/llm_serving/`, and a shared-context `load_serving_benchmark_spec(...)` loader that rejects mixed-system benchmark targets before execution |
 | 2026-04-05 | Phase 21 Plan 01 Task 1 RED benchmark schema tests | Added failing `test_llm_serving_benchmark_schema.py` coverage for the shared-context benchmark contract, mixed-system loader rejection, nested serving identity serialization, and new benchmark storage paths before implementing the Phase 21 schema/core layer |
 | 2026-04-05 | Phase 20 full-suite projection metadata normalization | Rounded `projection2zomic` composition metadata deterministically so the inherited PyQCstrc projection regression stays exact-value stable under the expanded full-suite run |
@@ -358,6 +359,8 @@
 
 ### 2026-04-05
 
+- 03:08 EDT — Started Phase 21 Plan 01 Task 2 in TDD RED mode with new offline benchmark-core tests.
+- The new failing coverage locks launch-role and evaluate-role smoke checks, explicit fallback rejection when `allow_fallback` is false, and summary recommendation lines that keep role-specific missing metrics visible.
 - 03:01 EDT — Implemented the Phase 21 serving-benchmark schema, storage, and loader contract in the `llm` package.
 - The new typed benchmark models now carry shared-context target metadata, nested smoke-check serving identity, deterministic artifact paths under `data/benchmarks/llm_serving/`, and an early mixed-system guard in `load_serving_benchmark_spec(...)`.
 - 02:53 EDT — Started Phase 21 Plan 01 Task 1 in TDD RED mode by adding `tests/test_llm_serving_benchmark_schema.py`.
