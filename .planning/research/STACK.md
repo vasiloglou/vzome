@@ -1,49 +1,30 @@
-# Stack Research: v1.1 Closed-Loop LLM Campaign MVP
+# Stack Research: v1.2 Local and Specialized LLM Serving MVP
 
-## Current stable base
+## Existing base
 
-- `materials-discovery/` already provides the core runtime in Python 3.11.
-- `cli.py` is the orchestration layer; there is no separate workflow engine.
-- `llm/` already owns corpus, generation, evaluation, acceptance-pack, and
-  dry-run suggestion logic.
-- `active_learning/` already owns batch-oriented feedback concepts that the new
-  campaign layer should reuse rather than replace.
-- File-backed JSON/JSONL artifacts plus manifests are already the dominant
-  contract surface across the repo.
+- Python 3.11 workspace under `materials-discovery/`
+- Typer CLI for operator entrypoints
+- Pydantic contracts in `common/schema.py` and `llm/schema.py`
+- file-backed manifests, run artifacts, and campaign lineage
 
-## Recommended stack posture for this milestone
+## Needed additions
 
-- Stay on the existing Python 3.11 + Typer + Pydantic stack.
-- Keep the closed-loop workflow file-backed:
-  - campaign specs
-  - approval decisions
-  - launch manifests
-  - replay summaries
-- Reuse the current `llm/` and `active_learning/` packages rather than adding a
-  new orchestration subsystem.
-- Reuse acceptance packs, eval sets, prompt artifacts, compile results, and
-  downstream manifests as the campaign lineage backbone.
+- an additive local-serving adapter in `materials_discovery/llm/runtime.py`
+- config fields for local endpoint or model/checkpoint identity
+- lane-aware resolution that can choose between `general_purpose` and
+  `specialized_materials` without changing the CLI contract
+- clearer runtime diagnostics for missing local dependencies, invalid endpoints,
+  and unavailable checkpoints
 
-## Additions that are justified
+## What not to add yet
 
-- Typed campaign schema models in the existing schema layer.
-- A small campaign runtime package or `llm/` submodule for:
-  - proposal materialization
-  - approval state transitions
-  - launch planning
-  - replay/comparison
-- Operator CLI commands that remain explicit and composable.
+- a new orchestration service
+- a UI control plane
+- training infrastructure as part of the serving milestone
+- hard vendor lock-in at the contract level
 
-## Additions to avoid in v1.1
+## Practical guidance
 
-- No persistent database requirement.
-- No job queue or external scheduler unless proven necessary later.
-- No local-model serving stack in this milestone.
-- No fine-tuning infrastructure in this milestone.
-- No autonomous mutation of the active-learning loop.
-
-## Why this posture fits
-
-The existing system already proves that file-backed artifacts and manifest-rich
-CLI flows scale across ingest, discovery, and LLM surfaces. The next milestone
-needs stronger control and reproducibility, not a new runtime model.
+- keep the serving seam provider-neutral in the contracts
+- record actual runtime identity, not just an abstract lane name
+- prefer additive adapter/runtime extension over a second inference stack

@@ -1,41 +1,44 @@
-# Research Summary: v1.1 Closed-Loop LLM Campaign MVP
+# Research Summary: v1.2 Local and Specialized LLM Serving MVP
 
 ## Milestone direction
 
-The strongest next milestone for Project 3 is to turn the shipped Phase 9
-acceptance-pack plus dry-run suggestion surface into an operator-governed,
-replayable closed-loop campaign workflow.
+The strongest next milestone is to expand the shipped closed-loop LLM workflow
+from `mock + one hosted seam` into a real serving surface with local execution
+and specialized materials-model lanes.
 
 ## Stack additions
 
-- No new platform stack is required.
+- No new top-level platform is required.
 - Stay with Python 3.11, Typer, Pydantic, and file-backed manifests.
-- Add typed campaign contracts and a thin runtime around existing `llm-generate`
-  and benchmark artifacts.
+- Add a local serving adapter seam and richer lane-aware runtime metadata under
+  `materials_discovery/llm/`.
 
 ## Feature table stakes
 
-- executable campaign proposals
-- explicit operator approval
-- reproducible campaign specs
-- launch through existing `llm-generate`
-- replay and comparison against prior acceptance and benchmark artifacts
+- local lane execution for `llm-generate`
+- deterministic lane resolution for hosted vs local vs specialized paths
+- auditable provider/model/checkpoint lineage
+- compatibility with `llm-launch`, `llm-replay`, and `llm-compare`
+- operator-visible smoke tests and benchmark comparisons
 
 ## Architecture guidance
 
-- Put the contract first, execution bridge second, replay/comparison third.
-- Reuse `llm/`, `active_learning/`, `common/schema.py`, and `cli.py`.
-- Keep campaign logic additive to the existing no-DFT pipeline.
+- Extend the existing `llm/runtime.py`, `llm/launch.py`, `llm/replay.py`, and
+  `common/schema.py` surfaces rather than creating a parallel inference stack.
+- Keep serving mode additive to the current closed-loop workflow.
+- Treat specialized materials models as workflow lanes, not as ad hoc one-off
+  scripts.
 
 ## Watch out for
 
-- proposals that remain too vague to execute
-- hidden state mutation
-- acceptance-pack bypass
-- weak replay fidelity
-- scope creep into local serving or fine-tuning
+- hidden fallback from specialized lanes to generic hosted paths
+- local dependency or endpoint drift that only fails after long runs start
+- weak lineage that loses checkpoint or endpoint identity
+- apples-to-oranges comparisons between hosted and local benchmarks
+- scope creep into autonomous execution or training orchestration
 
 ## Recommended scope boundary
 
-Ship the closed-loop campaign MVP now. Defer local or fine-tuned inference
-serving until the campaign surface and acceptance workflow are stable.
+Ship a credible local/specialized serving MVP now. Defer autonomous campaign
+execution and training automation until operators can compare the expanded lane
+surface confidently.
