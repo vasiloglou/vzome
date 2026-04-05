@@ -9,10 +9,10 @@ reinforce each other instead of living in separate prototypes.
 
 ### LLM Serving
 
-- [ ] **LLM-13**: An operator can run `mdisc llm-generate` against a configured
+- [x] **LLM-13**: An operator can run `mdisc llm-generate` against a configured
   local serving lane for Zomic generation without changing standard
   `CandidateRecord` or `llm_generate` manifest contracts.
-- [ ] **LLM-14**: Manual generation and approved campaigns can target
+- [x] **LLM-14**: Manual generation and approved campaigns can target
   configured `general_purpose` and `specialized_materials` lanes with
   deterministic resolution and recorded lane-selection provenance.
 - [ ] **LLM-15**: The platform can use at least one specialized materials model
@@ -31,7 +31,7 @@ reinforce each other instead of living in separate prototypes.
 
 ### Operations and Governance
 
-- [ ] **OPS-08**: Local and specialized serving configs fail early with clear
+- [x] **OPS-08**: Local and specialized serving configs fail early with clear
   diagnostics for missing model files, missing endpoints, incompatible lane
   selections, or unavailable runtime dependencies.
 - [ ] **OPS-09**: Every local or specialized run records auditable serving
@@ -72,9 +72,9 @@ reinforce each other instead of living in separate prototypes.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LLM-13 | Phase 19 | Pending |
-| LLM-14 | Phase 19 | Pending |
-| OPS-08 | Phase 19 | Pending |
+| LLM-13 | Phase 19 | Complete |
+| LLM-14 | Phase 19 | Complete |
+| OPS-08 | Phase 19 | Complete |
 | LLM-15 | Phase 20 | Pending |
 | LLM-16 | Phase 20 | Pending |
 | OPS-09 | Phase 20 | Pending |
