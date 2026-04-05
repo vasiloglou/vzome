@@ -53,15 +53,15 @@ created: 2026-04-05
 
 ## Wave 0 Requirements
 
-- [ ] `materials-discovery/tests/test_llm_evaluate_schema.py` — cover `llm_evaluate.model_lane`, additive evaluation serving identity, and backward-compatible evaluation artifact reads
-- [ ] `materials-discovery/src/materials_discovery/llm/specialist.py` — provide a thin specialized-evaluation payload seam so the specialized lane is not only differentiated by endpoint selection
-- [ ] `materials-discovery/tests/test_llm_evaluate_cli.py` — cover `mdisc llm-evaluate --model-lane ...`, explicit fallback behavior, and specialized-lane summary output
-- [ ] `materials-discovery/tests/test_llm_compare_core.py` and `materials-discovery/tests/test_llm_compare_cli.py` — cover additive generation/evaluation lane lineage in outcome snapshots and compare artifacts
-- [ ] `materials-discovery/tests/test_llm_replay_core.py` — cover replay compatibility when specialized evaluation lineage is present
-- [ ] `materials-discovery/tests/test_llm_campaign_lineage.py` and `materials-discovery/tests/test_report.py` — cover campaign/report visibility of specialized evaluation lineage without mutating standard artifact shapes
-- [ ] `materials-discovery/tests/test_real_mode_pipeline.py` — cover one real system plus one thin compatibility proof with offline monkeypatched specialized endpoints
-- [ ] All specialized-lane tests must remain offline and deterministic via monkeypatched OpenAI-compatible responses; no live model server is required in CI
-- [ ] Any Phase 20 execution that changes `materials-discovery/` must update `materials-discovery/Progress.md` per repo policy
+- [x] `materials-discovery/tests/test_llm_evaluate_schema.py` — covers `llm_evaluate.model_lane`, additive evaluation serving identity, and backward-compatible evaluation artifact reads
+- [x] `materials-discovery/src/materials_discovery/llm/specialist.py` — provides a thin specialized-evaluation payload seam so the specialized lane is not only differentiated by endpoint selection
+- [x] `materials-discovery/tests/test_llm_evaluate_cli.py` — covers `mdisc llm-evaluate --model-lane ...`, explicit fallback behavior, and specialized-lane summary output
+- [x] `materials-discovery/tests/test_llm_compare_core.py` and `materials-discovery/tests/test_llm_compare_cli.py` — cover additive generation/evaluation lane lineage in outcome snapshots and compare artifacts
+- [x] `materials-discovery/tests/test_llm_replay_core.py` — covers replay compatibility when specialized evaluation lineage is present
+- [x] `materials-discovery/tests/test_llm_campaign_lineage.py` and `materials-discovery/tests/test_report.py` — cover campaign/report visibility of specialized evaluation lineage without mutating standard artifact shapes
+- [x] `materials-discovery/tests/test_real_mode_pipeline.py` — covers one real system plus one thin compatibility proof with offline monkeypatched specialized endpoints
+- [x] All specialized-lane tests remain offline and deterministic via monkeypatched OpenAI-compatible responses; no live model server is required in CI
+- [x] Phase 23 only touched planning artifacts, so `materials-discovery/Progress.md` did not need an update during audit closure
 
 *Existing pytest infrastructure covers the repo. Wave 0 is about specialized-lane workflow coverage, not test tooling installation.*
 
@@ -78,6 +78,21 @@ created: 2026-04-05
 
 ---
 
+## Evidence Refresh
+
+- Focused rerun completed during Phase 23:
+  - `cd materials-discovery && uv run python -m pytest tests/test_llm_evaluate_schema.py tests/test_llm_evaluate_cli.py tests/test_llm_compare_core.py tests/test_llm_compare_cli.py tests/test_llm_campaign_lineage.py tests/test_llm_replay_core.py tests/test_report.py tests/test_real_mode_pipeline.py -x -v`
+  - Result: `53 passed in 24.23s`
+- Shipped full-suite evidence retained from `20-03-SUMMARY.md`:
+  - `cd materials-discovery && uv run python -m pytest`
+  - Result: `393 passed, 3 skipped, 1 warning in 29.32s`
+- Retroactive finalization note:
+  - This validation artifact remained structurally complete at ship time; Phase
+    23 refreshed the evidence surface and synchronized the audit trail around
+    the missing formal verification report.
+
+---
+
 ## Validation Sign-Off
 
 - [x] All tasks have `<automated>` verify or Wave 0 dependencies
@@ -87,4 +102,4 @@ created: 2026-04-05
 - [x] Feedback latency < 300s
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** passed
+**Approval:** passed and refreshed during Phase 23

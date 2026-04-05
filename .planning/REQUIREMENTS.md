@@ -15,7 +15,7 @@ reinforce each other instead of living in separate prototypes.
 - [x] **LLM-14**: Manual generation and approved campaigns can target
   configured `general_purpose` and `specialized_materials` lanes with
   deterministic resolution and recorded lane-selection provenance.
-- [ ] **LLM-15**: The platform can use at least one specialized materials model
+- [x] **LLM-15**: The platform can use at least one specialized materials model
   path for a real workflow role, such as synthesis-aware evaluation or
   QC-conditioned generation, while remaining additive to the existing LLM
   workflow. This does not assume off-the-shelf specialized models are already
@@ -23,7 +23,7 @@ reinforce each other instead of living in separate prototypes.
 
 ### Workflow Integration
 
-- [ ] **LLM-16**: `llm-launch`, `llm-replay`, and `llm-compare` remain
+- [x] **LLM-16**: `llm-launch`, `llm-replay`, and `llm-compare` remain
   compatible when the originating run used a local or specialized lane.
 - [ ] **LLM-17**: The platform can benchmark hosted, local, and specialized
   lanes against the same acceptance-pack or benchmark context so operators can
@@ -34,7 +34,7 @@ reinforce each other instead of living in separate prototypes.
 - [x] **OPS-08**: Local and specialized serving configs fail early with clear
   diagnostics for missing model files, missing endpoints, incompatible lane
   selections, or unavailable runtime dependencies.
-- [ ] **OPS-09**: Every local or specialized run records auditable serving
+- [x] **OPS-09**: Every local or specialized run records auditable serving
   lineage including adapter type, provider/model lane, model identifier or
   checkpoint, runtime endpoint or path, and launch/replay provenance.
 - [ ] **OPS-10**: The workflow ships with an operator runbook for setup, smoke
@@ -75,9 +75,9 @@ reinforce each other instead of living in separate prototypes.
 | LLM-13 | Phase 22 | Complete |
 | LLM-14 | Phase 22 | Complete |
 | OPS-08 | Phase 22 | Complete |
-| LLM-15 | Phase 23 | Pending |
-| LLM-16 | Phase 23 | Pending |
-| OPS-09 | Phase 23 | Pending |
+| LLM-15 | Phase 23 | Complete |
+| LLM-16 | Phase 23 | Complete |
+| OPS-09 | Phase 23 | Complete |
 | LLM-17 | Phase 24 | Pending |
 | OPS-10 | Phase 24 | Pending |
 
@@ -88,4 +88,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 after closing the Phase 19 audit gap*
+*Last updated: 2026-04-05 after closing the Phase 20 audit gap*

@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: milestone
-current_phase: 23
-current_phase_name: phase-20-verification-audit-closure
+current_phase: 24
+current_phase_name: phase-21-verification-and-validation-audit-closure
 current_plan: 0
 status: ready_to_plan
-stopped_at: Phase 22 complete
+stopped_at: Phase 23 complete
 last_updated: "2026-04-05T08:00:07Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 18
-  completed_plans: 12
-  percent: 66
+  completed_plans: 15
+  percent: 83
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 23 — phase-20-verification-audit-closure
+**Current focus:** Phase 24 — phase-21-verification-and-validation-audit-closure
 
 ## Current Position
 
-Current Phase: 23
-Current Phase Name: phase-20-verification-audit-closure
+Current Phase: 24
+Current Phase Name: phase-21-verification-and-validation-audit-closure
 Total Phases: 6
 Current Plan: 0
 Total Plans in Phase: 3
-Phase: 23 (phase-20-verification-audit-closure) — READY TO PLAN
+Phase: 24 (phase-21-verification-and-validation-audit-closure) — READY TO PLAN
 Plan: not started
-Status: Phase 22 complete — next audit-closure phase ready to plan
+Status: Phase 23 complete — final audit-closure phase ready to plan
 Last activity: 2026-04-05
-Last Activity Description: Phase 22 closed the Phase 19 audit gap
+Last Activity Description: Phase 23 closed the Phase 20 audit gap
 
-Progress: [██████░░░░] 66%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
@@ -94,6 +94,9 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Phase 22]: The Phase 19 local-serving proof chain is now explicit and
   requirements `LLM-13`, `LLM-14`, and `OPS-08` are restored to complete.
 
+- [Phase 23]: The Phase 20 specialized-lane proof chain is now explicit and
+  requirements `LLM-15`, `LLM-16`, and `OPS-09` are restored to complete.
+
 ### Pending Todos
 
 None yet.
@@ -107,5 +110,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-05T05:25:24Z
-Stopped at: Phase 22 complete
+Stopped at: Phase 23 complete
 Resume file: None
