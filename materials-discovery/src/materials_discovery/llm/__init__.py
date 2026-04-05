@@ -40,6 +40,7 @@ from materials_discovery.llm.pipeline_benchmark import (
     write_llm_pipeline_comparison,
 )
 from materials_discovery.llm.prompting import build_generation_prompt, load_seed_zomic_text
+from materials_discovery.llm.specialist import build_specialized_evaluation_payload
 from materials_discovery.llm.launch import (
     materialize_campaign_seed,
     resolve_campaign_launch,
@@ -209,6 +210,7 @@ __all__ = [
     "build_campaign_proposals",
     "build_replay_campaign_metadata",
     "build_replay_config",
+    "build_specialized_evaluation_payload",
     "build_generation_prompt",
     "build_llm_suggestions",
     "CampaignLaunchBundle",

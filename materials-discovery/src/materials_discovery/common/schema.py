@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+
+if TYPE_CHECKING:
+    from materials_discovery.llm.schema import LlmServingIdentity, ResolvedModelLaneSource
 
 QPhiPair = tuple[int, int]
 QPhiCoord = tuple[QPhiPair, QPhiPair, QPhiPair]
@@ -398,6 +401,7 @@ class LlmEvaluateConfig(BaseModel):
     prompt_template: str = "materials_assess_v1"
     temperature: float = 0.2
     max_tokens: int = 1024
+    model_lane: Literal["general_purpose", "specialized_materials"] | None = None
     artifact_root: str | None = None
     persist_raw_responses: bool = True
     fixture_outputs: list[str] = Field(default_factory=list)
@@ -410,7 +414,7 @@ class LlmEvaluateConfig(BaseModel):
             raise ValueError("llm_evaluate.prompt_template must not be blank")
         return stripped
 
-    @field_validator("artifact_root")
+    @field_validator("model_lane", "artifact_root", mode="before")
     @classmethod
     def normalize_optional_paths(cls, value: str | None) -> str | None:
         if value is None:
@@ -623,6 +627,10 @@ class LlmEvaluateSummary(BaseModel):
     assessed_count: int
     failed_count: int
     output_path: str
+    requested_model_lanes: list[str] = Field(default_factory=list)
+    resolved_model_lane: str | None = None
+    resolved_model_lane_source: ResolvedModelLaneSource | None = None
+    serving_identity: LlmServingIdentity | None = None
     calibration_path: str | None = None
     manifest_path: str | None = None
     run_manifest_path: str | None = None
@@ -641,6 +649,24 @@ class LlmEvaluateSummary(BaseModel):
         if not stripped:
             raise ValueError("summary paths must not be blank")
         return stripped
+
+    @field_validator("requested_model_lanes")
+    @classmethod
+    def normalize_requested_model_lanes(cls, values: Sequence[str]) -> list[str]:
+        normalized: list[str] = []
+        for value in values:
+            stripped = value.strip()
+            if stripped and stripped not in normalized:
+                normalized.append(stripped)
+        return normalized
+
+    @field_validator("resolved_model_lane")
+    @classmethod
+    def normalize_optional_lane(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
 
     @model_validator(mode="after")
     def validate_counts(self) -> LlmEvaluateSummary:

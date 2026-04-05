@@ -9,6 +9,7 @@ from materials_discovery.common.schema import (
     CandidateRecord,
     DigitalValidationRecord,
     LlmEvaluateConfig,
+    LlmEvaluateSummary,
     SiteRecord,
     SystemConfig,
 )
@@ -17,6 +18,7 @@ from materials_discovery.llm.schema import (
     LlmAssessment,
     LlmEvaluationRequest,
     LlmEvaluationRunManifest,
+    LlmServingIdentity,
 )
 
 
@@ -81,6 +83,20 @@ def test_llm_evaluation_schema_models_validate_expected_fields() -> None:
         model="fixture-eval-v1",
         status="passed",
         raw_response_path="raw/md_eval_0001.txt",
+        requested_model_lanes=[" specialized_materials ", "specialized_materials"],
+        resolved_model_lane=" specialized_materials ",
+        resolved_model_lane_source="configured_lane",
+        serving_identity=LlmServingIdentity(
+            requested_model_lane="specialized_materials",
+            resolved_model_lane="specialized_materials",
+            resolved_model_lane_source="configured_lane",
+            adapter="openai_compat_v1",
+            provider="openai_compat",
+            model="materials-al-cu-fe-specialist-v1",
+            effective_api_base="http://localhost:8000/",
+            checkpoint_id=" ckpt-specialist ",
+            model_revision=" local-dev ",
+        ),
         synthesizability_score=0.78,
         precursor_hints=["Al powder", "Cu foil", "Fe powder"],
         anomaly_flags=[],
@@ -102,26 +118,161 @@ def test_llm_evaluation_schema_models_validate_expected_fields() -> None:
         assessed_count=1,
         failed_count=0,
         created_at_utc="2026-04-03T20:00:00+00:00",
+        requested_model_lanes=["specialized_materials"],
+        resolved_model_lane="specialized_materials",
+        resolved_model_lane_source="configured_lane",
+        serving_identity=assessment.serving_identity,
+    )
+    summary = LlmEvaluateSummary(
+        input_count=1,
+        assessed_count=1,
+        failed_count=0,
+        output_path="data/llm_evaluated/al_cu_fe_all_llm_evaluated.jsonl",
+        requested_model_lanes=[" specialized_materials "],
+        resolved_model_lane=" specialized_materials ",
+        resolved_model_lane_source="configured_lane",
+        serving_identity=assessment.serving_identity,
+        run_manifest_path="data/llm_evaluations/run/run_manifest.json",
     )
 
     assert request.schema_version == "llm-evaluation-request/v1"
     assert assessment.synthesizability_score == pytest.approx(0.78)
+    assert assessment.requested_model_lanes == ["specialized_materials"]
+    assert assessment.resolved_model_lane == "specialized_materials"
+    assert assessment.serving_identity is not None
+    assert assessment.serving_identity.effective_api_base == "http://localhost:8000"
+    assert assessment.serving_identity.checkpoint_id == "ckpt-specialist"
     assert run_manifest.assessed_count == 1
+    assert run_manifest.serving_identity is not None
+    assert summary.serving_identity is not None
+    assert summary.resolved_model_lane == "specialized_materials"
 
 
-def test_llm_evaluate_config_normalizes_fixture_outputs() -> None:
+def test_llm_evaluate_config_normalizes_fixture_outputs_and_model_lane() -> None:
     config = LlmEvaluateConfig(
+        model_lane=" specialized_materials ",
         fixture_outputs=[
             "  {\"synthesizability_score\": 0.5, \"precursor_hints\": [], \"anomaly_flags\": [], \"literature_context\": \"\", \"rationale\": \"ok\"}  ",
             "",
         ]
     )
 
+    assert config.model_lane == "specialized_materials"
     assert len(config.fixture_outputs) == 1
     assert "synthesizability_score" in config.fixture_outputs[0]
 
 
-def test_evaluate_llm_candidates_writes_typed_artifacts_and_enriched_candidates(
+def test_llm_evaluation_run_manifest_reads_legacy_payload() -> None:
+    legacy_manifest = LlmEvaluationRunManifest.model_validate(
+        {
+            "run_id": "al_cu_fe_all_123456789abc",
+            "system": "Al-Cu-Fe",
+            "adapter_key": "llm_fixture_v1",
+            "provider": "mock",
+            "model": "fixture-eval-v1",
+            "prompt_template": "materials_assess_v1",
+            "input_path": "data/ranked/al_cu_fe_ranked.jsonl",
+            "output_path": "data/llm_evaluated/al_cu_fe_all_llm_evaluated.jsonl",
+            "requests_path": "data/llm_evaluations/run/requests.jsonl",
+            "assessments_path": "data/llm_evaluations/run/assessments.jsonl",
+            "requested_count": 1,
+            "assessed_count": 1,
+            "failed_count": 0,
+            "created_at_utc": "2026-04-03T20:00:00+00:00",
+        }
+    )
+
+    assert legacy_manifest.requested_model_lanes == []
+    assert legacy_manifest.resolved_model_lane is None
+    assert legacy_manifest.serving_identity is None
+
+
+def test_evaluate_llm_candidates_writes_specialized_lane_lineage_and_uses_specialist_prompt(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    config_data = load_yaml(_workspace() / "configs" / "systems" / "al_cu_fe_llm_local.yaml")
+    config_data["llm_evaluate"] = {
+        "prompt_template": "materials_assess_v1",
+        "temperature": 0.1,
+        "max_tokens": 512,
+        "model_lane": "specialized_materials",
+    }
+    system_config = SystemConfig.model_validate(config_data)
+    workspace = tmp_path / "workspace"
+    ranked_path = workspace / "data" / "ranked" / "al_cu_fe_ranked.jsonl"
+    output_path = workspace / "data" / "llm_evaluated" / "al_cu_fe_all_llm_evaluated.jsonl"
+
+    write_jsonl([_candidate().model_dump(mode="json")], ranked_path)
+    monkeypatch.setattr("materials_discovery.llm.evaluate.workspace_root", lambda: workspace)
+
+    class _FakeAdapter:
+        def __init__(self) -> None:
+            self.prompts: list[str] = []
+
+        def generate(self, request: LlmEvaluationRequest) -> str:
+            self.prompts.append(request.prompt_text)
+            return json_payload
+
+    json_payload = (
+        "{\"synthesizability_score\":0.81,"
+        "\"precursor_hints\":[\"Al powder\",\"Cu powder\",\"Fe powder\"],"
+        "\"anomaly_flags\":[],"
+        "\"literature_context\":\"Consistent with known Al-Cu-Fe QC families.\","
+        "\"rationale\":\"Screening and validation metrics are mutually supportive.\"}"
+    )
+    fake_adapter = _FakeAdapter()
+    readiness_calls: list[tuple[str, str | None, str | None]] = []
+
+    monkeypatch.setattr(
+        "materials_discovery.llm.evaluate.resolve_llm_adapter",
+        lambda mode, backend=None: fake_adapter,
+    )
+    monkeypatch.setattr(
+        "materials_discovery.llm.evaluate.validate_llm_adapter_ready",
+        lambda adapter, *, adapter_key, requested_lane=None, resolved_lane=None: readiness_calls.append(
+            (adapter_key, requested_lane, resolved_lane)
+        ),
+    )
+
+    summary = evaluate_llm_candidates(system_config, output_path, batch="all")
+
+    assert summary.input_count == 1
+    assert summary.assessed_count == 1
+    assert summary.failed_count == 0
+    assert summary.requested_model_lanes == ["specialized_materials"]
+    assert summary.resolved_model_lane == "specialized_materials"
+    assert summary.resolved_model_lane_source == "configured_lane"
+    assert summary.serving_identity is not None
+    assert summary.serving_identity.model == "materials-al-cu-fe-specialist-v1"
+    assert readiness_calls == [
+        ("openai_compat_v1", "specialized_materials", "specialized_materials")
+    ]
+    assert fake_adapter.prompts
+    assert "\"evaluation_mode\": \"specialized_materials\"" in fake_adapter.prompts[0]
+    assert "\"site_geometry\"" in fake_adapter.prompts[0]
+
+    evaluated = [CandidateRecord.model_validate(row) for row in load_jsonl(output_path)]
+    assert len(evaluated) == 1
+    assessment = evaluated[0].provenance["llm_assessment"]
+    assert assessment["status"] == "passed"
+    assert assessment["synthesizability_score"] == pytest.approx(0.81)
+    assert assessment["precursor_hints"] == ["Al powder", "Cu powder", "Fe powder"]
+    assert assessment["requested_model_lanes"] == ["specialized_materials"]
+    assert assessment["resolved_model_lane"] == "specialized_materials"
+    assert assessment["resolved_model_lane_source"] == "configured_lane"
+    assert assessment["serving_identity"]["model"] == "materials-al-cu-fe-specialist-v1"
+
+    run_dir = Path(summary.run_manifest_path).parent
+    requests = load_jsonl(run_dir / "requests.jsonl")
+    assessments = load_jsonl(run_dir / "assessments.jsonl")
+    assert requests[0]["schema_version"] == "llm-evaluation-request/v1"
+    assert assessments[0]["schema_version"] == "llm-assessment/v1"
+    assert assessments[0]["resolved_model_lane"] == "specialized_materials"
+    assert assessments[0]["serving_identity"]["checkpoint_id"] == "ckpt-al-cu-fe-specialist"
+
+
+def test_evaluate_llm_candidates_preserves_backend_default_when_no_lane_requested(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -131,15 +282,7 @@ def test_evaluate_llm_candidates_writes_typed_artifacts_and_enriched_candidates(
         "temperature": 0.1,
         "max_tokens": 512,
         "fixture_outputs": [
-            """
-            {
-              "synthesizability_score": 0.81,
-              "precursor_hints": ["Al powder", "Cu powder", "Fe powder"],
-              "anomaly_flags": [],
-              "literature_context": "Consistent with known Al-Cu-Fe QC families.",
-              "rationale": "Screening and validation metrics are mutually supportive."
-            }
-            """
+            "{\"synthesizability_score\":0.66,\"precursor_hints\":[],\"anomaly_flags\":[],\"literature_context\":\"demo\",\"rationale\":\"ok\"}"
         ],
     }
     system_config = SystemConfig.model_validate(config_data)
@@ -152,19 +295,8 @@ def test_evaluate_llm_candidates_writes_typed_artifacts_and_enriched_candidates(
 
     summary = evaluate_llm_candidates(system_config, output_path, batch="all")
 
-    assert summary.input_count == 1
-    assert summary.assessed_count == 1
-    assert summary.failed_count == 0
-
-    evaluated = [CandidateRecord.model_validate(row) for row in load_jsonl(output_path)]
-    assert len(evaluated) == 1
-    assessment = evaluated[0].provenance["llm_assessment"]
-    assert assessment["status"] == "passed"
-    assert assessment["synthesizability_score"] == pytest.approx(0.81)
-    assert assessment["precursor_hints"] == ["Al powder", "Cu powder", "Fe powder"]
-
-    run_dir = Path(summary.run_manifest_path).parent
-    requests = load_jsonl(run_dir / "requests.jsonl")
-    assessments = load_jsonl(run_dir / "assessments.jsonl")
-    assert requests[0]["schema_version"] == "llm-evaluation-request/v1"
-    assert assessments[0]["schema_version"] == "llm-assessment/v1"
+    assert summary.requested_model_lanes == []
+    assert summary.resolved_model_lane == "general_purpose"
+    assert summary.resolved_model_lane_source == "backend_default"
+    assert summary.serving_identity is not None
+    assert summary.serving_identity.provider == "mock"

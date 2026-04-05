@@ -10,13 +10,19 @@ from typing import Any
 
 from materials_discovery.common.io import load_jsonl, write_json_object, write_jsonl, workspace_root
 from materials_discovery.common.manifest import config_sha256
-from materials_discovery.common.schema import CandidateRecord, LlmEvaluateSummary, SystemConfig
-from materials_discovery.llm.runtime import MockLlmAdapter, resolve_llm_adapter
+from materials_discovery.common.schema import BackendConfig, CandidateRecord, LlmEvaluateSummary, SystemConfig
+from materials_discovery.llm.launch import build_serving_identity, resolve_serving_lane
+from materials_discovery.llm.runtime import (
+    MockLlmAdapter,
+    resolve_llm_adapter,
+    validate_llm_adapter_ready,
+)
 from materials_discovery.llm.schema import (
     LlmAssessment,
     LlmEvaluationRequest,
     LlmEvaluationRunManifest,
 )
+from materials_discovery.llm.specialist import build_specialized_evaluation_payload
 
 
 def _system_slug(system_name: str) -> str:
@@ -99,8 +105,8 @@ def _strip_code_fences(text: str) -> str:
     return "\n".join(lines).strip()
 
 
-def _build_evaluation_prompt(candidate: CandidateRecord) -> str:
-    payload = {
+def _build_general_evaluation_payload(candidate: CandidateRecord) -> dict[str, Any]:
+    return {
         "candidate_id": candidate.candidate_id,
         "system": candidate.system,
         "template_family": candidate.template_family,
@@ -111,6 +117,10 @@ def _build_evaluation_prompt(candidate: CandidateRecord) -> str:
         "digital_validation": candidate.digital_validation.model_dump(mode="json"),
         "rank_context": candidate.provenance.get("hifi_rank"),
     }
+
+
+def _build_evaluation_prompt(candidate: CandidateRecord) -> str:
+    payload = _build_general_evaluation_payload(candidate)
     serialized = json.dumps(payload, sort_keys=True, indent=2)
     return (
         "You are assessing a quasicrystal candidate for experiment planning.\n"
@@ -125,13 +135,45 @@ def _build_evaluation_prompt(candidate: CandidateRecord) -> str:
     )
 
 
-def _resolve_adapter(config: SystemConfig):
+def _build_specialized_evaluation_prompt(candidate: CandidateRecord) -> str:
+    payload = build_specialized_evaluation_payload(candidate)
+    payload = {
+        **payload,
+        "specialist_focus": [
+            "composition plausibility",
+            "structural motif consistency",
+            "synthesizability heuristics",
+        ],
+    }
+    serialized = json.dumps(payload, sort_keys=True, indent=2)
+    return (
+        "You are a specialized materials-model lane assessing a quasicrystal candidate "
+        "for experiment planning.\n"
+        "Return strict JSON with keys:\n"
+        "- synthesizability_score: number in [0,1]\n"
+        "- precursor_hints: array of short strings\n"
+        "- anomaly_flags: array of short strings\n"
+        "- literature_context: string\n"
+        "- rationale: string\n\n"
+        "Use the structure-oriented payload below and keep the response strict JSON.\n\n"
+        "Specialized candidate payload:\n"
+        f"{serialized}\n"
+    )
+
+
+def _requested_model_lanes(requested_lane: str | None) -> list[str]:
+    if requested_lane is None:
+        return []
+    return [requested_lane]
+
+
+def _resolve_adapter(config: SystemConfig, backend: BackendConfig):
     llm_config = config.llm_evaluate
     if llm_config is None:
         raise ValueError("config.llm_evaluate must be configured for llm-evaluate")
-    if config.backend.mode == "mock":
+    if backend.mode == "mock":
         return MockLlmAdapter(fixture_outputs=list(llm_config.fixture_outputs))
-    return resolve_llm_adapter(config.backend.mode, backend=config.backend)
+    return resolve_llm_adapter(backend.mode, backend=backend)
 
 
 def _parse_assessment_payload(raw_completion: str) -> dict[str, Any]:
@@ -156,6 +198,12 @@ def _provenance_assessment_block(
         "rationale": assessment.rationale,
         "error_kind": assessment.error_kind,
         "error_message": assessment.error_message,
+        "requested_model_lanes": list(assessment.requested_model_lanes),
+        "resolved_model_lane": assessment.resolved_model_lane,
+        "resolved_model_lane_source": assessment.resolved_model_lane_source,
+        "serving_identity": (
+            None if assessment.serving_identity is None else assessment.serving_identity.model_dump(mode="json")
+        ),
     }
 
 
@@ -165,6 +213,7 @@ def evaluate_llm_candidates(
     *,
     batch: str = "all",
     input_path: Path | None = None,
+    requested_model_lane: str | None = None,
 ) -> LlmEvaluateSummary:
     llm_config = config.llm_evaluate
     if llm_config is None:
@@ -184,10 +233,37 @@ def evaluate_llm_candidates(
         shutil.rmtree(run_dir)
     (run_dir / "raw").mkdir(parents=True, exist_ok=True)
 
-    adapter = _resolve_adapter(config)
-    adapter_key = config.backend.llm_adapter or "llm_fixture_v1"
-    provider = config.backend.llm_provider or "mock"
-    model = config.backend.llm_model or "fixture"
+    configured_requested_lane = llm_config.model_lane
+    effective_requested_lane = requested_model_lane or configured_requested_lane
+    resolved_lane, lane_config, lane_source = resolve_serving_lane(
+        effective_requested_lane,
+        config.llm_generate,
+        config.backend,
+    )
+    effective_backend = config.backend.model_copy(deep=True)
+    if lane_config is not None:
+        effective_backend.llm_adapter = lane_config.adapter
+        effective_backend.llm_provider = lane_config.provider
+        effective_backend.llm_model = lane_config.model
+        effective_backend.llm_api_base = lane_config.api_base
+
+    adapter = _resolve_adapter(config, effective_backend)
+    adapter_key = effective_backend.llm_adapter or "llm_fixture_v1"
+    provider = effective_backend.llm_provider or "mock"
+    model = effective_backend.llm_model or "fixture"
+    serving_identity = build_serving_identity(
+        requested_lane=effective_requested_lane,
+        resolved_lane=resolved_lane,
+        lane_source=lane_source,
+        backend=config.backend,
+        lane_config=lane_config,
+    )
+    validate_llm_adapter_ready(
+        adapter,
+        adapter_key=adapter_key,
+        requested_lane=effective_requested_lane,
+        resolved_lane=resolved_lane,
+    )
 
     requests: list[LlmEvaluationRequest] = []
     assessments: list[LlmAssessment] = []
@@ -195,7 +271,10 @@ def evaluate_llm_candidates(
     assessed_count = 0
 
     for candidate in selected:
-        prompt_text = _build_evaluation_prompt(candidate)
+        if resolved_lane == "specialized_materials":
+            prompt_text = _build_specialized_evaluation_prompt(candidate)
+        else:
+            prompt_text = _build_evaluation_prompt(candidate)
         request = LlmEvaluationRequest(
             candidate_id=candidate.candidate_id,
             system=candidate.system,
@@ -225,6 +304,10 @@ def evaluate_llm_candidates(
                 model=model,
                 status="passed",
                 raw_response_path=str(raw_response_path),
+                requested_model_lanes=_requested_model_lanes(effective_requested_lane),
+                resolved_model_lane=resolved_lane,
+                resolved_model_lane_source=lane_source,
+                serving_identity=serving_identity,
                 synthesizability_score=payload.get("synthesizability_score"),
                 precursor_hints=payload.get("precursor_hints", []),
                 anomaly_flags=payload.get("anomaly_flags", []),
@@ -243,6 +326,10 @@ def evaluate_llm_candidates(
                 model=model,
                 status="failed",
                 raw_response_path=str(raw_response_path),
+                requested_model_lanes=_requested_model_lanes(effective_requested_lane),
+                resolved_model_lane=resolved_lane,
+                resolved_model_lane_source=lane_source,
+                serving_identity=serving_identity,
                 error_kind=error_kind,
                 error_message=error_message,
             )
@@ -256,6 +343,10 @@ def evaluate_llm_candidates(
                 model=model,
                 status="failed",
                 raw_response_path=str(raw_response_path),
+                requested_model_lanes=_requested_model_lanes(effective_requested_lane),
+                resolved_model_lane=resolved_lane,
+                resolved_model_lane_source=lane_source,
+                serving_identity=serving_identity,
                 error_kind=error_kind,
                 error_message=error_message,
             )
@@ -269,6 +360,10 @@ def evaluate_llm_candidates(
                 model=model,
                 status="failed",
                 raw_response_path=str(raw_response_path),
+                requested_model_lanes=_requested_model_lanes(effective_requested_lane),
+                resolved_model_lane=resolved_lane,
+                resolved_model_lane_source=lane_source,
+                serving_identity=serving_identity,
                 error_kind=error_kind,
                 error_message=error_message,
             )
@@ -308,6 +403,10 @@ def evaluate_llm_candidates(
         assessed_count=assessed_count,
         failed_count=len(selected) - assessed_count,
         created_at_utc=datetime.now(UTC).isoformat(),
+        requested_model_lanes=_requested_model_lanes(effective_requested_lane),
+        resolved_model_lane=resolved_lane,
+        resolved_model_lane_source=lane_source,
+        serving_identity=serving_identity,
     )
     write_json_object(run_manifest.model_dump(mode="json"), run_manifest_path)
 
@@ -316,5 +415,9 @@ def evaluate_llm_candidates(
         assessed_count=assessed_count,
         failed_count=len(selected) - assessed_count,
         output_path=str(output_path),
+        requested_model_lanes=_requested_model_lanes(effective_requested_lane),
+        resolved_model_lane=resolved_lane,
+        resolved_model_lane_source=lane_source,
+        serving_identity=serving_identity,
         run_manifest_path=str(run_manifest_path),
     )

@@ -697,6 +697,10 @@ class LlmAssessment(BaseModel):
     model: str
     status: ValidationStatus
     raw_response_path: str
+    requested_model_lanes: list[str] = Field(default_factory=list)
+    resolved_model_lane: str | None = None
+    resolved_model_lane_source: ResolvedModelLaneSource | None = None
+    serving_identity: LlmServingIdentity | None = None
     synthesizability_score: float | None = None
     precursor_hints: list[str] = Field(default_factory=list)
     anomaly_flags: list[str] = Field(default_factory=list)
@@ -720,12 +724,18 @@ class LlmAssessment(BaseModel):
             raise ValueError("field must not be blank")
         return stripped
 
-    @field_validator("precursor_hints", "anomaly_flags")
+    @field_validator("precursor_hints", "anomaly_flags", "requested_model_lanes")
     @classmethod
     def normalize_lists(cls, values: Sequence[str]) -> list[str]:
         return _normalize_string_list(values)
 
-    @field_validator("literature_context", "rationale", "error_kind", "error_message")
+    @field_validator(
+        "resolved_model_lane",
+        "literature_context",
+        "rationale",
+        "error_kind",
+        "error_message",
+    )
     @classmethod
     def normalize_optional_strings(cls, value: str | None) -> str | None:
         if value is None:
@@ -759,6 +769,10 @@ class LlmEvaluationRunManifest(BaseModel):
     assessed_count: int
     failed_count: int
     created_at_utc: str
+    requested_model_lanes: list[str] = Field(default_factory=list)
+    resolved_model_lane: str | None = None
+    resolved_model_lane_source: ResolvedModelLaneSource | None = None
+    serving_identity: LlmServingIdentity | None = None
 
     @field_validator(
         "schema_version",
@@ -780,6 +794,16 @@ class LlmEvaluationRunManifest(BaseModel):
         if not stripped:
             raise ValueError("field must not be blank")
         return stripped
+
+    @field_validator("requested_model_lanes")
+    @classmethod
+    def normalize_requested_model_lanes(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("resolved_model_lane")
+    @classmethod
+    def normalize_optional_lane(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
 
     @model_validator(mode="after")
     def validate_counts(self) -> LlmEvaluationRunManifest:
@@ -1670,3 +1694,13 @@ class LlmCampaignComparisonResult(BaseModel):
         if self.prior_outcome is not None and self.prior_outcome.system != self.system:
             raise ValueError("prior_outcome system must match comparison system")
         return self
+
+
+from materials_discovery.common.schema import LlmEvaluateSummary
+
+LlmEvaluateSummary.model_rebuild(
+    _types_namespace={
+        "LlmServingIdentity": LlmServingIdentity,
+        "ResolvedModelLaneSource": ResolvedModelLaneSource,
+    }
+)
