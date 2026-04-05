@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 20
 current_phase_name: Specialized Lane Integration and Workflow Compatibility
 current_plan: Not started
-status: ready_to_execute
-stopped_at: Phase 20 replanned after review feedback
-last_updated: "2026-04-05T04:54:49Z"
+status: ready_to_plan
+stopped_at: Phase 20 complete; ready to plan Phase 21
+last_updated: "2026-04-05T05:25:24Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 3
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
-  percent: 33
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 6
+  percent: 66
 ---
 
 # Project State
@@ -24,30 +24,30 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 20 — Specialized Lane Integration and Workflow Compatibility
+**Current focus:** Phase 21 — Comparative Benchmarks and Operator Serving Workflow
 
 ## Current Position
 
-Current Phase: 20
-Current Phase Name: Specialized Lane Integration and Workflow Compatibility
+Current Phase: 21
+Current Phase Name: Comparative Benchmarks and Operator Serving Workflow
 Total Phases: 3
 Current Plan: Not started
-Total Plans in Phase: 3
-Phase: 20 (Specialized Lane Integration and Workflow Compatibility) — READY TO EXECUTE
+Total Plans in Phase: Not planned yet
+Phase: 21 (Comparative Benchmarks and Operator Serving Workflow) — READY TO PLAN
 Plan: Not started
-Status: Ready to execute
+Status: Ready to plan
 Last activity: 2026-04-05
-Last Activity Description: Phase 20 replanned after review feedback
+Last Activity Description: Phase 20 complete, transitioned to Phase 21
 
-Progress: [███-------] 33%
+Progress: [██████----] 66%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 35
+- Total plans completed: 38
 - Average duration: 12 min
-- Total execution time: 6.5 hours
+- Total execution time: 7.4 hours
 
 **By Milestone:**
 
@@ -55,8 +55,8 @@ Progress: [███-------] 33%
 |-----------|--------|-------|---------|
 | v1.0 | 1-9 | 26 | Shipped |
 | v1.1 | 10-18 | 27 | Shipped |
-| Phase 19 P2 | 35min | 2 tasks | 9 files |
-| Phase 19 P3 | 1h 05m | 2 tasks | 10 files |
+| Phase 20 P2 | 32min | 2 tasks | 9 files |
+| Phase 20 P3 | 47min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -76,6 +76,10 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Milestone v1.2]: Treat specialized materials models as real workflow lanes,
   not only metadata on campaign proposals.
 
+- [Phase 20]: The first specialized lane is evaluation-primary, and the
+  shipped proof now includes one deep system (`Al-Cu-Fe`) plus one thinner
+  compatibility proof (`Sc-Zn`).
+
 ### Pending Todos
 
 None yet.
@@ -88,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T04:05:07.080Z
-Stopped at: Phase 20 replanned after review feedback
-Resume file: .planning/phases/20-specialized-lane-integration-and-workflow-compatibility/20-01-PLAN.md
+Last session: 2026-04-05T05:25:24Z
+Stopped at: Completed 20-03-PLAN.md
+Resume file: None
