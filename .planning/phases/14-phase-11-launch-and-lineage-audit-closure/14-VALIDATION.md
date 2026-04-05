@@ -1,9 +1,9 @@
 ---
 phase: 14
 slug: phase-11-launch-and-lineage-audit-closure
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: automated_complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-04
 ---
 
@@ -44,13 +44,13 @@ created: 2026-04-04
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 14-01-01 | 01 | 1 | LLM-08, LLM-10 | focused regression | `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py tests/test_llm_launch_core.py tests/test_llm_generate_core.py tests/test_llm_generate_cli.py tests/test_llm_launch_cli.py tests/test_cli.py tests/test_llm_campaign_lineage.py tests/test_report.py -x -v` | ✅ | ⬜ pending |
-| 14-01-02 | 01 | 1 | LLM-10, OPS-06 | downstream compatibility | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py -k "campaign or llm_launch" -x -v` | ✅ | ⬜ pending |
-| 14-01-03 | 01 | 1 | LLM-08, LLM-10, OPS-06 | doc consistency | `git diff --check` | ✅ | ⬜ pending |
-| 14-02-01 | 02 | 2 | LLM-08 | proof matrix | `git diff --check` | ✅ | ⬜ pending |
-| 14-02-02 | 02 | 2 | LLM-10, OPS-06 | proof matrix | `git diff --check` | ✅ | ⬜ pending |
-| 14-03-01 | 03 | 3 | LLM-08, LLM-10, OPS-06 | traceability | `git diff --check` | ✅ | ⬜ pending |
-| 14-03-02 | 03 | 3 | LLM-08, LLM-10, OPS-06 | state handoff | `git diff --check` | ✅ | ⬜ pending |
+| 14-01-01 | 01 | 1 | LLM-08, LLM-10 | focused regression | `cd materials-discovery && uv run pytest tests/test_llm_launch_schema.py tests/test_llm_launch_core.py tests/test_llm_generate_core.py tests/test_llm_generate_cli.py tests/test_llm_launch_cli.py tests/test_cli.py tests/test_llm_campaign_lineage.py tests/test_report.py -x -v` | ✅ | ✅ green |
+| 14-01-02 | 01 | 1 | LLM-10, OPS-06 | downstream compatibility | `cd materials-discovery && uv run pytest tests/test_real_mode_pipeline.py -k "campaign or llm_launch" -x -v` | ✅ | ✅ green |
+| 14-01-03 | 01 | 1 | LLM-08, LLM-10, OPS-06 | doc consistency | `git diff --check` | ✅ | ✅ green |
+| 14-02-01 | 02 | 2 | LLM-08 | proof matrix | `git diff --check` | ✅ | ✅ green |
+| 14-02-02 | 02 | 2 | LLM-10, OPS-06 | proof matrix | `git diff --check` | ✅ | ✅ green |
+| 14-03-01 | 03 | 3 | LLM-08, LLM-10, OPS-06 | traceability | `git diff --check` | ✅ | ✅ green |
+| 14-03-02 | 03 | 3 | LLM-08, LLM-10, OPS-06 | state handoff | `git diff --check` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -58,18 +58,17 @@ created: 2026-04-04
 
 ## Wave 0 Requirements
 
-- [ ] `11-VERIFICATION.md` does not exist yet and must be created by this phase
-- [ ] `11-VALIDATION.md` must move from `status: draft` to an audit-ready state
-- [ ] `11-VALIDATION.md` should include a short retroactive-finalization note so
-  future readers understand why the file changed during Phase 14
-- [ ] `REQUIREMENTS.md` currently maps `LLM-08`, `LLM-10`, and `OPS-06` to
-  Phase 14 as pending closure work; those rows should only flip after proof exists
-- [ ] Any Phase 14 execution that unexpectedly edits `materials-discovery/`
-  must also update `materials-discovery/Progress.md` per `AGENTS.md`
-- [ ] Focused reruns should stay offline/deterministic and must not require live
-  provider access
-- [ ] The milestone audit should not be rerun until Phase 15 also closes the
-  remaining proof gap
+- [x] `11-VERIFICATION.md` now exists and closes the Phase 11 proof gap
+- [x] `11-VALIDATION.md` moved from `status: draft` to an audit-ready state
+- [x] `11-VALIDATION.md` includes a retroactive-finalization note
+- [x] `REQUIREMENTS.md` only flipped after proof existed
+- [x] No `materials-discovery/` files changed during Phase 14 execution, so
+  `materials-discovery/Progress.md` did not require an update
+- [x] Focused reruns stayed offline/deterministic and required no live provider
+  access
+- [x] The milestone audit stayed deferred until the later closure work completed
+- [x] This validation artifact was finalized retroactively in Phase 17 to close
+  the remaining documentary tech debt on Phase 14 itself
 
 ---
 
@@ -85,12 +84,12 @@ created: 2026-04-04
 
 ## Validation Sign-Off
 
-- [ ] All tasks have focused automated verification or doc-hygiene checks
-- [ ] Sampling continuity: no 2 consecutive evidence updates without either pytest or doc-hygiene verification
-- [ ] Wave 0 captures the actual Phase 11 audit gap, not unrelated implementation work
-- [ ] `11-VALIDATION.md` and `11-VERIFICATION.md` tell the same success or blocked story
-- [ ] No watch-mode or long-running background commands are required
-- [ ] Feedback latency < 240s
-- [ ] `nyquist_compliant: true` set in frontmatter by the end of execution
+- [x] All tasks have focused automated verification or doc-hygiene checks
+- [x] Sampling continuity: no 2 consecutive evidence updates without either pytest or doc-hygiene verification
+- [x] Wave 0 captures the actual Phase 11 audit gap, not unrelated implementation work
+- [x] `11-VALIDATION.md` and `11-VERIFICATION.md` tell the same success story
+- [x] No watch-mode or long-running background commands are required
+- [x] Feedback latency < 240s
+- [x] `nyquist_compliant: true` set in frontmatter by the end of execution
 
-**Approval:** pending
+**Approval:** automated verification complete
