@@ -124,6 +124,9 @@ class BackendConfig(BaseModel):
     xrd_provider: str | None = None
     llm_model: str | None = None
     llm_api_base: str | None = None
+    llm_request_timeout_s: float = 120.0
+    llm_probe_timeout_s: float = 5.0
+    llm_probe_path: str | None = None
     pinned_snapshot: str | None = None
     validation_snapshot: str | None = None
     validation_cache_dir: str | None = None
@@ -195,7 +198,19 @@ class BackendConfig(BaseModel):
             value = getattr(self, field_name)
             if isinstance(value, str):
                 stripped = value.strip()
+                if field_name == "llm_api_base" and stripped:
+                    stripped = stripped.rstrip("/")
                 setattr(self, field_name, stripped or None)
+        if self.llm_request_timeout_s <= 0.0:
+            raise ValueError("backend.llm_request_timeout_s must be > 0")
+        if self.llm_probe_timeout_s <= 0.0:
+            raise ValueError("backend.llm_probe_timeout_s must be > 0")
+        if self.llm_probe_path is not None:
+            probe_path = self.llm_probe_path.strip()
+            if not probe_path:
+                self.llm_probe_path = None
+            else:
+                self.llm_probe_path = probe_path if probe_path.startswith("/") else f"/{probe_path}"
         llm_fields_configured = any(
             value is not None
             for value in (
@@ -299,6 +314,9 @@ class LlmModelLaneConfig(BaseModel):
     provider: str
     model: str
     api_base: str | None = None
+    checkpoint_id: str | None = None
+    model_revision: str | None = None
+    local_model_path: str | None = None
 
     @field_validator("adapter", "provider", "model")
     @classmethod
@@ -311,6 +329,14 @@ class LlmModelLaneConfig(BaseModel):
     @field_validator("api_base")
     @classmethod
     def normalize_optional_api_base(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped.rstrip("/") or None
+
+    @field_validator("checkpoint_id", "model_revision", "local_model_path")
+    @classmethod
+    def normalize_optional_identity_fields(cls, value: str | None) -> str | None:
         if value is None:
             return None
         stripped = value.strip()
@@ -328,6 +354,8 @@ class LlmGenerateConfig(BaseModel):
     artifact_root: str | None = None
     persist_raw_completions: bool = True
     fixture_outputs: list[str] = Field(default_factory=list)
+    default_model_lane: Literal["general_purpose", "specialized_materials"] | None = None
+    fallback_model_lane: Literal["general_purpose", "specialized_materials"] | None = None
     model_lanes: dict[Literal["general_purpose", "specialized_materials"], LlmModelLaneConfig] = (
         Field(default_factory=dict)
     )

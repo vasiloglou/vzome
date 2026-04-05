@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 19 Plan 01 local-serving schema and runtime foundation | Added additive local-serving backend and lane config fields, typed `LlmServingIdentity` support for run/launch artifacts, an `openai_compat_v1` runtime adapter with readiness probes, and focused schema/runtime regressions that passed at `20 passed` |
 | 2026-04-04 | Phase 12 Plan 03 replay and compare workflow closeout | Added an offline full closed-loop regression for `llm-suggest -> llm-approve -> llm-launch -> llm-replay -> llm-compare`, extended campaign-lineage tests for replay fields, documented the strict replay/compare operator flow, and re-verified the full suite at 374 passed, 3 skipped |
 | 2026-04-04 | Phase 12 Plan 02 replay and compare CLI | Added strict `mdisc llm-replay --launch-summary ...`, `mdisc llm-compare --launch-summary ...`, replay-aware `llm-generate` lineage, and focused replay/compare CLI coverage while keeping the shared CLI suite green |
 | 2026-04-04 | Phase 12 Plan 01 replay and comparison foundation | Added strict replay bundle loading, replay-config reconstruction helpers, typed outcome/comparison artifacts, deterministic campaign comparison paths, and focused replay/compare core regression coverage |
@@ -346,6 +347,15 @@
   - `developers-docs/pipeline-stages.md`
   - `developers-docs/llm-integration.md`
 - Re-verified the whole `materials-discovery` suite after landing the benchmark layer to keep Phase 7 closed with a project-wide green state.
+
+### 2026-04-05
+
+- 00:10 EDT — Implemented the Phase 19 Plan 01 local-serving contract foundation.
+- Added additive backend transport fields (`llm_request_timeout_s`, `llm_probe_timeout_s`, `llm_probe_path`), lane identity fields (`checkpoint_id`, `model_revision`, `local_model_path`), and optional `default_model_lane` / `fallback_model_lane` support in `common/schema.py`.
+- Extended `llm/schema.py` with typed `LlmServingIdentity`, broader lane-source compatibility, and optional nested serving identity on run and launch artifacts while keeping legacy artifacts readable without that field.
+- Added `OpenAICompatLlmAdapter` plus `validate_llm_adapter_ready()` in `llm/runtime.py`, including default `/v1/models` probing, supported OpenAI-compatible response parsing, and operator-facing connectivity failures that tell the user to confirm the local server is already running.
+- Extended `tests/test_llm_launch_schema.py` and `tests/test_llm_runtime.py` to cover API-base normalization, optional serving identity, legacy artifact reads, default probe behavior, and offline local-adapter parsing.
+- Focused verification passed with `20 passed` across `tests/test_llm_launch_schema.py` and `tests/test_llm_runtime.py`.
 
 ### 2026-04-04
 

@@ -51,6 +51,13 @@ CampaignDecision = Literal["approved", "rejected"]
 CampaignPriority = Literal["high", "medium", "low"]
 CampaignOverallStatus = Literal["ready", "needs_improvement"]
 CampaignLaunchStatus = Literal["running", "succeeded", "failed"]
+ResolvedModelLaneSource = Literal[
+    "configured_lane",
+    "default_lane",
+    "configured_fallback",
+    "backend_default",
+    "baseline_fallback",
+]
 
 OUTCOME_METRIC_KEYS = (
     "parse_success_rate",
@@ -515,6 +522,45 @@ class LlmGenerationResult(BaseModel):
         return stripped or None
 
 
+class LlmServingIdentity(BaseModel):
+    requested_model_lane: str | None = None
+    resolved_model_lane: str
+    resolved_model_lane_source: ResolvedModelLaneSource
+    adapter: str
+    provider: str
+    model: str
+    effective_api_base: str | None = None
+    checkpoint_id: str | None = None
+    model_revision: str | None = None
+    local_model_path: str | None = None
+
+    @field_validator(
+        "resolved_model_lane",
+        "adapter",
+        "provider",
+        "model",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator(
+        "requested_model_lane",
+        "effective_api_base",
+        "checkpoint_id",
+        "model_revision",
+        "local_model_path",
+    )
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        normalized = _normalize_optional_string(value)
+        if normalized is None:
+            return None
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+
 class LlmRunManifest(BaseModel):
     schema_version: str = DEFAULT_LLM_RUN_MANIFEST_VERSION
     run_id: str
@@ -540,7 +586,8 @@ class LlmRunManifest(BaseModel):
     approval_id: str | None = None
     requested_model_lanes: list[str] = Field(default_factory=list)
     resolved_model_lane: str | None = None
-    resolved_model_lane_source: str | None = None
+    resolved_model_lane_source: ResolvedModelLaneSource | None = None
+    serving_identity: LlmServingIdentity | None = None
     launch_summary_path: str | None = None
     temperature: float | None = None
     max_tokens: int | None = None
@@ -577,7 +624,6 @@ class LlmRunManifest(BaseModel):
         "proposal_id",
         "approval_id",
         "resolved_model_lane",
-        "resolved_model_lane_source",
         "launch_summary_path",
         "seed_zomic_path",
         "replay_of_launch_id",
@@ -1371,10 +1417,11 @@ class LlmCampaignResolvedLaunch(BaseModel):
     system_config_hash: str
     requested_model_lanes: list[str] = Field(default_factory=list)
     resolved_model_lane: str
-    resolved_model_lane_source: Literal["configured_lane", "baseline_fallback"]
+    resolved_model_lane_source: ResolvedModelLaneSource
     resolved_adapter: str
     resolved_provider: str
     resolved_model: str
+    serving_identity: LlmServingIdentity | None = None
     prompt_instruction_deltas: list[str] = Field(default_factory=list)
     resolved_composition_bounds: dict[str, CompositionBound]
     resolved_example_pack_path: str | None = None
@@ -1440,7 +1487,8 @@ class LlmCampaignLaunchSummary(BaseModel):
     requested_count: int
     requested_model_lanes: list[str] = Field(default_factory=list)
     resolved_model_lane: str
-    resolved_model_lane_source: Literal["configured_lane", "baseline_fallback"]
+    resolved_model_lane_source: ResolvedModelLaneSource
+    serving_identity: LlmServingIdentity | None = None
     resolved_launch_path: str
     run_manifest_path: str | None = None
     llm_generate_manifest_path: str | None = None

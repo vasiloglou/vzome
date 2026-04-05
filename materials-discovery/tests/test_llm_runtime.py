@@ -8,7 +8,9 @@ from materials_discovery.common.schema import BackendConfig, LlmGenerateConfig
 from materials_discovery.llm.runtime import (
     AnthropicApiLlmAdapter,
     MockLlmAdapter,
+    OpenAICompatLlmAdapter,
     resolve_llm_adapter,
+    validate_llm_adapter_ready,
 )
 from materials_discovery.llm.schema import LlmGenerationRequest
 
@@ -141,3 +143,144 @@ def test_anthropic_adapter_surfaces_status_and_body_detail(monkeypatch: pytest.M
     adapter = AnthropicApiLlmAdapter(provider="anthropic", model="claude-sonnet")
     with pytest.raises(RuntimeError, match="429: rate limit"):
         adapter.generate(_request())
+
+
+def test_resolve_llm_adapter_returns_openai_compat_adapter() -> None:
+    adapter = resolve_llm_adapter(
+        "real",
+        adapter="openai_compat_v1",
+        backend=BackendConfig(
+            mode="real",
+            llm_adapter="openai_compat_v1",
+            llm_provider="openai_compat",
+            llm_model="materials-local-v1",
+            llm_api_base="https://local.example/v1/",
+            llm_request_timeout_s=91.0,
+            llm_probe_timeout_s=7.0,
+            llm_probe_path="health",
+        ),
+    )
+
+    assert isinstance(adapter, OpenAICompatLlmAdapter)
+    assert adapter.api_base == "https://local.example/v1"
+    assert adapter.request_timeout_s == 91.0
+    assert adapter.probe_timeout_s == 7.0
+    assert adapter.probe_path == "/health"
+
+
+def test_openai_compat_adapter_prefers_message_content(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _FakeResponse:
+        status_code = 200
+        text = ""
+
+        def json(self) -> dict:
+            return {"choices": [{"message": {"content": "label local.message\n"}}]}
+
+    class _FakeHttpx:
+        @staticmethod
+        def post(*args, **kwargs):
+            return _FakeResponse()
+
+    monkeypatch.setattr(
+        "materials_discovery.llm.runtime.importlib.import_module",
+        lambda name: _FakeHttpx() if name == "httpx" else importlib.import_module(name),
+    )
+    adapter = OpenAICompatLlmAdapter(
+        provider="openai_compat",
+        model="materials-local-v1",
+        api_base="https://local.example",
+    )
+
+    assert adapter.generate(_request()) == "label local.message\n"
+
+
+def test_openai_compat_adapter_accepts_text_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _FakeResponse:
+        status_code = 200
+        text = ""
+
+        def json(self) -> dict:
+            return {"choices": [{"text": "label local.text\n"}]}
+
+    class _FakeHttpx:
+        @staticmethod
+        def post(*args, **kwargs):
+            return _FakeResponse()
+
+    monkeypatch.setattr(
+        "materials_discovery.llm.runtime.importlib.import_module",
+        lambda name: _FakeHttpx() if name == "httpx" else importlib.import_module(name),
+    )
+    adapter = OpenAICompatLlmAdapter(
+        provider="openai_compat",
+        model="materials-local-v1",
+        api_base="https://local.example",
+    )
+
+    assert adapter.generate(_request()) == "label local.text\n"
+
+
+def test_validate_llm_adapter_ready_uses_default_models_probe(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: dict[str, object] = {}
+
+    class _FakeResponse:
+        status_code = 200
+        text = ""
+
+        def json(self) -> dict:
+            return {"data": [{"id": "materials-local-v1"}]}
+
+    class _FakeHttpx:
+        @staticmethod
+        def get(url: str, *, timeout: float):
+            seen["url"] = url
+            seen["timeout"] = timeout
+            return _FakeResponse()
+
+    monkeypatch.setattr(
+        "materials_discovery.llm.runtime.importlib.import_module",
+        lambda name: _FakeHttpx() if name == "httpx" else importlib.import_module(name),
+    )
+    adapter = OpenAICompatLlmAdapter(
+        provider="openai_compat",
+        model="materials-local-v1",
+        api_base="https://local.example",
+        probe_timeout_s=9.0,
+    )
+
+    validate_llm_adapter_ready(
+        adapter,
+        adapter_key="openai_compat_v1",
+        requested_lane="specialized_materials",
+        resolved_lane="specialized_materials",
+    )
+
+    assert seen == {"url": "https://local.example/v1/models", "timeout": 9.0}
+
+
+def test_validate_llm_adapter_ready_reports_connectivity_errors(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _FakeHttpx:
+        @staticmethod
+        def get(url: str, *, timeout: float):
+            raise RuntimeError(f"cannot connect to {url} in {timeout}s")
+
+    monkeypatch.setattr(
+        "materials_discovery.llm.runtime.importlib.import_module",
+        lambda name: _FakeHttpx() if name == "httpx" else importlib.import_module(name),
+    )
+    adapter = OpenAICompatLlmAdapter(
+        provider="openai_compat",
+        model="materials-local-v1",
+        api_base="https://local.example",
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="requested lane 'specialized_materials'.*https://local.example/v1/models.*already running",
+    ):
+        validate_llm_adapter_ready(
+            adapter,
+            adapter_key="openai_compat_v1",
+            requested_lane="specialized_materials",
+            resolved_lane="specialized_materials",
+        )
