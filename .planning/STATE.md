@@ -4,17 +4,17 @@ milestone: v1.4
 milestone_name: adapted-checkpoint-lifecycle-and-promotion-mvp
 current_phase: 28
 current_phase_name: checkpoint-lifecycle-and-promotion-contracts
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Phase 28 plan 01 completed
-last_updated: "2026-04-05T23:38:01Z"
-last_activity: 2026-04-05 -- Phase 28 plan 01 completed
+stopped_at: Phase 28 plan 02 completed
+last_updated: "2026-04-05T23:49:08Z"
+last_activity: 2026-04-05 -- Phase 28 plan 02 completed
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -31,21 +31,21 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 Current Phase: 28
 Current Phase Name: Checkpoint Lifecycle and Promotion Contracts
 Total Phases: 3
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 3
 Phase: 28 (Checkpoint Lifecycle and Promotion Contracts) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Executing Phase 28
-Last activity: 2026-04-05 -- Phase 28 plan 01 completed
-Last Activity Description: Phase 28 plan 01 completed
+Last activity: 2026-04-05 -- Phase 28 plan 02 completed
+Last Activity Description: Phase 28 plan 02 completed
 
-Progress: [███░░░░░░░] 33%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 81
+- Total plans completed: 82
 - Average duration: 12 min
 - Total execution time: archived across prior milestones
 
@@ -106,5 +106,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-05T20:56:23Z
-Stopped at: Phase 28 plan 01 completed
-Resume file: .planning/phases/28-checkpoint-lifecycle-and-promotion-contracts/28-02-PLAN.md
+Stopped at: Phase 28 plan 02 completed
+Resume file: .planning/phases/28-checkpoint-lifecycle-and-promotion-contracts/28-03-PLAN.md
