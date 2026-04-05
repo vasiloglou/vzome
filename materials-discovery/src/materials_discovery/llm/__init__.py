@@ -40,7 +40,11 @@ from materials_discovery.llm.pipeline_benchmark import (
     write_llm_pipeline_comparison,
 )
 from materials_discovery.llm.prompting import build_generation_prompt, load_seed_zomic_text
-from materials_discovery.llm.serving_benchmark import load_serving_benchmark_spec
+from materials_discovery.llm.serving_benchmark import (
+    build_serving_benchmark_summary,
+    load_serving_benchmark_spec,
+    run_serving_smoke_check,
+)
 from materials_discovery.llm.specialist import build_specialized_evaluation_payload
 from materials_discovery.llm.launch import (
     materialize_campaign_seed,
@@ -220,6 +224,7 @@ __all__ = [
     "build_replay_campaign_metadata",
     "build_replay_config",
     "build_specialized_evaluation_payload",
+    "build_serving_benchmark_summary",
     "build_generation_prompt",
     "build_llm_suggestions",
     "CampaignLaunchBundle",
@@ -288,6 +293,7 @@ __all__ = [
     "load_eval_set",
     "load_seed_zomic_text",
     "load_serving_benchmark_spec",
+    "run_serving_smoke_check",
     "llm_artifact_root_from_acceptance_pack_path",
     "llm_acceptance_dir",
     "llm_acceptance_approval_path",
