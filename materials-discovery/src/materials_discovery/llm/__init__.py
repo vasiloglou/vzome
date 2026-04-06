@@ -172,8 +172,11 @@ from materials_discovery.llm.schema import (
     SourceFamily,
     TranslatedStructureArtifact,
     TranslationFidelityTier,
+    TranslationTargetFamily,
     TranslationTargetDescriptor,
     ValidationStatus,
+    list_translation_targets,
+    resolve_translation_target,
 )
 from materials_discovery.llm.storage import (
     corpus_build_dir,
@@ -292,8 +295,11 @@ __all__ = [
     "OUTCOME_METRIC_KEYS",
     "FidelityTier",
     "TranslationFidelityTier",
+    "TranslationTargetFamily",
     "TranslationTargetDescriptor",
     "TranslatedStructureArtifact",
+    "list_translation_targets",
+    "resolve_translation_target",
     "export_llm_eval_set",
     "find_prior_campaign_launch",
     "grade_corpus_example",

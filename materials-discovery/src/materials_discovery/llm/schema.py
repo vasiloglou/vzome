@@ -264,6 +264,44 @@ class TranslatedStructureArtifact(BaseModel):
         return self
 
 
+BUILTIN_TRANSLATION_TARGETS: tuple[TranslationTargetDescriptor, ...] = (
+    TranslationTargetDescriptor(
+        family="cif",
+        target_format="cif_text",
+        requires_periodic_cell=True,
+        requires_fractional_coordinates=True,
+        preserves_qc_native_semantics=False,
+        emission_kind="file",
+        description="Periodic CIF export for downstream crystal-LLM workflows.",
+    ),
+    TranslationTargetDescriptor(
+        family="material_string",
+        target_format="crystaltextllm_material_string",
+        requires_periodic_cell=True,
+        requires_fractional_coordinates=True,
+        preserves_qc_native_semantics=False,
+        emission_kind="line_oriented",
+        description="Line-oriented material-string export for CrystalTextLLM-style workflows.",
+    ),
+)
+
+_BUILTIN_TRANSLATION_TARGETS_BY_FAMILY = {
+    descriptor.family: descriptor for descriptor in BUILTIN_TRANSLATION_TARGETS
+}
+
+
+def list_translation_targets() -> tuple[TranslationTargetDescriptor, ...]:
+    return BUILTIN_TRANSLATION_TARGETS
+
+
+def resolve_translation_target(target_family: str) -> TranslationTargetDescriptor:
+    normalized_family = _require_non_blank_string(target_family)
+    descriptor = _BUILTIN_TRANSLATION_TARGETS_BY_FAMILY.get(normalized_family)
+    if descriptor is None:
+        raise KeyError(f"unknown translation target family: {normalized_family}")
+    return descriptor
+
+
 class CorpusBuildConfig(BaseModel):
     build_id: str
     systems: list[str] = Field(default_factory=list)

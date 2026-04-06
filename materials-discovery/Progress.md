@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 31 Plan 01 Task 2 translation target registry | Added the built-in CIF and CrystalTextLLM-style material-string target registry, exported explicit `list_translation_targets()` and `resolve_translation_target(...)` APIs, surfaced periodic-cell and QC-semantics flags on descriptors, and kept the schema slice green at 10 passing tests |
 | 2026-04-06 | Phase 31 Plan 01 Task 2 RED target-registry tests | Added failing registry coverage for explicit CIF and material-string target discovery, stable target resolution, periodic-cell requirement flags, and clear unknown-family failures before implementing the built-in registry |
 | 2026-04-06 | Phase 31 Plan 01 Task 1 translation artifact contract | Added the additive translated-structure schema models, a separate export-facing fidelity tier with `lossy`, typed source linkage and diagnostics, public imports for the new contract, and green schema coverage including missing-source-linkage rejection |
 | 2026-04-06 | Phase 31 Plan 01 Task 1 RED translation schema tests | Added failing schema coverage for translated-structure source linkage, export fidelity separation, lossy-reason validation, and diagnostic-only artifacts before implementing the additive translation contract |
@@ -250,6 +251,8 @@
 - Exported the Task 1 public surface from `materials_discovery.llm`, kept the older corpus `FidelityTier` unchanged, and verified the focused translation-schema slice at `6 passed`.
 - 19:44 EDT — Added the Task 2 RED registry tests to the same translation-schema slice so Phase 32 will inherit explicit target discovery and resolution APIs instead of guessing target-family names.
 - The new failing cases lock built-in CIF and material-string descriptors, periodic-cell requirement metadata, and a clear error path for unknown target families.
+- 19:47 EDT — Implemented the built-in translation target registry in `llm/schema.py` and exported the new list/resolve helpers from `materials_discovery.llm`.
+- The registry now ships stable CIF and CrystalTextLLM-style descriptors with explicit `requires_periodic_cell`, `requires_fractional_coordinates`, `preserves_qc_native_semantics`, and emission-kind metadata; the focused schema slice passed at `10 passed`.
   - `write_comparison()`: writes JSON to `data/comparisons/` with slugified filename (D-06).
   - `format_comparison_table()`: produces dual-format terminal table with header, gate section, and metric section (D-06).
   - Graceful fallback: if report file missing, warns and falls back to report_metrics embedded in benchmark pack (no crash).
