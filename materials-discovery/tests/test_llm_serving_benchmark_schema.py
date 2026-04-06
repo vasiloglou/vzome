@@ -65,6 +65,7 @@ def _valid_launch_target(target_id: str = "hosted_generation") -> dict[str, obje
         "target_id": target_id,
         "label": "Hosted generation",
         "workflow_role": "campaign_launch",
+        "checkpoint_benchmark_role": None,
         "system_config_path": str(_config_path("al_cu_fe_llm_local.yaml")),
         "campaign_spec_path": "/tmp/campaign_spec.json",
         "generation_model_lane": "general_purpose",
@@ -120,6 +121,36 @@ def test_benchmark_target_role_validation_paths() -> None:
                 **_valid_evaluate_target(),
                 "batch": None,
             }
+        )
+
+    with pytest.raises(ValueError, match="checkpoint_benchmark_role"):
+        LlmServingBenchmarkTarget(
+            **{
+                **_valid_evaluate_target(),
+                "checkpoint_benchmark_role": "candidate_checkpoint",
+            }
+        )
+
+
+def test_benchmark_spec_rejects_duplicate_checkpoint_benchmark_roles() -> None:
+    with pytest.raises(ValueError, match="checkpoint_benchmark_role values must be unique"):
+        LlmServingBenchmarkSpec(
+            benchmark_id="bench_v1",
+            acceptance_pack_path="/tmp/acceptance.json",
+            targets=[
+                LlmServingBenchmarkTarget(
+                    **{
+                        **_valid_launch_target("promoted_a"),
+                        "checkpoint_benchmark_role": "promoted_default",
+                    }
+                ),
+                LlmServingBenchmarkTarget(
+                    **{
+                        **_valid_launch_target("promoted_b"),
+                        "checkpoint_benchmark_role": "promoted_default",
+                    }
+                ),
+            ],
         )
 
 

@@ -14,6 +14,7 @@ from materials_discovery.common.manifest import config_sha256
 from materials_discovery.common.schema import (
     CandidateRecord,
     DigitalValidationRecord,
+    LlmGenerateSummary,
     SiteRecord,
     SystemConfig,
 )
@@ -431,9 +432,15 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     adapted_pinned_config_path = (
         workspace / "configs" / "systems" / "al_cu_fe_llm_adapted_pinned.yaml"
     )
+    adapted_candidate_config_path = (
+        workspace / "configs" / "systems" / "al_cu_fe_llm_adapted_candidate.yaml"
+    )
     sc_zn_local_config_path = workspace / "configs" / "systems" / "sc_zn_llm_local.yaml"
     al_benchmark_example = workspace / "configs" / "llm" / "al_cu_fe_serving_benchmark.yaml"
     adapted_benchmark_example = workspace / "configs" / "llm" / "al_cu_fe_adapted_serving_benchmark.yaml"
+    lifecycle_benchmark_example = (
+        workspace / "configs" / "llm" / "al_cu_fe_checkpoint_lifecycle_benchmark.yaml"
+    )
     sc_benchmark_example = workspace / "configs" / "llm" / "sc_zn_serving_benchmark.yaml"
 
     hosted_config = SystemConfig.model_validate(load_yaml(hosted_config_path))
@@ -459,11 +466,20 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     assert adapted_pinned_config.llm_generate.model_lanes["general_purpose"].checkpoint_id == (
         "ckpt-al-cu-fe-zomic-adapted"
     )
+    adapted_candidate_config = SystemConfig.model_validate(load_yaml(adapted_candidate_config_path))
+    assert adapted_candidate_config.llm_generate is not None
+    assert adapted_candidate_config.llm_generate.model_lanes["general_purpose"].checkpoint_family == (
+        "adapted-al-cu-fe"
+    )
+    assert adapted_candidate_config.llm_generate.model_lanes["general_purpose"].checkpoint_id == (
+        "ckpt-al-cu-fe-zomic-candidate"
+    )
 
     al_acceptance_pack_path = _write_llm_acceptance_pack(tmp_path / "al_workspace", system="Al-Cu-Fe")
     (tmp_path / "al_hosted_campaign").mkdir(parents=True, exist_ok=True)
     (tmp_path / "al_local_campaign").mkdir(parents=True, exist_ok=True)
     (tmp_path / "al_adapted_campaign").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "al_candidate_campaign").mkdir(parents=True, exist_ok=True)
     hosted_campaign_spec_path = _write_llm_campaign_spec(
         tmp_path / "al_hosted_campaign",
         hosted_config_path,
@@ -475,6 +491,10 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     adapted_campaign_spec_path = _write_llm_campaign_spec(
         tmp_path / "al_adapted_campaign",
         adapted_config_path,
+    )
+    candidate_campaign_spec_path = _write_llm_campaign_spec(
+        tmp_path / "al_candidate_campaign",
+        adapted_candidate_config_path,
     )
     al_payload = load_yaml(al_benchmark_example)
     al_payload["acceptance_pack_path"] = str(al_acceptance_pack_path)
@@ -529,6 +549,35 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
         target.notes and "register the checkpoint" in target.notes.lower()
         for target in adapted_spec.targets
     )
+    lifecycle_payload = load_yaml(lifecycle_benchmark_example)
+    lifecycle_payload["acceptance_pack_path"] = str(al_acceptance_pack_path)
+    for target in lifecycle_payload["targets"]:
+        target["system_config_path"] = str(
+            (lifecycle_benchmark_example.parent / target["system_config_path"]).resolve()
+        )
+        if target["target_id"] == "baseline_local_generation":
+            target["campaign_spec_path"] = str(local_campaign_spec_path)
+        elif target["target_id"] == "promoted_checkpoint_generation":
+            target["campaign_spec_path"] = str(adapted_campaign_spec_path)
+        elif target["target_id"] == "candidate_checkpoint_generation":
+            target["campaign_spec_path"] = str(candidate_campaign_spec_path)
+    lifecycle_runtime_spec_path = tmp_path / "al_runtime_lifecycle_benchmark.yaml"
+    lifecycle_runtime_spec_path.write_text(
+        yaml.safe_dump(lifecycle_payload, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    lifecycle_spec = load_serving_benchmark_spec(lifecycle_runtime_spec_path)
+    assert [target.target_id for target in lifecycle_spec.targets] == [
+        "baseline_local_generation",
+        "promoted_checkpoint_generation",
+        "candidate_checkpoint_generation",
+    ]
+    assert [target.checkpoint_benchmark_role for target in lifecycle_spec.targets] == [
+        "baseline_local",
+        "promoted_default",
+        "candidate_checkpoint",
+    ]
 
     sc_acceptance_pack_path = _write_llm_acceptance_pack(tmp_path / "sc_workspace", system="Sc-Zn")
     (tmp_path / "sc_local_campaign").mkdir(parents=True, exist_ok=True)
@@ -765,6 +814,373 @@ def test_real_mode_adapted_checkpoint_benchmark_reuses_launch_and_compare_workfl
     assert Path(targets["adapted_checkpoint_generation"]["launch_summary_path"]).exists()
     assert any("Adapted checkpoint" in line for line in summary_payload["recommendation_lines"])
     assert any("Rollback baseline remains available:" in line for line in summary_payload["recommendation_lines"])
+
+
+@pytest.mark.integration
+def test_real_mode_checkpoint_lifecycle_benchmark_recommends_candidate_promotion_offline(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    runner = CliRunner()
+    repo_workspace = Path(__file__).resolve().parents[1]
+    artifact_workspace = tmp_path / "workspace"
+    acceptance_pack_path = _write_llm_acceptance_pack(artifact_workspace, system="Al-Cu-Fe")
+    baseline_config_path = repo_workspace / "configs" / "systems" / "al_cu_fe_llm_local.yaml"
+    promoted_config_path = repo_workspace / "configs" / "systems" / "al_cu_fe_llm_adapted.yaml"
+    candidate_config_path = (
+        repo_workspace / "configs" / "systems" / "al_cu_fe_llm_adapted_candidate.yaml"
+    )
+    lifecycle_benchmark_example = (
+        repo_workspace / "configs" / "llm" / "al_cu_fe_checkpoint_lifecycle_benchmark.yaml"
+    )
+
+    (tmp_path / "baseline_lifecycle_campaign").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "promoted_lifecycle_campaign").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "candidate_lifecycle_campaign").mkdir(parents=True, exist_ok=True)
+    baseline_spec_path = _write_llm_campaign_spec(
+        tmp_path / "baseline_lifecycle_campaign",
+        baseline_config_path,
+    )
+    promoted_spec_path = _write_llm_campaign_spec(
+        tmp_path / "promoted_lifecycle_campaign",
+        promoted_config_path,
+    )
+    candidate_spec_path = _write_llm_campaign_spec(
+        tmp_path / "candidate_lifecycle_campaign",
+        candidate_config_path,
+    )
+
+    checkpoint_lineage_dir = artifact_workspace / "lineage"
+    checkpoint_lineage_dir.mkdir(parents=True, exist_ok=True)
+    for name in (
+        "adapter_manifest.json",
+        "corpus_manifest.json",
+        "eval_manifest.json",
+        "acceptance_pack.json",
+    ):
+        (checkpoint_lineage_dir / name).write_text("{}", encoding="utf-8")
+
+    promoted_checkpoint_spec_path = artifact_workspace / "al_cu_fe_zomic_promoted_checkpoint.yaml"
+    promoted_checkpoint_spec_path.write_text(
+        yaml.safe_dump(
+            {
+                "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                "checkpoint_family": "adapted-al-cu-fe",
+                "system": "Al-Cu-Fe",
+                "template_family": "icosahedral_approximant_1_1",
+                "adapter": "openai_compat_v1",
+                "provider": "openai_compat",
+                "model": "zomic-al-cu-fe-adapted-v1",
+                "local_model_path": "/opt/models/zomic-al-cu-fe-adapted-v1",
+                "model_revision": "adapted-dev-2026-04-05",
+                "base_model": "zomic-general-local-v1",
+                "base_model_revision": "local-dev-2026-04-05",
+                "adaptation_method": "lora",
+                "adaptation_artifact_path": "lineage/adapter_manifest.json",
+                "corpus_manifest_path": "lineage/corpus_manifest.json",
+                "eval_set_manifest_path": "lineage/eval_manifest.json",
+                "acceptance_pack_path": "lineage/acceptance_pack.json",
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    candidate_checkpoint_spec_path = artifact_workspace / "al_cu_fe_zomic_candidate_checkpoint.yaml"
+    candidate_checkpoint_spec_path.write_text(
+        yaml.safe_dump(
+            {
+                "checkpoint_id": "ckpt-al-cu-fe-zomic-candidate",
+                "checkpoint_family": "adapted-al-cu-fe",
+                "system": "Al-Cu-Fe",
+                "template_family": "icosahedral_approximant_1_1",
+                "adapter": "openai_compat_v1",
+                "provider": "openai_compat",
+                "model": "zomic-al-cu-fe-adapted-v1",
+                "local_model_path": "/opt/models/zomic-al-cu-fe-adapted-v1",
+                "model_revision": "adapted-dev-2026-04-06",
+                "base_model": "zomic-general-local-v1",
+                "base_model_revision": "local-dev-2026-04-05",
+                "adaptation_method": "lora",
+                "adaptation_artifact_path": "lineage/adapter_manifest.json",
+                "corpus_manifest_path": "lineage/corpus_manifest.json",
+                "eval_set_manifest_path": "lineage/eval_manifest.json",
+                "acceptance_pack_path": "lineage/acceptance_pack.json",
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    register_llm_checkpoint(promoted_checkpoint_spec_path, root=artifact_workspace)
+    register_llm_checkpoint(candidate_checkpoint_spec_path, root=artifact_workspace)
+    lifecycle_reports_dir = artifact_workspace / "reports"
+    lifecycle_reports_dir.mkdir(parents=True, exist_ok=True)
+    (lifecycle_reports_dir / "lifecycle_benchmark.json").write_text("{}", encoding="utf-8")
+    promotion_spec_path = artifact_workspace / "al_cu_fe_promoted_checkpoint.yaml"
+    promotion_spec_path.write_text(
+        yaml.safe_dump(
+            {
+                "checkpoint_family": "adapted-al-cu-fe",
+                "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                "evidence_paths": ["reports/lifecycle_benchmark.json"],
+                "expected_revision": 2,
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    promote_checkpoint(promotion_spec_path, root=artifact_workspace)
+
+    benchmark_payload = load_yaml(lifecycle_benchmark_example)
+    benchmark_payload["acceptance_pack_path"] = str(acceptance_pack_path)
+    for target in benchmark_payload["targets"]:
+        target["system_config_path"] = str(
+            (lifecycle_benchmark_example.parent / target["system_config_path"]).resolve()
+        )
+        if target["target_id"] == "baseline_local_generation":
+            target["campaign_spec_path"] = str(baseline_spec_path)
+        elif target["target_id"] == "promoted_checkpoint_generation":
+            target["campaign_spec_path"] = str(promoted_spec_path)
+        elif target["target_id"] == "candidate_checkpoint_generation":
+            target["campaign_spec_path"] = str(candidate_spec_path)
+    benchmark_spec_path = tmp_path / "al_cu_fe_checkpoint_lifecycle_benchmark_runtime.yaml"
+    benchmark_spec_path.write_text(
+        yaml.safe_dump(benchmark_payload, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr("materials_discovery.cli.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr("materials_discovery.llm.serving_benchmark.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr("materials_discovery.llm.checkpoints.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr("materials_discovery.llm.storage.workspace_root", lambda: artifact_workspace)
+    monkeypatch.setattr(
+        "materials_discovery.llm.serving_benchmark.resolve_llm_adapter",
+        lambda *args, **kwargs: object(),
+    )
+    monkeypatch.setattr(
+        "materials_discovery.llm.serving_benchmark.validate_llm_adapter_ready",
+        lambda adapter, **kwargs: None,
+    )
+
+    def _candidate_record(system_config: SystemConfig, candidate_id: str) -> CandidateRecord:
+        return CandidateRecord(
+            candidate_id=candidate_id,
+            system=system_config.system_name,
+            template_family=system_config.template_family,
+            cell={
+                "a": 14.2,
+                "b": 14.2,
+                "c": 14.2,
+                "alpha": 90.0,
+                "beta": 90.0,
+                "gamma": 90.0,
+            },
+            sites=[
+                SiteRecord(
+                    label="S01",
+                    qphi=((0, 0), (1, 0), (1, 0)),
+                    species="Al",
+                    occ=1.0,
+                    fractional_position=(0.2, 0.2, 0.2),
+                    cartesian_position=(2.84, 2.84, 2.84),
+                )
+            ],
+            composition={"Al": 0.7, "Cu": 0.2, "Fe": 0.1},
+            screen={"model": "MACE", "energy_per_atom_ev": -3.0},
+            digital_validation=DigitalValidationRecord(status="pending"),
+            provenance={"source": "llm"},
+        )
+
+    def _fake_generate(system_config, output_path, count, **kwargs):
+        del count
+        target_key = output_path.name
+        campaign_metadata = kwargs["campaign_metadata"]
+        serving_identity = kwargs["serving_identity"]
+        if "candidate_checkpoint_generation" in target_key:
+            generated_count = 2
+            compile_rows = [
+                {
+                    "schema_version": "llm-generation-result/v1",
+                    "attempt_id": "candidate_001",
+                    "candidate_id": "candidate_001",
+                    "orbit_library_path": None,
+                    "raw_export_path": None,
+                    "parse_status": "passed",
+                    "compile_status": "passed",
+                    "passed": True,
+                },
+                {
+                    "schema_version": "llm-generation-result/v1",
+                    "attempt_id": "candidate_002",
+                    "candidate_id": "candidate_002",
+                    "orbit_library_path": None,
+                    "raw_export_path": None,
+                    "parse_status": "passed",
+                    "compile_status": "passed",
+                    "passed": True,
+                },
+            ]
+        elif "promoted_checkpoint_generation" in target_key:
+            generated_count = 1
+            compile_rows = [
+                {
+                    "schema_version": "llm-generation-result/v1",
+                    "attempt_id": "promoted_001",
+                    "candidate_id": "promoted_001",
+                    "orbit_library_path": None,
+                    "raw_export_path": None,
+                    "parse_status": "passed",
+                    "compile_status": "passed",
+                    "passed": True,
+                },
+                {
+                    "schema_version": "llm-generation-result/v1",
+                    "attempt_id": "promoted_002",
+                    "candidate_id": None,
+                    "orbit_library_path": None,
+                    "raw_export_path": None,
+                    "parse_status": "passed",
+                    "compile_status": "passed",
+                    "passed": False,
+                },
+            ]
+        else:
+            generated_count = 1
+            compile_rows = [
+                {
+                    "schema_version": "llm-generation-result/v1",
+                    "attempt_id": "baseline_001",
+                    "candidate_id": "baseline_001",
+                    "orbit_library_path": None,
+                    "raw_export_path": None,
+                    "parse_status": "passed",
+                    "compile_status": "passed",
+                    "passed": True,
+                },
+                {
+                    "schema_version": "llm-generation-result/v1",
+                    "attempt_id": "baseline_002",
+                    "candidate_id": None,
+                    "orbit_library_path": None,
+                    "raw_export_path": None,
+                    "parse_status": "passed",
+                    "compile_status": "failed",
+                    "passed": False,
+                },
+            ]
+
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        write_jsonl(
+            [
+                _candidate_record(system_config, row["candidate_id"]).model_dump(mode="json")
+                for row in compile_rows
+                if row["candidate_id"] is not None
+            ],
+            output_path,
+        )
+        run_dir = artifact_workspace / "data" / "llm_runs" / output_path.stem
+        run_dir.mkdir(parents=True, exist_ok=True)
+        prompt_path = run_dir / "prompt.json"
+        attempts_path = run_dir / "attempts.jsonl"
+        compile_results_path = run_dir / "compile_results.jsonl"
+        run_manifest_path = run_dir / "run_manifest.json"
+        request_payload = {
+            "system": system_config.system_name,
+            "template_family": system_config.template_family,
+            "composition_bounds": {
+                species: bound.model_dump(mode="json")
+                for species, bound in system_config.composition_bounds.items()
+            },
+            "prompt_text": f"benchmark request for {target_key}",
+            "temperature": system_config.llm_generate.temperature,
+            "max_tokens": system_config.llm_generate.max_tokens,
+            "seed_zomic_path": None,
+            "example_pack_path": None,
+            "prompt_instruction_deltas": [],
+            "conditioning_example_ids": [],
+        }
+        write_json_object(
+            {
+                "request_hash": f"{target_key}_hash",
+                "prompt_template": system_config.llm_generate.prompt_template,
+                "request": request_payload,
+                "prompt_text": request_payload["prompt_text"],
+                "conditioning_example_ids": [],
+            },
+            prompt_path,
+        )
+        write_jsonl([], attempts_path)
+        write_jsonl(compile_rows, compile_results_path)
+        write_json_object(
+            {
+                "schema_version": "llm-run-manifest/v1",
+                "run_id": run_dir.name,
+                "system": system_config.system_name,
+                "adapter_key": serving_identity.adapter,
+                "provider": serving_identity.provider,
+                "model": serving_identity.model,
+                "prompt_template": system_config.llm_generate.prompt_template,
+                "attempt_count": 2,
+                "requested_count": 2,
+                "generated_count": generated_count,
+                "prompt_path": str(prompt_path),
+                "attempts_path": str(attempts_path),
+                "compile_results_path": str(compile_results_path),
+                "created_at_utc": "2026-04-06T00:44:00Z",
+                "campaign_id": campaign_metadata["campaign_id"],
+                "launch_id": campaign_metadata["launch_id"],
+                "campaign_spec_path": campaign_metadata["campaign_spec_path"],
+                "proposal_id": campaign_metadata["proposal_id"],
+                "approval_id": campaign_metadata["approval_id"],
+                "requested_model_lanes": campaign_metadata["requested_model_lanes"],
+                "resolved_model_lane": campaign_metadata["resolved_model_lane"],
+                "resolved_model_lane_source": campaign_metadata["resolved_model_lane_source"],
+                "serving_identity": serving_identity.model_dump(mode="json"),
+                "launch_summary_path": campaign_metadata["launch_summary_path"],
+                "temperature": system_config.llm_generate.temperature,
+                "max_tokens": system_config.llm_generate.max_tokens,
+                "max_attempts": system_config.llm_generate.max_attempts,
+            },
+            run_manifest_path,
+        )
+        return LlmGenerateSummary(
+            requested_count=2,
+            generated_count=generated_count,
+            attempt_count=2,
+            parse_pass_count=2,
+            compile_pass_count=sum(row["compile_status"] == "passed" for row in compile_rows),
+            output_path=str(output_path),
+            run_manifest_path=str(run_manifest_path),
+        )
+
+    monkeypatch.setattr(
+        "materials_discovery.llm.serving_benchmark.generate_llm_candidates",
+        _fake_generate,
+    )
+
+    result = runner.invoke(app, ["llm-serving-benchmark", "--spec", str(benchmark_spec_path)])
+
+    assert result.exit_code == 0, (
+        f"llm-serving-benchmark failed:\n{result.stdout}\n{result.stderr}"
+    )
+    summary_path = (
+        artifact_workspace
+        / "data"
+        / "benchmarks"
+        / "llm_serving"
+        / "al_cu_fe_checkpoint_lifecycle_v1"
+        / "benchmark_summary.json"
+    )
+    assert summary_path.exists()
+    summary_payload = json.loads(summary_path.read_text(encoding="utf-8"))
+    assert any(
+        "Promotion benchmark recommendation: promote candidate_checkpoint_generation over promoted_checkpoint_generation"
+        in line
+        for line in summary_payload["recommendation_lines"]
+    )
+    assert any(
+        "Lifecycle rollback baseline: baseline_local_generation" in line
+        for line in summary_payload["recommendation_lines"]
+    )
 
 
 @pytest.mark.integration

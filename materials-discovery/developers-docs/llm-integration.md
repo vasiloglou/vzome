@@ -510,9 +510,25 @@ Phase 29 turns the lifecycle contract into the live adapted-lane workflow:
   ran and whether it came from a promoted default or an explicit pin
 - `configs/systems/al_cu_fe_llm_local.yaml` remains the rollback baseline lane
 
-Phase 29 stays intentionally scoped to workflow integration. Phase 30 is where
-promotion evidence and longer-running operator promotion practice will be
-expanded further.
+#### Phase 30: Promotion Benchmarks and Operator Lifecycle Workflow
+
+Phase 30 closes the operator loop around that promotion-aware runtime:
+
+- `configs/systems/al_cu_fe_llm_adapted_candidate.yaml` adds a committed
+  candidate config that stays pinned inside `adapted-al-cu-fe` without
+  changing the promoted default
+- `configs/llm/al_cu_fe_checkpoint_lifecycle_benchmark.yaml` benchmarks the
+  rollback baseline, the currently promoted default, and the candidate
+  checkpoint under one shared acceptance-pack context
+- serving-benchmark summaries now use explicit
+  `checkpoint_benchmark_role` labels to recommend whether to promote the
+  candidate, keep the current promoted checkpoint, and preserve the baseline
+  rollback lane
+- the runbook now documents the full operator sequence: register, benchmark,
+  inspect family revision, promote when warranted, fall back to baseline when
+  needed, and retire superseded members after the replay/audit window
+- shared CLI help coverage keeps the lifecycle command surface visible as one
+  workflow: register, list, benchmark, promote, and retire
 
 ### 3.2 Backend Adapter for LLM
 

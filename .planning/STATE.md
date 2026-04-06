@@ -4,17 +4,17 @@ milestone: v1.4
 milestone_name: adapted-checkpoint-lifecycle-and-promotion-mvp
 current_phase: 30
 current_phase_name: promotion-benchmarks-and-operator-lifecycle-workflow
-current_plan: Not started
-status: ready_to_execute
-stopped_at: Phase 29 completed
-last_updated: "2026-04-06T00:37:35Z"
-last_activity: 2026-04-05 -- Phase 29 completed, Phase 30 next
+current_plan: Complete
+status: ready_for_milestone_audit
+stopped_at: Phase 30 completed
+last_updated: "2026-04-06T01:00:51Z"
+last_activity: 2026-04-05 -- Phase 30 completed, milestone lifecycle next
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 3
   completed_plans: 3
-  percent: 67
+  percent: 100
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 30 — promotion-benchmarks-and-operator-lifecycle-workflow
+**Current focus:** Milestone lifecycle — audit, complete, cleanup
 
 ## Current Position
 
 Current Phase: 30
 Current Phase Name: Promotion Benchmarks And Operator Lifecycle Workflow
 Total Phases: 3
-Current Plan: Not started
-Total Plans in Phase: not planned yet
-Phase: 30 (Promotion Benchmarks And Operator Lifecycle Workflow) — NEXT
-Plan: Not started
-Status: Phase 29 complete; Phase 30 next
-Last activity: 2026-04-05 -- Phase 29 completed, Phase 30 next
-Last Activity Description: Phase 29 completed and state advanced to Phase 30
+Current Plan: Complete
+Total Plans in Phase: 3
+Phase: 30 (Promotion Benchmarks And Operator Lifecycle Workflow) — COMPLETE
+Plan: Complete
+Status: Phase 30 complete; milestone lifecycle next
+Last activity: 2026-04-05 -- Phase 30 completed, milestone lifecycle next
+Last Activity Description: Phase 30 completed and the milestone is ready for audit, archive, and cleanup
 
-Progress: [███████░░░] 67%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -101,6 +101,14 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
   later promotion or retirement changes, and benchmark/compare output must
   surface the resulting lifecycle selection metadata.
 
+- [Phase 30]: Lifecycle benchmarks use explicit target roles for the promoted
+  default, the candidate checkpoint, and the rollback baseline so benchmark
+  recommendations stay structured and auditable.
+
+- [Phase 30]: The operator lifecycle stays CLI-first: register or pin a
+  checkpoint, benchmark candidate vs promoted default vs baseline, then
+  promote, keep, or retire based on file-backed evidence.
+
 ### Pending Todos
 
 None yet.
@@ -113,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T00:37:35Z
-Stopped at: Phase 29 completed
+Last session: 2026-04-06T01:00:51Z
+Stopped at: Phase 30 completed
 Resume file: .planning/ROADMAP.md

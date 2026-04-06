@@ -4,6 +4,9 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 30 Task 3 lifecycle operator docs and help coverage | Documented the candidate benchmark, promotion, rollback, and retirement workflow with the committed lifecycle configs/specs, clarified serving-benchmark role semantics in the developer docs, and expanded CLI help coverage for the lifecycle command surface |
+| 2026-04-05 | Phase 30 Task 2 committed lifecycle benchmark proof | Added committed candidate and lifecycle benchmark example configs, proved the promoted-vs-candidate-vs-baseline benchmark workflow offline, and validated that benchmark summaries can recommend checkpoint promotion while keeping rollback explicit |
+| 2026-04-05 | Phase 30 Task 1 lifecycle benchmark roles and recommendations | Added typed lifecycle benchmark target roles, taught benchmark summaries to recommend promote/keep/rollback from structured target intent, and expanded serving-benchmark schema/core coverage around lifecycle benchmark semantics |
 | 2026-04-05 | Phase 29 Task 3 promoted-default config and workflow proof | Switched the committed adapted Al-Cu-Fe lane to promoted-family default resolution, added an explicit pinned companion config, documented replay-safe promotion semantics and rollback guidance, and extended the real-mode proof to exercise the promoted-default benchmark path |
 | 2026-04-05 | Phase 29 Task 2 replay-safe promotion drift handling | Kept replay pinned to the recorded family checkpoint after later promotions change, surfaced checkpoint selection metadata in compare and serving-benchmark summaries, and added focused replay/output coverage for promotion-aware lifecycle identity |
 | 2026-04-05 | Phase 29 Task 1 promoted-family runtime resolution | Added promoted-default checkpoint-family resolution for new execution, recorded lifecycle selection metadata on serving identity, updated manual and campaign launch paths to reuse that resolver, and locked the first promotion-aware workflow regressions in checkpoint, launch, and generate tests |
@@ -379,6 +382,15 @@
 
 ### 2026-04-05
 
+- 20:55 EDT — Started Phase 30 Task 3 by closing the operator loop in the docs: candidate registration, lifecycle benchmarking, promote-or-keep decisions, rollback to baseline, and retirement of superseded checkpoints.
+- This pass is anchored to the committed `al_cu_fe_llm_adapted.yaml`, `al_cu_fe_llm_adapted_candidate.yaml`, and `al_cu_fe_checkpoint_lifecycle_benchmark.yaml` examples so the runbook and developer docs describe the exact files operators can start from.
+- Shared CLI coverage is being extended at the help/discoverability layer so the registration, list, promote, retire, and benchmark commands remain visible together as one lifecycle workflow.
+- 20:44 EDT — Started Phase 30 Task 2 by committing the candidate-pinned config and the three-way lifecycle benchmark spec, then wiring an offline proof around staged promoted and candidate checkpoints in the same family.
+- The new proof keeps the benchmark workflow grounded in one acceptance-pack context and verifies that lifecycle recommendation lines stay tied to structured benchmark roles rather than manual file editing.
+- After this benchmark proof lands, the last Phase 30 slice is the operator docs and CLI/help surface for promotion, rollback, and retirement procedure.
+- 20:41 EDT — Started Phase 30 Task 1 by adding explicit lifecycle benchmark roles so promotion guidance can come from structured benchmark intent instead of target-name heuristics.
+- The serving-benchmark contract now distinguishes baseline, promoted-default, and candidate-checkpoint targets directly, which makes summary recommendations auditable and keeps rollback guidance attached to the shared benchmark output.
+- Focused benchmark schema and core coverage is being extended before the committed lifecycle benchmark spec and real-mode proof land.
 - 20:34 EDT — Started Phase 29 Task 3 by turning the committed adapted Al-Cu-Fe config into a promoted-family default and adding a pinned companion config for deliberate operator overrides.
 - The final Phase 29 proof uses a real promotion artifact before the offline benchmark run, keeps the baseline local config visible as rollback, and updates the docs to explain promoted-default, explicit-pin, and replay-safe lifecycle behavior together.
 - The real-mode and shared CLI/docs verification slices are next once the committed configs and docs land.

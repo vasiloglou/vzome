@@ -1,3 +1,10 @@
+---
+one-liner: Closed the checkpoint lifecycle contract with committed specs, replay-safe retirement proof, and operator docs that keep the workflow boundary honest.
+requirements-completed:
+  - LLM-23
+  - OPS-13
+---
+
 # Phase 28 Plan 03 Summary
 
 Closed the lifecycle contract with committed example specs, replay-safe

@@ -751,6 +751,66 @@ Rollback path:
   `baseline_local_generation`, so operators can compare before making that
   switch permanent.
 
+Phase 30 extends the same operator loop to candidate promotion practice:
+
+1. Register the currently promoted member, then copy
+   `configs/llm/al_cu_fe_zomic_adapted_checkpoint.yaml` to an operator-local
+   candidate spec and update its `checkpoint_id`, `model_revision`,
+   `local_model_path`, and lineage artifact paths before registering that
+   candidate as well.
+2. Inspect the current family revision before writing a promotion or
+   retirement action:
+
+```bash
+uv run mdisc llm-list-checkpoints --checkpoint-family adapted-al-cu-fe
+```
+
+3. Use the committed three-way lifecycle benchmark spec for a shared-context
+   promote-or-keep decision:
+
+```bash
+uv run mdisc llm-serving-benchmark --spec configs/llm/al_cu_fe_checkpoint_lifecycle_benchmark.yaml --smoke-only
+uv run mdisc llm-serving-benchmark --spec configs/llm/al_cu_fe_checkpoint_lifecycle_benchmark.yaml
+```
+
+4. Read the benchmark summary lines as follows:
+   `promoted_checkpoint_generation` is the current promoted default from
+   `configs/systems/al_cu_fe_llm_adapted.yaml`;
+   `candidate_checkpoint_generation` is the explicit family pin from
+   `configs/systems/al_cu_fe_llm_adapted_candidate.yaml`;
+   `baseline_local_generation` is the rollback baseline from
+   `configs/systems/al_cu_fe_llm_local.yaml`.
+5. If the candidate wins, update
+   `configs/llm/al_cu_fe_checkpoint_promotion.yaml` with the candidate
+   `checkpoint_id`, fresh benchmark evidence paths, and the current
+   `expected_revision`, then promote it:
+
+```bash
+uv run mdisc llm-promote-checkpoint --spec configs/llm/al_cu_fe_checkpoint_promotion.yaml
+```
+
+6. If the candidate does not win, keep the current promoted default and leave
+   the family unchanged. If the family as a whole underperforms, run the local
+   rollback lane directly with `configs/systems/al_cu_fe_llm_local.yaml`.
+7. After the replacement has baked long enough for replay and audit comfort,
+   retire the superseded family member by updating
+   `configs/llm/al_cu_fe_checkpoint_retirement.yaml` with the current family
+   revision and running:
+
+```bash
+uv run mdisc llm-retire-checkpoint --spec configs/llm/al_cu_fe_checkpoint_retirement.yaml
+```
+
+Notes for operators:
+
+- Promotion and retirement are revision-guarded; if either command returns a
+  stale-write error, rerun `llm-list-checkpoints`, update `expected_revision`,
+  and retry with the new family state in hand.
+- Rollback inside the family is done by promoting a different known-good
+  checkpoint, not by a separate demote command.
+- Historical launches and replays remain pinned to the checkpoint they
+  originally used, even after later promotions or retirements.
+
 ## 10. Serving Lane Benchmark Workflow
 
 Phase 21 adds a dedicated operator benchmark command for comparing hosted,

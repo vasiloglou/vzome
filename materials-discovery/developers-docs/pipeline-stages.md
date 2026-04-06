@@ -1047,8 +1047,8 @@ mdisc llm-register-checkpoint --spec PATH
 
 ## 17. `mdisc llm-serving-benchmark`
 
-Smoke-test and compare hosted, local, and specialized serving targets under one
-shared benchmark context.
+Smoke-test and compare hosted, local, specialized, or checkpoint-lifecycle
+serving targets under one shared benchmark context.
 
 ### CLI syntax
 
@@ -1081,8 +1081,12 @@ mdisc llm-serving-benchmark --spec PATH [--smoke-only] [--out PATH]
    a. `campaign_launch` targets reuse the shipped launch/generate/compare flow.
    b. `llm_evaluate` targets reuse `mdisc llm-evaluate` core behavior with an acceptance-pack-aligned batch such as `top1`.
 5. **Keep role-specific metrics honest.** Launch targets and evaluation targets only report the quality metrics they actually observed; missing role-specific metrics remain explicit.
-6. **Write benchmark artifacts.** Persist smoke checks and the final benchmark summary under `data/benchmarks/llm_serving/{benchmark_id}/...`.
-7. **Emit operator guidance.** Print concise recommendation lines plus the final benchmark summary path.
+6. **Emit role-aware lifecycle guidance when requested.** If `campaign_launch`
+   targets declare `checkpoint_benchmark_role`, the summary can recommend
+   whether to promote a candidate checkpoint, keep the current promoted
+   default, and which target remains the rollback baseline.
+7. **Write benchmark artifacts.** Persist smoke checks and the final benchmark summary under `data/benchmarks/llm_serving/{benchmark_id}/...`.
+8. **Emit operator guidance.** Print concise recommendation lines plus the final benchmark summary path.
 
 ### Artifacts
 
@@ -1100,6 +1104,9 @@ paths.
 
 - Every target in the benchmark spec must match the shared acceptance-pack system.
 - Evaluation targets must keep their `batch` aligned with that same context.
+- `checkpoint_benchmark_role` is reserved for `campaign_launch` targets; it is
+  how checkpoint lifecycle benchmarks declare baseline, promoted-default, and
+  candidate roles explicitly.
 - Smoke failure stops the benchmark unless the target explicitly allows fallback.
 - No silent fallback is allowed during benchmark comparison.
 

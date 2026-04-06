@@ -1,3 +1,10 @@
+---
+one-liner: Closed the promotion-aware workflow with committed configs, replay-safe history, and docs for promoted defaults, explicit pins, and rollback.
+requirements-completed:
+  - LLM-24
+  - LLM-26
+---
+
 # Phase 29 Plan 03 Summary
 
 Closed the promotion-aware workflow with committed configs, offline proof, and

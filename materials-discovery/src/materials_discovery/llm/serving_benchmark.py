@@ -164,6 +164,27 @@ def _evaluate_quality_metrics(output_path: Path) -> dict[str, float | bool | Non
     }
 
 
+def _tracked_generation_deltas(
+    candidate_metrics: dict[str, float | bool | None],
+    promoted_metrics: dict[str, float | bool | None],
+) -> list[tuple[str, float]]:
+    deltas: list[tuple[str, float]] = []
+    for metric_name in (
+        "parse_success_rate",
+        "compile_success_rate",
+        "generation_success_rate",
+    ):
+        candidate_value = candidate_metrics.get(metric_name)
+        promoted_value = promoted_metrics.get(metric_name)
+        if not isinstance(candidate_value, (int, float)) or not isinstance(
+            promoted_value,
+            (int, float),
+        ):
+            continue
+        deltas.append((metric_name, float(candidate_value) - float(promoted_value)))
+    return deltas
+
+
 def _execute_launch_target(
     spec: LlmServingBenchmarkSpec,
     target: LlmServingBenchmarkTarget,
@@ -405,6 +426,9 @@ def build_serving_benchmark_summary(
     target_results: list[LlmServingBenchmarkTargetResult],
 ) -> LlmServingBenchmarkSummary:
     recommendation_lines: list[str] = []
+    target_roles = {
+        target.target_id: target.checkpoint_benchmark_role for target in spec.targets
+    }
 
     with_latency = [result for result in target_results if result.execution_latency_s is not None]
     if with_latency:
@@ -491,6 +515,60 @@ def build_serving_benchmark_summary(
             )
         recommendation_lines.append(
             f"Rollback baseline remains available: {baseline_target.target_id}"
+        )
+
+    promoted_target = next(
+        (
+            result
+            for result in generation_targets
+            if target_roles.get(result.target_id) == "promoted_default"
+        ),
+        None,
+    )
+    candidate_target = next(
+        (
+            result
+            for result in generation_targets
+            if target_roles.get(result.target_id) == "candidate_checkpoint"
+        ),
+        None,
+    )
+    baseline_role_target = next(
+        (
+            result
+            for result in generation_targets
+            if target_roles.get(result.target_id) == "baseline_local"
+        ),
+        None,
+    )
+    if promoted_target is not None and candidate_target is not None:
+        deltas = _tracked_generation_deltas(
+            candidate_target.quality_metrics,
+            promoted_target.quality_metrics,
+        )
+        positive_deltas = [
+            f"{metric_name} {delta:+.2f}"
+            for metric_name, delta in deltas
+            if delta > 0
+        ]
+        candidate_dominates = bool(deltas) and all(delta >= 0 for _, delta in deltas) and bool(
+            positive_deltas
+        )
+        if candidate_dominates:
+            recommendation_lines.append(
+                "Promotion benchmark recommendation: "
+                f"promote {candidate_target.target_id} over {promoted_target.target_id} "
+                f"({', '.join(positive_deltas)})"
+            )
+        else:
+            recommendation_lines.append(
+                "Promotion benchmark recommendation: "
+                f"keep {promoted_target.target_id} as the promoted default; "
+                f"{candidate_target.target_id} did not beat it on the tracked generation metrics."
+            )
+    if baseline_role_target is not None:
+        recommendation_lines.append(
+            f"Lifecycle rollback baseline: {baseline_role_target.target_id}"
         )
 
     for result in generation_targets:

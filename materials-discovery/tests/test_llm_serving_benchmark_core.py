@@ -28,11 +28,13 @@ def _launch_target(
     system_config_path: str | None = None,
     generation_model_lane: str = "general_purpose",
     allow_fallback: bool = False,
+    checkpoint_benchmark_role: str | None = None,
 ) -> LlmServingBenchmarkTarget:
     return LlmServingBenchmarkTarget(
         target_id="hosted_generation",
         label="Hosted generation",
         workflow_role="campaign_launch",
+        checkpoint_benchmark_role=checkpoint_benchmark_role,
         system_config_path=system_config_path or str(_config_path("al_cu_fe_llm_local.yaml")),
         campaign_spec_path="/tmp/campaign_spec.json",
         generation_model_lane=generation_model_lane,
@@ -346,5 +348,91 @@ def test_build_serving_benchmark_summary_reports_adapted_checkpoint_improvement(
     assert any(
         "Checkpoint routing: adapted_checkpoint_generation ran ckpt-al-cu-fe-zomic-adapted, via family_promoted_default, lifecycle r3"
         in line
+        for line in summary.recommendation_lines
+    )
+
+
+def test_build_serving_benchmark_summary_reports_lifecycle_benchmark_recommendation() -> None:
+    spec = LlmServingBenchmarkSpec(
+        benchmark_id="bench_lifecycle_v1",
+        acceptance_pack_path="/tmp/acceptance.json",
+        targets=[
+            _launch_target(
+                checkpoint_benchmark_role="baseline_local",
+            ).model_copy(
+                update={
+                    "target_id": "baseline_local_generation",
+                    "label": "Baseline local generation",
+                }
+            ),
+            _launch_target(
+                checkpoint_benchmark_role="promoted_default",
+            ).model_copy(
+                update={
+                    "target_id": "promoted_checkpoint_generation",
+                    "label": "Promoted checkpoint generation",
+                }
+            ),
+            _launch_target(
+                checkpoint_benchmark_role="candidate_checkpoint",
+            ).model_copy(
+                update={
+                    "target_id": "candidate_checkpoint_generation",
+                    "label": "Candidate checkpoint generation",
+                }
+            ),
+        ],
+    )
+    target_results = [
+        LlmServingBenchmarkTargetResult(
+            target_id="baseline_local_generation",
+            label="Baseline local generation",
+            workflow_role="campaign_launch",
+            estimated_cost_usd=0.03,
+            operator_friction_tier="medium",
+            smoke_checks=[],
+            quality_metrics={
+                "parse_success_rate": 0.4,
+                "compile_success_rate": 0.3,
+                "generation_success_rate": 0.2,
+            },
+        ),
+        LlmServingBenchmarkTargetResult(
+            target_id="promoted_checkpoint_generation",
+            label="Promoted checkpoint generation",
+            workflow_role="campaign_launch",
+            estimated_cost_usd=0.04,
+            operator_friction_tier="medium",
+            smoke_checks=[],
+            quality_metrics={
+                "parse_success_rate": 0.6,
+                "compile_success_rate": 0.5,
+                "generation_success_rate": 0.4,
+            },
+        ),
+        LlmServingBenchmarkTargetResult(
+            target_id="candidate_checkpoint_generation",
+            label="Candidate checkpoint generation",
+            workflow_role="campaign_launch",
+            estimated_cost_usd=0.04,
+            operator_friction_tier="medium",
+            smoke_checks=[],
+            quality_metrics={
+                "parse_success_rate": 0.8,
+                "compile_success_rate": 0.6,
+                "generation_success_rate": 0.5,
+            },
+        ),
+    ]
+
+    summary = build_serving_benchmark_summary(spec, target_results)
+
+    assert any(
+        "Promotion benchmark recommendation: promote candidate_checkpoint_generation over promoted_checkpoint_generation"
+        in line
+        for line in summary.recommendation_lines
+    )
+    assert any(
+        "Lifecycle rollback baseline: baseline_local_generation" in line
         for line in summary.recommendation_lines
     )

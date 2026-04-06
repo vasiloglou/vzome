@@ -126,6 +126,23 @@ def test_llm_register_checkpoint_cli_writes_registration(monkeypatch, tmp_path: 
     assert '"checkpoint_id":"ckpt-al-cu-fe-zomic-adapted"' in result.stdout
 
 
+def test_checkpoint_lifecycle_commands_expose_help_surface() -> None:
+    runner = CliRunner()
+
+    command_expectations = {
+        "llm-register-checkpoint": "--spec",
+        "llm-list-checkpoints": "--checkpoint-family",
+        "llm-promote-checkpoint": "--spec",
+        "llm-retire-checkpoint": "--spec",
+    }
+
+    for command, expected_flag in command_expectations.items():
+        result = runner.invoke(app, [command, "--help"])
+
+        assert result.exit_code == 0
+        assert expected_flag in result.stdout
+
+
 def test_llm_register_checkpoint_cli_family_registration_is_visible_in_list(
     monkeypatch,
     tmp_path: Path,

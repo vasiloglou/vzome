@@ -159,7 +159,7 @@ llm_generate:
 shows the explicit-pin variant for operators who want to hold one member
 deliberately.
 
-### Checkpoint family lifecycle and runtime selection (Phases 28-29)
+### Checkpoint family lifecycle and runtime selection (Phases 28-30)
 
 Phase 28 adds a second layer on top of immutable checkpoint registration:
 
@@ -221,6 +221,25 @@ Phase 29 closes the runtime loop:
   drift
 - `configs/systems/al_cu_fe_llm_local.yaml` remains the rollback baseline lane
   when the adapted family underperforms
+
+Phase 30 adds the committed promotion-benchmark pattern on top of that runtime
+selection:
+
+- `configs/systems/al_cu_fe_llm_adapted_candidate.yaml` is the explicit family
+  pin for a benchmark candidate that should not become the default yet
+- `configs/llm/al_cu_fe_checkpoint_lifecycle_benchmark.yaml` compares three
+  generation targets in one shared acceptance-pack context:
+  `baseline_local_generation`, `promoted_checkpoint_generation`, and
+  `candidate_checkpoint_generation`
+- `checkpoint_benchmark_role` is only valid on `campaign_launch` targets and
+  marks which target is the rollback baseline, the current promoted default,
+  and the candidate checkpoint
+- benchmark summaries can then emit explicit promote-or-keep guidance plus a
+  stable `Lifecycle rollback baseline:` line without relying on target-name
+  heuristics
+- the committed promotion and retirement specs remain editable operator
+  templates: update their `checkpoint_id`, `expected_revision`, and
+  `evidence_paths` from the latest family state before running the action
 
 `llm-evaluate` now uses the same lane family additively:
 

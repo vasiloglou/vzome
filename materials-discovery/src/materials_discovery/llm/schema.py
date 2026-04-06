@@ -58,6 +58,11 @@ CampaignOverallStatus = Literal["ready", "needs_improvement"]
 CampaignLaunchStatus = Literal["running", "succeeded", "failed"]
 CheckpointAdaptationMethod = Literal["lora", "qlora", "merge", "full_finetune", "manual"]
 CheckpointLifecycleState = Literal["candidate", "promoted", "retired"]
+CheckpointBenchmarkRole = Literal[
+    "baseline_local",
+    "promoted_default",
+    "candidate_checkpoint",
+]
 CheckpointPinSource = Literal["manual", "campaign"]
 CheckpointRetirementReason = Literal["superseded", "invalidated", "operator_request", "obsolete"]
 CheckpointSelectionSource = Literal[
@@ -2148,6 +2153,7 @@ class LlmServingBenchmarkTarget(BaseModel):
     target_id: str
     label: str
     workflow_role: Literal["campaign_launch", "llm_evaluate"]
+    checkpoint_benchmark_role: CheckpointBenchmarkRole | None = None
     system_config_path: str
     campaign_spec_path: str | None = None
     batch: str | None = None
@@ -2183,6 +2189,13 @@ class LlmServingBenchmarkTarget(BaseModel):
         if self.generation_model_lane is None and self.evaluation_model_lane is None:
             raise ValueError(
                 "at least one of generation_model_lane or evaluation_model_lane must be set"
+            )
+        if (
+            self.checkpoint_benchmark_role is not None
+            and self.workflow_role != "campaign_launch"
+        ):
+            raise ValueError(
+                "checkpoint_benchmark_role is only valid for campaign_launch targets"
             )
         return self
 
@@ -2311,6 +2324,13 @@ class LlmServingBenchmarkSpec(BaseModel):
         target_ids = [target.target_id for target in self.targets]
         if len(set(target_ids)) != len(target_ids):
             raise ValueError("serving benchmark spec must use unique target_id values")
+        lifecycle_roles = [
+            target.checkpoint_benchmark_role
+            for target in self.targets
+            if target.checkpoint_benchmark_role is not None
+        ]
+        if len(set(lifecycle_roles)) != len(lifecycle_roles):
+            raise ValueError("checkpoint_benchmark_role values must be unique within one benchmark")
         return self
 
 

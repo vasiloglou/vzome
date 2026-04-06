@@ -9,29 +9,29 @@ reinforce each other instead of living in separate prototypes.
 
 ### Checkpoint Lifecycle
 
-- [ ] **LLM-23**: An operator can manage more than one adapted checkpoint for a
+- [x] **LLM-23**: An operator can manage more than one adapted checkpoint for a
   system with explicit lifecycle state such as candidate, promoted, pinned, or
   retired, without losing the lineage and fingerprint guarantees shipped in
   `v1.3`.
-- [ ] **LLM-24**: `mdisc llm-generate`, approved campaign launches, and replay
+- [x] **LLM-24**: `mdisc llm-generate`, approved campaign launches, and replay
   can resolve the promoted or explicitly pinned adapted checkpoint
   deterministically while preserving the current lane-based workflow.
 
 ### Workflow Integration
 
-- [ ] **LLM-25**: The platform can compare one or more candidate checkpoints
+- [x] **LLM-25**: The platform can compare one or more candidate checkpoints
   against the current promoted checkpoint and the baseline local model on a
   shared benchmark context using the existing compare and benchmark surfaces.
-- [ ] **LLM-26**: Promotion, rollback, and retirement actions remain compatible
+- [x] **LLM-26**: Promotion, rollback, and retirement actions remain compatible
   with `llm-launch`, `llm-replay`, `llm-compare`, and
   `llm-serving-benchmark` instead of requiring a checkpoint-only workflow fork.
 
 ### Operations and Governance
 
-- [ ] **OPS-13**: Every lifecycle action for an adapted checkpoint is
+- [x] **OPS-13**: Every lifecycle action for an adapted checkpoint is
   file-backed, auditable, and fails clearly on stale, conflicting, or
   incompatible lifecycle state.
-- [ ] **OPS-14**: The workflow ships with operator docs for listing
+- [x] **OPS-14**: The workflow ships with operator docs for listing
   checkpoints, promoting one to default use, pinning a specific checkpoint,
   rolling back to a prior checkpoint or the baseline local lane, and retiring
   stale checkpoints safely.
@@ -69,12 +69,12 @@ reinforce each other instead of living in separate prototypes.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LLM-23 | Phase 28 | Pending |
-| OPS-13 | Phase 28 | Pending |
-| LLM-24 | Phase 29 | Pending |
-| LLM-26 | Phase 29 | Pending |
-| LLM-25 | Phase 30 | Pending |
-| OPS-14 | Phase 30 | Pending |
+| LLM-23 | Phase 28 | Complete |
+| OPS-13 | Phase 28 | Complete |
+| LLM-24 | Phase 29 | Complete |
+| LLM-26 | Phase 29 | Complete |
+| LLM-25 | Phase 30 | Complete |
+| OPS-14 | Phase 30 | Complete |
 
 **Coverage:**
 - v1.4 requirements: 6 total
@@ -83,4 +83,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-05*
-*Last updated: 2026-04-05 after starting milestone v1.4*
+*Last updated: 2026-04-05 after completing Phase 30 and verifying milestone v1.4 requirements*
