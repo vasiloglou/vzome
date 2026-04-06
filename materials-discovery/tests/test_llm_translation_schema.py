@@ -11,6 +11,8 @@ from materials_discovery.llm import (
     TranslatedStructureArtifact,
     TranslationFidelityTier,
     TranslationTargetDescriptor,
+    list_translation_targets,
+    resolve_translation_target,
 )
 from materials_discovery.llm.schema import TranslatedStructureDiagnostic
 
@@ -154,3 +156,41 @@ def test_translated_artifact_rejects_missing_source_candidate_linkage() -> None:
                 },
             }
         )
+
+
+def test_builtin_translation_registry_exposes_cif_and_material_string_targets() -> None:
+    targets = list_translation_targets()
+
+    assert {target.family for target in targets} == {"cif", "material_string"}
+    assert {target.target_format for target in targets} == {
+        "cif_text",
+        "crystaltextllm_material_string",
+    }
+
+
+def test_resolve_translation_target_returns_cif_descriptor() -> None:
+    descriptor = resolve_translation_target("cif")
+
+    assert descriptor == TranslationTargetDescriptor(
+        family="cif",
+        target_format="cif_text",
+        requires_periodic_cell=True,
+        requires_fractional_coordinates=True,
+        preserves_qc_native_semantics=False,
+        emission_kind="file",
+        description="Periodic CIF export for downstream crystal-LLM workflows.",
+    )
+
+
+def test_translation_target_descriptors_expose_periodic_and_qc_semantics_expectations() -> None:
+    descriptor = resolve_translation_target("material_string")
+
+    assert descriptor.requires_periodic_cell is True
+    assert descriptor.requires_fractional_coordinates is True
+    assert descriptor.preserves_qc_native_semantics is False
+    assert descriptor.emission_kind == "line_oriented"
+
+
+def test_unknown_translation_target_lookup_fails_clearly() -> None:
+    with pytest.raises(KeyError, match="unknown translation target family: imaginary"):
+        resolve_translation_target("imaginary")

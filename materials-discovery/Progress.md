@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 31 Plan 01 Task 2 RED target-registry tests | Added failing registry coverage for explicit CIF and material-string target discovery, stable target resolution, periodic-cell requirement flags, and clear unknown-family failures before implementing the built-in registry |
 | 2026-04-06 | Phase 31 Plan 01 Task 1 translation artifact contract | Added the additive translated-structure schema models, a separate export-facing fidelity tier with `lossy`, typed source linkage and diagnostics, public imports for the new contract, and green schema coverage including missing-source-linkage rejection |
 | 2026-04-06 | Phase 31 Plan 01 Task 1 RED translation schema tests | Added failing schema coverage for translated-structure source linkage, export fidelity separation, lossy-reason validation, and diagnostic-only artifacts before implementing the additive translation contract |
 | 2026-04-05 | Phase 30 Task 3 lifecycle operator docs and help coverage | Documented the candidate benchmark, promotion, rollback, and retirement workflow with the committed lifecycle configs/specs, clarified serving-benchmark role semantics in the developer docs, and expanded CLI help coverage for the lifecycle command surface |
@@ -247,6 +248,8 @@
 - The RED slice locks source candidate linkage, the separate `lossy` export-fidelity tier, explicit lossy-reason validation, and diagnostic-carrying artifacts that do not require emitted CIF/material-string text yet.
 - 19:39 EDT — Implemented the additive translation contract in `llm/schema.py` with typed source references, target descriptors, normalized artifact payload fields, standardized loss-reason names, and typed diagnostics.
 - Exported the Task 1 public surface from `materials_discovery.llm`, kept the older corpus `FidelityTier` unchanged, and verified the focused translation-schema slice at `6 passed`.
+- 19:44 EDT — Added the Task 2 RED registry tests to the same translation-schema slice so Phase 32 will inherit explicit target discovery and resolution APIs instead of guessing target-family names.
+- The new failing cases lock built-in CIF and material-string descriptors, periodic-cell requirement metadata, and a clear error path for unknown target families.
   - `write_comparison()`: writes JSON to `data/comparisons/` with slugified filename (D-06).
   - `format_comparison_table()`: produces dual-format terminal table with header, gate section, and metric section (D-06).
   - Graceful fallback: if report file missing, warns and falls back to report_metrics embedded in benchmark pack (no crash).
