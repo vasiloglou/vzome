@@ -932,6 +932,8 @@ Phase 12 replay is intentionally strict:
 - the recorded launch bundle is the authority
 - the current config hash is recorded for auditability
 - there are no behavioral override flags
+- family-based launches keep replaying the recorded checkpoint identity even if
+  that checkpoint family later promotes a different member
 - missing or inconsistent launch-bundle files are surfaced as operator-facing failures
 
 ---

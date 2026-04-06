@@ -4,6 +4,9 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-05 | Phase 29 Task 3 promoted-default config and workflow proof | Switched the committed adapted Al-Cu-Fe lane to promoted-family default resolution, added an explicit pinned companion config, documented replay-safe promotion semantics and rollback guidance, and extended the real-mode proof to exercise the promoted-default benchmark path |
+| 2026-04-05 | Phase 29 Task 2 replay-safe promotion drift handling | Kept replay pinned to the recorded family checkpoint after later promotions change, surfaced checkpoint selection metadata in compare and serving-benchmark summaries, and added focused replay/output coverage for promotion-aware lifecycle identity |
+| 2026-04-05 | Phase 29 Task 1 promoted-family runtime resolution | Added promoted-default checkpoint-family resolution for new execution, recorded lifecycle selection metadata on serving identity, updated manual and campaign launch paths to reuse that resolver, and locked the first promotion-aware workflow regressions in checkpoint, launch, and generate tests |
 | 2026-04-05 | Phase 28 Task 6 lifecycle contract docs and phase boundary | Documented `checkpoint_family`, hybrid lifecycle state, lifecycle CLI JSON/action semantics, replay-safe retirement, demotion-by-promotion, and the explicit Phase 29 boundary for promoted-default execution plus workflow-integrated RUNBOOK guidance |
 | 2026-04-05 | Phase 28 Task 5 lifecycle example specs and replay-proof retirement | Added committed promotion/retirement action examples, proved retired checkpoints remain replay-safe by fingerprint, and kept the lifecycle CLI fixtures operational with placeholder evidence paths |
 | 2026-04-05 | Phase 28 Task 4 checkpoint lifecycle CLI surface | Added `llm-list-checkpoints`, `llm-promote-checkpoint`, and `llm-retire-checkpoint` with structured JSON, clear stale-write remediation, and repo-level CLI coverage for lifecycle command discovery |
@@ -376,6 +379,15 @@
 
 ### 2026-04-05
 
+- 20:34 EDT — Started Phase 29 Task 3 by turning the committed adapted Al-Cu-Fe config into a promoted-family default and adding a pinned companion config for deliberate operator overrides.
+- The final Phase 29 proof uses a real promotion artifact before the offline benchmark run, keeps the baseline local config visible as rollback, and updates the docs to explain promoted-default, explicit-pin, and replay-safe lifecycle behavior together.
+- The real-mode and shared CLI/docs verification slices are next once the committed configs and docs land.
+- 20:29 EDT — Started Phase 29 Task 2 by making replay hold on to the recorded family checkpoint identity even after later promotions move the family's default member.
+- The replay path now reuses the recorded checkpoint selector for family-based launches, allows retired historical members during replay-only resolution, and keeps compare plus serving-benchmark output explicit about promoted-default versus explicit-pin execution.
+- Focused coverage is being added in `test_llm_replay_core.py`, `test_llm_compare_core.py`, and `test_llm_serving_benchmark_core.py` before the committed config/docs proof in the final Phase 29 wave.
+- 20:19 EDT — Started Phase 29 Task 1 by wiring promoted-family runtime resolution into the shared serving identity path.
+- Family-only lanes now resolve promoted members for new execution, explicit family pins remain deliberate, retired members are rejected for fresh runs, and serving identity records lifecycle selection metadata for later replay and workflow auditing.
+- Focused regressions are being added across `test_llm_checkpoint_registry.py`, `test_llm_launch_core.py`, and `test_llm_generate_cli.py` to lock the first promotion-aware workflow slice before Phase 29 replay work begins.
 - 19:56 EDT — Implemented Phase 28 Plan 03 Task 2 by documenting the new checkpoint family selector, the hybrid registration-plus-lifecycle model, and the CLI action surface while keeping promoted-default execution and workflow pin resolution clearly deferred to Phase 29.
 - The docs pass stays additive on purpose: it explains lifecycle state on top of the shipped v1.3 workflow, calls out placeholder evidence paths in the committed examples, and avoids implying that Phase 28 already rewired the runbook-driven operator flow.
 - 19:51 EDT — Implemented Phase 28 Plan 03 Task 1 by adding committed promotion and retirement specs for the `adapted-al-cu-fe` family and extending replay compatibility coverage so retired checkpoints stay auditable by registration fingerprint.

@@ -489,6 +489,29 @@ def build_serving_benchmark_summary(
                 f"{adapted_target.target_id} did not beat {baseline_target.target_id} "
                 "on the tracked generation metrics."
             )
+        recommendation_lines.append(
+            f"Rollback baseline remains available: {baseline_target.target_id}"
+        )
+
+    for result in generation_targets:
+        serving_identity = next(
+            (
+                smoke.serving_identity
+                for smoke in result.smoke_checks
+                if smoke.serving_identity is not None
+            ),
+            None,
+        )
+        if serving_identity is None or serving_identity.checkpoint_id is None:
+            continue
+        routing_bits = [
+            f"Checkpoint routing: {result.target_id} ran {serving_identity.checkpoint_id}"
+        ]
+        if serving_identity.checkpoint_selection_source is not None:
+            routing_bits.append(f"via {serving_identity.checkpoint_selection_source}")
+        if serving_identity.checkpoint_lifecycle_revision is not None:
+            routing_bits.append(f"lifecycle r{serving_identity.checkpoint_lifecycle_revision}")
+        recommendation_lines.append(", ".join(routing_bits))
 
     return LlmServingBenchmarkSummary(
         benchmark_id=spec.benchmark_id,

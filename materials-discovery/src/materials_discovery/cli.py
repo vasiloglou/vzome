@@ -47,7 +47,6 @@ from materials_discovery.common.schema import (
     HifiValidateSummary,
     IngestSummary,
     LlmEvaluateSummary,
-    LlmModelLaneConfig,
     ReportSummary,
     ScreenSummary,
     SystemConfig,
@@ -114,11 +113,14 @@ from materials_discovery.llm.checkpoints import (
     promote_checkpoint,
     register_llm_checkpoint,
     retire_checkpoint,
-    resolve_checkpoint_lane,
 )
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
-from materials_discovery.llm.launch import resolve_campaign_launch, resolve_serving_lane
+from materials_discovery.llm.launch import (
+    build_serving_identity,
+    resolve_campaign_launch,
+    resolve_serving_lane,
+)
 from materials_discovery.llm.serving_benchmark import execute_serving_benchmark
 from materials_discovery.llm.compare import (
     build_campaign_comparison,
@@ -222,59 +224,6 @@ def _batch_slug(batch: str) -> str:
     return slug or "batch"
 
 
-def _baseline_llm_runtime_tuple(config: SystemConfig) -> tuple[str, str, str, str | None]:
-    if config.backend.mode == "mock":
-        return (
-            config.backend.llm_adapter or "llm_fixture_v1",
-            config.backend.llm_provider or "mock",
-            config.backend.llm_model or "fixture",
-            config.backend.llm_api_base,
-        )
-    return (
-        config.backend.llm_adapter or "anthropic_api_v1",
-        config.backend.llm_provider or "anthropic",
-        config.backend.llm_model or "fixture",
-        config.backend.llm_api_base,
-    )
-
-
-def _build_serving_identity(
-    config: SystemConfig,
-    *,
-    requested_lane: str | None,
-    resolved_lane: str,
-    lane_source: str,
-    lane_config: LlmModelLaneConfig | None,
-) -> LlmServingIdentity:
-    adapter, provider, model, api_base = _baseline_llm_runtime_tuple(config)
-    checkpoint_id = None
-    model_revision = None
-    local_model_path = None
-    checkpoint_lineage = None
-    if lane_config is not None:
-        lane_config, checkpoint_lineage = resolve_checkpoint_lane(lane_config)
-        adapter = lane_config.adapter
-        provider = lane_config.provider
-        model = lane_config.model
-        api_base = lane_config.api_base
-        checkpoint_id = lane_config.checkpoint_id
-        model_revision = lane_config.model_revision
-        local_model_path = lane_config.local_model_path
-    return LlmServingIdentity(
-        requested_model_lane=requested_lane,
-        resolved_model_lane=resolved_lane,
-        resolved_model_lane_source=lane_source,
-        adapter=adapter,
-        provider=provider,
-        model=model,
-        effective_api_base=api_base,
-        checkpoint_id=checkpoint_id,
-        model_revision=model_revision,
-        local_model_path=local_model_path,
-        checkpoint_lineage=checkpoint_lineage,
-    )
-
-
 def _resolve_llm_serving_config(
     config: SystemConfig,
     *,
@@ -285,11 +234,11 @@ def _resolve_llm_serving_config(
         config.llm_generate,
         config.backend,
     )
-    serving_identity = _build_serving_identity(
-        config,
+    serving_identity = build_serving_identity(
         requested_lane=requested_lane,
         resolved_lane=resolved_lane,
         lane_source=lane_source,
+        backend=config.backend,
         lane_config=lane_config,
     )
     resolved_config = config.model_copy(deep=True)

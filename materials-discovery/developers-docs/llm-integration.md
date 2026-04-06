@@ -493,6 +493,27 @@ The Phase 28 boundary is deliberate:
 This keeps Phase 28 honest: lifecycle state is now real, file-backed, and
 operator-usable, but it is not yet a silent runtime default-selection system.
 
+#### Phase 29: Promotion-Aware Workflow Integration
+
+Phase 29 turns the lifecycle contract into the live adapted-lane workflow:
+
+- `configs/systems/al_cu_fe_llm_adapted.yaml` now resolves the promoted member
+  of `adapted-al-cu-fe` at runtime instead of hard-pinning one checkpoint in
+  YAML
+- `configs/systems/al_cu_fe_llm_adapted_pinned.yaml` preserves the deliberate
+  explicit-pin example for operators who want a fixed member inside that same
+  family
+- replay keeps the recorded family checkpoint identity even if the family later
+  promotes a different member or retires the historical one, while still
+  rejecting true model or fingerprint drift
+- compare and serving-benchmark summaries now surface which checkpoint actually
+  ran and whether it came from a promoted default or an explicit pin
+- `configs/systems/al_cu_fe_llm_local.yaml` remains the rollback baseline lane
+
+Phase 29 stays intentionally scoped to workflow integration. Phase 30 is where
+promotion evidence and longer-running operator promotion practice will be
+expanded further.
+
 ### 3.2 Backend Adapter for LLM
 
 Following the existing adapter pattern:

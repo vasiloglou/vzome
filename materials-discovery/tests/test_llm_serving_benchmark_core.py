@@ -306,8 +306,12 @@ def test_build_serving_benchmark_summary_reports_adapted_checkpoint_improvement(
                         provider="openai_compat",
                         model="zomic-adapted-local-v1",
                         checkpoint_id="ckpt-al-cu-fe-zomic-adapted",
+                        checkpoint_selection_source="family_promoted_default",
+                        checkpoint_lifecycle_path="data/llm_checkpoints/families/adapted-al-cu-fe/lifecycle.json",
+                        checkpoint_lifecycle_revision=3,
                         checkpoint_lineage=LlmCheckpointLineage(
                             checkpoint_id="ckpt-al-cu-fe-zomic-adapted",
+                            checkpoint_family="adapted-al-cu-fe",
                             registration_path="data/llm_checkpoints/ckpt-al-cu-fe-zomic-adapted/registration.json",
                             fingerprint="fp-adapted-001",
                             base_model="zomic-general-local-v1",
@@ -333,5 +337,14 @@ def test_build_serving_benchmark_summary_reports_adapted_checkpoint_improvement(
 
     assert any(
         "Adapted checkpoint improvement: adapted_checkpoint_generation vs baseline_local_generation" in line
+        for line in summary.recommendation_lines
+    )
+    assert any(
+        "Rollback baseline remains available: baseline_local_generation" in line
+        for line in summary.recommendation_lines
+    )
+    assert any(
+        "Checkpoint routing: adapted_checkpoint_generation ran ckpt-al-cu-fe-zomic-adapted, via family_promoted_default, lifecycle r3"
+        in line
         for line in summary.recommendation_lines
     )

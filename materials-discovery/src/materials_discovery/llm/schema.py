@@ -60,6 +60,11 @@ CheckpointAdaptationMethod = Literal["lora", "qlora", "merge", "full_finetune", 
 CheckpointLifecycleState = Literal["candidate", "promoted", "retired"]
 CheckpointPinSource = Literal["manual", "campaign"]
 CheckpointRetirementReason = Literal["superseded", "invalidated", "operator_request", "obsolete"]
+CheckpointSelectionSource = Literal[
+    "legacy_checkpoint_id",
+    "family_explicit_pin",
+    "family_promoted_default",
+]
 ResolvedModelLaneSource = Literal[
     "configured_lane",
     "default_lane",
@@ -920,6 +925,9 @@ class LlmServingIdentity(BaseModel):
     model_revision: str | None = None
     local_model_path: str | None = None
     checkpoint_lineage: LlmCheckpointLineage | None = None
+    checkpoint_selection_source: CheckpointSelectionSource | None = None
+    checkpoint_lifecycle_path: str | None = None
+    checkpoint_lifecycle_revision: int | None = None
 
     @field_validator(
         "resolved_model_lane",
@@ -937,6 +945,7 @@ class LlmServingIdentity(BaseModel):
         "checkpoint_id",
         "model_revision",
         "local_model_path",
+        "checkpoint_lifecycle_path",
     )
     @classmethod
     def normalize_optional_strings(cls, value: str | None) -> str | None:
@@ -946,6 +955,49 @@ class LlmServingIdentity(BaseModel):
         if normalized.startswith("http://") or normalized.startswith("https://"):
             return normalized.rstrip("/")
         return normalized
+
+    @field_validator("checkpoint_lifecycle_revision")
+    @classmethod
+    def validate_checkpoint_lifecycle_revision(cls, value: int | None) -> int | None:
+        if value is not None and value < 0:
+            raise ValueError("checkpoint_lifecycle_revision must be >= 0")
+        return value
+
+    @model_validator(mode="after")
+    def validate_checkpoint_selection_contract(self) -> LlmServingIdentity:
+        if self.checkpoint_selection_source is None:
+            if (
+                self.checkpoint_lifecycle_path is not None
+                or self.checkpoint_lifecycle_revision is not None
+            ):
+                raise ValueError(
+                    "checkpoint lifecycle metadata requires checkpoint_selection_source"
+                )
+            return self
+
+        if self.checkpoint_id is None:
+            raise ValueError("checkpoint_selection_source requires checkpoint_id")
+
+        if self.checkpoint_selection_source == "legacy_checkpoint_id":
+            if (
+                self.checkpoint_lifecycle_path is not None
+                or self.checkpoint_lifecycle_revision is not None
+            ):
+                raise ValueError(
+                    "legacy checkpoint selection cannot record lifecycle metadata"
+                )
+            return self
+
+        if self.checkpoint_lineage is None or self.checkpoint_lineage.checkpoint_family is None:
+            raise ValueError(
+                "family checkpoint selection requires checkpoint_lineage with checkpoint_family"
+            )
+        if (
+            self.checkpoint_lifecycle_path is None
+            or self.checkpoint_lifecycle_revision is None
+        ):
+            raise ValueError("family checkpoint selection requires lifecycle path and revision")
+        return self
 
 
 class LlmRunManifest(BaseModel):

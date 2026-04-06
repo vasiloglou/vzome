@@ -488,6 +488,129 @@ def test_resolve_checkpoint_lane_fills_identity_from_registration(tmp_path: Path
     )
 
 
+def test_resolve_checkpoint_lane_uses_promoted_checkpoint_from_family(tmp_path: Path) -> None:
+    _write_required_lineage_files(tmp_path)
+    first_spec = _write_registration_spec(
+        tmp_path,
+        checkpoint_id="ckpt-al-cu-fe-zomic-a",
+        checkpoint_family="adapted-al-cu-fe",
+    )
+    second_spec = _write_registration_spec(
+        tmp_path,
+        checkpoint_id="ckpt-al-cu-fe-zomic-b",
+        checkpoint_family="adapted-al-cu-fe",
+    )
+    register_llm_checkpoint(first_spec, root=tmp_path)
+    register_llm_checkpoint(second_spec, root=tmp_path)
+    promote_checkpoint(
+        _write_promotion_spec(
+            tmp_path,
+            checkpoint_family="adapted-al-cu-fe",
+            checkpoint_id="ckpt-al-cu-fe-zomic-b",
+            expected_revision=2,
+        ),
+        root=tmp_path,
+    )
+
+    lane = LlmModelLaneConfig(
+        adapter="openai_compat_v1",
+        provider="openai_compat",
+        model="zomic-adapted-local-v1",
+        api_base="http://localhost:8000",
+        checkpoint_family="adapted-al-cu-fe",
+        require_checkpoint_registration=True,
+    )
+
+    resolved_lane, checkpoint_lineage = resolve_checkpoint_lane(lane, root=tmp_path)
+
+    assert resolved_lane.checkpoint_id == "ckpt-al-cu-fe-zomic-b"
+    assert resolved_lane.model_revision == "adapted-dev-2026-04-05"
+    assert checkpoint_lineage is not None
+    assert checkpoint_lineage.checkpoint_id == "ckpt-al-cu-fe-zomic-b"
+    assert checkpoint_lineage.checkpoint_family == "adapted-al-cu-fe"
+
+
+def test_resolve_checkpoint_lane_rejects_family_without_promoted_checkpoint(tmp_path: Path) -> None:
+    _write_required_lineage_files(tmp_path)
+    spec_path = _write_registration_spec(
+        tmp_path,
+        checkpoint_family="adapted-al-cu-fe",
+    )
+    register_llm_checkpoint(spec_path, root=tmp_path)
+
+    lane = LlmModelLaneConfig(
+        adapter="openai_compat_v1",
+        provider="openai_compat",
+        model="zomic-adapted-local-v1",
+        api_base="http://localhost:8000",
+        checkpoint_family="adapted-al-cu-fe",
+        require_checkpoint_registration=True,
+    )
+
+    with pytest.raises(ValueError, match="has no promoted checkpoint"):
+        resolve_checkpoint_lane(lane, root=tmp_path)
+
+
+def test_resolve_checkpoint_lane_rejects_retired_family_pin_for_new_execution(
+    tmp_path: Path,
+) -> None:
+    _write_required_lineage_files(tmp_path)
+    first_spec = _write_registration_spec(
+        tmp_path,
+        checkpoint_id="ckpt-al-cu-fe-zomic-a",
+        checkpoint_family="adapted-al-cu-fe",
+    )
+    second_spec = _write_registration_spec(
+        tmp_path,
+        checkpoint_id="ckpt-al-cu-fe-zomic-b",
+        checkpoint_family="adapted-al-cu-fe",
+    )
+    register_llm_checkpoint(first_spec, root=tmp_path)
+    register_llm_checkpoint(second_spec, root=tmp_path)
+    promote_checkpoint(
+        _write_promotion_spec(
+            tmp_path,
+            checkpoint_family="adapted-al-cu-fe",
+            checkpoint_id="ckpt-al-cu-fe-zomic-a",
+            expected_revision=2,
+        ),
+        root=tmp_path,
+    )
+    promote_checkpoint(
+        _write_promotion_spec(
+            tmp_path,
+            checkpoint_family="adapted-al-cu-fe",
+            checkpoint_id="ckpt-al-cu-fe-zomic-b",
+            expected_revision=3,
+            expected_promoted_checkpoint_id="ckpt-al-cu-fe-zomic-a",
+        ),
+        root=tmp_path,
+    )
+    retire_checkpoint(
+        _write_retirement_spec(
+            tmp_path,
+            checkpoint_family="adapted-al-cu-fe",
+            checkpoint_id="ckpt-al-cu-fe-zomic-a",
+            expected_revision=4,
+            expected_promoted_checkpoint_id="ckpt-al-cu-fe-zomic-b",
+        ),
+        root=tmp_path,
+    )
+
+    lane = LlmModelLaneConfig(
+        adapter="openai_compat_v1",
+        provider="openai_compat",
+        model="zomic-adapted-local-v1",
+        api_base="http://localhost:8000",
+        checkpoint_family="adapted-al-cu-fe",
+        checkpoint_id="ckpt-al-cu-fe-zomic-a",
+        require_checkpoint_registration=True,
+    )
+
+    with pytest.raises(ValueError, match="retired and cannot be used for new execution"):
+        resolve_checkpoint_lane(lane, root=tmp_path)
+
+
 def test_resolve_checkpoint_lane_rejects_checkpoint_family_mismatch(tmp_path: Path) -> None:
     _write_required_lineage_files(tmp_path)
     spec_path = _write_registration_spec(
@@ -552,3 +675,59 @@ def test_build_serving_identity_embeds_checkpoint_lineage(tmp_path: Path) -> Non
     assert identity.model_revision == "adapted-dev-2026-04-05"
     assert identity.checkpoint_lineage is not None
     assert identity.checkpoint_lineage.fingerprint
+    assert identity.checkpoint_selection_source == "legacy_checkpoint_id"
+    assert identity.checkpoint_lifecycle_path is None
+    assert identity.checkpoint_lifecycle_revision is None
+
+
+def test_build_serving_identity_records_family_selection_metadata(tmp_path: Path) -> None:
+    _write_required_lineage_files(tmp_path)
+    first_spec = _write_registration_spec(
+        tmp_path,
+        checkpoint_id="ckpt-al-cu-fe-zomic-a",
+        checkpoint_family="adapted-al-cu-fe",
+    )
+    second_spec = _write_registration_spec(
+        tmp_path,
+        checkpoint_id="ckpt-al-cu-fe-zomic-b",
+        checkpoint_family="adapted-al-cu-fe",
+    )
+    register_llm_checkpoint(first_spec, root=tmp_path)
+    register_llm_checkpoint(second_spec, root=tmp_path)
+    promote_checkpoint(
+        _write_promotion_spec(
+            tmp_path,
+            checkpoint_family="adapted-al-cu-fe",
+            checkpoint_id="ckpt-al-cu-fe-zomic-b",
+            expected_revision=2,
+        ),
+        root=tmp_path,
+    )
+
+    lane = LlmModelLaneConfig(
+        adapter="openai_compat_v1",
+        provider="openai_compat",
+        model="zomic-adapted-local-v1",
+        api_base="http://localhost:8000",
+        checkpoint_family="adapted-al-cu-fe",
+        checkpoint_id="ckpt-al-cu-fe-zomic-a",
+        require_checkpoint_registration=True,
+    )
+
+    identity = build_serving_identity(
+        requested_lane="general_purpose",
+        resolved_lane="general_purpose",
+        lane_source="configured_lane",
+        backend=BackendConfig(mode="real"),
+        lane_config=lane,
+        root=tmp_path,
+    )
+
+    assert identity.checkpoint_id == "ckpt-al-cu-fe-zomic-a"
+    assert identity.checkpoint_selection_source == "family_explicit_pin"
+    assert identity.checkpoint_lifecycle_path == (
+        "data/llm_checkpoints/families/adapted-al-cu-fe/lifecycle.json"
+    )
+    assert identity.checkpoint_lifecycle_revision == 3
+    assert identity.checkpoint_lineage is not None
+    assert identity.checkpoint_lineage.checkpoint_family == "adapted-al-cu-fe"

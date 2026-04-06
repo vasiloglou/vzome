@@ -121,6 +121,26 @@ def _format_identity(
     return ", ".join(parts)
 
 
+def _family_recorded_replay_lane(
+    recorded: LlmServingIdentity,
+    lane_config,
+):
+    if (
+        recorded.checkpoint_selection_source not in {"family_explicit_pin", "family_promoted_default"}
+        or recorded.checkpoint_id is None
+        or recorded.checkpoint_lineage is None
+        or recorded.checkpoint_lineage.checkpoint_family is None
+    ):
+        return lane_config
+    return lane_config.model_copy(
+        update={
+            "checkpoint_family": recorded.checkpoint_lineage.checkpoint_family,
+            "checkpoint_id": recorded.checkpoint_id,
+            "require_checkpoint_registration": True,
+        }
+    )
+
+
 def build_replay_serving_identity(
     bundle: CampaignLaunchBundle,
     current_config: SystemConfig,
@@ -180,7 +200,10 @@ def build_replay_serving_identity(
                 f"for recorded {_format_identity(adapter=recorded.adapter, provider=recorded.provider, model=recorded.model, checkpoint_id=recorded.checkpoint_id, checkpoint_fingerprint=(None if recorded.checkpoint_lineage is None else recorded.checkpoint_lineage.fingerprint))}. "
                 "Endpoint, revision, local-path, and registration-path drift are allowed; model, checkpoint, or fingerprint drift is not."
             )
-        lane_config, checkpoint_lineage = resolve_checkpoint_lane(lane_config)
+        lane_config, checkpoint_lineage = resolve_checkpoint_lane(
+            _family_recorded_replay_lane(recorded, lane_config),
+            allow_retired=True,
+        )
         if not _hard_identity_matches(
             recorded,
             adapter=lane_config.adapter,
@@ -220,6 +243,9 @@ def build_replay_serving_identity(
             model_revision=lane_config.model_revision,
             local_model_path=lane_config.local_model_path,
             checkpoint_lineage=checkpoint_lineage,
+            checkpoint_selection_source=recorded.checkpoint_selection_source,
+            checkpoint_lifecycle_path=recorded.checkpoint_lifecycle_path,
+            checkpoint_lifecycle_revision=recorded.checkpoint_lifecycle_revision,
         )
 
     adapter, provider, model, api_base = _current_backend_tuple(current_config)

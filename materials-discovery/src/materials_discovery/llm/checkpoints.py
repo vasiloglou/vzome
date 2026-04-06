@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -16,6 +17,7 @@ from materials_discovery.llm.schema import (
     LlmCheckpointRegistrationSpec,
     LlmCheckpointRegistrationSummary,
     LlmCheckpointRetirementSpec,
+    CheckpointSelectionSource,
 )
 from materials_discovery.llm.storage import (
     llm_checkpoint_lifecycle_index_path,
@@ -150,6 +152,15 @@ def _find_checkpoint_family_member(
         f"checkpoint '{checkpoint_id}' is not registered in checkpoint_family "
         f"'{lifecycle.checkpoint_family}'"
     )
+
+
+@dataclass(frozen=True)
+class ResolvedCheckpointLaneBinding:
+    resolved_lane: LlmModelLaneConfig
+    checkpoint_lineage: LlmCheckpointLineage | None
+    checkpoint_selection_source: CheckpointSelectionSource | None = None
+    checkpoint_lifecycle_path: str | None = None
+    checkpoint_lifecycle_revision: int | None = None
 
 
 def load_checkpoint_lifecycle(
@@ -455,13 +466,99 @@ def retire_checkpoint(
     return updated_lifecycle
 
 
-def resolve_checkpoint_lane(
+def _checkpoint_lineage_from_registration(
+    registration: LlmCheckpointRegistration,
+    registration_path: Path,
+    *,
+    root: Path | None = None,
+) -> LlmCheckpointLineage:
+    return LlmCheckpointLineage(
+        checkpoint_id=registration.checkpoint_id,
+        checkpoint_family=registration.checkpoint_family,
+        registration_path=_path_for_storage(registration_path, root=root),
+        fingerprint=registration.fingerprint,
+        base_model=registration.base_model,
+        base_model_revision=registration.base_model_revision,
+        adaptation_method=registration.adaptation_method,
+        adaptation_artifact_path=registration.adaptation_artifact_path,
+        corpus_manifest_path=registration.corpus_manifest_path,
+        eval_set_manifest_path=registration.eval_set_manifest_path,
+        acceptance_pack_path=registration.acceptance_pack_path,
+    )
+
+
+def _load_registration_for_lane(
     lane_config: LlmModelLaneConfig,
     *,
     root: Path | None = None,
-) -> tuple[LlmModelLaneConfig, LlmCheckpointLineage | None]:
+    allow_retired: bool = False,
+) -> tuple[
+    LlmCheckpointRegistration,
+    Path,
+    CheckpointSelectionSource,
+    str | None,
+    int | None,
+] | None:
+    if lane_config.checkpoint_family is not None:
+        if lane_config.checkpoint_id is None:
+            lifecycle, lifecycle_path = load_checkpoint_lifecycle(
+                lane_config.checkpoint_family,
+                root=root,
+            )
+            lifecycle_path_for_storage = _path_for_storage(lifecycle_path, root=root)
+            lifecycle_revision = lifecycle.revision
+            if lifecycle.promoted_checkpoint_id is None:
+                raise ValueError(
+                    f"checkpoint_family '{lane_config.checkpoint_family}' has no promoted checkpoint for new execution"
+                )
+            target_checkpoint_id = lifecycle.promoted_checkpoint_id
+            target_member = _find_checkpoint_family_member(lifecycle, target_checkpoint_id)
+            if target_member.lifecycle_state == "retired" and not allow_retired:
+                raise ValueError(
+                    f"checkpoint '{target_checkpoint_id}' in checkpoint_family "
+                    f"'{lane_config.checkpoint_family}' is retired and cannot be used for new execution"
+                )
+            registration, registration_path = load_registered_checkpoint(
+                target_checkpoint_id,
+                root=root,
+            )
+            return (
+                registration,
+                registration_path,
+                "family_promoted_default",
+                lifecycle_path_for_storage,
+                lifecycle_revision,
+            )
+
+        registration, registration_path = load_registered_checkpoint(
+            lane_config.checkpoint_id,
+            root=root,
+        )
+        if registration.checkpoint_family != lane_config.checkpoint_family:
+            return registration, registration_path, "family_explicit_pin", None, None
+
+        lifecycle, lifecycle_path = load_checkpoint_lifecycle(
+            lane_config.checkpoint_family,
+            root=root,
+        )
+        lifecycle_path_for_storage = _path_for_storage(lifecycle_path, root=root)
+        lifecycle_revision = lifecycle.revision
+        target_member = _find_checkpoint_family_member(lifecycle, lane_config.checkpoint_id)
+        if target_member.lifecycle_state == "retired" and not allow_retired:
+            raise ValueError(
+                f"checkpoint '{lane_config.checkpoint_id}' in checkpoint_family "
+                f"'{lane_config.checkpoint_family}' is retired and cannot be used for new execution"
+            )
+        return (
+            registration,
+            registration_path,
+            "family_explicit_pin",
+            lifecycle_path_for_storage,
+            lifecycle_revision,
+        )
+
     if lane_config.checkpoint_id is None:
-        return lane_config, None
+        return None
 
     try:
         registration, registration_path = load_registered_checkpoint(
@@ -471,7 +568,14 @@ def resolve_checkpoint_lane(
     except FileNotFoundError:
         if lane_config.require_checkpoint_registration:
             raise
-        return lane_config, None
+        return None
+    return registration, registration_path, "legacy_checkpoint_id", None, None
+
+
+def _validate_lane_registration_match(
+    lane_config: LlmModelLaneConfig,
+    registration: LlmCheckpointRegistration,
+) -> None:
     if (
         lane_config.checkpoint_family is not None
         and registration.checkpoint_family != lane_config.checkpoint_family
@@ -515,23 +619,63 @@ def resolve_checkpoint_lane(
             f"lane uses '{lane_config.local_model_path}' but registration pins '{registration.local_model_path}'"
         )
 
+
+def resolve_checkpoint_lane_binding(
+    lane_config: LlmModelLaneConfig,
+    *,
+    root: Path | None = None,
+    allow_retired: bool = False,
+) -> ResolvedCheckpointLaneBinding:
+    loaded = _load_registration_for_lane(
+        lane_config,
+        root=root,
+        allow_retired=allow_retired,
+    )
+    if loaded is None:
+        return ResolvedCheckpointLaneBinding(
+            resolved_lane=lane_config,
+            checkpoint_lineage=None,
+        )
+
+    (
+        registration,
+        registration_path,
+        checkpoint_selection_source,
+        checkpoint_lifecycle_path,
+        checkpoint_lifecycle_revision,
+    ) = loaded
+    _validate_lane_registration_match(lane_config, registration)
+
     resolved_lane = lane_config.model_copy(
         update={
+            "checkpoint_id": registration.checkpoint_id,
             "model_revision": lane_config.model_revision or registration.model_revision,
             "local_model_path": lane_config.local_model_path or registration.local_model_path,
         }
     )
-    checkpoint_lineage = LlmCheckpointLineage(
-        checkpoint_id=registration.checkpoint_id,
-        checkpoint_family=registration.checkpoint_family,
-        registration_path=_path_for_storage(registration_path, root=root),
-        fingerprint=registration.fingerprint,
-        base_model=registration.base_model,
-        base_model_revision=registration.base_model_revision,
-        adaptation_method=registration.adaptation_method,
-        adaptation_artifact_path=registration.adaptation_artifact_path,
-        corpus_manifest_path=registration.corpus_manifest_path,
-        eval_set_manifest_path=registration.eval_set_manifest_path,
-        acceptance_pack_path=registration.acceptance_pack_path,
+    checkpoint_lineage = _checkpoint_lineage_from_registration(
+        registration,
+        registration_path,
+        root=root,
     )
-    return resolved_lane, checkpoint_lineage
+    return ResolvedCheckpointLaneBinding(
+        resolved_lane=resolved_lane,
+        checkpoint_lineage=checkpoint_lineage,
+        checkpoint_selection_source=checkpoint_selection_source,
+        checkpoint_lifecycle_path=checkpoint_lifecycle_path,
+        checkpoint_lifecycle_revision=checkpoint_lifecycle_revision,
+    )
+
+
+def resolve_checkpoint_lane(
+    lane_config: LlmModelLaneConfig,
+    *,
+    root: Path | None = None,
+    allow_retired: bool = False,
+) -> tuple[LlmModelLaneConfig, LlmCheckpointLineage | None]:
+    binding = resolve_checkpoint_lane_binding(
+        lane_config,
+        root=root,
+        allow_retired=allow_retired,
+    )
+    return binding.resolved_lane, binding.checkpoint_lineage

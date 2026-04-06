@@ -41,6 +41,7 @@ llm_generate:
       model: zomic-al-cu-fe-adapted-v1
       api_base: http://localhost:8000
       checkpoint_family: adapted-al-cu-fe
+      checkpoint_id: ckpt-al-cu-fe-zomic-adapted
       require_checkpoint_registration: true
     specialized_materials:
       adapter: openai_compat_v1

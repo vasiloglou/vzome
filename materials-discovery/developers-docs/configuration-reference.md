@@ -151,11 +151,15 @@ llm_generate:
       model: zomic-al-cu-fe-adapted-v1
       api_base: http://localhost:8000
       checkpoint_family: adapted-al-cu-fe
-      checkpoint_id: ckpt-al-cu-fe-zomic-adapted
       require_checkpoint_registration: true
 ```
 
-### Checkpoint family lifecycle (Phase 28)
+`configs/systems/al_cu_fe_llm_adapted.yaml` now uses the promoted default for
+`adapted-al-cu-fe`, while `configs/systems/al_cu_fe_llm_adapted_pinned.yaml`
+shows the explicit-pin variant for operators who want to hold one member
+deliberately.
+
+### Checkpoint family lifecycle and runtime selection (Phases 28-29)
 
 Phase 28 adds a second layer on top of immutable checkpoint registration:
 
@@ -203,19 +207,20 @@ Retirement semantics are strict:
 - demotion happens by promoting a different checkpoint; there is no separate
   `llm-demote-checkpoint` command in Phase 28
 
-The committed example promotion and retirement specs under `configs/llm/` use
-illustrative repo-relative placeholder evidence paths on purpose. They show the
-contract shape and CLI workflow, but future phases must replace those
-placeholders with real benchmark or evaluation artifacts before claiming a
-production promotion decision.
+Phase 29 closes the runtime loop:
 
-Important Phase 28 boundary:
-
-- `checkpoint_family` is a contract and CLI-management surface in this phase
-- `llm-generate`, `llm-launch`, and `llm-replay` do not yet resolve promoted
-  defaults from family state alone
-- workflow-integrated RUNBOOK guidance for promotion/demotion stays deferred to
-  Phase 29
+- a lane with `checkpoint_family` and no `checkpoint_id` resolves the currently
+  promoted family member for new execution
+- a lane with both `checkpoint_family` and `checkpoint_id` is an explicit pin
+  inside that family
+- serving identity records whether a run came from a promoted default, an
+  explicit family pin, or a legacy checkpoint-only lane, plus the lifecycle
+  path and revision when family state was involved
+- replay keeps using the recorded checkpoint identity even if the family later
+  promotes a different member, while still rejecting true model or fingerprint
+  drift
+- `configs/systems/al_cu_fe_llm_local.yaml` remains the rollback baseline lane
+  when the adapted family underperforms
 
 `llm-evaluate` now uses the same lane family additively:
 

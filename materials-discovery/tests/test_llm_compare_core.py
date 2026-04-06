@@ -36,6 +36,7 @@ def _write_launch_bundle(
     *,
     launch_id: str = "launch-001",
     created_at_utc: str = "2026-04-04T18:00:00Z",
+    serving_identity: dict[str, object] | None = None,
 ) -> Path:
     config, config_path = _system_config()
     config_hash = config_sha256(config)
@@ -236,6 +237,7 @@ def _write_launch_bundle(
             "resolved_adapter": "llm_fixture_v1",
             "resolved_provider": "mock",
             "resolved_model": "fixture-al-cu-fe-v1",
+            "serving_identity": serving_identity,
             "prompt_instruction_deltas": ["Prefer parser-safe symmetry annotations."],
             "resolved_composition_bounds": {
                 species: bound.model_dump(mode="json")
@@ -264,6 +266,7 @@ def _write_launch_bundle(
             "requested_model_lanes": ["general_purpose"],
             "resolved_model_lane": "general_purpose",
             "resolved_model_lane_source": "configured_lane",
+            "serving_identity": serving_identity,
             "resolved_launch_path": str(resolved_launch_path),
             "run_manifest_path": str(run_manifest_path),
             "llm_generate_manifest_path": str(
@@ -517,3 +520,49 @@ def test_build_campaign_comparison_uses_acceptance_and_prior_snapshot(tmp_path: 
     assert comparison.delta_vs_prior["parse_success_rate"] == 0.0
     assert any("Prior launch baseline: launch-001" in line for line in comparison.summary_lines)
     assert comparison.system == "Al-Cu-Fe"
+
+
+def test_build_campaign_comparison_summary_surfaces_generation_selection_metadata(
+    tmp_path: Path,
+) -> None:
+    launch_summary_path = _write_launch_bundle(
+        tmp_path,
+        serving_identity={
+            "requested_model_lane": "general_purpose",
+            "resolved_model_lane": "general_purpose",
+            "resolved_model_lane_source": "configured_lane",
+            "adapter": "openai_compat_v1",
+            "provider": "openai_compat",
+            "model": "zomic-al-cu-fe-adapted-v1",
+            "effective_api_base": "http://localhost:8000",
+            "checkpoint_id": "ckpt-al-cu-fe-zomic-a",
+            "checkpoint_selection_source": "family_promoted_default",
+            "checkpoint_lifecycle_path": "data/llm_checkpoints/families/adapted-al-cu-fe/lifecycle.json",
+            "checkpoint_lifecycle_revision": 3,
+            "checkpoint_lineage": {
+                "checkpoint_id": "ckpt-al-cu-fe-zomic-a",
+                "checkpoint_family": "adapted-al-cu-fe",
+                "registration_path": "data/llm_checkpoints/ckpt-al-cu-fe-zomic-a/registration.json",
+                "fingerprint": "fp-adapted-001",
+                "base_model": "zomic-general-local-v1",
+                "adaptation_method": "lora",
+                "adaptation_artifact_path": "lineage/adapter_manifest.json",
+                "corpus_manifest_path": "lineage/corpus_manifest.json",
+                "eval_set_manifest_path": "lineage/eval_manifest.json",
+            },
+        },
+    )
+    _write_stage_artifacts(tmp_path, launch_id="launch-001", launch_summary_path=launch_summary_path)
+    bundle = load_campaign_launch_bundle(launch_summary_path, root=tmp_path)
+
+    comparison = build_campaign_comparison(
+        bundle,
+        current_outcome=build_campaign_outcome_snapshot(bundle, root=tmp_path),
+        root=tmp_path,
+    )
+
+    assert any(
+        "Generation serving identity: zomic-al-cu-fe-adapted-v1, checkpoint ckpt-al-cu-fe-zomic-a, via family_promoted_default, lifecycle r3"
+        in line
+        for line in comparison.summary_lines
+    )

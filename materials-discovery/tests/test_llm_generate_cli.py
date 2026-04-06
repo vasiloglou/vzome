@@ -13,7 +13,7 @@ from materials_discovery.common.schema import (
     LlmGenerateSummary,
     SiteRecord,
 )
-from materials_discovery.llm.checkpoints import register_llm_checkpoint
+from materials_discovery.llm.checkpoints import promote_checkpoint, register_llm_checkpoint
 from materials_discovery.llm.schema import LlmServingIdentity
 
 
@@ -262,6 +262,7 @@ def test_cli_llm_generate_uses_registered_checkpoint_lineage_for_adapted_lane(
         yaml.safe_dump(
             {
                 "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                "checkpoint_family": "adapted-al-cu-fe",
                 "system": "Al-Cu-Fe",
                 "template_family": "icosahedral_approximant_1_1",
                 "adapter": "openai_compat_v1",
@@ -282,6 +283,23 @@ def test_cli_llm_generate_uses_registered_checkpoint_lineage_for_adapted_lane(
         encoding="utf-8",
     )
     register_llm_checkpoint(checkpoint_spec, root=tmp_path)
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    (reports_dir / "serving_benchmark.json").write_text("{}", encoding="utf-8")
+    promotion_spec = tmp_path / "checkpoint-promotion.yaml"
+    promotion_spec.write_text(
+        yaml.safe_dump(
+            {
+                "checkpoint_family": "adapted-al-cu-fe",
+                "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                "evidence_paths": ["reports/serving_benchmark.json"],
+                "expected_revision": 1,
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    promote_checkpoint(promotion_spec, root=tmp_path)
 
     config_path = tmp_path / "al_cu_fe_llm_adapted.yaml"
     config_path.write_text(
@@ -317,7 +335,7 @@ def test_cli_llm_generate_uses_registered_checkpoint_lineage_for_adapted_lane(
                             "provider": "openai_compat",
                             "model": "zomic-adapted-local-v1",
                             "api_base": "http://localhost:8000",
-                            "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                            "checkpoint_family": "adapted-al-cu-fe",
                             "require_checkpoint_registration": True,
                         }
                     },
@@ -349,7 +367,13 @@ def test_cli_llm_generate_uses_registered_checkpoint_lineage_for_adapted_lane(
         assert serving_identity.model_revision == "adapted-dev-2026-04-05"
         assert serving_identity.local_model_path == "/opt/models/zomic-adapted-local-v1"
         assert serving_identity.checkpoint_lineage is not None
+        assert serving_identity.checkpoint_lineage.checkpoint_family == "adapted-al-cu-fe"
         assert serving_identity.checkpoint_lineage.base_model == "zomic-general-local-v1"
+        assert serving_identity.checkpoint_selection_source == "family_promoted_default"
+        assert serving_identity.checkpoint_lifecycle_path == (
+            "data/llm_checkpoints/families/adapted-al-cu-fe/lifecycle.json"
+        )
+        assert serving_identity.checkpoint_lifecycle_revision == 2
         write_jsonl([_candidate().model_dump(mode="json")], output_path)
         return LlmGenerateSummary(
             requested_count=1,

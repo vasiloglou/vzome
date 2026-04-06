@@ -707,11 +707,15 @@ uv run mdisc llm-generate --config configs/systems/al_cu_fe_llm_adapted.yaml --m
 What the adapted config changes:
 
 - `configs/systems/al_cu_fe_llm_adapted.yaml` points `general_purpose` at the
-  adapted model name and requires file-backed checkpoint registration.
+  adapted model family and resolves whichever checkpoint is currently promoted
+  inside `adapted-al-cu-fe`.
+- `configs/systems/al_cu_fe_llm_adapted_pinned.yaml` shows the explicit-pin
+  version when an operator wants to hold one member of that family deliberately.
 - The lane intentionally omits `model_revision` and `local_model_path` in YAML,
   so registration becomes the source of truth for those fields.
 - Replay treats model and checkpoint fingerprint as hard identity. Endpoint or
-  local-path drift is tolerated only when the checkpoint identity still matches.
+  local-path drift is tolerated only when the recorded checkpoint identity still
+  matches, even if the family later promotes a different default member.
 
 Smoke-check the adapted-vs-baseline comparison before running the full benchmark:
 
@@ -739,6 +743,8 @@ Rollback path:
 - If registration fails, fix the lineage inputs and rerun
   `llm-register-checkpoint`; do not bypass the registration check for the
   adapted lane.
+- If a promotion decision changes later, historical launches still replay the
+  recorded checkpoint instead of silently following the new family default.
 - If the adapted benchmark underperforms, switch back to
   `configs/systems/al_cu_fe_llm_local.yaml` for the baseline lane.
 - The committed adapted benchmark spec already carries the rollback baseline as

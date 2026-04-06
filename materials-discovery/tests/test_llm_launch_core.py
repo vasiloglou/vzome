@@ -3,9 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import yaml
 
 from materials_discovery.common.io import load_yaml, write_jsonl
-from materials_discovery.common.schema import CompositionBound, SystemConfig
+from materials_discovery.common.schema import CompositionBound, LlmModelLaneConfig, SystemConfig
+from materials_discovery.llm.checkpoints import promote_checkpoint, register_llm_checkpoint
 from materials_discovery.llm.schema import (
     LlmCampaignAction,
     LlmCampaignLaunchBaseline,
@@ -209,6 +211,75 @@ def _write_eval_set(path: Path) -> None:
     )
 
 
+def _write_required_lineage_files(root: Path) -> None:
+    (root / "lineage").mkdir(parents=True, exist_ok=True)
+    (root / "lineage" / "adapter_manifest.json").write_text("{}", encoding="utf-8")
+    (root / "lineage" / "corpus_manifest.json").write_text("{}", encoding="utf-8")
+    (root / "lineage" / "eval_manifest.json").write_text("{}", encoding="utf-8")
+    (root / "lineage" / "acceptance_pack.json").write_text("{}", encoding="utf-8")
+
+
+def _write_registration_spec(
+    root: Path,
+    *,
+    checkpoint_id: str = "ckpt-al-cu-fe-zomic-adapted",
+    checkpoint_family: str | None = None,
+) -> Path:
+    spec = {
+        "checkpoint_id": checkpoint_id,
+        "system": "Al-Cu-Fe",
+        "template_family": "icosahedral_approximant_1_1",
+        "adapter": "openai_compat_v1",
+        "provider": "openai_compat",
+        "model": "zomic-adapted-local-v1",
+        "local_model_path": "/opt/models/zomic-adapted-local-v1",
+        "model_revision": "adapted-dev-2026-04-05",
+        "base_model": "zomic-general-local-v1",
+        "base_model_revision": "local-dev-2026-04-05",
+        "adaptation_method": "lora",
+        "adaptation_artifact_path": "lineage/adapter_manifest.json",
+        "corpus_manifest_path": "lineage/corpus_manifest.json",
+        "eval_set_manifest_path": "lineage/eval_manifest.json",
+        "acceptance_pack_path": "lineage/acceptance_pack.json",
+    }
+    if checkpoint_family is not None:
+        spec["checkpoint_family"] = checkpoint_family
+    spec_path = root / f"{checkpoint_id}.yaml"
+    spec_path.write_text(yaml.safe_dump(spec, sort_keys=False), encoding="utf-8")
+    return spec_path
+
+
+def _write_promotion_spec(
+    root: Path,
+    *,
+    checkpoint_family: str,
+    checkpoint_id: str,
+    expected_revision: int,
+) -> Path:
+    evidence_paths = [
+        "reports/serving_benchmark.json",
+        "reports/acceptance_eval.json",
+    ]
+    for relative_path in evidence_paths:
+        path = root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("{}", encoding="utf-8")
+    spec_path = root / f"{checkpoint_id}-promotion.yaml"
+    spec_path.write_text(
+        yaml.safe_dump(
+            {
+                "checkpoint_family": checkpoint_family,
+                "checkpoint_id": checkpoint_id,
+                "evidence_paths": evidence_paths,
+                "expected_revision": expected_revision,
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    return spec_path
+
+
 def test_resolve_campaign_model_lane_prefers_first_available_requested_lane_in_priority_order() -> None:
     from materials_discovery.llm import resolve_campaign_model_lane
 
@@ -339,6 +410,69 @@ def test_resolve_campaign_launch_collects_deduped_prompt_deltas_and_updates_cond
     ]
     assert resolved_config.llm_generate is not None
     assert resolved_config.llm_generate.max_conditioning_examples == 5
+
+
+def test_resolve_campaign_launch_uses_promoted_family_member_identity(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    from materials_discovery.llm import resolve_campaign_launch
+
+    _write_required_lineage_files(tmp_path)
+    register_llm_checkpoint(
+        _write_registration_spec(
+            tmp_path,
+            checkpoint_family="adapted-al-cu-fe",
+        ),
+        root=tmp_path,
+    )
+    promote_checkpoint(
+        _write_promotion_spec(
+            tmp_path,
+            checkpoint_family="adapted-al-cu-fe",
+            checkpoint_id="ckpt-al-cu-fe-zomic-adapted",
+            expected_revision=1,
+        ),
+        root=tmp_path,
+    )
+
+    monkeypatch.setattr("materials_discovery.llm.checkpoints.workspace_root", lambda: tmp_path)
+    monkeypatch.setattr("materials_discovery.llm.storage.workspace_root", lambda: tmp_path)
+
+    config = _base_config()
+    config.backend.mode = "real"
+    assert config.llm_generate is not None
+    config.llm_generate.default_model_lane = "general_purpose"
+    config.llm_generate.model_lanes["general_purpose"] = LlmModelLaneConfig(
+        adapter="openai_compat_v1",
+        provider="openai_compat",
+        model="zomic-adapted-local-v1",
+        api_base="http://localhost:8000",
+        checkpoint_family="adapted-al-cu-fe",
+        require_checkpoint_registration=True,
+    )
+    system_config_path = _workspace() / "configs" / "systems" / "al_cu_fe_llm_mock.yaml"
+    spec = _spec(
+        config,
+        actions=[_seed_action("action-01", lane="general_purpose")],
+        system_config_path=system_config_path,
+    )
+
+    _, resolved = resolve_campaign_launch(
+        spec,
+        config,
+        campaign_spec_path=Path("data/llm_campaigns/campaign-001/campaign_spec.json"),
+        launch_id="launch-promotion-aware",
+        artifact_root=tmp_path,
+    )
+
+    assert resolved.serving_identity is not None
+    assert resolved.serving_identity.checkpoint_id == "ckpt-al-cu-fe-zomic-adapted"
+    assert resolved.serving_identity.checkpoint_selection_source == "family_promoted_default"
+    assert resolved.serving_identity.checkpoint_lifecycle_path == (
+        "data/llm_checkpoints/families/adapted-al-cu-fe/lifecycle.json"
+    )
+    assert resolved.serving_identity.checkpoint_lifecycle_revision == 2
 
 
 def test_resolve_campaign_launch_uses_exact_target_bounds_when_provided() -> None:

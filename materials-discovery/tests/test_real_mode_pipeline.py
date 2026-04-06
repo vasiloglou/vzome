@@ -22,7 +22,7 @@ from materials_discovery.llm.storage import (
     llm_campaign_comparison_path,
     llm_campaign_outcome_snapshot_path,
 )
-from materials_discovery.llm.checkpoints import register_llm_checkpoint
+from materials_discovery.llm.checkpoints import promote_checkpoint, register_llm_checkpoint
 from materials_discovery.llm.serving_benchmark import load_serving_benchmark_spec
 
 
@@ -428,6 +428,9 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     hosted_config_path = workspace / "configs" / "systems" / "al_cu_fe_llm_hosted.yaml"
     local_config_path = workspace / "configs" / "systems" / "al_cu_fe_llm_local.yaml"
     adapted_config_path = workspace / "configs" / "systems" / "al_cu_fe_llm_adapted.yaml"
+    adapted_pinned_config_path = (
+        workspace / "configs" / "systems" / "al_cu_fe_llm_adapted_pinned.yaml"
+    )
     sc_zn_local_config_path = workspace / "configs" / "systems" / "sc_zn_llm_local.yaml"
     al_benchmark_example = workspace / "configs" / "llm" / "al_cu_fe_serving_benchmark.yaml"
     adapted_benchmark_example = workspace / "configs" / "llm" / "al_cu_fe_adapted_serving_benchmark.yaml"
@@ -440,13 +443,22 @@ def test_committed_serving_benchmark_examples_validate_and_stay_shared_context(
     assert hosted_config.llm_generate is not None
     assert hosted_config.llm_generate.max_attempts == 2
     adapted_config = SystemConfig.model_validate(load_yaml(adapted_config_path))
+    adapted_pinned_config = SystemConfig.model_validate(load_yaml(adapted_pinned_config_path))
     assert adapted_config.llm_generate is not None
-    assert adapted_config.llm_generate.model_lanes["general_purpose"].checkpoint_id == (
-        "ckpt-al-cu-fe-zomic-adapted"
+    assert adapted_config.llm_generate.model_lanes["general_purpose"].checkpoint_family == (
+        "adapted-al-cu-fe"
     )
+    assert adapted_config.llm_generate.model_lanes["general_purpose"].checkpoint_id is None
     assert adapted_config.llm_generate.model_lanes["general_purpose"].require_checkpoint_registration
     assert adapted_config.llm_generate.model_lanes["general_purpose"].model_revision is None
     assert adapted_config.llm_generate.model_lanes["general_purpose"].local_model_path is None
+    assert adapted_pinned_config.llm_generate is not None
+    assert adapted_pinned_config.llm_generate.model_lanes["general_purpose"].checkpoint_family == (
+        "adapted-al-cu-fe"
+    )
+    assert adapted_pinned_config.llm_generate.model_lanes["general_purpose"].checkpoint_id == (
+        "ckpt-al-cu-fe-zomic-adapted"
+    )
 
     al_acceptance_pack_path = _write_llm_acceptance_pack(tmp_path / "al_workspace", system="Al-Cu-Fe")
     (tmp_path / "al_hosted_campaign").mkdir(parents=True, exist_ok=True)
@@ -578,6 +590,7 @@ def test_real_mode_adapted_checkpoint_benchmark_reuses_launch_and_compare_workfl
         yaml.safe_dump(
             {
                 "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                "checkpoint_family": "adapted-al-cu-fe",
                 "system": "Al-Cu-Fe",
                 "template_family": "icosahedral_approximant_1_1",
                 "adapter": "openai_compat_v1",
@@ -598,6 +611,23 @@ def test_real_mode_adapted_checkpoint_benchmark_reuses_launch_and_compare_workfl
         encoding="utf-8",
     )
     register_llm_checkpoint(checkpoint_spec_path, root=artifact_workspace)
+    benchmark_reports_dir = artifact_workspace / "reports"
+    benchmark_reports_dir.mkdir(parents=True, exist_ok=True)
+    (benchmark_reports_dir / "serving_benchmark.json").write_text("{}", encoding="utf-8")
+    promotion_spec_path = artifact_workspace / "al_cu_fe_zomic_adapted_promotion.yaml"
+    promotion_spec_path.write_text(
+        yaml.safe_dump(
+            {
+                "checkpoint_family": "adapted-al-cu-fe",
+                "checkpoint_id": "ckpt-al-cu-fe-zomic-adapted",
+                "evidence_paths": ["reports/serving_benchmark.json"],
+                "expected_revision": 1,
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    promote_checkpoint(promotion_spec_path, root=artifact_workspace)
 
     benchmark_payload = load_yaml(benchmark_example)
     benchmark_payload["acceptance_pack_path"] = str(acceptance_pack_path)
@@ -728,10 +758,13 @@ def test_real_mode_adapted_checkpoint_benchmark_reuses_launch_and_compare_workfl
     targets = {row["target_id"]: row for row in summary_payload["targets"]}
     adapted_identity = targets["adapted_checkpoint_generation"]["smoke_checks"][0]["serving_identity"]
     assert adapted_identity["checkpoint_id"] == "ckpt-al-cu-fe-zomic-adapted"
+    assert adapted_identity["checkpoint_selection_source"] == "family_promoted_default"
+    assert adapted_identity["checkpoint_lifecycle_revision"] == 2
     assert adapted_identity["checkpoint_lineage"]["base_model"] == "zomic-general-local-v1"
     assert Path(targets["baseline_local_generation"]["launch_summary_path"]).exists()
     assert Path(targets["adapted_checkpoint_generation"]["launch_summary_path"]).exists()
     assert any("Adapted checkpoint" in line for line in summary_payload["recommendation_lines"])
+    assert any("Rollback baseline remains available:" in line for line in summary_payload["recommendation_lines"])
 
 
 @pytest.mark.integration

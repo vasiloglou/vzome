@@ -350,6 +350,7 @@ def _delta_map(
 def _summary_lines(
     comparison_id: str,
     current_outcome: LlmCampaignOutcomeSnapshot,
+    generation_serving_identity: LlmServingIdentity | None,
     acceptance_baseline: LlmAcceptanceSystemMetrics,
     prior_outcome: LlmCampaignOutcomeSnapshot | None,
     delta_vs_acceptance: dict[str, float],
@@ -372,12 +373,38 @@ def _summary_lines(
             else "Prior launch baseline: none"
         ),
     ]
+    if generation_serving_identity is not None:
+        generation_bits = [f"Generation serving identity: {generation_serving_identity.model}"]
+        if generation_serving_identity.checkpoint_id is not None:
+            generation_bits.append(f"checkpoint {generation_serving_identity.checkpoint_id}")
+        if generation_serving_identity.checkpoint_selection_source is not None:
+            generation_bits.append(
+                f"via {generation_serving_identity.checkpoint_selection_source}"
+            )
+        if generation_serving_identity.checkpoint_lifecycle_revision is not None:
+            generation_bits.append(
+                f"lifecycle r{generation_serving_identity.checkpoint_lifecycle_revision}"
+            )
+        lines.append(", ".join(generation_bits))
     if current_outcome.evaluation_resolved_model_lane is not None:
         lines.append(
             "Evaluation lane: "
             f"{current_outcome.evaluation_resolved_model_lane} "
             f"({current_outcome.evaluation_resolved_model_lane_source})"
         )
+    if current_outcome.evaluation_serving_identity is not None:
+        evaluation_bits = [
+            f"Evaluation serving identity: {current_outcome.evaluation_serving_identity.model}"
+        ]
+        if current_outcome.evaluation_serving_identity.checkpoint_id is not None:
+            evaluation_bits.append(
+                f"checkpoint {current_outcome.evaluation_serving_identity.checkpoint_id}"
+            )
+        if current_outcome.evaluation_serving_identity.checkpoint_selection_source is not None:
+            evaluation_bits.append(
+                f"via {current_outcome.evaluation_serving_identity.checkpoint_selection_source}"
+            )
+        lines.append(", ".join(evaluation_bits))
     for metric_name in OUTCOME_METRIC_KEYS:
         if metric_name in delta_vs_acceptance:
             lines.append(
@@ -432,9 +459,15 @@ def build_campaign_comparison(
         else _delta_map(effective_current, effective_prior)
     )
     comparison_id = f"comparison_{effective_current.launch_id}"
+    generation_serving_identity = (
+        bundle.resolved_launch.serving_identity
+        or bundle.launch_summary.serving_identity
+        or bundle.run_manifest.serving_identity
+    )
     summary_lines = _summary_lines(
         comparison_id,
         effective_current,
+        generation_serving_identity,
         acceptance_baseline,
         effective_prior,
         delta_vs_acceptance,

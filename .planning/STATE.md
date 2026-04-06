@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: adapted-checkpoint-lifecycle-and-promotion-mvp
-current_phase: 29
-current_phase_name: promotion-aware-workflow-integration
+current_phase: 30
+current_phase_name: promotion-benchmarks-and-operator-lifecycle-workflow
 current_plan: Not started
 status: ready_to_execute
-stopped_at: Phase 28 completed
-last_updated: "2026-04-05T23:57:47Z"
-last_activity: 2026-04-05 -- Phase 28 completed, Phase 29 next
+stopped_at: Phase 29 completed
+last_updated: "2026-04-06T00:37:35Z"
+last_activity: 2026-04-05 -- Phase 29 completed, Phase 30 next
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
   completed_plans: 3
   percent: 67
@@ -24,20 +24,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 29 — promotion-aware-workflow-integration
+**Current focus:** Phase 30 — promotion-benchmarks-and-operator-lifecycle-workflow
 
 ## Current Position
 
-Current Phase: 29
-Current Phase Name: Promotion Aware Workflow Integration
+Current Phase: 30
+Current Phase Name: Promotion Benchmarks And Operator Lifecycle Workflow
 Total Phases: 3
 Current Plan: Not started
 Total Plans in Phase: not planned yet
-Phase: 29 (Promotion Aware Workflow Integration) — NEXT
+Phase: 30 (Promotion Benchmarks And Operator Lifecycle Workflow) — NEXT
 Plan: Not started
-Status: Phase 28 complete; Phase 29 next
-Last activity: 2026-04-05 -- Phase 28 completed, Phase 29 next
-Last Activity Description: Phase 28 completed and state advanced to Phase 29
+Status: Phase 29 complete; Phase 30 next
+Last activity: 2026-04-05 -- Phase 29 completed, Phase 30 next
+Last Activity Description: Phase 29 completed and state advanced to Phase 30
 
 Progress: [███████░░░] 67%
 
@@ -93,6 +93,14 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Phase 28]: Retired checkpoints must never be selected implicitly again, but
   they remain replayable and auditable.
 
+- [Phase 29]: Family-only adapted lanes now resolve the promoted default member
+  for new execution, while explicit `checkpoint_id` values remain deliberate
+  family pins.
+
+- [Phase 29]: Replay must preserve the recorded checkpoint identity even after
+  later promotion or retirement changes, and benchmark/compare output must
+  surface the resulting lifecycle selection metadata.
+
 ### Pending Todos
 
 None yet.
@@ -105,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T20:56:23Z
-Stopped at: Phase 28 completed
+Last session: 2026-04-06T00:37:35Z
+Stopped at: Phase 29 completed
 Resume file: .planning/ROADMAP.md
