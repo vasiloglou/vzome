@@ -2,7 +2,7 @@
 
 ## Current State
 
-`v1.0`, `v1.1`, `v1.2`, and `v1.3` are shipped.
+`v1.0`, `v1.1`, `v1.2`, `v1.3`, and `v1.4` are shipped.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -11,6 +11,8 @@ LLM operating surface:
 - the complete Zomic-centered LLM ladder from corpus through acceptance
 - the proposal -> approval -> launch -> replay -> compare campaign workflow
 - local and specialized serving lanes with benchmarkable operator workflow
+- checkpoint-family lifecycle management with benchmark-backed promotion,
+  rollback, and retirement guidance
 
 Archive references:
 - `.planning/milestones/v1.0-ROADMAP.md`
@@ -25,21 +27,25 @@ Archive references:
 - `.planning/milestones/v1.3-ROADMAP.md`
 - `.planning/milestones/v1.3-REQUIREMENTS.md`
 - `.planning/milestones/v1.3-MILESTONE-AUDIT.md`
+- `.planning/milestones/v1.4-ROADMAP.md`
+- `.planning/milestones/v1.4-REQUIREMENTS.md`
+- `.planning/milestones/v1.4-MILESTONE-AUDIT.md`
 
-## Current Milestone
+## Current Milestone Status
 
-`v1.4` — Adapted Checkpoint Lifecycle and Promotion MVP
+No active milestone is open right now.
 
-**Goal:** make adapted checkpoints manageable as a small auditable fleet
-instead of isolated one-off artifacts, while preserving the shipped operator
-workflow.
+The most recently shipped milestone is `v1.4` — Adapted Checkpoint Lifecycle
+and Promotion MVP.
 
-**Target features:**
+It added:
 - file-backed lifecycle state for multiple adapted checkpoints per system
-- promotion, pinning, rollback, and retirement semantics for active checkpoint
-  selection
-- benchmark-backed evidence for comparing candidate checkpoints to the current
-  promoted default
+- promoted-default and explicit-pin runtime selection across the shipped
+  workflow
+- benchmark-backed evidence for candidate promotion, rollback, and retirement
+
+Run `$gsd-new-milestone` when you are ready to define the next active
+milestone.
 
 ## Later Milestone Candidates
 
@@ -106,15 +112,19 @@ instead of living in separate prototypes.
 - Validated in v1.3: adapted local checkpoints are now first-class, audited
   workflow lanes with file-backed registration, replay-safe fingerprinting,
   adapted-vs-baseline benchmarks, and operator rollback guidance.
+- Validated in v1.4: adapted checkpoint families now have file-backed
+  lifecycle state, promoted-default and explicit-pin execution through the
+  shipped workflow, benchmark-backed candidate promotion guidance, and a
+  documented rollback/retirement procedure.
 
 ### Active
 
-- Add auditable lifecycle state for more than one adapted checkpoint per
-  system instead of treating registration as a single static endpoint.
-- Make promoted, pinned, and retired checkpoint selection explicit in the
-  existing generation, launch, replay, and benchmark workflow.
-- Give operators safe promotion, rollback, and retirement guidance before
-  adding any automated training or checkpoint farming layer.
+- Add controlled checkpoint training automation only after the lifecycle,
+  promotion, and rollback workflow remains reliable across multiple checkpoints.
+- Expand campaign automation only after promoted-checkpoint selection is stable
+  in operator hands.
+- Broaden source coverage or deepen source QA after the checkpoint lifecycle
+  workflow is stable.
 
 ### Out of Scope
 
@@ -197,4 +207,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-05 after starting milestone v1.4*
+*Last updated: 2026-04-06 after completing milestone v1.4*

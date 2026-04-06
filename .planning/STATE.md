@@ -1,19 +1,19 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.4
-milestone_name: adapted-checkpoint-lifecycle-and-promotion-mvp
+milestone_name: Adapted Checkpoint Lifecycle and Promotion MVP
 current_phase: 30
-current_phase_name: promotion-benchmarks-and-operator-lifecycle-workflow
+current_phase_name: Promotion Benchmarks And Operator Lifecycle Workflow
 current_plan: Complete
-status: ready_for_milestone_audit
-stopped_at: Phase 30 completed
-last_updated: "2026-04-06T01:00:51Z"
-last_activity: 2026-04-05 -- Phase 30 completed, milestone lifecycle next
+status: v1.4 milestone complete
+stopped_at: Milestone archived
+last_updated: "2026-04-06T01:06:40Z"
+last_activity: 2026-04-06 -- v1.4 milestone completed and archived
 progress:
   total_phases: 3
   completed_phases: 3
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 9
+  completed_plans: 9
   percent: 100
 ---
 
@@ -24,7 +24,7 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Milestone lifecycle — audit, complete, cleanup
+**Current focus:** No active milestone — define the next milestone when ready
 
 ## Current Position
 
@@ -35,9 +35,9 @@ Current Plan: Complete
 Total Plans in Phase: 3
 Phase: 30 (Promotion Benchmarks And Operator Lifecycle Workflow) — COMPLETE
 Plan: Complete
-Status: Phase 30 complete; milestone lifecycle next
-Last activity: 2026-04-05 -- Phase 30 completed, milestone lifecycle next
-Last Activity Description: Phase 30 completed and the milestone is ready for audit, archive, and cleanup
+Status: v1.4 milestone complete and archived
+Last activity: 2026-04-06 -- v1.4 milestone completed and archived
+Last Activity Description: v1.4 milestone completed and archived
 
 Progress: [██████████] 100%
 
@@ -121,6 +121,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T01:00:51Z
-Stopped at: Phase 30 completed
-Resume file: .planning/ROADMAP.md
+Last session: 2026-04-06T01:06:40Z
+Stopped at: Milestone archived
+Resume file: .planning/MILESTONES.md
