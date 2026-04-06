@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 31 Plan 01 Task 1 RED translation schema tests | Added failing schema coverage for translated-structure source linkage, export fidelity separation, lossy-reason validation, and diagnostic-only artifacts before implementing the additive translation contract |
 | 2026-04-05 | Phase 30 Task 3 lifecycle operator docs and help coverage | Documented the candidate benchmark, promotion, rollback, and retirement workflow with the committed lifecycle configs/specs, clarified serving-benchmark role semantics in the developer docs, and expanded CLI help coverage for the lifecycle command surface |
 | 2026-04-05 | Phase 30 Task 2 committed lifecycle benchmark proof | Added committed candidate and lifecycle benchmark example configs, proved the promoted-vs-candidate-vs-baseline benchmark workflow offline, and validated that benchmark summaries can recommend checkpoint promotion while keeping rollback explicit |
 | 2026-04-05 | Phase 30 Task 1 lifecycle benchmark roles and recommendations | Added typed lifecycle benchmark target roles, taught benchmark summaries to recommend promote/keep/rollback from structured target intent, and expanded serving-benchmark schema/core coverage around lifecycle benchmark semantics |
@@ -236,8 +237,13 @@
   - `tests/test_notebooks.py` (new): 6 tests — 3 static (valid JSON, imports from materials_discovery, uses workspace_root) always run; 3 execution smoke tests (via nbconvert + fixture workspace injection) skip gracefully when nbformat/nbconvert not installed.
 
 - Phase 5 Plan 02 — Built cross-lane comparison engine and wired `mdisc lake compare` CLI command:
-  - `lake/compare.py` (new): lane-centric internal model with `MetricDistribution` (mean, min, max, std, count), `LaneSnapshot` (loads from benchmark_pack.json, dereferences stage_manifest_paths["report"] to read deeper report entries for per-candidate metric aggregation), `GateDelta` (with status: both_pass/both_fail/regression/improvement), `MetricDelta`, and `ComparisonResult` (schema_version "comparison/v1").
-  - `compare_benchmark_packs()`: builds LaneSnapshot for each pack, computes gate deltas and metric distribution diffs (8 key metrics: hifi_score, stability_probability, ood_score, xrd_confidence, xrd_distinctiveness, delta_e_proxy_hull_ev_per_atom, uncertainty_ev_per_atom, md_stability_score).
+- `lake/compare.py` (new): lane-centric internal model with `MetricDistribution` (mean, min, max, std, count), `LaneSnapshot` (loads from benchmark_pack.json, dereferences stage_manifest_paths["report"] to read deeper report entries for per-candidate metric aggregation), `GateDelta` (with status: both_pass/both_fail/regression/improvement), `MetricDelta`, and `ComparisonResult` (schema_version "comparison/v1").
+- `compare_benchmark_packs()`: builds LaneSnapshot for each pack, computes gate deltas and metric distribution diffs (8 key metrics: hifi_score, stability_probability, ood_score, xrd_confidence, xrd_distinctiveness, delta_e_proxy_hull_ev_per_atom, uncertainty_ev_per_atom, md_stability_score).
+
+### 2026-04-06
+
+- 19:35 EDT — Started Phase 31 Plan 01 Task 1 in TDD mode by adding failing `test_llm_translation_schema.py` coverage for the additive translated-structure contract.
+- The RED slice locks source candidate linkage, the separate `lossy` export-fidelity tier, explicit lossy-reason validation, and diagnostic-carrying artifacts that do not require emitted CIF/material-string text yet.
   - `write_comparison()`: writes JSON to `data/comparisons/` with slugified filename (D-06).
   - `format_comparison_table()`: produces dual-format terminal table with header, gate section, and metric section (D-06).
   - Graceful fallback: if report file missing, warns and falls back to report_metrics embedded in benchmark pack (no crash).
