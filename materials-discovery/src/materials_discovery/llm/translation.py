@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 from materials_discovery.backends.structure_realization import (
@@ -13,10 +14,21 @@ from materials_discovery.llm.schema import (
     TranslatedStructureDiagnostic,
     TranslatedStructureSite,
     TranslatedStructureSourceReference,
+    TranslationFidelityTier,
+    TranslationLossReason,
     TranslationTargetDescriptor,
 )
 
 CoordinateSourceEntry = tuple[str, CoordinateSource]
+_PERIODIC_HINT_TOKENS = ("approximant", "proxy", "periodic", "space_group:")
+_QC_NATIVE_HINT_TOKENS = ("quasicrystal", "aperiodic", "pyqcstrc", "superspace")
+
+
+@dataclass(frozen=True)
+class _FidelityAssessment:
+    tier: TranslationFidelityTier
+    loss_reasons: tuple[TranslationLossReason, ...] = ()
+    diagnostics: tuple[TranslatedStructureDiagnostic, ...] = ()
 
 
 def infer_coordinate_sources(candidate: CandidateRecord) -> tuple[CoordinateSourceEntry, ...]:
@@ -30,9 +42,16 @@ def infer_coordinate_sources(candidate: CandidateRecord) -> tuple[CoordinateSour
 def assess_translation_fidelity(
     candidate: CandidateRecord,
     target: TranslationTargetDescriptor,
-) -> str:
-    del candidate, target
-    return "anchored"
+    *,
+    requested_fidelity: TranslationFidelityTier | None = None,
+) -> TranslationFidelityTier:
+    assessment = _build_fidelity_assessment(candidate, target)
+    if requested_fidelity == "exact" and assessment.tier != "exact":
+        raise ValueError(
+            "unsupported exactness claim for normalized translation target "
+            f"{target.family}: classified as {assessment.tier}"
+        )
+    return assessment.tier
 
 
 def prepare_translated_structure(
@@ -42,8 +61,12 @@ def prepare_translated_structure(
     positions_with_sources = candidate_fractional_positions_with_sources(candidate)
     cartesian_positions = candidate_cartesian_positions(candidate)
     coordinate_sources = infer_coordinate_sources(candidate)
+    fidelity = _build_fidelity_assessment(candidate, target)
 
-    diagnostics = _coordinate_source_diagnostics(coordinate_sources)
+    diagnostics = [
+        *_coordinate_source_diagnostics(coordinate_sources),
+        *fidelity.diagnostics,
+    ]
     return TranslatedStructureArtifact(
         source=TranslatedStructureSourceReference(
             candidate_id=candidate.candidate_id,
@@ -52,7 +75,8 @@ def prepare_translated_structure(
             provenance_hints=_sorted_mapping(candidate.provenance),
         ),
         target=target,
-        fidelity_tier=assess_translation_fidelity(candidate, target),
+        fidelity_tier=fidelity.tier,
+        loss_reasons=list(fidelity.loss_reasons),
         composition=candidate.composition,
         cell=_normalized_cell(candidate.cell),
         sites=[
@@ -72,6 +96,38 @@ def prepare_translated_structure(
         ],
         diagnostics=diagnostics,
     )
+
+
+def _build_fidelity_assessment(
+    candidate: CandidateRecord,
+    target: TranslationTargetDescriptor,
+) -> _FidelityAssessment:
+    coordinate_sources = infer_coordinate_sources(candidate)
+    source_values = {source for _, source in coordinate_sources}
+    strong_periodic_evidence = _has_periodic_safe_evidence(candidate)
+    qc_native_evidence = _has_qc_native_evidence(candidate)
+
+    if target.requires_periodic_cell and (
+        qc_native_evidence or ("qphi_derived" in source_values and not strong_periodic_evidence)
+    ):
+        loss_reasons: list[TranslationLossReason] = ["aperiodic_to_periodic_proxy"]
+        if "qphi_derived" in source_values:
+            loss_reasons.append("coordinate_derivation_required")
+        if not target.preserves_qc_native_semantics:
+            loss_reasons.append("qc_semantics_dropped")
+        return _FidelityAssessment(
+            tier="lossy",
+            loss_reasons=tuple(loss_reasons),
+            diagnostics=_loss_diagnostics(
+                include_qc_drop=not target.preserves_qc_native_semantics,
+            ),
+        )
+
+    if strong_periodic_evidence and source_values == {"stored_fractional"}:
+        return _FidelityAssessment(tier="exact")
+    if strong_periodic_evidence and "qphi_derived" not in source_values:
+        return _FidelityAssessment(tier="anchored")
+    return _FidelityAssessment(tier="approximate")
 
 
 def _coordinate_source_diagnostics(
@@ -95,6 +151,61 @@ def _coordinate_source_diagnostics(
             )
         ]
     return []
+
+
+def _loss_diagnostics(*, include_qc_drop: bool) -> tuple[TranslatedStructureDiagnostic, ...]:
+    diagnostics = [
+        TranslatedStructureDiagnostic(
+            code="periodic_proxy_required",
+            severity="warning",
+            message="target family requires a periodic proxy for normalized export",
+        )
+    ]
+    if include_qc_drop:
+        diagnostics.append(
+            TranslatedStructureDiagnostic(
+                code="qc_semantics_dropped",
+                severity="warning",
+                message="target family cannot preserve QC-native semantics exactly",
+            )
+        )
+    return tuple(diagnostics)
+
+
+def _has_periodic_safe_evidence(candidate: CandidateRecord) -> bool:
+    tokens = _candidate_hint_tokens(candidate)
+    return any(
+        token.startswith("space_group:") or any(hint in token for hint in _PERIODIC_HINT_TOKENS)
+        for token in tokens
+    )
+
+
+def _has_qc_native_evidence(candidate: CandidateRecord) -> bool:
+    tokens = _candidate_hint_tokens(candidate)
+    return any(any(hint in token for hint in _QC_NATIVE_HINT_TOKENS) for token in tokens)
+
+
+def _candidate_hint_tokens(candidate: CandidateRecord) -> set[str]:
+    tokens = {candidate.template_family.strip().lower()}
+    tokens.update(_flatten_string_tokens(candidate.provenance))
+    return {token for token in tokens if token}
+
+
+def _flatten_string_tokens(value: object) -> set[str]:
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        return {normalized} if normalized else set()
+    if isinstance(value, dict):
+        tokens: set[str] = set()
+        for item in value.values():
+            tokens.update(_flatten_string_tokens(item))
+        return tokens
+    if isinstance(value, list | tuple | set):
+        tokens: set[str] = set()
+        for item in value:
+            tokens.update(_flatten_string_tokens(item))
+        return tokens
+    return set()
 
 
 def _normalized_cell(cell: dict[str, float]) -> dict[str, float]:
