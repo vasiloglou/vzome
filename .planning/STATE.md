@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: adapted-checkpoint-lifecycle-and-promotion-mvp
-current_phase: 28
-current_phase_name: checkpoint-lifecycle-and-promotion-contracts
-current_plan: 3
-status: executing
-stopped_at: Phase 28 plan 02 completed
-last_updated: "2026-04-05T23:49:08Z"
-last_activity: 2026-04-05 -- Phase 28 plan 02 completed
+current_phase: 29
+current_phase_name: promotion-aware-workflow-integration
+current_plan: Not started
+status: ready_to_execute
+stopped_at: Phase 28 completed
+last_updated: "2026-04-05T23:57:47Z"
+last_activity: 2026-04-05 -- Phase 28 completed, Phase 29 next
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 67
 ---
 
@@ -24,20 +24,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 28 — checkpoint-lifecycle-and-promotion-contracts
+**Current focus:** Phase 29 — promotion-aware-workflow-integration
 
 ## Current Position
 
-Current Phase: 28
-Current Phase Name: Checkpoint Lifecycle and Promotion Contracts
+Current Phase: 29
+Current Phase Name: Promotion Aware Workflow Integration
 Total Phases: 3
-Current Plan: 3
-Total Plans in Phase: 3
-Phase: 28 (Checkpoint Lifecycle and Promotion Contracts) — EXECUTING
-Plan: 3 of 3
-Status: Executing Phase 28
-Last activity: 2026-04-05 -- Phase 28 plan 02 completed
-Last Activity Description: Phase 28 plan 02 completed
+Current Plan: Not started
+Total Plans in Phase: not planned yet
+Phase: 29 (Promotion Aware Workflow Integration) — NEXT
+Plan: Not started
+Status: Phase 28 complete; Phase 29 next
+Last activity: 2026-04-05 -- Phase 28 completed, Phase 29 next
+Last Activity Description: Phase 28 completed and state advanced to Phase 29
 
 Progress: [███████░░░] 67%
 
@@ -45,7 +45,7 @@ Progress: [███████░░░] 67%
 
 **Velocity:**
 
-- Total plans completed: 82
+- Total plans completed: 83
 - Average duration: 12 min
 - Total execution time: archived across prior milestones
 
@@ -106,5 +106,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-05T20:56:23Z
-Stopped at: Phase 28 plan 02 completed
-Resume file: .planning/phases/28-checkpoint-lifecycle-and-promotion-contracts/28-03-PLAN.md
+Stopped at: Phase 28 completed
+Resume file: .planning/ROADMAP.md
