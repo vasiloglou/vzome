@@ -2,8 +2,19 @@
   "permissions": {
     "allow": [
       "Bash(*)",
+      "Edit(*)",
+      "MultiEdit(*)",
+      "Write(*)",
+      "Read(*)",
+      "LS(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "Task(*)",
+      "TodoWrite(*)",
+      "NotebookEdit(*)",
       "WebFetch(*)",
       "WebSearch(*)"
-    ]
+    ],
+    "deny": []
   }
 }
