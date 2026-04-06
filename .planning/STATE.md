@@ -1,45 +1,45 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
-milestone_name: Adapted Checkpoint Lifecycle and Promotion MVP
-current_phase: 30
-current_phase_name: Promotion Benchmarks And Operator Lifecycle Workflow
-current_plan: Complete
-status: v1.4 milestone complete
-stopped_at: Milestone archived
-last_updated: "2026-04-06T01:06:40Z"
-last_activity: 2026-04-06 -- v1.4 milestone completed and archived
+milestone: v1.5
+milestone_name: External Materials-LLM Translation Bridge MVP
+current_phase: 31
+current_phase_name: Translation Contracts And Representation Loss Semantics
+current_plan: Not started
+status: v1.5 milestone defined; ready for phase planning
+stopped_at: Phase planning not started
+last_updated: "2026-04-06T07:34:37Z"
+last_activity: 2026-04-06 -- v1.5 milestone defined and roadmap created
 progress:
   total_phases: 3
-  completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-05)
+See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** No active milestone — define the next milestone when ready
+**Current focus:** Phase 31 — Translation Contracts And Representation Loss Semantics
 
 ## Current Position
 
-Current Phase: 30
-Current Phase Name: Promotion Benchmarks And Operator Lifecycle Workflow
+Current Phase: 31
+Current Phase Name: Translation Contracts And Representation Loss Semantics
 Total Phases: 3
-Current Plan: Complete
-Total Plans in Phase: 3
-Phase: 30 (Promotion Benchmarks And Operator Lifecycle Workflow) — COMPLETE
-Plan: Complete
-Status: v1.4 milestone complete and archived
-Last activity: 2026-04-06 -- v1.4 milestone completed and archived
-Last Activity Description: v1.4 milestone completed and archived
+Current Plan: Not started
+Total Plans in Phase: 0
+Phase: 31 (Translation Contracts And Representation Loss Semantics) — NOT STARTED
+Plan: Not started
+Status: v1.5 milestone defined; ready for phase planning
+Last activity: 2026-04-06 -- v1.5 milestone defined and roadmap created
+Last Activity Description: v1.5 milestone defined and roadmap created
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -57,6 +57,8 @@ Progress: [██████████] 100%
 | v1.1 | 10-18 | 27 | Shipped |
 | v1.2 | 19-24 | 18 | Shipped |
 | v1.3 | 25-27 | 9 | Shipped |
+| v1.4 | 28-30 | 9 | Shipped |
+| v1.5 | 31-33 | 0 | Active |
 
 ## Accumulated Context
 
@@ -109,18 +111,24 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
   checkpoint, benchmark candidate vs promoted default vs baseline, then
   promote, keep, or retire based on file-backed evidence.
 
+- [Milestone v1.5]: Start the next LLM milestone with a translation bridge from
+  Zomic into external materials-LLM encodings before attempting live external
+  model execution or training automation.
+
+- [Milestone v1.5]: Treat CIF and material-string exports as additive interop
+  artifacts with explicit fidelity/loss metadata rather than replacements for
+  Zomic as the QC-native source of truth.
+
 ### Pending Todos
 
 None yet.
 
 ### Blockers/Concerns
 
-- Cleanup of `.planning/phases/` remains intentionally partial because
-  `.planning/phases/05-candidate-reference-data-lake-and-analysis-layer/05-CONTEXT.md`
-  is an unrelated local untracked file that should not be moved automatically.
+None right now.
 
 ## Session Continuity
 
-Last session: 2026-04-06T01:06:40Z
-Stopped at: Milestone archived
-Resume file: .planning/MILESTONES.md
+Last session: 2026-04-06T07:34:37Z
+Stopped at: Phase planning not started
+Resume file: .planning/ROADMAP.md

@@ -2,7 +2,7 @@
 
 ## Current State
 
-`v1.0`, `v1.1`, `v1.2`, `v1.3`, and `v1.4` are shipped.
+`v1.0`, `v1.1`, `v1.2`, `v1.3`, and `v1.4` are shipped. `v1.5` is active.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -13,6 +13,8 @@ LLM operating surface:
 - local and specialized serving lanes with benchmarkable operator workflow
 - checkpoint-family lifecycle management with benchmark-backed promotion,
   rollback, and retirement guidance
+- the groundwork for a new interoperability layer between Zomic-native
+  candidates and external downloadable materials LLM formats
 
 Archive references:
 - `.planning/milestones/v1.0-ROADMAP.md`
@@ -33,28 +35,31 @@ Archive references:
 
 ## Current Milestone Status
 
-No active milestone is open right now.
+**Current Milestone:** `v1.5` — External Materials-LLM Translation Bridge MVP
 
-The most recently shipped milestone is `v1.4` — Adapted Checkpoint Lifecycle
-and Promotion MVP.
+**Goal:** Bridge QC-native Zomic candidates into auditable periodic/material
+encodings for external downloadable materials LLMs without pretending the
+translation is lossless.
 
-It added:
-- file-backed lifecycle state for multiple adapted checkpoints per system
-- promoted-default and explicit-pin runtime selection across the shipped
-  workflow
-- benchmark-backed evidence for candidate promotion, rollback, and retirement
-
-Run `$gsd-new-milestone` when you are ready to define the next active
-milestone.
+**Target features:**
+- deterministic translation from compiled Zomic candidates into reusable
+  structure-interoperability artifacts
+- CIF export for supported approximant/periodic views of translated candidates
+- crystal/material string export for CrystalTextLLM- or CSLLM-style downstream
+  workflows
+- explicit fidelity/loss metadata and operator docs for translation boundaries
 
 ## Later Milestone Candidates
 
+- benchmark downloaded external materials LLMs against the translated interop
+  artifacts only after CIF/material-string exports are stable and auditable
 - add controlled checkpoint training automation only after lifecycle,
-  promotion, and rollback remain reliable across multiple checkpoints
+  promotion, rollback, and translator-backed benchmarking remain reliable across
+  multiple checkpoints
 - expand campaign automation only after promoted-checkpoint selection is stable
   in operator hands
 - broaden source coverage or deepen source QA after the checkpoint lifecycle
-  workflow is stable
+  workflow and translation bridge are stable
 
 ## What This Is
 
@@ -119,12 +124,14 @@ instead of living in separate prototypes.
 
 ### Active
 
-- Add controlled checkpoint training automation only after the lifecycle,
-  promotion, and rollback workflow remains reliable across multiple checkpoints.
-- Expand campaign automation only after promoted-checkpoint selection is stable
-  in operator hands.
-- Broaden source coverage or deepen source QA after the checkpoint lifecycle
-  workflow is stable.
+- Add a deterministic Zomic-to-structure translation layer that can be traced
+  back to the original compiled candidate.
+- Export supported translated candidates into CIF and model-oriented
+  crystal/material string encodings for external downloadable materials LLMs.
+- Keep representational loss explicit whenever QC-native Zomic cannot map
+  exactly into periodic/material-string formats.
+- Ship a file-backed CLI and docs surface for translation artifacts before
+  broader external-model benchmarking or training automation.
 
 ### Out of Scope
 
@@ -153,6 +160,12 @@ instead of living in separate prototypes.
 - The LLM design already assumes Zomic is the right generative representation
   because CIF-native crystal LLMs do not naturally model aperiodic quasicrystal
   geometry.
+- The current corpus/converter stack is intentionally one-way into Zomic; the
+  repo does not yet ship a reverse exporter from Zomic/candidates into CIF or
+  CrystalTextLLM-/CSLLM-style material strings.
+- The current runtime already has the geometry needed for that bridge:
+  `CandidateRecord` carries cell/site data and can already be realized into ASE
+  atoms or a pymatgen `Structure`.
 
 ## Constraints
 
@@ -166,6 +179,9 @@ instead of living in separate prototypes.
   avoids roadmaps that depend on restricted ICSD/paid datasets to get started.
 - **Representation**: Use Zomic/Z[phi] for QC-native LLM generation — this is
   the differentiated path relative to CIF-based materials LLMs.
+- **Representational honesty**: Do not silently present translated CIF or
+  material-string artifacts as lossless QC-native equivalents — fidelity and
+  loss must be explicit in the exported contract.
 - **Execution order**: Ingestion must mature before the reference-aware no-DFT
   materials discovery product, and that product must mature before aggressive
   LLM automation — otherwise later tracks are trained or judged on weak
@@ -188,6 +204,7 @@ instead of living in separate prototypes.
 | Start Project 3 v1.3 with Zomic-adapted local checkpoints | The serving surface was stable enough to judge adapted local generation honestly | ✓ Good |
 | Archive milestone v1.3 after direct in-phase verification | The checkpoint workflow now ships with its own proof chain instead of requiring later cleanup phases | ✓ Good |
 | Start Project 3 v1.4 with checkpoint lifecycle and promotion | One adapted checkpoint is now proven, so the next risk is operational curation rather than another one-off lane | ✓ Good |
+| Start Project 3 v1.5 with a Zomic translation bridge before external-model execution | The immediate gap is not another model alias but an auditable representation bridge from Zomic into formats external materials LLMs actually consume | — Pending |
 
 ## Evolution
 
@@ -207,4 +224,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after completing milestone v1.4*
+*Last updated: 2026-04-06 after starting milestone v1.5*

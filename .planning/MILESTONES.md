@@ -1,5 +1,21 @@
 # Milestones
 
+## v1.5 — External Materials-LLM Translation Bridge MVP
+
+**Status:** Active as of 2026-04-06
+**Phases:** 31-33
+**Plans:** 0 (milestone defined; phase planning not started)
+
+### Focus
+
+- Add an auditable translation layer from QC-native Zomic candidates into
+  downstream structure/material artifacts external downloadable materials LLMs
+  can consume.
+- Export supported candidates as CIF plus at least one CrystalTextLLM- or
+  CSLLM-style material string representation.
+- Keep exact versus lossy translation boundaries explicit in the workflow and
+  docs.
+
 ## v1.4 — Adapted Checkpoint Lifecycle and Promotion MVP
 
 **Status:** Shipped on 2026-04-06
