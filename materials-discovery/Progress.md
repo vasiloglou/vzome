@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 31 Plan 02 Task 1 RED normalization tests | Added failing translation-core coverage for deterministic normalized artifacts, explicit coordinate-source reporting, and byte-stable output expectations, plus a structure-realization regression that locks per-site origin reporting before implementing the normalization seam |
 | 2026-04-06 | Phase 31 Plan 01 Task 2 translation target registry | Added the built-in CIF and CrystalTextLLM-style material-string target registry, exported explicit `list_translation_targets()` and `resolve_translation_target(...)` APIs, surfaced periodic-cell and QC-semantics flags on descriptors, and kept the schema slice green at 10 passing tests |
 | 2026-04-06 | Phase 31 Plan 01 Task 2 RED target-registry tests | Added failing registry coverage for explicit CIF and material-string target discovery, stable target resolution, periodic-cell requirement flags, and clear unknown-family failures before implementing the built-in registry |
 | 2026-04-06 | Phase 31 Plan 01 Task 1 translation artifact contract | Added the additive translated-structure schema models, a separate export-facing fidelity tier with `lossy`, typed source linkage and diagnostics, public imports for the new contract, and green schema coverage including missing-source-linkage rejection |
@@ -245,6 +246,8 @@
 
 ### 2026-04-06
 
+- 19:47 EDT — Started Phase 31 Plan 02 Task 1 in TDD mode by adding failing translation-core coverage for deterministic normalized artifacts, explicit coordinate-source reporting, and byte-stable repeated normalization.
+- Added a companion `test_structure_realization.py` regression that locks a stable per-site coordinate-origin helper so the translation seam can reuse structure realization instead of reimplementing branch logic.
 - 19:35 EDT — Started Phase 31 Plan 01 Task 1 in TDD mode by adding failing `test_llm_translation_schema.py` coverage for the additive translated-structure contract.
 - The RED slice locks source candidate linkage, the separate `lossy` export-fidelity tier, explicit lossy-reason validation, and diagnostic-carrying artifacts that do not require emitted CIF/material-string text yet.
 - 19:39 EDT — Implemented the additive translation contract in `llm/schema.py` with typed source references, target descriptors, normalized artifact payload fields, standardized loss-reason names, and typed diagnostics.

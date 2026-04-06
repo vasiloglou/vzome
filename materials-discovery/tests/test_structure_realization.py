@@ -6,6 +6,7 @@ from materials_discovery.backends.structure_realization import (
     candidate_cartesian_positions,
     candidate_cell_matrix,
     candidate_fractional_positions,
+    candidate_fractional_positions_with_sources,
 )
 from materials_discovery.common.schema import CandidateRecord
 
@@ -85,3 +86,56 @@ def test_cartesian_positions_are_derived_from_stored_site_coordinates() -> None:
         for site in candidate.sites
         if site.cartesian_position is not None
     ]
+
+
+def test_fractional_positions_with_sources_reports_origin_per_site() -> None:
+    candidate = CandidateRecord.model_validate(
+        {
+            "candidate_id": "md_realize_origin_001",
+            "system": "Al-Cu-Fe",
+            "template_family": "icosahedral_approximant_1_1",
+            "cell": {
+                "a": 10.0,
+                "b": 10.0,
+                "c": 10.0,
+                "alpha": 90.0,
+                "beta": 90.0,
+                "gamma": 90.0,
+            },
+            "sites": [
+                {
+                    "label": "S1",
+                    "qphi": [[1, 0], [0, 1], [0, 0]],
+                    "species": "Al",
+                    "occ": 1.0,
+                    "fractional_position": [0.1, 0.2, 0.3],
+                },
+                {
+                    "label": "S2",
+                    "qphi": [[0, 1], [1, 0], [0, 0]],
+                    "species": "Cu",
+                    "occ": 1.0,
+                    "cartesian_position": [4.0, 5.0, 6.0],
+                },
+                {
+                    "label": "S3",
+                    "qphi": [[1, 1], [0, 1], [1, 0]],
+                    "species": "Fe",
+                    "occ": 1.0,
+                },
+            ],
+            "composition": {"Al": 0.34, "Cu": 0.33, "Fe": 0.33},
+            "provenance": {"generator_version": "0.1.0"},
+        }
+    )
+
+    positions_with_sources = candidate_fractional_positions_with_sources(candidate)
+
+    assert [source for _, source in positions_with_sources] == [
+        "stored_fractional",
+        "stored_cartesian",
+        "qphi_derived",
+    ]
+    assert [position for position, _ in positions_with_sources] == candidate_fractional_positions(
+        candidate
+    )
