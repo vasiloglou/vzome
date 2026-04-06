@@ -84,7 +84,7 @@ def test_prepare_translated_structure_records_coordinate_sources_in_priority_ord
     )
 
     artifact = prepare_translated_structure(candidate, resolve_translation_target("cif"))
-    assert artifact.diagnostics == [
+    assert [diagnostic.model_dump(exclude_none=True) for diagnostic in artifact.diagnostics] == [
         {
             "code": "coordinate_derivation_required",
             "severity": "warning",

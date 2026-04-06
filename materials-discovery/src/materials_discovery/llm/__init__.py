@@ -73,6 +73,11 @@ from materials_discovery.llm.qa import (
     grade_corpus_example,
     summarize_corpus_quality,
 )
+from materials_discovery.llm.translation import (
+    assess_translation_fidelity,
+    infer_coordinate_sources,
+    prepare_translated_structure,
+)
 from materials_discovery.llm.runtime import (
     AnthropicApiLlmAdapter,
     LlmAdapter,

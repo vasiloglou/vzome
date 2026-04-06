@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import importlib
-from typing import Any
+from typing import Any, Literal
 
 from materials_discovery.common.coordinates import (
     cartesian_positions_from_fractional,
@@ -11,22 +11,32 @@ from materials_discovery.common.coordinates import (
 )
 from materials_discovery.common.schema import CandidateRecord
 
+CoordinateSource = Literal["stored_fractional", "stored_cartesian", "qphi_derived"]
 
-def candidate_fractional_positions(candidate: CandidateRecord) -> list[tuple[float, float, float]]:
+
+def candidate_fractional_positions_with_sources(
+    candidate: CandidateRecord,
+) -> list[tuple[tuple[float, float, float], CoordinateSource]]:
     fallback_positions = fractional_positions_from_qphi_coords(
         [site.qphi for site in candidate.sites]
     )
     cell_matrix = cell_matrix_from_cell(candidate.cell)
 
-    positions: list[tuple[float, float, float]] = []
+    positions: list[tuple[tuple[float, float, float], CoordinateSource]] = []
     for index, site in enumerate(candidate.sites):
         if site.fractional_position is not None:
-            positions.append(site.fractional_position)
+            positions.append((site.fractional_position, "stored_fractional"))
         elif site.cartesian_position is not None:
-            positions.append(cartesian_to_fractional(site.cartesian_position, cell_matrix))
+            positions.append(
+                (cartesian_to_fractional(site.cartesian_position, cell_matrix), "stored_cartesian")
+            )
         else:
-            positions.append(fallback_positions[index])
+            positions.append((fallback_positions[index], "qphi_derived"))
     return positions
+
+
+def candidate_fractional_positions(candidate: CandidateRecord) -> list[tuple[float, float, float]]:
+    return [position for position, _ in candidate_fractional_positions_with_sources(candidate)]
 
 
 def candidate_cartesian_positions(candidate: CandidateRecord) -> list[tuple[float, float, float]]:
