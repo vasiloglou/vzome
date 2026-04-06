@@ -170,6 +170,9 @@ from materials_discovery.llm.schema import (
     ReleaseTier,
     ResolvedModelLaneSource,
     SourceFamily,
+    TranslatedStructureArtifact,
+    TranslationFidelityTier,
+    TranslationTargetDescriptor,
     ValidationStatus,
 )
 from materials_discovery.llm.storage import (
@@ -288,6 +291,9 @@ __all__ = [
     "DEFAULT_LLM_SUGGESTION_SCHEMA_VERSION",
     "OUTCOME_METRIC_KEYS",
     "FidelityTier",
+    "TranslationFidelityTier",
+    "TranslationTargetDescriptor",
+    "TranslatedStructureArtifact",
     "export_llm_eval_set",
     "find_prior_campaign_launch",
     "grade_corpus_example",

@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from materials_discovery.common.schema import CompositionBound
+from materials_discovery.common.schema import CompositionBound, Position3D
 
 SourceFamily = Literal[
     "repo_regression",
@@ -18,6 +18,23 @@ SourceFamily = Literal[
     "pyqcstrc_projection",
 ]
 FidelityTier = Literal["exact", "anchored", "approximate", "heuristic"]
+TranslationFidelityTier = Literal["exact", "anchored", "approximate", "lossy"]
+TranslationTargetFamily = Literal["cif", "material_string"]
+TranslationTargetFormat = Literal["cif_text", "crystaltextllm_material_string"]
+TranslationEmissionKind = Literal["file", "line_oriented"]
+TranslationLossReason = Literal[
+    "aperiodic_to_periodic_proxy",
+    "coordinate_derivation_required",
+    "qc_semantics_dropped",
+    "unsupported_exactness_claim",
+]
+TranslationDiagnosticCode = Literal[
+    "coordinate_derivation_required",
+    "periodic_proxy_required",
+    "qc_semantics_dropped",
+    "unsupported_exactness_claim",
+]
+TranslationDiagnosticSeverity = Literal["info", "warning", "error"]
 ReleaseTier = Literal["pending", "gold", "silver", "reject"]
 ValidationStatus = Literal["pending", "passed", "failed"]
 
@@ -45,6 +62,7 @@ DEFAULT_LLM_CAMPAIGN_APPROVAL_VERSION = "llm-campaign-approval/v1"
 DEFAULT_LLM_CAMPAIGN_SPEC_VERSION = "llm-campaign-spec/v1"
 DEFAULT_LLM_OUTCOME_SNAPSHOT_VERSION = "llm-campaign-outcome-snapshot/v1"
 DEFAULT_LLM_CAMPAIGN_COMPARISON_VERSION = "llm-campaign-comparison/v1"
+DEFAULT_TRANSLATED_STRUCTURE_SCHEMA_VERSION = "translated-structure-artifact/v1"
 
 CampaignActionFamily = Literal[
     "prompt_conditioning",
@@ -111,6 +129,139 @@ def _normalize_optional_string(value: str | None) -> str | None:
         return None
     stripped = value.strip()
     return stripped or None
+
+
+class TranslatedStructureSourceReference(BaseModel):
+    source_kind: Literal["candidate_record"] = "candidate_record"
+    candidate_id: str
+    system: str | None = None
+    template_family: str | None = None
+    provenance_hints: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("candidate_id")
+    @classmethod
+    def validate_candidate_id(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("system", "template_family")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("provenance_hints")
+    @classmethod
+    def validate_provenance_hints(cls, value: dict[str, Any]) -> dict[str, Any]:
+        normalized: dict[str, Any] = {}
+        for key, hint_value in value.items():
+            normalized[_require_non_blank_string(key)] = hint_value
+        return normalized
+
+
+class TranslationTargetDescriptor(BaseModel):
+    family: TranslationTargetFamily
+    target_format: TranslationTargetFormat
+    requires_periodic_cell: bool
+    requires_fractional_coordinates: bool = True
+    preserves_qc_native_semantics: bool
+    emission_kind: TranslationEmissionKind
+    description: str | None = None
+
+    @field_validator("description")
+    @classmethod
+    def normalize_optional_description(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+
+class TranslatedStructureSite(BaseModel):
+    label: str
+    species: str
+    occupancy: float
+    fractional_position: Position3D | None = None
+    cartesian_position: Position3D | None = None
+
+    @field_validator("label", "species")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("occupancy")
+    @classmethod
+    def validate_occupancy(cls, value: float) -> float:
+        if value < 0.0 or value > 1.0:
+            raise ValueError("occupancy must be in [0, 1]")
+        return value
+
+
+class TranslatedStructureDiagnostic(BaseModel):
+    code: TranslationDiagnosticCode
+    severity: TranslationDiagnosticSeverity = "warning"
+    message: str
+    site_label: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("message", "site_label")
+    @classmethod
+    def normalize_string_fields(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return _require_non_blank_string(value)
+
+    @field_validator("metadata")
+    @classmethod
+    def validate_metadata(cls, value: dict[str, Any]) -> dict[str, Any]:
+        normalized: dict[str, Any] = {}
+        for key, item in value.items():
+            normalized[_require_non_blank_string(key)] = item
+        return normalized
+
+
+class TranslatedStructureArtifact(BaseModel):
+    schema_version: str = DEFAULT_TRANSLATED_STRUCTURE_SCHEMA_VERSION
+    source: TranslatedStructureSourceReference
+    target: TranslationTargetDescriptor
+    fidelity_tier: TranslationFidelityTier
+    loss_reasons: list[TranslationLossReason] = Field(default_factory=list)
+    composition: dict[str, float] = Field(default_factory=dict)
+    cell: dict[str, float] | None = None
+    sites: list[TranslatedStructureSite] = Field(default_factory=list)
+    diagnostics: list[TranslatedStructureDiagnostic] = Field(default_factory=list)
+    emitted_text: str | None = None
+
+    @field_validator("schema_version")
+    @classmethod
+    def validate_schema_version(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("emitted_text")
+    @classmethod
+    def normalize_emitted_text(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("composition")
+    @classmethod
+    def validate_composition(cls, value: dict[str, float]) -> dict[str, float]:
+        if not value:
+            return value
+        total = sum(value.values())
+        if total <= 0.0:
+            raise ValueError("composition must have positive total")
+        return {key: amount / total for key, amount in sorted(value.items())}
+
+    @field_validator("cell")
+    @classmethod
+    def validate_cell(cls, value: dict[str, float] | None) -> dict[str, float] | None:
+        if value is None:
+            return None
+        normalized: dict[str, float] = {}
+        for key, amount in value.items():
+            normalized[_require_non_blank_string(key)] = float(amount)
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_loss_semantics(self) -> TranslatedStructureArtifact:
+        if self.fidelity_tier == "lossy" and not self.loss_reasons:
+            raise ValueError("loss_reasons are required when fidelity_tier is lossy")
+        return self
 
 
 class CorpusBuildConfig(BaseModel):
