@@ -1,20 +1,20 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.5
-milestone_name: External Materials-LLM Translation Bridge MVP
+milestone_name: milestone
 current_phase: 31
-current_phase_name: Translation Contracts And Representation Loss Semantics
-current_plan: Phase planned (3 plans queued)
-status: phase 31 planned; ready to execute
-stopped_at: $gsd-execute-phase 31
-last_updated: "2026-04-06T15:02:49Z"
-last_activity: 2026-04-06 -- Phase 31 planned with research, validation, and 3 execution plans
+current_phase_name: translation-contracts-and-representation-loss-semantics
+current_plan: 2
+status: executing
+stopped_at: Completed 31-01-PLAN.md
+last_updated: "2026-04-06T23:42:25.637Z"
+last_activity: 2026-04-06
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -24,28 +24,28 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 31 — Translation Contracts And Representation Loss Semantics
+**Current focus:** Phase 31 — translation-contracts-and-representation-loss-semantics
 
 ## Current Position
 
 Current Phase: 31
-Current Phase Name: Translation Contracts And Representation Loss Semantics
+Current Phase Name: translation-contracts-and-representation-loss-semantics
 Total Phases: 3
-Current Plan: Phase planned (3 plans queued)
+Current Plan: 2
 Total Plans in Phase: 3
-Phase: 31 (Translation Contracts And Representation Loss Semantics) — PLANNED
-Plan: Ready to execute
-Status: phase 31 planned; ready to execute
-Last activity: 2026-04-06 -- Phase 31 planned with research, validation, and 3 execution plans
-Last Activity Description: Phase 31 planned with research, validation, and 3 execution plans
+Phase: 31 (translation-contracts-and-representation-loss-semantics) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-06 -- Completed 31-01-PLAN.md
+Last Activity Description: Completed 31-01-PLAN.md
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 83
+- Total plans completed: 84
 - Average duration: 12 min
 - Total execution time: archived across prior milestones
 
@@ -58,7 +58,8 @@ Progress: [░░░░░░░░░░] 0%
 | v1.2 | 19-24 | 18 | Shipped |
 | v1.3 | 25-27 | 9 | Shipped |
 | v1.4 | 28-30 | 9 | Shipped |
-| v1.5 | 31-33 | 0 | Active |
+| v1.5 | 31-33 | 1 | Active |
+| Phase 31 P01 | 6min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,10 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
   artifacts with explicit fidelity/loss metadata rather than replacements for
   Zomic as the QC-native source of truth.
 
+- [Phase 31]: Kept translation fidelity separate from corpus FidelityTier so lossy export semantics do not alter shipped LLM corpus workflows.
+- [Phase 31]: Standardized translation loss-reason names and added requires_periodic_cell metadata so later exporters can classify representational loss explicitly.
+- [Phase 31]: Exposed list_translation_targets() and resolve_translation_target() as the stable registry API for later translation phases.
+
 ### Pending Todos
 
 None yet.
@@ -129,6 +134,6 @@ None right now.
 
 ## Session Continuity
 
-Last session: 2026-04-06T07:34:37Z
-Stopped at: $gsd-execute-phase 31
-Resume file: .planning/phases/31-translation-contracts-and-representation-loss-semantics/31-01-PLAN.md
+Last session: 2026-04-06T23:42:25.633Z
+Stopped at: Completed 31-01-PLAN.md
+Resume file: None

@@ -9,7 +9,7 @@ reinforce each other instead of living in separate prototypes.
 
 ### Representation Interoperability
 
-- [ ] **LLM-27**: The platform can translate a compiled Zomic candidate into a
+- [x] **LLM-27**: The platform can translate a compiled Zomic candidate into a
   deterministic structure-interoperability artifact with explicit cell, species,
   positions, provenance, and representation metadata that downstream
   crystal/material LLM workflows can reuse.
@@ -19,7 +19,7 @@ reinforce each other instead of living in separate prototypes.
 - [ ] **LLM-29**: The platform can export at least one model-oriented
   crystal/material string encoding from the same translated candidate for
   CrystalTextLLM- or CSLLM-style downstream workflows.
-- [ ] **LLM-30**: Every translation artifact records whether it is exact,
+- [x] **LLM-30**: Every translation artifact records whether it is exact,
   anchored, approximate, or lossy relative to the source Zomic candidate, plus
   the reason when the QC-native structure cannot be represented exactly in the
   target format.
@@ -70,8 +70,8 @@ reinforce each other instead of living in separate prototypes.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LLM-27 | Phase 31 | Planned |
-| LLM-30 | Phase 31 | Planned |
+| LLM-27 | Phase 31 | Completed |
+| LLM-30 | Phase 31 | Completed |
 | LLM-28 | Phase 32 | Planned |
 | LLM-29 | Phase 32 | Planned |
 | OPS-15 | Phase 33 | Planned |
@@ -84,4 +84,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after starting milestone v1.5*
+*Last updated: 2026-04-06 after completing Phase 31 Plan 01*
