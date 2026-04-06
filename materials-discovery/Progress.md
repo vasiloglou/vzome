@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 31 Plan 02 Task 2 RED fidelity tests | Added failing translation-core coverage for conservative exact/anchored/approximate/lossy classification, explicit lossy reasons for QC-native periodic exports, and a clear unsupported-exactness failure path before implementing fidelity assessment |
 | 2026-04-06 | Phase 31 Plan 02 Task 1 translation normalization seam | Added `llm/translation.py` with deterministic normalized-artifact construction, exported translation-core helpers, introduced an explicit per-site coordinate-origin helper in structure realization, and kept the focused translation/realization slice green at 7 passing tests |
 | 2026-04-06 | Phase 31 Plan 02 Task 1 RED normalization tests | Added failing translation-core coverage for deterministic normalized artifacts, explicit coordinate-source reporting, and byte-stable output expectations, plus a structure-realization regression that locks per-site origin reporting before implementing the normalization seam |
 | 2026-04-06 | Phase 31 Plan 01 Task 2 translation target registry | Added the built-in CIF and CrystalTextLLM-style material-string target registry, exported explicit `list_translation_targets()` and `resolve_translation_target(...)` APIs, surfaced periodic-cell and QC-semantics flags on descriptors, and kept the schema slice green at 10 passing tests |
@@ -247,6 +248,8 @@
 
 ### 2026-04-06
 
+- 19:51 EDT — Added the Task 2 RED translation-fidelity tests for conservative exact/anchored/approximate/lossy classification, explicit QC-native loss reasons, and a hard failure when callers request unsupported `exact` periodic export.
+- The new coverage also locks a mixed-origin approximant candidate at `approximate` so the fidelity tier stays conservative when periodic-safe evidence is incomplete.
 - 19:49 EDT — Implemented Phase 31 Plan 02 Task 1 by adding `llm/translation.py`, exporting the translation-core API, and extending `structure_realization.py` with a stable per-site coordinate-origin helper.
 - The normalization seam now returns deterministic translated artifacts with stable site ordering, canonical cell fields, coordinate-source diagnostics, and no emitted CIF/material-string text yet; the focused pytest slice passed at `7 passed`.
 - 19:47 EDT — Started Phase 31 Plan 02 Task 1 in TDD mode by adding failing translation-core coverage for deterministic normalized artifacts, explicit coordinate-source reporting, and byte-stable repeated normalization.

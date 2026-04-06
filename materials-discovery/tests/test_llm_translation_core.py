@@ -1,23 +1,32 @@
 from __future__ import annotations
 
+import pytest
+
 from materials_discovery.backends.structure_realization import (
     candidate_cartesian_positions,
     candidate_fractional_positions,
 )
 from materials_discovery.common.schema import CandidateRecord
 from materials_discovery.llm import (
+    assess_translation_fidelity,
     infer_coordinate_sources,
     prepare_translated_structure,
     resolve_translation_target,
 )
 
 
-def _mixed_origin_candidate() -> CandidateRecord:
+def _candidate(
+    *,
+    candidate_id: str,
+    template_family: str,
+    sites: list[dict[str, object]],
+    provenance: dict[str, object],
+) -> CandidateRecord:
     return CandidateRecord.model_validate(
         {
-            "candidate_id": "translation_core_001",
+            "candidate_id": candidate_id,
             "system": "Al-Cu-Fe",
-            "template_family": "icosahedral_approximant_1_1",
+            "template_family": template_family,
             "cell": {
                 "a": 10.0,
                 "b": 10.0,
@@ -26,32 +35,111 @@ def _mixed_origin_candidate() -> CandidateRecord:
                 "beta": 90.0,
                 "gamma": 90.0,
             },
-            "sites": [
-                {
-                    "label": "S1",
-                    "qphi": [[1, 0], [0, 1], [0, 0]],
-                    "species": "Al",
-                    "occ": 1.0,
-                    "fractional_position": [0.1, 0.2, 0.3],
-                    "cartesian_position": [1.0, 2.0, 3.0],
-                },
-                {
-                    "label": "S2",
-                    "qphi": [[0, 1], [1, 0], [0, 0]],
-                    "species": "Cu",
-                    "occ": 1.0,
-                    "cartesian_position": [4.0, 5.0, 6.0],
-                },
-                {
-                    "label": "S3",
-                    "qphi": [[1, 1], [0, 1], [1, 0]],
-                    "species": "Fe",
-                    "occ": 1.0,
-                },
-            ],
+            "sites": sites,
             "composition": {"Al": 0.34, "Cu": 0.33, "Fe": 0.33},
-            "provenance": {"qc_family": ["approximant"]},
+            "provenance": provenance,
         }
+    )
+
+
+def _mixed_origin_candidate() -> CandidateRecord:
+    return _candidate(
+        candidate_id="translation_core_001",
+        template_family="icosahedral_approximant_1_1",
+        sites=[
+            {
+                "label": "S1",
+                "qphi": [[1, 0], [0, 1], [0, 0]],
+                "species": "Al",
+                "occ": 1.0,
+                "fractional_position": [0.1, 0.2, 0.3],
+                "cartesian_position": [1.0, 2.0, 3.0],
+            },
+            {
+                "label": "S2",
+                "qphi": [[0, 1], [1, 0], [0, 0]],
+                "species": "Cu",
+                "occ": 1.0,
+                "cartesian_position": [4.0, 5.0, 6.0],
+            },
+            {
+                "label": "S3",
+                "qphi": [[1, 1], [0, 1], [1, 0]],
+                "species": "Fe",
+                "occ": 1.0,
+            },
+        ],
+        provenance={"qc_family": ["approximant"]},
+    )
+
+
+def _periodic_fractional_candidate() -> CandidateRecord:
+    return _candidate(
+        candidate_id="translation_core_exact_001",
+        template_family="icosahedral_approximant_1_1",
+        sites=[
+            {
+                "label": "S1",
+                "qphi": [[1, 0], [0, 1], [0, 0]],
+                "species": "Al",
+                "occ": 1.0,
+                "fractional_position": [0.1, 0.2, 0.3],
+            },
+            {
+                "label": "S2",
+                "qphi": [[0, 1], [1, 0], [0, 0]],
+                "species": "Cu",
+                "occ": 1.0,
+                "fractional_position": [0.4, 0.5, 0.6],
+            },
+        ],
+        provenance={"qc_family": ["approximant"]},
+    )
+
+
+def _periodic_cartesian_candidate() -> CandidateRecord:
+    return _candidate(
+        candidate_id="translation_core_anchored_001",
+        template_family="cubic_proxy_1_0",
+        sites=[
+            {
+                "label": "S1",
+                "qphi": [[1, 0], [0, 1], [0, 0]],
+                "species": "Al",
+                "occ": 1.0,
+                "cartesian_position": [1.0, 2.0, 3.0],
+            },
+            {
+                "label": "S2",
+                "qphi": [[0, 1], [1, 0], [0, 0]],
+                "species": "Cu",
+                "occ": 1.0,
+                "cartesian_position": [4.0, 5.0, 6.0],
+            },
+        ],
+        provenance={"qc_family": ["approximant"]},
+    )
+
+
+def _qc_native_candidate() -> CandidateRecord:
+    return _candidate(
+        candidate_id="translation_core_lossy_001",
+        template_family="pyqcstrc_projection",
+        sites=[
+            {
+                "label": "Q1",
+                "qphi": [[1, 0], [0, 1], [1, 1]],
+                "species": "Sc",
+                "occ": 1.0,
+            },
+            {
+                "label": "Q2",
+                "qphi": [[0, 1], [1, 1], [1, 0]],
+                "species": "Zn",
+                "occ": 1.0,
+            },
+        ],
+        provenance={"qc_family": ["quasicrystal"]},
     )
 
 
@@ -108,3 +196,33 @@ def test_prepare_translated_structure_is_byte_stable_for_same_candidate_and_targ
     second = prepare_translated_structure(candidate, target)
 
     assert first.model_dump_json() == second.model_dump_json()
+
+
+def test_assess_translation_fidelity_distinguishes_exact_anchored_and_approximate() -> None:
+    target = resolve_translation_target("cif")
+
+    assert assess_translation_fidelity(_periodic_fractional_candidate(), target) == "exact"
+    assert assess_translation_fidelity(_periodic_cartesian_candidate(), target) == "anchored"
+    assert assess_translation_fidelity(_mixed_origin_candidate(), target) == "approximate"
+
+
+def test_qphi_derived_or_qc_native_candidates_cannot_silently_claim_exact_periodic_export() -> None:
+    target = resolve_translation_target("cif")
+    artifact = prepare_translated_structure(_qc_native_candidate(), target)
+
+    assert assess_translation_fidelity(_qc_native_candidate(), target) == "lossy"
+    assert artifact.fidelity_tier == "lossy"
+    assert artifact.loss_reasons == [
+        "aperiodic_to_periodic_proxy",
+        "coordinate_derivation_required",
+        "qc_semantics_dropped",
+    ]
+
+
+def test_unsupported_exactness_claim_fails_clearly() -> None:
+    with pytest.raises(ValueError, match="unsupported exactness claim"):
+        assess_translation_fidelity(
+            _qc_native_candidate(),
+            resolve_translation_target("cif"),
+            requested_fidelity="exact",
+        )
