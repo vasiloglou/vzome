@@ -12,6 +12,15 @@ from materials_discovery.llm import (
     TranslatedBenchmarkSetManifest,
     TranslatedBenchmarkSetSpec,
 )
+from materials_discovery.llm.storage import (
+    llm_serving_benchmark_dir,
+    llm_translation_export_dir,
+    translated_benchmark_contract_path,
+    translated_benchmark_excluded_path,
+    translated_benchmark_included_path,
+    translated_benchmark_manifest_path,
+    translated_benchmark_set_dir,
+)
 
 
 def _valid_spec_kwargs() -> dict[str, object]:
@@ -151,3 +160,35 @@ def test_translated_benchmark_vocabularies_are_typed_and_stable() -> None:
         "loss_posture_rejected",
         "duplicate_translation_row",
     }
+
+
+def test_translated_benchmark_storage_helpers_use_dedicated_external_set_root(
+    tmp_path,
+) -> None:
+    benchmark_set_id = "external_cif_slice_v1"
+    benchmark_dir = translated_benchmark_set_dir(benchmark_set_id, root=tmp_path)
+
+    assert benchmark_dir == (
+        tmp_path / "data" / "benchmarks" / "llm_external_sets" / benchmark_set_id
+    )
+    assert translated_benchmark_contract_path(benchmark_set_id, root=tmp_path) == (
+        benchmark_dir / "freeze_contract.json"
+    )
+    assert translated_benchmark_manifest_path(benchmark_set_id, root=tmp_path) == (
+        benchmark_dir / "manifest.json"
+    )
+    assert translated_benchmark_included_path(benchmark_set_id, root=tmp_path) == (
+        benchmark_dir / "included.jsonl"
+    )
+    assert translated_benchmark_excluded_path(benchmark_set_id, root=tmp_path) == (
+        benchmark_dir / "excluded.jsonl"
+    )
+    assert benchmark_dir != llm_translation_export_dir(benchmark_set_id, root=tmp_path)
+    assert benchmark_dir != llm_serving_benchmark_dir(benchmark_set_id, root=tmp_path)
+
+
+def test_translated_benchmark_storage_helpers_reject_blank_benchmark_ids(
+    tmp_path,
+) -> None:
+    with pytest.raises(ValueError, match="must not be blank"):
+        translated_benchmark_set_dir(" ", root=tmp_path)

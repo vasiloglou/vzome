@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 34 Plan 01 RED benchmark-pack storage tests | Extended `test_llm_translated_benchmark_schema.py` with failing storage-layout coverage for `data/benchmarks/llm_external_sets/{benchmark_set_id}/`, dedicated `freeze_contract.json` and inventory filenames, blank-ID rejection, and proof that the new artifact family stays separate from translation-export and serving-benchmark roots |
 | 2026-04-07 | Phase 34 Plan 01 translated benchmark-pack contract | Added typed translated benchmark-set spec, included/excluded row, manifest, and summary models to `llm/schema.py`, re-exported the new public surface from `materials_discovery.llm`, and kept the new benchmark-pack schema slice green against the focused validator tests |
 | 2026-04-07 | Phase 34 Plan 01 RED benchmark-pack contract tests | Added failing `test_llm_translated_benchmark_schema.py` coverage that locks the translated benchmark freeze contract shape, typed loss-posture and exclusion vocabularies, included/excluded row lineage, and manifest path/count expectations before implementing the new schema surface |
 | 2026-04-07 | Phase 33 Plan 03 translation operator docs and help coverage | Added `developers-docs/llm-translation-runbook.md`, refreshed README and docs entry points for the new translation workflow, updated the pipeline command reference and developer contract note to point operators at the runbook, and locked CLI help discoverability for `llm-translate` plus `llm-translate-inspect` |
@@ -140,6 +141,8 @@
 
 ### 2026-04-07
 
+- 01:38 EDT — Started the Phase 34 Plan 01 storage-helper RED slice by extending `tests/test_llm_translated_benchmark_schema.py`.
+- The new failing cases lock the `llm_external_sets` artifact root, dedicated freeze-contract and included/excluded inventory filenames, blank benchmark-set rejection through the shared artifact-id guard, and explicit separation from translation-export plus serving-benchmark directories.
 - 01:32 EDT — Implemented the Phase 34 Plan 01 translated benchmark-pack contract in `llm/schema.py` and exported it from `materials_discovery.llm`.
 - Added explicit benchmark-set filters, typed loss-posture and exclusion vocabularies, included/excluded row lineage models that stay additive to translation inventories, and a file-backed manifest/summary surface; the focused pytest slice turned green for the new contract tests.
 - 01:32 EDT — Started Phase 34 Plan 01 in TDD RED mode by adding `tests/test_llm_translated_benchmark_schema.py`.
