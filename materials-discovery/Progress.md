@@ -4,6 +4,8 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 36 Plan 01 comparative benchmark storage helpers | Added deterministic `llm_external` benchmark storage helpers in `llm/storage.py` for benchmark-level and per-target artifacts including `benchmark_summary.json`, `scorecard_by_case.jsonl`, `run_manifest.json`, `case_results.jsonl`, and `raw_responses.jsonl`, and locked the new artifact family in focused schema/storage coverage so it stays isolated from benchmark-set and external-target roots |
+| 2026-04-07 | Phase 36 Plan 01 comparative benchmark contract | Added typed Phase 36 benchmark-spec, target-variant, case-result, run-manifest, slice-summary, control-delta, and benchmark-summary models to `llm/schema.py`, re-exported the new public surface plus storage helpers from `materials_discovery.llm`, and added focused schema tests that lock the family-aware and fidelity-aware contract before benchmark execution lands |
 | 2026-04-07 | Phase 35 Plan 03 external-target docs and example specs | Added committed CIF and material-string external-target example specs, shipped an operator runbook for registration or inspect or smoke plus artifact layout and Phase 36 boundary notes, and refreshed the docs map plus configuration and pipeline references so the new workflow is discoverable beside translated benchmark and checkpoint docs |
 | 2026-04-07 | Phase 35 Plan 03 external-target CLI workflow | Added `mdisc llm-register-external-target`, `mdisc llm-inspect-external-target`, and `mdisc llm-smoke-external-target`, wired them to the Phase 35 registry core with repo-standard exit-code-2 failures, and locked the new command surface with focused CLI plus root-help coverage |
 | 2026-04-07 | Phase 35 Plan 02 external-target environment and smoke persistence | Added `llm/external_targets.py` with typed registration reload, package-version and platform capture, fail-closed smoke persistence tied to the registration fingerprint, public `materials_discovery.llm` exports for the Phase 35 core, and focused registry tests that validate passed and failed smoke artifacts without requiring real third-party weights |
@@ -156,6 +158,10 @@
 
 ### 2026-04-07
 
+- 03:51 EDT — Implemented the Phase 36 Plan 01 comparative benchmark contract in `llm/schema.py` and exported it from `materials_discovery.llm`.
+- Added typed benchmark specs with explicit external-target and internal-control variants, case-result and run-manifest models that preserve translated-benchmark lineage plus fidelity metadata, and scorecard contracts for overall slices, family or fidelity slices, shared eligible control deltas, and recommendation lines; the new schema slice stays additive to the Phase 34 benchmark-set and Phase 35 external-target artifacts.
+- 03:51 EDT — Added the Phase 36 Plan 01 `llm_external` benchmark storage helpers and focused schema coverage.
+- Added deterministic helpers for the benchmark root plus per-target `run_manifest.json`, `case_results.jsonl`, and `raw_responses.jsonl` paths, exposed the new helpers through `materials_discovery.llm`, and created focused `test_llm_external_benchmark_schema.py` coverage that locks the new artifact family away from `llm_external_sets` and `llm_external_models`.
 - 03:17 EDT — Finished the Phase 35 Plan 03 docs and example-spec slice for external targets.
 - Added committed CIF and material-string example target specs, shipped a dedicated external-target runbook that explains register or inspect or smoke plus the `data/llm_external_models/{model_id}/` artifact family, and refreshed the docs map plus configuration and pipeline references so the Phase 35 boundary stays explicit before Phase 36 scorecards.
 - 03:17 EDT — Implemented the Phase 35 Plan 03 external-target CLI workflow and coverage.

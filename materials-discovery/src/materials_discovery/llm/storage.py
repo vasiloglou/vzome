@@ -270,6 +270,62 @@ def llm_serving_benchmark_summary_path(
     return llm_serving_benchmark_dir(benchmark_id, root) / "benchmark_summary.json"
 
 
+def llm_external_benchmark_dir(benchmark_id: str, root: Path | None = None) -> Path:
+    normalized_benchmark_id = _require_artifact_id(benchmark_id, "benchmark_id")
+    return _artifact_root(root) / "data" / "benchmarks" / "llm_external" / normalized_benchmark_id
+
+
+def llm_external_benchmark_summary_path(
+    benchmark_id: str, root: Path | None = None
+) -> Path:
+    return llm_external_benchmark_dir(benchmark_id, root) / "benchmark_summary.json"
+
+
+def llm_external_benchmark_smoke_path(
+    benchmark_id: str, root: Path | None = None
+) -> Path:
+    return llm_external_benchmark_dir(benchmark_id, root) / "smoke_checks.json"
+
+
+def llm_external_benchmark_scorecard_by_case_path(
+    benchmark_id: str, root: Path | None = None
+) -> Path:
+    return llm_external_benchmark_dir(benchmark_id, root) / "scorecard_by_case.jsonl"
+
+
+def llm_external_benchmark_target_dir(
+    benchmark_id: str,
+    target_id: str,
+    root: Path | None = None,
+) -> Path:
+    normalized_target_id = _require_artifact_id(target_id, "target_id")
+    return llm_external_benchmark_dir(benchmark_id, root) / "targets" / normalized_target_id
+
+
+def llm_external_benchmark_target_run_manifest_path(
+    benchmark_id: str,
+    target_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_external_benchmark_target_dir(benchmark_id, target_id, root) / "run_manifest.json"
+
+
+def llm_external_benchmark_target_case_results_path(
+    benchmark_id: str,
+    target_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_external_benchmark_target_dir(benchmark_id, target_id, root) / "case_results.jsonl"
+
+
+def llm_external_benchmark_target_raw_responses_path(
+    benchmark_id: str,
+    target_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_external_benchmark_target_dir(benchmark_id, target_id, root) / "raw_responses.jsonl"
+
+
 def translated_benchmark_set_dir(
     benchmark_set_id: str, root: Path | None = None
 ) -> Path:

@@ -42,6 +42,15 @@ TranslatedBenchmarkLossPosture = Literal[
 ]
 LlmExternalTargetRunnerKey = Literal["transformers_causal_lm", "peft_causal_lm"]
 LlmExternalTargetSmokeStatus = Literal["passed", "failed"]
+LlmExternalBenchmarkTargetKind = Literal["external_target", "internal_control"]
+LlmExternalBenchmarkControlRole = Literal["promoted_default", "explicit_pin"]
+LlmExternalBenchmarkResponseStatus = Literal["succeeded", "excluded", "runtime_error"]
+LlmExternalBenchmarkParseStatus = Literal["passed", "failed", "not_attempted"]
+LlmExternalBenchmarkExclusionReason = Literal[
+    "target_family_not_supported",
+    "system_not_supported",
+    "smoke_check_failed",
+]
 TranslatedBenchmarkExclusionReason = Literal[
     "system_not_selected",
     "target_family_mismatch",
@@ -70,6 +79,10 @@ DEFAULT_LLM_CHECKPOINT_REGISTRATION_VERSION = "llm-checkpoint-registration/v1"
 DEFAULT_LLM_EXTERNAL_TARGET_REGISTRATION_VERSION = "llm-external-target-registration/v1"
 DEFAULT_LLM_EXTERNAL_TARGET_ENVIRONMENT_VERSION = "llm-external-target-environment/v1"
 DEFAULT_LLM_EXTERNAL_TARGET_SMOKE_CHECK_VERSION = "llm-external-target-smoke-check/v1"
+DEFAULT_LLM_EXTERNAL_BENCHMARK_SPEC_VERSION = "llm-external-benchmark-spec/v1"
+DEFAULT_LLM_EXTERNAL_BENCHMARK_CASE_RESULT_VERSION = "llm-external-benchmark-case-result/v1"
+DEFAULT_LLM_EXTERNAL_BENCHMARK_RUN_MANIFEST_VERSION = "llm-external-benchmark-run-manifest/v1"
+DEFAULT_LLM_EXTERNAL_BENCHMARK_SUMMARY_VERSION = "llm-external-benchmark-summary/v1"
 DEFAULT_LLM_CHECKPOINT_LIFECYCLE_INDEX_VERSION = "llm-checkpoint-lifecycle-index/v1"
 DEFAULT_LLM_CHECKPOINT_PROMOTION_SPEC_VERSION = "llm-checkpoint-promotion/v1"
 DEFAULT_LLM_CHECKPOINT_RETIREMENT_SPEC_VERSION = "llm-checkpoint-retirement/v1"
@@ -2108,6 +2121,451 @@ class TranslatedBenchmarkSetSummary(BaseModel):
         if value < 0:
             raise ValueError("count fields must be >= 0")
         return value
+
+
+class LlmExternalBenchmarkExternalTarget(BaseModel):
+    target_kind: LlmExternalBenchmarkTargetKind = "external_target"
+    target_id: str
+    label: str
+    model_id: str
+    supported_target_families: list[TranslationTargetFamily]
+    supported_systems: list[str] = Field(default_factory=list)
+    prompt_contract_id: str | None = None
+    response_parser_key: str | None = None
+    notes: str | None = None
+
+    @field_validator("target_id", "label", "model_id")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("supported_target_families")
+    @classmethod
+    def validate_supported_target_families(
+        cls, values: Sequence[TranslationTargetFamily]
+    ) -> list[TranslationTargetFamily]:
+        return _require_non_empty_string_list(values, "supported_target_families")
+
+    @field_validator("supported_systems")
+    @classmethod
+    def normalize_supported_systems(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("prompt_contract_id", "response_parser_key", "notes")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+
+class LlmExternalBenchmarkInternalControl(BaseModel):
+    target_kind: LlmExternalBenchmarkTargetKind = "internal_control"
+    target_id: str
+    label: str
+    control_role: LlmExternalBenchmarkControlRole
+    system_config_path: str
+    generation_model_lane: CampaignModelLane
+    supported_target_families: list[TranslationTargetFamily]
+    supported_systems: list[str] = Field(default_factory=list)
+    prompt_contract_id: str
+    response_parser_key: str
+    notes: str | None = None
+
+    @field_validator(
+        "target_id",
+        "label",
+        "system_config_path",
+        "prompt_contract_id",
+        "response_parser_key",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("supported_target_families")
+    @classmethod
+    def validate_supported_target_families(
+        cls, values: Sequence[TranslationTargetFamily]
+    ) -> list[TranslationTargetFamily]:
+        return _require_non_empty_string_list(values, "supported_target_families")
+
+    @field_validator("supported_systems")
+    @classmethod
+    def normalize_supported_systems(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("notes")
+    @classmethod
+    def normalize_optional_notes(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+
+class LlmExternalBenchmarkSpec(BaseModel):
+    schema_version: str = DEFAULT_LLM_EXTERNAL_BENCHMARK_SPEC_VERSION
+    benchmark_id: str
+    benchmark_set_manifest_path: str
+    external_targets: list[LlmExternalBenchmarkExternalTarget] = Field(default_factory=list)
+    internal_controls: list[LlmExternalBenchmarkInternalControl] = Field(default_factory=list)
+    operator_note: str | None = None
+
+    @field_validator("schema_version", "benchmark_id", "benchmark_set_manifest_path")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("operator_note")
+    @classmethod
+    def normalize_operator_note(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @model_validator(mode="after")
+    def validate_targets(self) -> LlmExternalBenchmarkSpec:
+        if not self.external_targets:
+            raise ValueError("external_targets must not be empty")
+        if not self.internal_controls:
+            raise ValueError("internal_controls must not be empty")
+        target_ids = [target.target_id for target in self.external_targets] + [
+            target.target_id for target in self.internal_controls
+        ]
+        if len(set(target_ids)) != len(target_ids):
+            raise ValueError("benchmark target IDs must be unique")
+        return self
+
+
+class LlmExternalBenchmarkSliceSummary(BaseModel):
+    eligible_count: int
+    excluded_count: int = 0
+    response_success_rate: float | None = None
+    parse_success_rate: float | None = None
+    exact_text_match_rate: float | None = None
+    composition_match_rate: float | None = None
+    mean_latency_s: float | None = None
+
+    @field_validator("eligible_count", "excluded_count")
+    @classmethod
+    def validate_non_negative_counts(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("count fields must be >= 0")
+        return value
+
+    @field_validator(
+        "response_success_rate",
+        "parse_success_rate",
+        "exact_text_match_rate",
+        "composition_match_rate",
+    )
+    @classmethod
+    def validate_optional_rates(cls, value: float | None) -> float | None:
+        if value is None:
+            return None
+        if value < 0.0 or value > 1.0:
+            raise ValueError("rate fields must be between 0.0 and 1.0")
+        return value
+
+    @field_validator("mean_latency_s")
+    @classmethod
+    def validate_mean_latency(cls, value: float | None) -> float | None:
+        if value is not None and value < 0.0:
+            raise ValueError("mean_latency_s must be >= 0")
+        return value
+
+
+class LlmExternalBenchmarkControlDelta(BaseModel):
+    control_target_id: str
+    control_label: str
+    control_role: LlmExternalBenchmarkControlRole
+    shared_eligible_count: int
+    parse_success_rate_delta: float | None = None
+    exact_text_match_rate_delta: float | None = None
+    composition_match_rate_delta: float | None = None
+
+    @field_validator("control_target_id", "control_label")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("shared_eligible_count")
+    @classmethod
+    def validate_shared_eligible_count(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("shared_eligible_count must be >= 0")
+        return value
+
+
+class LlmExternalBenchmarkCaseResult(BaseModel):
+    schema_version: str = DEFAULT_LLM_EXTERNAL_BENCHMARK_CASE_RESULT_VERSION
+    benchmark_id: str
+    benchmark_set_id: str
+    benchmark_set_manifest_path: str
+    target_id: str
+    target_label: str
+    target_kind: LlmExternalBenchmarkTargetKind
+    control_role: LlmExternalBenchmarkControlRole | None = None
+    model_id: str | None = None
+    candidate_id: str
+    source_export_id: str
+    source_bundle_manifest_path: str
+    system: str
+    target_family: TranslationTargetFamily
+    fidelity_tier: TranslationFidelityTier
+    loss_reasons: list[TranslationLossReason] = Field(default_factory=list)
+    diagnostic_codes: list[TranslationDiagnosticCode] = Field(default_factory=list)
+    composition: dict[str, float]
+    prompt_contract_id: str
+    response_parser_key: str
+    response_status: LlmExternalBenchmarkResponseStatus
+    parse_status: LlmExternalBenchmarkParseStatus = "not_attempted"
+    exclusion_reason: LlmExternalBenchmarkExclusionReason | None = None
+    exclusion_detail: str | None = None
+    prompt_text_hash: str
+    response_text_hash: str | None = None
+    latency_s: float | None = None
+    exact_text_match: bool | None = None
+    composition_match: bool | None = None
+    error_detail: str | None = None
+
+    @field_validator(
+        "schema_version",
+        "benchmark_id",
+        "benchmark_set_id",
+        "benchmark_set_manifest_path",
+        "target_id",
+        "target_label",
+        "candidate_id",
+        "source_export_id",
+        "source_bundle_manifest_path",
+        "system",
+        "prompt_contract_id",
+        "response_parser_key",
+        "prompt_text_hash",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("model_id", "exclusion_detail", "response_text_hash", "error_detail")
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("loss_reasons", "diagnostic_codes")
+    @classmethod
+    def normalize_string_lists(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("latency_s")
+    @classmethod
+    def validate_latency(cls, value: float | None) -> float | None:
+        if value is not None and value < 0.0:
+            raise ValueError("latency_s must be >= 0")
+        return value
+
+    @model_validator(mode="after")
+    def validate_case_result_contract(self) -> LlmExternalBenchmarkCaseResult:
+        total = sum(self.composition.values())
+        if total <= 0.0:
+            raise ValueError("composition must have positive total")
+        self.composition = {
+            key: value / total for key, value in sorted(self.composition.items())
+        }
+        if self.target_kind == "internal_control" and self.control_role is None:
+            raise ValueError("internal_control results must record control_role")
+        if self.target_kind != "internal_control" and self.control_role is not None:
+            raise ValueError("only internal_control results may record control_role")
+        if self.response_status == "excluded":
+            if self.exclusion_reason is None:
+                raise ValueError("excluded results must record exclusion_reason")
+            if self.parse_status != "not_attempted":
+                raise ValueError("excluded results must use parse_status 'not_attempted'")
+        elif self.exclusion_reason is not None:
+            raise ValueError("only excluded results may record exclusion_reason")
+        return self
+
+
+class LlmExternalBenchmarkTargetRunManifest(BaseModel):
+    schema_version: str = DEFAULT_LLM_EXTERNAL_BENCHMARK_RUN_MANIFEST_VERSION
+    benchmark_id: str
+    benchmark_set_id: str
+    benchmark_set_manifest_path: str
+    target_id: str
+    target_label: str
+    target_kind: LlmExternalBenchmarkTargetKind
+    control_role: LlmExternalBenchmarkControlRole | None = None
+    model_id: str | None = None
+    registration_path: str | None = None
+    environment_path: str | None = None
+    smoke_check_path: str | None = None
+    prompt_contract_id: str
+    response_parser_key: str
+    prompt_contract_hash: str | None = None
+    started_at_utc: str
+    completed_at_utc: str
+    eligible_count: int
+    excluded_count: int
+    run_manifest_path: str
+    case_results_path: str
+    raw_responses_path: str
+    serving_identity: LlmServingIdentity | None = None
+
+    @field_validator(
+        "schema_version",
+        "benchmark_id",
+        "benchmark_set_id",
+        "benchmark_set_manifest_path",
+        "target_id",
+        "target_label",
+        "prompt_contract_id",
+        "response_parser_key",
+        "started_at_utc",
+        "completed_at_utc",
+        "run_manifest_path",
+        "case_results_path",
+        "raw_responses_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator(
+        "model_id",
+        "registration_path",
+        "environment_path",
+        "smoke_check_path",
+        "prompt_contract_hash",
+    )
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("eligible_count", "excluded_count")
+    @classmethod
+    def validate_non_negative_counts(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("count fields must be >= 0")
+        return value
+
+    @model_validator(mode="after")
+    def validate_target_manifest_contract(self) -> LlmExternalBenchmarkTargetRunManifest:
+        if self.target_kind == "internal_control" and self.control_role is None:
+            raise ValueError("internal_control manifests must record control_role")
+        if self.target_kind != "internal_control" and self.control_role is not None:
+            raise ValueError("only internal_control manifests may record control_role")
+        return self
+
+
+class LlmExternalBenchmarkTargetSummary(BaseModel):
+    target_id: str
+    target_label: str
+    target_kind: LlmExternalBenchmarkTargetKind
+    control_role: LlmExternalBenchmarkControlRole | None = None
+    model_id: str | None = None
+    registration_path: str | None = None
+    environment_path: str | None = None
+    smoke_check_path: str | None = None
+    run_manifest_path: str
+    eligible_count: int
+    excluded_count: int
+    overall: LlmExternalBenchmarkSliceSummary
+    by_target_family: dict[TranslationTargetFamily, LlmExternalBenchmarkSliceSummary] = Field(
+        default_factory=dict
+    )
+    by_fidelity_tier: dict[TranslationFidelityTier, LlmExternalBenchmarkSliceSummary] = Field(
+        default_factory=dict
+    )
+    control_deltas: list[LlmExternalBenchmarkControlDelta] = Field(default_factory=list)
+    recommendation_lines: list[str] = Field(default_factory=list)
+    failed: bool = False
+    serving_identity: LlmServingIdentity | None = None
+
+    @field_validator("target_id", "target_label", "run_manifest_path")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator(
+        "model_id",
+        "registration_path",
+        "environment_path",
+        "smoke_check_path",
+    )
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("eligible_count", "excluded_count")
+    @classmethod
+    def validate_non_negative_counts(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("count fields must be >= 0")
+        return value
+
+    @field_validator("recommendation_lines")
+    @classmethod
+    def normalize_recommendation_lines(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("by_target_family")
+    @classmethod
+    def normalize_by_target_family(
+        cls,
+        values: dict[TranslationTargetFamily, LlmExternalBenchmarkSliceSummary],
+    ) -> dict[TranslationTargetFamily, LlmExternalBenchmarkSliceSummary]:
+        return dict(sorted(values.items()))
+
+    @field_validator("by_fidelity_tier")
+    @classmethod
+    def normalize_by_fidelity_tier(
+        cls,
+        values: dict[TranslationFidelityTier, LlmExternalBenchmarkSliceSummary],
+    ) -> dict[TranslationFidelityTier, LlmExternalBenchmarkSliceSummary]:
+        return dict(sorted(values.items()))
+
+    @model_validator(mode="after")
+    def validate_target_summary_contract(self) -> LlmExternalBenchmarkTargetSummary:
+        if self.target_kind == "internal_control" and self.control_role is None:
+            raise ValueError("internal_control summaries must record control_role")
+        if self.target_kind != "internal_control" and self.control_role is not None:
+            raise ValueError("only internal_control summaries may record control_role")
+        return self
+
+
+class LlmExternalBenchmarkSummary(BaseModel):
+    schema_version: str = DEFAULT_LLM_EXTERNAL_BENCHMARK_SUMMARY_VERSION
+    benchmark_id: str
+    benchmark_set_id: str
+    benchmark_set_manifest_path: str
+    generated_at_utc: str
+    targets: list[LlmExternalBenchmarkTargetSummary] = Field(default_factory=list)
+    recommendation_lines: list[str] = Field(default_factory=list)
+    failed_targets: list[str] = Field(default_factory=list)
+    summary_path: str | None = None
+
+    @field_validator(
+        "schema_version",
+        "benchmark_id",
+        "benchmark_set_id",
+        "benchmark_set_manifest_path",
+        "generated_at_utc",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("recommendation_lines", "failed_targets")
+    @classmethod
+    def normalize_string_fields(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("summary_path")
+    @classmethod
+    def normalize_optional_summary_path(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @model_validator(mode="after")
+    def validate_target_uniqueness(self) -> LlmExternalBenchmarkSummary:
+        target_ids = [target.target_id for target in self.targets]
+        if len(set(target_ids)) != len(target_ids):
+            raise ValueError("benchmark summary target IDs must be unique")
+        return self
 
 
 class TranslationBundleManifest(BaseModel):
