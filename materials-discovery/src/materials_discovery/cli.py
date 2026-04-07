@@ -115,6 +115,11 @@ from materials_discovery.llm.checkpoints import (
     retire_checkpoint,
 )
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
+from materials_discovery.llm.external_targets import (
+    load_registered_external_target,
+    register_external_target,
+    smoke_external_target,
+)
 from materials_discovery.llm.generate import generate_llm_candidates
 from materials_discovery.llm.translation_bundle import export_translation_bundle
 from materials_discovery.llm.translated_benchmark import freeze_translated_benchmark_set
@@ -142,6 +147,8 @@ from materials_discovery.llm.schema import (
     LlmCampaignSpec,
     LlmCheckpointPromotionSpec,
     LlmCheckpointRetirementSpec,
+    LlmExternalTargetEnvironmentManifest,
+    LlmExternalTargetSmokeCheck,
     LlmServingIdentity,
     TranslatedBenchmarkExcludedRow,
     TranslatedBenchmarkIncludedRow,
@@ -948,6 +955,102 @@ def llm_register_checkpoint_command(
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"llm-register-checkpoint failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-register-external-target")
+def llm_register_external_target_command(
+    spec: Path = typer.Option(..., "--spec", exists=False, dir_okay=False),
+) -> None:
+    """Register one curated external benchmark target from a typed spec file."""
+    try:
+        summary = register_external_target(spec, root=workspace_root())
+        typer.echo(summary.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-register-external-target failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-inspect-external-target")
+def llm_inspect_external_target_command(
+    model_id: str = typer.Option(..., "--model-id"),
+) -> None:
+    """Inspect immutable registration facts plus latest environment and smoke artifacts."""
+    try:
+        registration, _ = load_registered_external_target(model_id, root=workspace_root())
+
+        typer.echo(f"Model ID: {registration.model_id}")
+        typer.echo(f"Model family: {registration.model_family}")
+        typer.echo(f"Provider/model: {registration.provider} / {registration.model}")
+        typer.echo(f"Runner: {registration.runner_key}")
+        typer.echo(
+            "Supported systems: "
+            + (", ".join(registration.supported_systems) if registration.supported_systems else "all")
+        )
+        typer.echo(
+            "Target families: " + ", ".join(registration.supported_target_families)
+        )
+        typer.echo(f"Fingerprint: {registration.fingerprint}")
+        typer.echo(f"Registration artifact: {registration.registration_path}")
+        typer.echo(f"Snapshot: {registration.local_snapshot_path}")
+        if registration.snapshot_manifest_path is not None:
+            typer.echo(f"Snapshot manifest: {registration.snapshot_manifest_path}")
+        typer.echo(f"Prompt contract: {registration.prompt_contract_id}")
+        typer.echo(f"Response parser: {registration.response_parser_key}")
+
+        environment_path = _workspace_path(registration.environment_path)
+        environment: LlmExternalTargetEnvironmentManifest | None = None
+        if environment_path.exists():
+            environment = LlmExternalTargetEnvironmentManifest.model_validate(
+                load_json_object(environment_path)
+            )
+        typer.echo(f"Environment artifact: {registration.environment_path}")
+        if environment is None:
+            typer.echo("Environment status: not captured")
+        else:
+            typer.echo(f"Environment fingerprint: {environment.registration_fingerprint}")
+            typer.echo(f"Environment captured: {environment.captured_at_utc}")
+            typer.echo(f"Python: {environment.python_version}")
+            typer.echo(
+                "Platform: "
+                + " / ".join(
+                    part
+                    for part in (
+                        environment.platform_system,
+                        environment.platform_release,
+                        environment.platform_machine,
+                    )
+                    if part
+                )
+            )
+            typer.echo(f"Packages tracked: {len(environment.package_versions)}")
+
+        smoke_path = _workspace_path(registration.smoke_check_path)
+        smoke: LlmExternalTargetSmokeCheck | None = None
+        if smoke_path.exists():
+            smoke = LlmExternalTargetSmokeCheck.model_validate(load_json_object(smoke_path))
+        typer.echo(f"Smoke artifact: {registration.smoke_check_path}")
+        if smoke is None:
+            typer.echo("Smoke status: not run")
+        else:
+            typer.echo(f"Smoke status: {smoke.status}")
+            typer.echo(f"Smoke checked: {smoke.checked_at_utc}")
+            typer.echo(f"Smoke detail: {smoke.detail or 'none'}")
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-inspect-external-target failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-smoke-external-target")
+def llm_smoke_external_target_command(
+    model_id: str = typer.Option(..., "--model-id"),
+) -> None:
+    """Capture environment lineage and persist a smoke artifact for one target."""
+    try:
+        smoke = smoke_external_target(model_id, root=workspace_root())
+        typer.echo(smoke.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-smoke-external-target failed: {exc}")
         raise typer.Exit(code=2)
 
 

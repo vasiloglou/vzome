@@ -287,6 +287,17 @@ def test_cli_help_lists_translation_workflow_commands() -> None:
     assert "llm-translated-benchmark-inspect" in result.stdout
 
 
+def test_cli_help_lists_external_target_workflow_commands() -> None:
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["--help"])
+
+    assert result.exit_code == 0
+    assert "llm-register-external-target" in result.stdout
+    assert "llm-inspect-external-target" in result.stdout
+    assert "llm-smoke-external-target" in result.stdout
+
+
 def test_cli_export_zomic_success(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     runner = CliRunner()
     design_path = tmp_path / "demo.yaml"

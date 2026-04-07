@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 35 Plan 03 external-target CLI workflow | Added `mdisc llm-register-external-target`, `mdisc llm-inspect-external-target`, and `mdisc llm-smoke-external-target`, wired them to the Phase 35 registry core with repo-standard exit-code-2 failures, and locked the new command surface with focused CLI plus root-help coverage |
 | 2026-04-07 | Phase 35 Plan 02 external-target environment and smoke persistence | Added `llm/external_targets.py` with typed registration reload, package-version and platform capture, fail-closed smoke persistence tied to the registration fingerprint, public `materials_discovery.llm` exports for the Phase 35 core, and focused registry tests that validate passed and failed smoke artifacts without requiring real third-party weights |
 | 2026-04-07 | Phase 35 Plan 02 external-target registration core | Added `register_external_target(...)`, `load_registered_external_target(...)`, and spec loading plus fingerprint conflict checks for immutable benchmark-target registrations, normalized repo-relative snapshot paths into `registration.json`, and locked the registry behavior with focused tmp-path coverage in `test_llm_external_target_registry.py` |
 | 2026-04-07 | Phase 35 Plan 01 external-target storage helpers | Added deterministic `llm_external_models` storage helpers in `llm/storage.py` for the external-target root plus `registration.json`, `environment.json`, and `smoke_check.json`, re-exported the new helpers from `materials_discovery.llm`, and extended the focused schema tests so this artifact family stays isolated from checkpoint directories |
@@ -154,6 +155,8 @@
 
 ### 2026-04-07
 
+- 03:17 EDT — Implemented the Phase 35 Plan 03 external-target CLI workflow and coverage.
+- Added `llm-register-external-target`, `llm-inspect-external-target`, and `llm-smoke-external-target` to `cli.py`, kept the repo-standard exit-code-2 failure posture for missing specs or unknown model IDs or invalid artifacts, and locked the new command/help surface with focused CLI tests that exercise real registration and smoke persistence in a temporary workspace.
 - 02:59 EDT — Finished the Phase 35 Plan 02 environment-capture and smoke persistence pass in `llm/external_targets.py`.
 - Added typed environment capture with Python, platform, optional package-version, and snapshot-lineage fields, persisted `environment.json` and `smoke_check.json` under the dedicated external-target root, and kept the smoke path fail-closed on missing snapshot inputs while still writing a typed failed result for later inspect surfaces.
 - 02:59 EDT — Implemented the Phase 35 Plan 02 external-target registration core and registry tests.
