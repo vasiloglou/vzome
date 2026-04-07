@@ -116,6 +116,7 @@ from materials_discovery.llm.checkpoints import (
 )
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
+from materials_discovery.llm.translation_bundle import export_translation_bundle
 from materials_discovery.llm.launch import (
     build_serving_identity,
     resolve_campaign_launch,
@@ -141,6 +142,8 @@ from materials_discovery.llm.schema import (
     LlmCheckpointPromotionSpec,
     LlmCheckpointRetirementSpec,
     LlmServingIdentity,
+    TranslationBundleManifest,
+    TranslationInventoryRow,
 )
 from materials_discovery.llm.storage import (
     llm_acceptance_approval_path,
@@ -150,6 +153,7 @@ from materials_discovery.llm.storage import (
     llm_campaign_outcome_snapshot_path,
     llm_campaign_resolved_launch_path,
     llm_campaign_spec_path,
+    llm_translate_stage_manifest_path,
     llm_serving_benchmark_smoke_path,
     llm_serving_benchmark_summary_path,
 )
@@ -1638,6 +1642,109 @@ def llm_serving_benchmark_command(
         typer.echo(f"Benchmark summary: {summary_path}")
     except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
         _emit_error(f"llm-serving-benchmark failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-translate")
+def llm_translate_command(
+    config: Path = typer.Option(..., "--config", exists=False, dir_okay=False),
+    input: Path = typer.Option(..., "--input", exists=False, dir_okay=False),
+    target: str = typer.Option(..., "--target"),
+    export_id: str = typer.Option(..., "--export-id"),
+) -> None:
+    """Export candidate JSONL rows into deterministic CIF or material-string translation bundles."""
+    try:
+        system_config = _load_system_config(config)
+        system_slug = _system_slug(system_config.system_name)
+        if not input.exists():
+            raise FileNotFoundError(f"translation input candidates file not found: {input}")
+
+        raw_candidates = load_jsonl(input)
+        candidates = [CandidateRecord.model_validate(row) for row in raw_candidates]
+        campaign_lineage = _resolve_campaign_lineage(system_slug, candidates)
+        benchmark_ctx = _load_benchmark_context(system_config, system_slug)
+        benchmark_ctx_dict = benchmark_ctx.as_dict()
+        stage_manifest_path = llm_translate_stage_manifest_path(
+            system_slug,
+            export_id,
+            root=workspace_root(),
+        )
+
+        summary = export_translation_bundle(
+            candidates=candidates,
+            input_path=input,
+            target_family=target,
+            export_id=export_id,
+            root=workspace_root(),
+            stage_manifest_path=str(stage_manifest_path),
+            source_lineage=campaign_lineage,
+            benchmark_context=benchmark_ctx_dict,
+        )
+
+        manifest = build_manifest(
+            stage="llm_translate",
+            config=system_config,
+            backend_mode=system_config.backend.mode,
+            backend_versions=_backend_versions_for_stage(system_config, "llm_translate"),
+            output_paths={
+                "translation_bundle_manifest_json": Path(summary.manifest_path),
+                "translation_inventory_jsonl": Path(summary.inventory_path),
+            },
+            source_lineage=campaign_lineage,
+            benchmark_context=benchmark_ctx_dict,
+        )
+        write_manifest(manifest, stage_manifest_path)
+
+        typer.echo(
+            summary.model_copy(update={"stage_manifest_path": str(stage_manifest_path)}).model_dump_json()
+        )
+    except (FileNotFoundError, ValidationError, ValueError, KeyError) as exc:
+        _emit_error(f"llm-translate failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-translate-inspect")
+def llm_translate_inspect_command(
+    manifest: Path = typer.Option(..., "--manifest", exists=False, dir_okay=False),
+    candidate_id: str | None = typer.Option(None, "--candidate-id"),
+) -> None:
+    """Inspect a translation bundle manifest and summarize candidate export rows."""
+    try:
+        if not manifest.exists():
+            raise FileNotFoundError(f"translation bundle manifest not found: {manifest}")
+
+        bundle = TranslationBundleManifest.model_validate(load_json_object(manifest))
+        inventory = [
+            TranslationInventoryRow.model_validate(row)
+            for row in load_jsonl(_workspace_path(bundle.inventory_path))
+        ]
+
+        if candidate_id is not None:
+            inventory = [row for row in inventory if row.candidate_id == candidate_id]
+            if not inventory:
+                raise ValueError(f"candidate_id not found in translation bundle: {candidate_id}")
+
+        typer.echo(f"Export ID: {bundle.export_id}")
+        typer.echo(f"Target: {bundle.target_family} ({bundle.target_format})")
+        typer.echo(f"Input: {bundle.input_path}")
+        typer.echo(f"Candidate count: {bundle.candidate_count}")
+        typer.echo(f"Lossy count: {bundle.lossy_count}")
+        if bundle.stage_manifest_path is not None:
+            typer.echo(f"Stage manifest: {bundle.stage_manifest_path}")
+
+        for row in inventory:
+            typer.echo(f"{row.candidate_id} [{row.fidelity_tier}]")
+            typer.echo(f"Payload: {row.payload_path}")
+            typer.echo(
+                "Loss reasons: "
+                + (", ".join(row.loss_reasons) if row.loss_reasons else "none")
+            )
+            typer.echo(
+                "Diagnostics: "
+                + (", ".join(row.diagnostic_codes) if row.diagnostic_codes else "none")
+            )
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-translate-inspect failed: {exc}")
         raise typer.Exit(code=2)
 
 
