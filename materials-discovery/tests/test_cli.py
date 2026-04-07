@@ -283,6 +283,8 @@ def test_cli_help_lists_translation_workflow_commands() -> None:
     assert result.exit_code == 0
     assert "llm-translate" in result.stdout
     assert "llm-translate-inspect" in result.stdout
+    assert "llm-translated-benchmark-freeze" in result.stdout
+    assert "llm-translated-benchmark-inspect" in result.stdout
 
 
 def test_cli_export_zomic_success(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:

@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 34 Plan 03 RED translated benchmark CLI tests | Added failing `test_llm_translated_benchmark_cli.py` coverage for the new freeze and inspect commands, including JSON summary output, clear exit-code-2 failures, human-readable inspect traces with `--show included|excluded|all` plus `--candidate-id`, and top-level CLI help discoverability before wiring the commands into `cli.py` |
 | 2026-04-07 | Phase 34 Plan 02 acceptance artifact-name follow-up | Added explicit artifact-name assertions in the freeze persistence tests and a matching module note in `llm/translated_benchmark.py` so the fixed `freeze_contract.json`, `manifest.json`, `included.jsonl`, and `excluded.jsonl` contract remains visible in the code surface while still flowing through the storage helpers |
 | 2026-04-07 | Phase 34 Plan 02 persisted freeze artifacts and public exports | Extended `llm/translated_benchmark.py` to write normalized `freeze_contract.json`, `included.jsonl`, `excluded.jsonl`, and `manifest.json` with source bundle lineage plus exclusion-reason tallies, added the tally field to the benchmark-pack manifest schema, re-exported the freeze helpers from `materials_discovery.llm`, and turned the focused persistence suite green |
 | 2026-04-07 | Phase 34 Plan 02 RED persisted freeze-artifact tests | Extended `test_llm_translated_benchmark_freeze.py` with failing coverage that requires `freeze_contract.json` and `manifest.json` writes, typed manifest lineage plus exclusion-reason tallies, repeat-run byte stability for all freeze artifacts, and public `materials_discovery.llm` exports for the freeze helpers before the persistence pass lands |
@@ -147,6 +148,8 @@
 
 ### 2026-04-07
 
+- 02:10 EDT — Started Phase 34 Plan 03 in TDD RED mode by adding translated benchmark CLI tests and help coverage.
+- The new failing coverage requires `mdisc llm-translated-benchmark-freeze` to emit a JSON summary from a file-backed spec, locks clear exit-code-2 failures for missing specs or invalid freeze contracts, defines the human-readable inspect trace for benchmark-set metadata and included or excluded rows, and extends root help discoverability to the new translated benchmark workflow before `cli.py` exposes those commands.
 - 01:58 EDT — Added a small acceptance follow-up for the Phase 34 Plan 02 persistence pass.
 - Kept the implementation on storage helpers, but made the fixed artifact-family filenames explicit again through direct test assertions and a brief module note so the plan acceptance greps can see the frozen file contract in-code without changing the runtime path logic.
 - 01:57 EDT — Finished the Phase 34 Plan 02 persistence pass across the freeze module, schema, and public `llm` exports.
