@@ -251,6 +251,57 @@ config. Phase 20 uses exactly that pattern: generation can stay on
 `general_purpose` while `llm_evaluate.model_lane` selects
 `specialized_materials` for synthesis-aware assessment.
 
+### External benchmark target registration specs (Phase 35)
+
+Phase 35 adds standalone YAML specs for curated external benchmark targets.
+These specs are not embedded in `SystemConfig`; they are operator-authored files
+passed directly to:
+
+- `mdisc llm-register-external-target --spec PATH`
+- `mdisc llm-inspect-external-target --model-id ID`
+- `mdisc llm-smoke-external-target --model-id ID`
+
+The repo ships two example templates:
+
+- `configs/llm/al_cu_fe_external_cif_target.yaml`
+- `configs/llm/al_cu_fe_external_material_string_target.yaml`
+
+Those files demonstrate the required contract shape, but their snapshot paths
+and revision placeholders must be replaced with a real downloaded model before
+registration succeeds.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `model_id` | `str` | Yes | Stable identifier for the registered target and its artifact directory |
+| `model_family` | `str` | Yes | Human-readable model family label used in inspect output |
+| `supported_systems` | `list[str]` | No | Optional list of systems the target is intended to support; empty means operator-managed scope |
+| `supported_target_families` | `list["cif" \| "material_string"]` | Yes | Translation target families this runtime is expected to consume |
+| `runner_key` | `"transformers_causal_lm" \| "peft_causal_lm"` | Yes | Runtime seam the target expects later benchmark execution to reuse |
+| `provider` | `str` | Yes | Provider label such as `huggingface` |
+| `model` | `str` | Yes | Provider/model identifier for human-readable lineage |
+| `model_revision` | `str` | Yes | Pinned model revision used to derive the immutable fingerprint |
+| `tokenizer_revision` | `str \| None` | No | Optional tokenizer revision if it differs from `model_revision` |
+| `local_snapshot_path` | `str` | Yes | Local snapshot directory; may be spec-relative, workspace-relative, or absolute |
+| `snapshot_manifest_path` | `str \| None` | No | Optional manifest file that travels with the local snapshot |
+| `dtype` | `str \| None` | No | Optional runtime dtype hint for later benchmark orchestration |
+| `quantization` | `str \| None` | No | Optional quantization hint for later benchmark orchestration |
+| `prompt_contract_id` | `str` | Yes | Translation prompt or contract identifier that the target expects |
+| `response_parser_key` | `str` | Yes | Parser label that later benchmark execution should use for responses |
+| `notes` | `str \| None` | No | Optional operator notes preserved in `registration.json` |
+
+Registration writes one deterministic artifact family under
+`data/llm_external_models/{model_id}/`:
+
+- `registration.json`
+- `environment.json`
+- `smoke_check.json`
+
+Important boundary:
+
+- the CLI registers, inspects, and smoke-tests a target
+- the CLI does **not** download external weights
+- the CLI does **not** run comparative benchmark scorecards yet
+
 ### LlmEvaluateConfig Reference
 
 `LlmEvaluateConfig` is the additive assessment block used by

@@ -38,6 +38,9 @@ future phase.
 | LLM translation bundle inspection | `mdisc llm-translate-inspect` | `llm/` | Implemented (Phase 33 MVP) |
 | Translated benchmark-pack freeze | `mdisc llm-translated-benchmark-freeze` | `llm/` | Implemented (Phase 34 MVP) |
 | Translated benchmark-pack inspection | `mdisc llm-translated-benchmark-inspect` | `llm/` | Implemented (Phase 34 MVP) |
+| External target registration | `mdisc llm-register-external-target` | `llm/` | Implemented (Phase 35 MVP) |
+| External target inspection | `mdisc llm-inspect-external-target` | `llm/` | Implemented (Phase 35 MVP) |
+| External target smoke check | `mdisc llm-smoke-external-target` | `llm/` | Implemented (Phase 35 MVP) |
 
 ## Quickstart
 
@@ -88,6 +91,7 @@ uv run mdisc llm-translated-benchmark-inspect --manifest data/benchmarks/llm_ext
 | How do I compute an acceptance pack and get dry-run next steps? | [LLM Integration](llm-integration.md) |
 | How do I export CIF or CrystalTextLLM-style bundles from candidate JSONL? | [LLM Translation Runbook](llm-translation-runbook.md) |
 | How do I freeze and inspect translated benchmark packs for external-model evaluation? | [Translated Benchmark Runbook](llm-translated-benchmark-runbook.md) |
+| How do I register, inspect, and smoke-test one external benchmark target? | [External Target Runbook](llm-external-target-runbook.md) |
 | What fidelity and loss rules govern translation exports? | [LLM Translation Contract](llm-translation-contract.md) |
 
 ## Scope

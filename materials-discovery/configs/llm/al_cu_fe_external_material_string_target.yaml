@@ -1,0 +1,18 @@
+model_id: al_cu_fe_external_material_string_demo
+model_family: CrystalTextLLM-compatible
+supported_systems:
+  - Al-Cu-Fe
+supported_target_families:
+  - material_string
+runner_key: transformers_causal_lm
+provider: huggingface
+model: example-org/al-cu-fe-external-material-string-demo
+model_revision: replace-with-downloaded-commit
+tokenizer_revision: replace-with-tokenizer-commit
+local_snapshot_path: data/llm_external_snapshots/al_cu_fe_external_material_string_demo
+snapshot_manifest_path: data/llm_external_snapshots/al_cu_fe_external_material_string_demo/manifest.json
+dtype: bfloat16
+quantization: 4bit
+prompt_contract_id: crystaltextllm_material_string_v1
+response_parser_key: crystaltextllm_material_string
+notes: Replace the snapshot paths and pinned revisions after downloading a local material-string-capable external model snapshot.

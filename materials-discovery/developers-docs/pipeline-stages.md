@@ -7,9 +7,9 @@ common error-handling pattern: `FileNotFoundError`, `ValidationError`, and
 `ValueError` are caught, printed to stderr, and the process exits with code 2.
 `mdisc export-zomic` also catches `RuntimeError` so subprocess export failures are
 reported with the same exit code. Most commands print a JSON summary object to
-stdout on success; `mdisc llm-translate-inspect` and
-`mdisc llm-translated-benchmark-inspect` intentionally print human-readable
-summaries instead.
+stdout on success; `mdisc llm-inspect-external-target`,
+`mdisc llm-translate-inspect`, and `mdisc llm-translated-benchmark-inspect`
+intentionally print human-readable summaries instead.
 
 Path placeholders used below:
 
@@ -1332,6 +1332,154 @@ Human-readable summary lines to stdout.
 
 ---
 
+## 22. `mdisc llm-register-external-target`
+
+Register one curated external benchmark target from a typed spec file.
+
+### CLI syntax
+
+```
+mdisc llm-register-external-target --spec PATH
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--spec` | PATH | Yes | -- | Path to a typed external-target registration YAML |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Registration spec YAML | operator-selected, e.g. `{workspace}/configs/llm/al_cu_fe_external_cif_target.yaml` | must describe one curated external target |
+| Local snapshot directory | referenced by `local_snapshot_path` | must exist |
+| Snapshot manifest file | referenced by `snapshot_manifest_path` when present | optional, but if present it must exist |
+
+### Internal steps
+
+1. **Load the typed spec.** Validate `LlmExternalTargetRegistrationSpec` from the supplied YAML file.
+2. **Resolve snapshot lineage.** Normalize spec-relative paths against the spec location and fail early if the snapshot or optional manifest is missing.
+3. **Normalize storage paths.** Persist workspace-relative snapshot paths when the files live under the repository workspace.
+4. **Build the registration fingerprint.** Hash immutable target facts only so repeated registrations stay idempotent while conflicting reuse fails clearly.
+5. **Write `registration.json`.** Persist the typed registration artifact under `data/llm_external_models/{model_id}/`.
+6. **Emit summary.** Print `LlmExternalTargetRegistrationSummary` as JSON to stdout.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| External-target registration JSON | `{workspace}/data/llm_external_models/{model_id}/registration.json` |
+
+### Return type
+
+`LlmExternalTargetRegistrationSummary` (JSON to stdout).
+
+### Failure rules
+
+- Missing spec or missing snapshot lineage exits with code 2.
+- Invalid spec data exits with code 2.
+- Reusing a `model_id` with a different immutable fingerprint exits with code 2 instead of overwriting the existing registration silently.
+
+---
+
+## 23. `mdisc llm-inspect-external-target`
+
+Print a human-readable summary of one registered external target and, when
+present, its latest environment and smoke artifacts.
+
+### CLI syntax
+
+```
+mdisc llm-inspect-external-target --model-id TEXT
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--model-id` | STR | Yes | -- | Registered external-target identifier |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| External-target registration JSON | `{workspace}/data/llm_external_models/{model_id}/registration.json` | `mdisc llm-register-external-target` |
+| Environment manifest JSON | path recorded in `registration.json` | optional, produced by `mdisc llm-smoke-external-target` |
+| Smoke artifact JSON | path recorded in `registration.json` | optional, produced by `mdisc llm-smoke-external-target` |
+
+### Internal steps
+
+1. **Load the registration.** Read `registration.json` and validate it as `LlmExternalTargetRegistration`.
+2. **Resolve optional artifacts.** When `environment.json` or `smoke_check.json` exists, validate them through their typed schema models.
+3. **Print immutable target identity.** Emit model family, provider/model, runner, supported systems, target families, fingerprint, snapshot lineage, and prompt/parser contract details.
+4. **Print readiness artifacts.** Show the environment and smoke artifact paths plus captured status when those files exist; otherwise print explicit not-yet-captured markers.
+
+### Artifacts
+
+This command is read-only. It does not write new files.
+
+### Return type
+
+Human-readable summary lines to stdout.
+
+### Failure rules
+
+- Unknown `model_id` exits with code 2.
+- Invalid registration, environment, or smoke artifact JSON exits with code 2.
+
+---
+
+## 24. `mdisc llm-smoke-external-target`
+
+Capture one external target's current environment lineage and write a typed
+smoke artifact.
+
+### CLI syntax
+
+```
+mdisc llm-smoke-external-target --model-id TEXT
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--model-id` | STR | Yes | -- | Registered external-target identifier |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| External-target registration JSON | `{workspace}/data/llm_external_models/{model_id}/registration.json` | `mdisc llm-register-external-target` |
+
+### Internal steps
+
+1. **Load the registration.** Resolve the external target by `model_id`.
+2. **Capture environment lineage.** Collect Python version, platform details, optional package versions, and CUDA visibility context tied to the registration fingerprint.
+3. **Resolve snapshot readiness.** Fail closed when the registered snapshot lineage no longer exists or cannot be reconstructed.
+4. **Write typed artifacts.** Persist `environment.json` and `smoke_check.json` under the target artifact directory.
+5. **Emit summary.** Print `LlmExternalTargetSmokeCheck` as JSON to stdout.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Environment manifest JSON | `{workspace}/data/llm_external_models/{model_id}/environment.json` |
+| Smoke result JSON | `{workspace}/data/llm_external_models/{model_id}/smoke_check.json` |
+
+### Return type
+
+`LlmExternalTargetSmokeCheck` (JSON to stdout).
+
+### Failure rules
+
+- Unknown `model_id` exits with code 2.
+- Invalid registration data exits with code 2.
+- Missing snapshot lineage still writes a typed failed smoke artifact and returns code 0 for the smoke command itself only when the registration could be loaded successfully.
+
+---
+
 ## Pipeline data flow
 
 The commands are designed to run in sequence. Each stage reads the output of a
@@ -1382,4 +1530,8 @@ for external crystal-oriented consumers; those commands read existing
 Phase 34 extends that branch with `llm-translated-benchmark-freeze` and
 `llm-translated-benchmark-inspect`, which turn selected translation bundles
 into one explicit benchmark-pack contract for later external-target and
-scorecard phases.
+scorecard phases. Phase 35 adds `llm-register-external-target`,
+`llm-inspect-external-target`, and `llm-smoke-external-target` as the runtime
+registration side branch: they consume standalone target specs, write
+`data/llm_external_models/{model_id}/` artifacts, and stop short of Phase 36
+comparative benchmark execution.
