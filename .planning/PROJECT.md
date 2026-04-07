@@ -4,10 +4,9 @@
 
 `v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, and `v1.5` are shipped.
 
-The translation bridge milestone is now complete and archived. `v1.6` is now
-active, with the translated benchmark-pack contract and external-target
-registration workflow shipped through Phase 35 and comparative scorecards
-remaining in Phase 36.
+The translation bridge milestone is complete and archived. `v1.6` is now fully
+implemented, with translated benchmark packs, external-target registration, and
+comparative scorecards all shipped and ready for milestone audit/archival.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -63,17 +62,16 @@ Archive references:
 
 **Current Milestone:** `v1.6` — Translator-Backed External Materials-LLM Benchmark MVP
 
-**Status:** Phase 35 complete on 2026-04-07. Phase 36 comparative scorecards
-and control-arm benchmarking are now the active execution target.
+**Status:** Phase 36 completed on 2026-04-07. Milestone `v1.6` is ready for
+audit, archival, and next-milestone selection.
 
 **Planning focus:**
-- benchmark a small curated set of downloaded external materials LLMs against
-  the shipped CIF and material-string artifacts and current internal controls
-- keep the milestone CLI-first, operator-governed, and file-backed while
-  turning benchmark outcomes into durable scorecards
-- use current promoted or pinned Zomic checkpoints as the control arm
-- limit any source-coverage or QA work to the minimum needed to support the
-  comparative benchmark set cleanly
+- audit the completed benchmark-first milestone against `LLM-32`, `LLM-33`,
+  and `OPS-18`
+- archive the shipped roadmap/requirements and preserve the Phase 36 scorecard
+  evidence as the handoff boundary
+- use the benchmark outputs to choose whether the next milestone should invest
+  in training automation, campaign automation, or source-QA follow-up
 
 **Most Recent Shipped Milestone:** `v1.5` — External Materials-LLM Translation Bridge MVP
 
