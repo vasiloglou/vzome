@@ -46,17 +46,17 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LLM-31 | Pending roadmap | Pending |
-| OPS-17 | Pending roadmap | Pending |
-| LLM-32 | Pending roadmap | Pending |
-| LLM-33 | Pending roadmap | Pending |
-| OPS-18 | Pending roadmap | Pending |
+| LLM-31 | Phase 34 | Pending |
+| OPS-17 | Phase 35 | Pending |
+| LLM-32 | Phase 36 | Pending |
+| LLM-33 | Phase 36 | Pending |
+| OPS-18 | Phase 36 | Pending |
 
 **Coverage:**
 - v1.6 requirements: 5 total
-- Mapped to phases: 0
-- Unmapped: 5
+- Mapped to phases: 5
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-07*
-*Last updated: 2026-04-07 after starting milestone v1.6*
+*Last updated: 2026-04-07 after creating milestone v1.6 roadmap*
