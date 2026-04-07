@@ -21,8 +21,8 @@
 - Phase 31 is complete and verified: the repo now has the typed translation
   contract, target registry, deterministic normalization seam, fixture-backed
   regression coverage, and a developer handoff note for exporters.
-- Phase 32 is the active next milestone step: concrete CIF and
-  material-string exporters from the new translated-structure artifact.
+- Phase 32 is planned and ready to execute: concrete CIF and material-string
+  exporters from the new translated-structure artifact.
 
 ## v1.4 — Adapted Checkpoint Lifecycle and Promotion MVP
 
