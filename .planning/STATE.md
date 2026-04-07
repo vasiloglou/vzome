@@ -4,17 +4,17 @@ milestone: v1.6
 milestone_name: Translator-Backed External Materials-LLM Benchmark MVP
 current_phase: 34
 current_phase_name: Benchmark Pack and Freeze Contract
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 34-01-PLAN.md
-last_updated: "2026-04-07T05:42:52.518Z"
+stopped_at: Completed 34-02-PLAN.md
+last_updated: "2026-04-07T06:01:47.217Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -31,21 +31,21 @@ See: `.planning/PROJECT.md` (updated 2026-04-07)
 Current Phase: 34
 Current Phase Name: Benchmark Pack and Freeze Contract
 Total Phases: 3
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 3
 Phase: 34 (Benchmark Pack and Freeze Contract) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-07
 Last Activity Description: Phase 34 execution started
 
-Progress: [███░░░░░░░] 33%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 98
+- Total plans completed: 99
 - Average duration: archived across prior milestones
 - Total execution time: archived across prior milestones
 
@@ -61,6 +61,7 @@ Progress: [███░░░░░░░] 33%
 | v1.5 | 31-33 | 9 | Shipped |
 | v1.6 | 34-36 | 0 | Roadmapped |
 | Phase 34 P01 | 8 min | 2 tasks | 5 files |
+| Phase 34-benchmark-pack-and-freeze-contract P02 | 10 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,9 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Roadmap v1.6]: Sequence work as frozen benchmark pack, reproducible external target registration, then fidelity-aware comparative scorecards.
 - [Phase 34]: Benchmark-pack rows preserve source_export_id and source_bundle_manifest_path explicitly so later freeze and inspect flows can trace back to shipped translation bundles without parsing ad hoc metadata.
 - [Phase 34]: Benchmark-pack artifacts use a dedicated data/benchmarks/llm_external_sets/{benchmark_set_id}/ root to avoid overloading translation-export or serving-benchmark directories.
+- [Phase 34-benchmark-pack-and-freeze-contract]: Freeze evaluation applies system, target-family, fidelity-tier, and loss-posture rules in a fixed order before duplicate handling so every rejected row gets one typed exclusion reason.
+- [Phase 34-benchmark-pack-and-freeze-contract]: The persisted freeze contract normalizes bundle manifest ordering so manifest, contract, and inventory bytes remain stable across repeat runs.
+- [Phase 34-benchmark-pack-and-freeze-contract]: Conflicting payload hashes for the same candidate ID fail closed instead of picking an arbitrary winning bundle.
 
 ### Pending Todos
 
@@ -85,6 +89,6 @@ None right now.
 
 ## Session Continuity
 
-Last session: 2026-04-07T05:42:32.777Z
-Stopped at: Completed 34-01-PLAN.md
+Last session: 2026-04-07T06:01:24.865Z
+Stopped at: Completed 34-02-PLAN.md
 Resume file: None

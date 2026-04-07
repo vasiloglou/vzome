@@ -98,6 +98,6 @@ next-milestone decision.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 34. Benchmark Pack and Freeze Contract | 1/3 | In Progress|  |
+| 34. Benchmark Pack and Freeze Contract | 2/3 | In Progress|  |
 | 35. External Target Registration and Reproducible Execution | 0/TBD | Not started | - |
 | 36. Comparative Benchmark Workflow and Fidelity-Aware Scorecards | 0/TBD | Not started | - |
