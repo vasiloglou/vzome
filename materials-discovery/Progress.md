@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 32 Plan 02 Task 2 RED cross-target dispatch tests | Replaced the temporary `material_string` NotImplemented expectation with failing dispatch coverage that requires byte-stable emission for both target families, preserved artifact identity across CIF and material-string exports, parseable dispatched material-string output, and a clear unsupported-family failure path |
 | 2026-04-06 | Phase 32 Plan 02 Task 1 CrystalTextLLM material-string emitter | Added `emit_material_string_text(...)` and public `materials_discovery.llm` exports for the first concrete material-string target, keeping the emitted body parser-compatible with CrystalTextLLM lengths/angles/species/coordinate lines while preserving provenance and loss metadata on the translated artifact itself |
 | 2026-04-06 | Phase 32 Plan 02 Task 1 RED CrystalTextLLM material-string tests | Added failing `test_llm_translation_material_string.py` coverage for a real CrystalTextLLM-compatible body layout, parser-style line decoding, preserved site order, explicit loss metadata staying on the artifact contract, and byte-stable repeated emission before implementing the first material-string exporter |
 | 2026-04-06 | Phase 32 Plan 01 Task 2 CIF site-order test fix | Corrected the new CIF site-order assertion to ignore the `loop_` control line after the first green run showed the serializer was preserving site order and the test was counting the CIF loop marker as data |
@@ -259,6 +260,8 @@
 
 ### 2026-04-06
 
+- 23:23 EDT — Started Phase 32 Plan 02 Task 2 in TDD RED mode by replacing the old `material_string` NotImplemented boundary with real cross-target dispatch expectations.
+- The new failing coverage requires `emit_translated_structure(...)` to handle both built-in target families, preserve shared artifact identity across CIF and material-string exports, keep dispatched material-string output parseable, and still fail clearly on unsupported target families.
 - 23:20 EDT — Implemented Phase 32 Plan 02 Task 1 by adding `emit_material_string_text(...)` and exporting it from `materials_discovery.llm`.
 - The new emitter intentionally follows the autonomous-mode deviation instead of the literal plan body: it writes a bare CrystalTextLLM-compatible body with lengths, angles, and alternating species/fractional-coordinate lines, while source linkage, fidelity tier, and loss reasons remain on the translated artifact fields so the raw text stays parser-compatible.
 - 23:18 EDT — Started Phase 32 Plan 02 Task 1 in TDD RED mode by adding `tests/test_llm_translation_material_string.py`.

@@ -26,8 +26,9 @@ def _periodic_artifact(target_family: str = "cif"):
     return prepare_translated_structure(candidate, resolve_translation_target(target_family))
 
 
-def test_emit_translated_structure_is_byte_stable_for_same_artifact() -> None:
-    artifact = _periodic_artifact()
+@pytest.mark.parametrize("target_family", ["cif", "material_string"])
+def test_emit_translated_structure_is_byte_stable_for_same_artifact(target_family: str) -> None:
+    artifact = _periodic_artifact(target_family)
 
     first = emit_translated_structure(artifact)
     second = emit_translated_structure(artifact)
@@ -60,8 +61,11 @@ def test_validate_translated_structure_for_export_rejects_missing_fractional_coo
         validate_translated_structure_for_export(invalid_artifact)
 
 
-def test_emit_translated_structure_returns_copy_with_emitted_text_without_mutating_input() -> None:
-    artifact = _periodic_artifact()
+@pytest.mark.parametrize("target_family", ["cif", "material_string"])
+def test_emit_translated_structure_returns_copy_with_emitted_text_without_mutating_input(
+    target_family: str,
+) -> None:
+    artifact = _periodic_artifact(target_family)
 
     emitted = emit_translated_structure(artifact)
 
@@ -69,14 +73,41 @@ def test_emit_translated_structure_returns_copy_with_emitted_text_without_mutati
     assert emitted.emitted_text
     assert artifact.emitted_text is None
     assert emitted.source == artifact.source
+    assert emitted.fidelity_tier == artifact.fidelity_tier
+    assert emitted.loss_reasons == artifact.loss_reasons
+    assert emitted.diagnostics == artifact.diagnostics
+    assert emitted.composition == artifact.composition
+    assert emitted.cell == artifact.cell
     assert emitted.sites == artifact.sites
 
 
-def test_emit_translated_structure_rejects_material_string_until_serializer_lands() -> None:
-    artifact = _periodic_artifact("material_string")
+def test_cross_target_exports_preserve_normalized_identity_for_same_candidate() -> None:
+    candidate = _load_candidate_fixture("al_cu_fe_periodic_candidate.json")
+    cif_artifact = prepare_translated_structure(candidate, resolve_translation_target("cif"))
+    material_artifact = prepare_translated_structure(
+        candidate,
+        resolve_translation_target("material_string"),
+    )
 
-    with pytest.raises(
-        NotImplementedError,
-        match="material_string export not implemented yet",
-    ):
+    emitted_cif = emit_translated_structure(cif_artifact)
+    emitted_material = emit_translated_structure(material_artifact)
+
+    assert emitted_cif.source == emitted_material.source
+    assert emitted_cif.fidelity_tier == emitted_material.fidelity_tier
+    assert emitted_cif.loss_reasons == emitted_material.loss_reasons
+    assert emitted_cif.diagnostics == emitted_material.diagnostics
+    assert emitted_cif.composition == emitted_material.composition
+    assert emitted_cif.cell == emitted_material.cell
+    assert emitted_cif.sites == emitted_material.sites
+    assert emitted_cif.emitted_text != emitted_material.emitted_text
+
+
+def test_emit_translated_structure_rejects_unsupported_target_families() -> None:
+    artifact = _periodic_artifact().model_copy(
+        update={
+            "target": _periodic_artifact().target.model_copy(update={"family": "unsupported_family"})
+        }
+    )
+
+    with pytest.raises(ValueError, match="unsupported translation export target family"):
         emit_translated_structure(artifact)

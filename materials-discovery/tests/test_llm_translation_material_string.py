@@ -6,6 +6,7 @@ from pathlib import Path
 from materials_discovery.common.schema import CandidateRecord
 from materials_discovery.llm import (
     emit_material_string_text,
+    emit_translated_structure,
     prepare_translated_structure,
     resolve_translation_target,
 )
@@ -81,3 +82,14 @@ def test_emit_material_string_text_is_byte_stable_for_same_artifact() -> None:
     second = emit_material_string_text(artifact)
 
     assert first == second
+
+
+def test_emit_translated_structure_uses_material_string_body_formatter() -> None:
+    artifact = _artifact("al_cu_fe_periodic_candidate.json")
+
+    emitted_artifact = emit_translated_structure(artifact)
+
+    assert artifact.emitted_text is None
+    assert emitted_artifact.emitted_text == emit_material_string_text(artifact)
+    _, _, site_rows = _parse_material_string(emitted_artifact.emitted_text)
+    assert [species for species, _ in site_rows] == [site.species for site in artifact.sites]
