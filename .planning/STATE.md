@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Translator-Backed External Materials-LLM Benchmark MVP
-current_phase: 35
-current_phase_name: external target registration and reproducible execution
+current_phase: 36
+current_phase_name: comparative benchmark workflow and fidelity aware scorecards
 current_plan: Not started
-status: verifying
-stopped_at: Completed 34-03-PLAN.md
-last_updated: "2026-04-07T06:26:54.719Z"
+status: executing
+stopped_at: Completed 35-03-PLAN.md
+last_updated: "2026-04-07T07:29:56.996Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 6
   percent: 67
 ---
 
@@ -24,20 +24,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-07)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 34 — Benchmark Pack and Freeze Contract
+**Current focus:** Phase 36 — Comparative Benchmark Workflow and Fidelity-Aware Scorecards
 
 ## Current Position
 
-Current Phase: 35
-Current Phase Name: external target registration and reproducible execution
+Current Phase: 36
+Current Phase Name: comparative benchmark workflow and fidelity aware scorecards
 Total Phases: 3
 Current Plan: Not started
 Total Plans in Phase: 3
-Phase: 34 (Benchmark Pack and Freeze Contract) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Phase: 36 (Comparative Benchmark Workflow and Fidelity-Aware Scorecards) — EXECUTING
+Plan: 0 of 3
+Status: Phase 35 complete — ready to begin Phase 36
 Last activity: 2026-04-07
-Last Activity Description: Phase 34 complete, transitioned to Phase 35
+Last Activity Description: Phase 35 complete, transitioned to Phase 36
 
 Progress: [███████░░░] 67%
 
@@ -94,5 +94,5 @@ None right now.
 ## Session Continuity
 
 Last session: 2026-04-07T06:19:09.482Z
-Stopped at: Completed 34-03-PLAN.md
+Stopped at: Completed 35-03-PLAN.md
 Resume file: None

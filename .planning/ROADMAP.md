@@ -23,7 +23,7 @@ reproducible, fidelity-aware workflow.
 
 - [x] **Phase 34: Benchmark Pack and Freeze Contract** - Freeze a (completed 2026-04-07)
   fidelity-aware translated benchmark set from shipped bundles.
-- [ ] **Phase 35: External Target Registration and Reproducible Execution** -
+- [x] **Phase 35: External Target Registration and Reproducible Execution** - (completed 2026-04-07)
   Register curated downloaded external models as immutable, smoke-tested
   benchmark targets.
 - [ ] **Phase 36: Comparative Benchmark Workflow and Fidelity-Aware
@@ -99,5 +99,5 @@ next-milestone decision.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 34. Benchmark Pack and Freeze Contract | 3/3 | Complete    | 2026-04-07 |
-| 35. External Target Registration and Reproducible Execution | 0/TBD | Not started | - |
+| 35. External Target Registration and Reproducible Execution | 0/TBD | Complete    | 2026-04-07 |
 | 36. Comparative Benchmark Workflow and Fidelity-Aware Scorecards | 0/TBD | Not started | - |

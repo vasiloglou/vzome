@@ -11,7 +11,7 @@
 
 ### External Benchmark Operations
 
-- [ ] **OPS-17**: Operator can register each curated downloaded external materials LLM as an immutable benchmark target with pinned revision or snapshot identity, compatible translation families, runtime settings, smoke checks, and reproducibility-grade environment lineage before benchmark execution.
+- [x] **OPS-17**: Operator can register each curated downloaded external materials LLM as an immutable benchmark target with pinned revision or snapshot identity, compatible translation families, runtime settings, smoke checks, and reproducibility-grade environment lineage before benchmark execution.
 - [ ] **OPS-18**: Operator can inspect translated benchmark sets, external model registrations, and benchmark summaries through CLI and documentation surfaces that expose fidelity posture, control-arm identity, exclusions, and environment capture without reverse-engineering raw artifacts.
 
 ### Comparative Benchmarking
@@ -47,7 +47,7 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | LLM-31 | Phase 34 | Complete |
-| OPS-17 | Phase 35 | Pending |
+| OPS-17 | Phase 35 | Complete |
 | LLM-32 | Phase 36 | Pending |
 | LLM-33 | Phase 36 | Pending |
 | OPS-18 | Phase 36 | Pending |
