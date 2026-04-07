@@ -13,6 +13,13 @@ from materials_discovery.llm import (
     LlmExternalTargetSmokeCheck,
     LlmExternalTargetSmokeStatus,
 )
+from materials_discovery.llm.storage import (
+    llm_checkpoint_dir,
+    llm_external_target_dir,
+    llm_external_target_environment_path,
+    llm_external_target_registration_path,
+    llm_external_target_smoke_path,
+)
 
 
 def _valid_spec_kwargs() -> dict[str, object]:
@@ -171,3 +178,24 @@ def test_external_target_vocabularies_are_typed_and_stable() -> None:
     }
     assert set(get_args(LlmExternalTargetSmokeStatus)) == {"passed", "failed"}
 
+
+def test_external_target_storage_helpers_use_dedicated_model_root(tmp_path) -> None:
+    model_id = "crystallm_cif_v1"
+    model_dir = llm_external_target_dir(model_id, root=tmp_path)
+
+    assert model_dir == tmp_path / "data" / "llm_external_models" / model_id
+    assert llm_external_target_registration_path(model_id, root=tmp_path) == (
+        model_dir / "registration.json"
+    )
+    assert llm_external_target_environment_path(model_id, root=tmp_path) == (
+        model_dir / "environment.json"
+    )
+    assert llm_external_target_smoke_path(model_id, root=tmp_path) == (
+        model_dir / "smoke_check.json"
+    )
+    assert model_dir != llm_checkpoint_dir(model_id, root=tmp_path)
+
+
+def test_external_target_storage_helpers_reject_blank_model_ids(tmp_path) -> None:
+    with pytest.raises(ValueError, match="must not be blank"):
+        llm_external_target_dir(" ", root=tmp_path)

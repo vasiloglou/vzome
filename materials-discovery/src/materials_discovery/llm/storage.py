@@ -156,6 +156,32 @@ def llm_checkpoint_registration_path(
     return llm_checkpoint_dir(checkpoint_id, root) / "registration.json"
 
 
+def llm_external_target_dir(model_id: str, root: Path | None = None) -> Path:
+    normalized_model_id = _require_artifact_id(model_id, "model_id")
+    return _artifact_root(root) / "data" / "llm_external_models" / normalized_model_id
+
+
+def llm_external_target_registration_path(
+    model_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_external_target_dir(model_id, root) / "registration.json"
+
+
+def llm_external_target_environment_path(
+    model_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_external_target_dir(model_id, root) / "environment.json"
+
+
+def llm_external_target_smoke_path(
+    model_id: str,
+    root: Path | None = None,
+) -> Path:
+    return llm_external_target_dir(model_id, root) / "smoke_check.json"
+
+
 def llm_checkpoint_family_dir(
     checkpoint_family: str,
     root: Path | None = None,

@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 35 Plan 01 external-target storage helpers | Added deterministic `llm_external_models` storage helpers in `llm/storage.py` for the external-target root plus `registration.json`, `environment.json`, and `smoke_check.json`, re-exported the new helpers from `materials_discovery.llm`, and extended the focused schema tests so this artifact family stays isolated from checkpoint directories |
 | 2026-04-07 | Phase 35 Plan 01 external-target contract | Added typed external-target registration, environment-manifest, smoke-check, and registration-summary models to `llm/schema.py`, re-exported the new public surface from `materials_discovery.llm`, and kept the new schema slice focused on immutable benchmark-target identity plus reproducibility metadata |
 | 2026-04-07 | Phase 34 Plan 03 translated benchmark runbook, example spec, and demo bundles | Added a committed `configs/llm/al_cu_fe_translated_benchmark_freeze.yaml`, shipped two repo-backed Phase 34 demo translation bundles under `data/llm_translation_exports/`, taught the freeze loader to accept YAML specs, and added a dedicated translated-benchmark runbook plus docs-map and pipeline-reference updates that keep Phase 35 runtime registration and Phase 36 scorecards explicitly deferred |
 | 2026-04-07 | Phase 34 Plan 03 translated benchmark CLI commands | Added `mdisc llm-translated-benchmark-freeze` and `mdisc llm-translated-benchmark-inspect` to `cli.py`, kept the repo’s exit-code-2 error pattern for missing specs or manifests plus invalid contract requests, and added a human-readable inspect trace for benchmark-set metadata, included rows, excluded rows, and `--show` or `--candidate-id` filtering |
@@ -151,6 +152,8 @@
 
 ### 2026-04-07
 
+- 02:59 EDT — Added the Phase 35 Plan 01 external-target storage helpers in `llm/storage.py` and re-exported them from `materials_discovery.llm`.
+- Added deterministic helpers for the `llm_external_models` root plus fixed `registration.json`, `environment.json`, and `smoke_check.json` filenames, and extended the focused schema test file so the new artifact family is locked apart from `llm_checkpoints`.
 - 02:59 EDT — Implemented the Phase 35 Plan 01 external-target contract in `llm/schema.py` and exported it from `materials_discovery.llm`.
 - Added explicit external-target identity and compatibility fields, typed reproducibility-environment and smoke-result contracts, deterministic path pointers for later inspect flows, and focused schema coverage that keeps the new surface benchmark-specific instead of leaking into checkpoint lifecycle or SystemConfig.
 - 02:24 EDT — Finished the Phase 34 Plan 03 operator-doc and example-spec slice.
