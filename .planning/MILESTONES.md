@@ -1,5 +1,30 @@
 # Milestones
 
+## v1.6 — Translator-Backed External Materials-LLM Benchmark MVP
+
+**Status:** Shipped on 2026-04-07
+**Phases:** 34-36
+**Plans:** 9
+
+### Highlights
+
+- Added typed translated benchmark-pack freezing, deterministic `llm_external`
+  artifact layout, and inspectable included/excluded benchmark inventories.
+- Shipped immutable external-target registration plus reproducibility-grade
+  environment/smoke artifacts and CLI inspect flows for curated downloaded
+  materials LLMs.
+- Added one shared comparative benchmark workflow, fidelity-aware scorecards,
+  periodic-safe recommendation logic, and operator execute/inspect surfaces
+  with a committed example spec and runbook.
+- Closed the milestone with passing phase verifications and a passing
+  milestone audit.
+
+### Archives
+
+- `.planning/milestones/v1.6-ROADMAP.md`
+- `.planning/milestones/v1.6-REQUIREMENTS.md`
+- `.planning/v1.6-MILESTONE-AUDIT.md`
+
 ## v1.5 — External Materials-LLM Translation Bridge MVP
 
 **Status:** Shipped on 2026-04-07

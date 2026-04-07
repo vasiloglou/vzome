@@ -1,20 +1,20 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.6
-milestone_name: Translator-Backed External Materials-LLM Benchmark MVP
-current_phase: 36
-current_phase_name: comparative benchmark workflow and fidelity aware scorecards
-current_plan: Completed 36-03-PLAN.md
-status: ready_for_milestone_audit
-stopped_at: Completed 36-03-PLAN.md
+milestone: none
+milestone_name: no active milestone
+current_phase: null
+current_phase_name: null
+current_plan: No active plan
+status: idle
+stopped_at: Archived v1.6 milestone
 last_updated: "2026-04-07T08:26:52Z"
 last_activity: 2026-04-07
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -23,29 +23,33 @@ progress:
 
 See: `.planning/PROJECT.md` (updated 2026-04-07)
 
-**Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Milestone audit and archival for `v1.6`
+**Core value:** Build one reproducible system where trusted materials data,
+physically grounded no-DFT validation, and LLM-guided structure generation
+reinforce each other instead of living in separate prototypes.
+**Current focus:** Select the next milestone using the archived `v1.6`
+benchmark evidence.
 
 ## Current Position
 
-Current Phase: 36
-Current Phase Name: comparative benchmark workflow and fidelity aware scorecards
-Total Phases: 3
-Current Plan: Completed 36-03-PLAN.md
-Total Plans in Phase: 3
-Phase: 36 (Comparative Benchmark Workflow and Fidelity-Aware Scorecards) — COMPLETE
-Plan: 3 of 3
-Status: Phase 36 complete — ready for milestone audit
+Current Milestone: none
+Current Phase: none
+Current Phase Name: none
+Total Phases: 0
+Current Plan: No active plan
+Total Plans in Phase: 0
+Phase: none
+Plan: none
+Status: `v1.6` shipped and archived; no active milestone is open
 Last activity: 2026-04-07
-Last Activity Description: Phase 36 verified complete and milestone moved to audit-ready state
+Last Activity Description: Archived v1.6 milestone and reset planning state
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 99
+- Total plans completed: 108
 - Average duration: archived across prior milestones
 - Total execution time: archived across prior milestones
 
@@ -59,29 +63,19 @@ Progress: [██████████] 100%
 | v1.3 | 25-27 | 9 | Shipped |
 | v1.4 | 28-30 | 9 | Shipped |
 | v1.5 | 31-33 | 9 | Shipped |
-| v1.6 | 34-36 | 9 | Implemented |
-| Phase 34 P01 | 8 min | 2 tasks | 5 files |
-| Phase 34-benchmark-pack-and-freeze-contract P02 | 10 min | 2 tasks | 5 files |
-| Phase 34-benchmark-pack-and-freeze-contract P03 | 15 min | 2 tasks | 16 files |
+| v1.6 | 34-36 | 9 | Shipped |
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
+Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
 
-- [Milestone v1.5]: Translation bundles are now the reusable external-artifact bridge, and fidelity or loss must stay explicit.
-- [Milestone v1.6]: Keep the milestone CLI-first, operator-governed, file-backed, and benchmark-first.
-- [Milestone v1.6]: Reuse shipped translation bundles, benchmark patterns, manifests, and promoted or pinned internal checkpoint lineage rather than building a generic external serving platform.
-- [Roadmap v1.6]: Sequence work as frozen benchmark pack, reproducible external target registration, then fidelity-aware comparative scorecards.
-- [Phase 34]: Benchmark-pack rows preserve source_export_id and source_bundle_manifest_path explicitly so later freeze and inspect flows can trace back to shipped translation bundles without parsing ad hoc metadata.
-- [Phase 34]: Benchmark-pack artifacts use a dedicated data/benchmarks/llm_external_sets/{benchmark_set_id}/ root to avoid overloading translation-export or serving-benchmark directories.
-- [Phase 34-benchmark-pack-and-freeze-contract]: Freeze evaluation applies system, target-family, fidelity-tier, and loss-posture rules in a fixed order before duplicate handling so every rejected row gets one typed exclusion reason.
-- [Phase 34-benchmark-pack-and-freeze-contract]: The persisted freeze contract normalizes bundle manifest ordering so manifest, contract, and inventory bytes remain stable across repeat runs.
-- [Phase 34-benchmark-pack-and-freeze-contract]: Conflicting payload hashes for the same candidate ID fail closed instead of picking an arbitrary winning bundle.
-- [Phase 34-benchmark-pack-and-freeze-contract]: Used one Al-Cu-Fe CIF demo bundle plus one Al-Cu-Fe material-string demo bundle so the shipped example spec shows both included and excluded rows without inventing a separate cross-system benchmark story.
-- [Phase 34-benchmark-pack-and-freeze-contract]: Kept llm-translated-benchmark-inspect human-readable, matching the earlier translation-bundle inspect pattern instead of adding another JSON artifact command.
-- [Phase 34-benchmark-pack-and-freeze-contract]: Accepted YAML freeze specs in the core loader because the committed operator config lives under configs/llm and should run directly without JSON conversion.
+- Keep the platform CLI-first, file-backed, and operator-governed until
+  stronger evidence justifies broader automation.
+- Use `v1.6` benchmark scorecards to decide whether the next milestone should
+  prioritize training automation, campaign automation, or benchmark-driven
+  source QA.
 
 ### Pending Todos
 
@@ -89,10 +83,10 @@ None yet.
 
 ### Blockers/Concerns
 
-None right now.
+No active blockers. The next milestone has not been selected yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T06:19:09.482Z
-Stopped at: Completed 35-03-PLAN.md
+Last session: 2026-04-07T08:26:52Z
+Stopped at: Archived v1.6 milestone
 Resume file: None

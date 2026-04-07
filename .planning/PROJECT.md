@@ -2,11 +2,11 @@
 
 ## Current State
 
-`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, and `v1.5` are shipped.
+`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, and `v1.6` are shipped.
 
-The translation bridge milestone is complete and archived. `v1.6` is now fully
-implemented, with translated benchmark packs, external-target registration, and
-comparative scorecards all shipped and ready for milestone audit/archival.
+The translator-backed benchmark milestone is now archived. The repo currently
+has no active milestone, and the next planning cycle should choose among the
+validated follow-up directions surfaced by `v1.6`.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -20,7 +20,7 @@ LLM operating surface:
 - the groundwork for a new interoperability layer between Zomic-native
   candidates and external downloadable materials LLM formats
 
-## Current Milestone: v1.6 Translator-Backed External Materials-LLM Benchmark MVP
+## Most Recent Shipped Milestone: v1.6 Translator-Backed External Materials-LLM Benchmark MVP
 
 **Goal:** Determine whether downloaded external materials LLMs merit deeper
 workflow investment by benchmarking them against the shipped translation
@@ -57,23 +57,24 @@ Archive references:
 - `.planning/milestones/v1.5-ROADMAP.md`
 - `.planning/milestones/v1.5-REQUIREMENTS.md`
 - `.planning/v1.5-MILESTONE-AUDIT.md`
+- `.planning/milestones/v1.6-ROADMAP.md`
+- `.planning/milestones/v1.6-REQUIREMENTS.md`
+- `.planning/v1.6-MILESTONE-AUDIT.md`
 
-## Current Milestone Status
+## Current Planning Status
 
-**Current Milestone:** `v1.6` — Translator-Backed External Materials-LLM Benchmark MVP
+**Active Milestone:** none
 
-**Status:** Phase 36 completed on 2026-04-07. Milestone `v1.6` is ready for
-audit, archival, and next-milestone selection.
+**Status:** `v1.6` shipped and archived on 2026-04-07.
 
-**Planning focus:**
-- audit the completed benchmark-first milestone against `LLM-32`, `LLM-33`,
-  and `OPS-18`
-- archive the shipped roadmap/requirements and preserve the Phase 36 scorecard
-  evidence as the handoff boundary
-- use the benchmark outputs to choose whether the next milestone should invest
-  in training automation, campaign automation, or source-QA follow-up
+**Next planning focus:**
+- use the archived `v1.6` benchmark evidence to decide whether the next
+  milestone should prioritize training automation, campaign automation, or
+  benchmark-driven source QA
+- keep the next milestone CLI-first, operator-governed, and file-backed unless
+  the archived evidence clearly justifies broader infrastructure
 
-**Most Recent Shipped Milestone:** `v1.5` — External Materials-LLM Translation Bridge MVP
+**Previous Milestone:** `v1.5` — External Materials-LLM Translation Bridge MVP
 
 **Delivered in `v1.5`:**
 - deterministic translation from compiled Zomic candidates into reusable
@@ -170,18 +171,17 @@ instead of living in separate prototypes.
   registered as immutable benchmark runtimes with pinned snapshot identity,
   reproducibility-grade environment capture, typed smoke artifacts, CLI
   inspect flows, and committed example specs/runbook guidance.
+- Validated in v1.6: the translator-backed benchmark workflow is now shipped
+  end to end, including frozen translated benchmark packs, immutable
+  external-target registration, comparative benchmark execution, fidelity-aware
+  scorecards, bounded recommendation lines, and operator execute/inspect
+  surfaces.
 
 ### Active
 
-- Benchmark a curated set of downloaded external materials LLMs against the
-  shipped translation artifacts with fidelity-aware dataset rules and auditable
-  comparison outputs.
-- Compare external models against current promoted or pinned internal Zomic
-  checkpoints on the same translated artifacts so later automation decisions
-  rest on evidence.
-- Produce operator scorecards that decide whether the next milestone should
-  prioritize training automation, campaign automation, or benchmark-driven
-  source QA.
+- No active milestone is currently defined. Use the archived `v1.6` benchmark
+  evidence to define the next milestone deliberately instead of carrying
+  forward stale requirement text.
 
 ### Out of Scope
 
@@ -255,7 +255,8 @@ instead of living in separate prototypes.
 | Archive milestone v1.3 after direct in-phase verification | The checkpoint workflow now ships with its own proof chain instead of requiring later cleanup phases | ✓ Good |
 | Start Project 3 v1.4 with checkpoint lifecycle and promotion | One adapted checkpoint is now proven, so the next risk is operational curation rather than another one-off lane | ✓ Good |
 | Start Project 3 v1.5 with a Zomic translation bridge before external-model execution | The immediate gap is not another model alias but an auditable representation bridge from Zomic into formats external materials LLMs actually consume | ✓ Good |
-| Start Project 3 v1.6 with translator-backed external-model benchmarking | The translation bridge is shipped, so the next dependency-breaking question is which downloaded materials LLMs are worth deeper automation or training investment | ✓ Good |
+| Start Project 3 v1.6 with translator-backed external-model benchmarking | The translation bridge was shipped, so the next dependency-breaking question was which downloaded materials LLMs are worth deeper automation or training investment | ✓ Good |
+| Keep `v1.6` benchmark-first and advisory rather than auto-promoting winners | Benchmark evidence needed to guide the next milestone, not silently become automation policy | ✓ Good |
 
 ## Evolution
 
