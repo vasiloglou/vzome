@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.6
 milestone_name: Translator-Backed External Materials-LLM Benchmark MVP
-current_phase: 34
-current_phase_name: Benchmark Pack and Freeze Contract
-current_plan: 3
+current_phase: 35
+current_phase_name: external target registration and reproducible execution
+current_plan: Not started
 status: verifying
 stopped_at: Completed 34-03-PLAN.md
-last_updated: "2026-04-07T06:19:09.486Z"
+last_updated: "2026-04-07T06:26:54.719Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
@@ -28,16 +28,16 @@ See: `.planning/PROJECT.md` (updated 2026-04-07)
 
 ## Current Position
 
-Current Phase: 34
-Current Phase Name: Benchmark Pack and Freeze Contract
+Current Phase: 35
+Current Phase Name: external target registration and reproducible execution
 Total Phases: 3
-Current Plan: 3
+Current Plan: Not started
 Total Plans in Phase: 3
 Phase: 34 (Benchmark Pack and Freeze Contract) — EXECUTING
 Plan: 3 of 3
 Status: Phase complete — ready for verification
 Last activity: 2026-04-07
-Last Activity Description: Phase 34 execution started
+Last Activity Description: Phase 34 complete, transitioned to Phase 35
 
 Progress: [███████░░░] 67%
 
