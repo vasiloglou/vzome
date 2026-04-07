@@ -1,20 +1,20 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.5
-milestone_name: milestone
-current_phase: 31
-current_phase_name: translation-contracts-and-representation-loss-semantics
-current_plan: 3
-status: verifying
-stopped_at: Completed 31-03-PLAN.md
-last_updated: "2026-04-07T00:05:44.119Z"
-last_activity: 2026-04-07
+milestone_name: External Materials-LLM Translation Bridge MVP
+current_phase: 32
+current_phase_name: Cif And Material String Exporters
+current_plan: Not started
+status: phase 31 complete and verified; ready for phase 32 planning
+stopped_at: $gsd-plan-phase 32
+last_updated: "2026-04-07T00:14:06Z"
+last_activity: 2026-04-06 -- Phase 31 complete and verified; Phase 32 ready to plan
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 3
   completed_plans: 3
-  percent: 100
+  percent: 33
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 31 — translation-contracts-and-representation-loss-semantics
+**Current focus:** Phase 32 — Cif And Material String Exporters
 
 ## Current Position
 
-Current Phase: 31
-Current Phase Name: translation-contracts-and-representation-loss-semantics
+Current Phase: 32
+Current Phase Name: Cif And Material String Exporters
 Total Phases: 3
-Current Plan: 3
-Total Plans in Phase: 3
-Phase: 31 (translation-contracts-and-representation-loss-semantics) — VERIFYING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-04-07
-Last Activity Description: Completed 31-03-PLAN.md
+Current Plan: Not started
+Total Plans in Phase: 0
+Phase: 32 (Cif And Material String Exporters) — NOT STARTED
+Plan: Not started
+Status: Phase 31 complete and verified — ready for phase 32 planning
+Last activity: 2026-04-06 -- Phase 31 complete and verified; Phase 32 ready to plan
+Last Activity Description: Phase 31 complete and verified; Phase 32 ready to plan
 
-Progress: [██████████] 100%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -58,7 +58,7 @@ Progress: [██████████] 100%
 | v1.2 | 19-24 | 18 | Shipped |
 | v1.3 | 25-27 | 9 | Shipped |
 | v1.4 | 28-30 | 9 | Shipped |
-| v1.5 | 31-33 | 1 | Active |
+| v1.5 | 31-33 | 3 | Active |
 | Phase 31 P01 | 6min | 2 tasks | 4 files |
 | Phase 31 P02 | 7min | 2 tasks | 6 files |
 | Phase 31 P03 | 5min | 2 tasks | 5 files |
@@ -140,6 +140,6 @@ None right now.
 
 ## Session Continuity
 
-Last session: 2026-04-07T00:04:44.794Z
-Stopped at: Completed 31-03-PLAN.md
-Resume file: None
+Last session: 2026-04-07T00:14:06Z
+Stopped at: $gsd-plan-phase 32
+Resume file: .planning/ROADMAP.md

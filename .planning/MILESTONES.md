@@ -4,7 +4,7 @@
 
 **Status:** Active as of 2026-04-06
 **Phases:** 31-33
-**Plans:** 3 (Phase 31 planned; ready to execute)
+**Plans:** 3 completed so far (Phase 31 shipped; Phase 32 next)
 
 ### Focus
 
@@ -15,6 +15,14 @@
   CSLLM-style material string representation.
 - Keep exact versus lossy translation boundaries explicit in the workflow and
   docs.
+
+### Current Status
+
+- Phase 31 is complete and verified: the repo now has the typed translation
+  contract, target registry, deterministic normalization seam, fixture-backed
+  regression coverage, and a developer handoff note for exporters.
+- Phase 32 is the active next milestone step: concrete CIF and
+  material-string exporters from the new translated-structure artifact.
 
 ## v1.4 — Adapted Checkpoint Lifecycle and Promotion MVP
 
