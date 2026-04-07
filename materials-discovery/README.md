@@ -28,6 +28,8 @@ uv run mdisc report    --config configs/systems/al_cu_fe.yaml
 uv run mdisc llm-generate --config configs/systems/al_cu_fe_llm_mock.yaml --count 5
 uv run mdisc llm-evaluate --config configs/systems/al_cu_fe_llm_mock.yaml --batch all
 uv run mdisc llm-suggest --acceptance-pack data/benchmarks/llm_acceptance/phase9_acceptance_v1/acceptance_pack.json
+uv run mdisc llm-translate --config configs/systems/al_cu_fe.yaml --input data/ranked/al_cu_fe_ranked.jsonl --target cif --export-id al_cu_fe_ranked_cif_v1
+uv run mdisc llm-translate-inspect --manifest data/llm_translation_exports/al_cu_fe_ranked_cif_v1/manifest.json
 ./scripts/run_llm_generate_benchmarks.sh --systems all --count 5
 ./scripts/run_llm_pipeline_benchmarks.sh --systems all --count 5
 ./scripts/run_llm_acceptance_benchmarks.sh --systems all --count 5
@@ -58,6 +60,10 @@ matrix with multi-source reference packs):
 See the [reference-aware benchmark runbook](./developers-docs/reference-aware-benchmarks.md)
 for full prerequisites, config details, and artifact locations.
 
+See the [LLM translation runbook](./developers-docs/llm-translation-runbook.md)
+for CIF and CrystalTextLLM-style export commands, bundle layout, and fidelity
+boundaries.
+
 A `Ti-Zr-Ni` icosahedral quasicrystal system is also available:
 - `configs/systems/ti_zr_ni.yaml`
 
@@ -87,12 +93,13 @@ HYPOD-X snapshot does not yet include `Sc-Zn` rows. Their calibrated assets are:
 
 ## What is Implemented
 
-All M1-M6 milestones and RM0-RM6 real-mode execution phases, plus the Phase 7
-LLM inference path, the Phase 8 LLM evaluation/report integration path, and
-the Phase 9 acceptance-pack plus dry-run suggestion workflow. Eleven CLI
-commands (`ingest`, `export-zomic`, `generate`, `llm-generate`,
-`llm-evaluate`, `llm-suggest`, `screen`, `hifi-validate`, `hifi-rank`,
-`active-learn`, `report`) with mock and real backend modes.
+All M1-M6 milestones and RM0-RM6 real-mode execution phases are implemented,
+along with the LLM generation/evaluation/governance workflow, serving
+benchmarking, checkpoint lifecycle management, and the Phase 33 translation
+export and inspection commands. The CLI surface spans the deterministic core
+pipeline plus additive LLM/operator commands such as `llm-generate`,
+`llm-evaluate`, `llm-suggest`, `llm-approve`, `llm-launch`,
+`llm-serving-benchmark`, `llm-translate`, and `llm-translate-inspect`.
 
 `export-zomic` and Zomic-backed generation invoke `vZome core` through
 `./gradlew :core:zomicExport`, so they require a local Java runtime.

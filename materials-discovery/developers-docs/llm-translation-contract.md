@@ -1,11 +1,13 @@
 # LLM Translation Contract
 
-This note is the Phase 31 implementation handoff for Phase 32 exporter work.
-It describes the normalized translation artifact, the current target registry,
-and the fidelity semantics that serializer code must preserve.
+This note started as the Phase 31 implementation handoff for Phase 32 exporter
+work. It now serves as the developer-facing contract note for the normalized
+translation artifact, the built-in target registry, and the fidelity semantics
+that serializer code must preserve.
 
-This is not an operator runbook. CLI workflow, artifact storage workflow, and
-benchmark reuse docs remain Phase 33 work.
+This is still not the operator runbook. For CLI workflow, artifact storage
+layout, and operator-facing trace commands, see
+[LLM Translation Runbook](llm-translation-runbook.md).
 
 ## Source Of Truth Boundary
 
@@ -134,5 +136,6 @@ Phase 32 should not:
 - erase lossy or approximate semantics because the text serializer succeeded
 - replace this developer contract with operator-facing workflow guidance
 
-Operator docs, CLI walkthroughs, and benchmark reuse guidance belong in Phase
-33 after the serializer surface exists.
+Operator workflow, CLI walkthroughs, and artifact-path guidance now live in
+[LLM Translation Runbook](llm-translation-runbook.md). This note should stay
+focused on the developer contract rather than duplicating that runbook.

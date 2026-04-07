@@ -6,8 +6,9 @@ pipeline. Every command is defined in
 common error-handling pattern: `FileNotFoundError`, `ValidationError`, and
 `ValueError` are caught, printed to stderr, and the process exits with code 2.
 `mdisc export-zomic` also catches `RuntimeError` so subprocess export failures are
-reported with the same exit code. On success every command prints a JSON summary
-object to stdout.
+reported with the same exit code. Most commands print a JSON summary object to
+stdout on success; `mdisc llm-translate-inspect` intentionally prints a
+human-readable bundle summary instead.
 
 Path placeholders used below:
 
@@ -15,6 +16,7 @@ Path placeholders used below:
 |---|---|
 | `{slug}` | `system_name` from the config, lowercased with hyphens replaced by underscores (`_system_slug`) |
 | `{batch_slug}` | The `--batch` value normalized to lowercase alphanumeric with underscores (`_batch_slug`) |
+| `{export_id}` | The explicit translation export identifier passed to `mdisc llm-translate` |
 | `{workspace}` | The workspace root directory resolved by `workspace_root()` |
 
 ---
@@ -1112,6 +1114,115 @@ paths.
 
 ---
 
+## 18. `mdisc llm-translate`
+
+Export candidate JSONL rows into deterministic translation bundles for external
+crystal-oriented workflows.
+
+### CLI syntax
+
+```
+mdisc llm-translate --config PATH --input PATH --target cif|material_string --export-id TEXT
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--config` | PATH | Yes | -- | Path to the YAML system configuration file |
+| `--input` | PATH | Yes | -- | Explicit candidate JSONL to translate; the command does not infer this path |
+| `--target` | STR | Yes | -- | Translation target family (`cif` or `material_string`) |
+| `--export-id` | STR | Yes | -- | Stable bundle identifier used in output paths |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Candidate JSONL | operator-selected, e.g. `{workspace}/data/ranked/{slug}_ranked.jsonl` | any prior stage that produced `CandidateRecord` rows |
+| System config YAML | operator-selected | used for system slug, benchmark context, and stage-manifest hashing |
+
+### Internal steps
+
+1. **Load configuration.** Parse and validate `SystemConfig`.
+2. **Require an explicit input file.** Refuse to guess the candidate JSONL path; missing input exits with code 2.
+3. **Load candidates.** Read the JSONL at `--input` and validate every row as `CandidateRecord`.
+4. **Recover additive lineage.** Merge any `llm_campaign` lineage already present on the candidates with the current `llm_generate` stage manifest when available.
+5. **Recover benchmark context.** Read the ingest manifest when present and build the benchmark-context block carried into the new translation artifacts.
+6. **Write the translation bundle.** Resolve the target family, emit raw payload files, and write `inventory.jsonl` plus `manifest.json` under `data/llm_translation_exports/{export_id}/`.
+7. **Write the standard stage manifest.** Persist a normal `llm_translate` manifest under `data/manifests/` so the export stays visible to later provenance tooling.
+8. **Emit summary.** Print `TranslationExportSummary` as JSON to stdout.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Bundle manifest | `{workspace}/data/llm_translation_exports/{export_id}/manifest.json` |
+| Bundle inventory | `{workspace}/data/llm_translation_exports/{export_id}/inventory.jsonl` |
+| Raw payload directory | `{workspace}/data/llm_translation_exports/{export_id}/payloads/` |
+| Stage manifest | `{workspace}/data/manifests/{slug}_{export_id}_llm_translate_manifest.json` |
+
+### Return type
+
+`TranslationExportSummary` (JSON to stdout).
+
+### Fidelity notes
+
+- `cif` and `material_string` are interoperability views, not new sources of truth.
+- Periodic-safe candidates may export as `exact` or `anchored`.
+- Mixed-origin periodic proxies may export as `approximate`.
+- QC-native candidates forced into either target remain explicitly `lossy`; later operator guidance should still treat the original candidate JSONL and Zomic-derived structure as authoritative.
+
+---
+
+## 19. `mdisc llm-translate-inspect`
+
+Print a human-readable summary of an existing translation bundle and, when
+requested, one candidate's payload trace.
+
+### CLI syntax
+
+```
+mdisc llm-translate-inspect --manifest PATH [--candidate-id TEXT]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--manifest` | PATH | Yes | -- | Path to a translation bundle `manifest.json` |
+| `--candidate-id` | STR | No | `None` | Optional filter that narrows output to one translated candidate |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Bundle manifest JSON | `{workspace}/data/llm_translation_exports/{export_id}/manifest.json` | `mdisc llm-translate` |
+| Bundle inventory JSONL | path referenced by the bundle manifest | must still exist and match the manifest |
+
+### Internal steps
+
+1. **Load the bundle manifest.** Parse `TranslationBundleManifest` from the supplied path.
+2. **Load the inventory rows.** Read and validate `TranslationInventoryRow` objects from the manifest-linked inventory JSONL.
+3. **Filter optionally.** If `--candidate-id` is present, keep only matching rows and fail clearly when the ID is absent.
+4. **Print a concise summary.** Emit export ID, target, source input path, candidate count, lossy count, and stage manifest path when present.
+5. **Print per-candidate trace lines.** Show fidelity tier, raw payload path, loss reasons, and diagnostic codes for each selected row.
+
+### Artifacts
+
+This command is read-only. It does not write new files.
+
+### Return type
+
+Human-readable summary lines to stdout.
+
+### Failure rules
+
+- Missing manifest path exits with code 2.
+- Invalid manifest or inventory JSON exits with code 2.
+- Unknown `--candidate-id` exits with code 2 instead of silently printing an empty report.
+
+---
+
 ## Pipeline data flow
 
 The commands are designed to run in sequence. Each stage reads the output of a
@@ -1155,4 +1266,7 @@ strictly reruns recorded launch bundles, and `llm-compare` writes immutable
 outcome/comparison artifacts while keeping later pipeline stages
 manual/operator-driven. Phase 21 adds `llm-serving-benchmark` as an operator
 comparison wrapper over those same launch/evaluate surfaces; it does not
-replace them with a separate serving-only pipeline.
+replace them with a separate serving-only pipeline. Phase 33 adds
+`llm-translate` and `llm-translate-inspect` as an interoperability side branch
+for external crystal-oriented consumers; those commands read existing
+`CandidateRecord` JSONL but do not replace the main Zomic-first pipeline.

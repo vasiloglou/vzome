@@ -34,6 +34,8 @@ future phase.
 | LLM-powered generation | `mdisc llm-generate` | `llm/` | Implemented (Phase 7 MVP) |
 | LLM-powered evaluation | `mdisc llm-evaluate` | `llm/` | Implemented (Phase 8 MVP) |
 | LLM-guided suggestions | `mdisc llm-suggest` | `llm/` | Implemented (Phase 9 dry-run MVP) |
+| LLM translation bundle export | `mdisc llm-translate` | `llm/` | Implemented (Phase 33 MVP) |
+| LLM translation bundle inspection | `mdisc llm-translate-inspect` | `llm/` | Implemented (Phase 33 MVP) |
 
 ## Quickstart
 
@@ -57,6 +59,8 @@ uv run mdisc generate --config configs/systems/sc_zn_real.yaml --count 64
 uv run mdisc screen --config configs/systems/sc_zn_real.yaml
 uv run mdisc hifi-validate --config configs/systems/sc_zn_real.yaml --batch all
 uv run mdisc hifi-rank --config configs/systems/sc_zn_real.yaml
+uv run mdisc llm-translate --config configs/systems/al_cu_fe.yaml --input data/ranked/al_cu_fe_ranked.jsonl --target cif --export-id al_cu_fe_ranked_cif_v1
+uv run mdisc llm-translate-inspect --manifest data/llm_translation_exports/al_cu_fe_ranked_cif_v1/manifest.json
 ```
 
 ## Documentation Map
@@ -78,6 +82,8 @@ uv run mdisc hifi-rank --config configs/systems/sc_zn_real.yaml
 | How do I compare deterministic vs LLM generation offline? | [LLM Integration](llm-integration.md) |
 | How do I benchmark deterministic vs LLM lanes through report? | [LLM Integration](llm-integration.md) |
 | How do I compute an acceptance pack and get dry-run next steps? | [LLM Integration](llm-integration.md) |
+| How do I export CIF or CrystalTextLLM-style bundles from candidate JSONL? | [LLM Translation Runbook](llm-translation-runbook.md) |
+| What fidelity and loss rules govern translation exports? | [LLM Translation Contract](llm-translation-contract.md) |
 
 ## Scope
 
