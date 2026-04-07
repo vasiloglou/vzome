@@ -1,0 +1,32 @@
+benchmark_id: al_cu_fe_external_benchmark_v1
+benchmark_set_manifest_path: data/benchmarks/llm_external_sets/al_cu_fe_translated_benchmark_v1/manifest.json
+external_targets:
+  - target_id: crystallm_cif_demo
+    label: CrystaLLM CIF demo
+    model_id: al_cu_fe_external_cif_demo
+    supported_target_families:
+      - cif
+    supported_systems:
+      - Al-Cu-Fe
+    notes: >
+      Example Phase 36 external arm. Register and smoke-test the matching
+      Phase 35 external target before running this benchmark spec.
+internal_controls:
+  - target_id: promoted_internal_control
+    label: Promoted internal control
+    control_role: promoted_default
+    system_config_path: configs/systems/al_cu_fe_llm_local.yaml
+    generation_model_lane: general_purpose
+    supported_target_families:
+      - cif
+    supported_systems:
+      - Al-Cu-Fe
+    prompt_contract_id: translated_cif_v1
+    response_parser_key: cif_text
+    notes: >
+      This control arm follows the current lane-resolution and serving-identity
+      machinery rather than pinning a separate benchmark-only runtime.
+operator_note: >
+  Phase 36 example benchmark spec for the shipped Al-Cu-Fe translated CIF
+  benchmark pack. The scorecard is advisory evidence for milestone decisions,
+  not an automatic promotion or roadmap trigger.

@@ -41,6 +41,8 @@ future phase.
 | External target registration | `mdisc llm-register-external-target` | `llm/` | Implemented (Phase 35 MVP) |
 | External target inspection | `mdisc llm-inspect-external-target` | `llm/` | Implemented (Phase 35 MVP) |
 | External target smoke check | `mdisc llm-smoke-external-target` | `llm/` | Implemented (Phase 35 MVP) |
+| External comparative benchmark execution | `mdisc llm-external-benchmark` | `llm/` | Implemented (Phase 36 MVP) |
+| External comparative benchmark inspection | `mdisc llm-inspect-external-benchmark` | `llm/` | Implemented (Phase 36 MVP) |
 
 ## Quickstart
 
@@ -68,6 +70,8 @@ uv run mdisc llm-translate --config configs/systems/al_cu_fe.yaml --input data/r
 uv run mdisc llm-translate-inspect --manifest data/llm_translation_exports/al_cu_fe_ranked_cif_v1/manifest.json
 uv run mdisc llm-translated-benchmark-freeze --spec configs/llm/al_cu_fe_translated_benchmark_freeze.yaml
 uv run mdisc llm-translated-benchmark-inspect --manifest data/benchmarks/llm_external_sets/al_cu_fe_translated_benchmark_v1/manifest.json
+uv run mdisc llm-external-benchmark --spec configs/llm/al_cu_fe_external_benchmark.yaml
+uv run mdisc llm-inspect-external-benchmark --summary data/benchmarks/llm_external/al_cu_fe_external_benchmark_v1/benchmark_summary.json
 ```
 
 ## Documentation Map
@@ -92,6 +96,7 @@ uv run mdisc llm-translated-benchmark-inspect --manifest data/benchmarks/llm_ext
 | How do I export CIF or CrystalTextLLM-style bundles from candidate JSONL? | [LLM Translation Runbook](llm-translation-runbook.md) |
 | How do I freeze and inspect translated benchmark packs for external-model evaluation? | [Translated Benchmark Runbook](llm-translated-benchmark-runbook.md) |
 | How do I register, inspect, and smoke-test one external benchmark target? | [External Target Runbook](llm-external-target-runbook.md) |
+| How do I run and inspect the comparative external-vs-internal benchmark scorecard? | [External Benchmark Runbook](llm-external-benchmark-runbook.md) |
 | What fidelity and loss rules govern translation exports? | [LLM Translation Contract](llm-translation-contract.md) |
 
 ## Scope

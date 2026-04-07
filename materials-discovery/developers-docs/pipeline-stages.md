@@ -10,6 +10,8 @@ reported with the same exit code. Most commands print a JSON summary object to
 stdout on success; `mdisc llm-inspect-external-target`,
 `mdisc llm-translate-inspect`, and `mdisc llm-translated-benchmark-inspect`
 intentionally print human-readable summaries instead.
+`mdisc llm-inspect-external-benchmark` now follows that same human-readable
+inspect pattern for Phase 36 scorecards.
 
 Path placeholders used below:
 
@@ -19,6 +21,7 @@ Path placeholders used below:
 | `{batch_slug}` | The `--batch` value normalized to lowercase alphanumeric with underscores (`_batch_slug`) |
 | `{export_id}` | The explicit translation export identifier passed to `mdisc llm-translate` |
 | `{benchmark_set_id}` | The explicit translated benchmark-pack identifier passed through the freeze spec |
+| `{benchmark_id}` | The explicit comparative benchmark identifier passed through the Phase 36 spec |
 | `{workspace}` | The workspace root directory resolved by `workspace_root()` |
 
 ---
@@ -1480,6 +1483,114 @@ mdisc llm-smoke-external-target --model-id TEXT
 
 ---
 
+## 25. `mdisc llm-external-benchmark`
+
+Run one translated comparative benchmark across curated external targets and
+internal controls.
+
+### CLI syntax
+
+```
+mdisc llm-external-benchmark --spec PATH [--out PATH]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--spec` | PATH | Yes | -- | Path to a typed external benchmark spec YAML file |
+| `--out` | PATH | No | `{workspace}/data/benchmarks/llm_external/{benchmark_id}/benchmark_summary.json` | Optional custom path for the persisted benchmark summary |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Benchmark spec YAML | operator-selected, e.g. `{workspace}/configs/llm/al_cu_fe_external_benchmark.yaml` | Phase 34 and Phase 35 artifacts already exist |
+| Frozen benchmark-set manifest JSON | path referenced by `benchmark_set_manifest_path` | `mdisc llm-translated-benchmark-freeze` |
+| Included benchmark-set inventory JSONL | path referenced by the benchmark-set manifest | must still exist and match the manifest |
+| External-target registration JSON | `{workspace}/data/llm_external_models/{model_id}/registration.json` | `mdisc llm-register-external-target` |
+| External-target smoke artifact JSON | path referenced by each registration | `mdisc llm-smoke-external-target` or runtime-ready registration state |
+| Internal control system config YAML | path referenced by each control arm | serving lane already configured |
+
+### Internal steps
+
+1. **Load the benchmark spec.** Validate `LlmExternalBenchmarkSpec` from the supplied YAML file.
+2. **Load the frozen benchmark set.** Read `TranslatedBenchmarkSetManifest` plus the included benchmark rows from Phase 34.
+3. **Resolve each target.** External targets resolve through Phase 35 registration and smoke artifacts; internal controls resolve through the existing serving-lane and `LlmServingIdentity` helpers.
+4. **Execute benchmark cases.** Render benchmark prompts, run the external or internal target, parse the response, and record success, exclusion, or runtime error state per case.
+5. **Write benchmark artifacts.** Persist per-target `run_manifest.json`, `case_results.jsonl`, and `raw_responses.jsonl` plus benchmark-level `scorecard_by_case.jsonl`, `smoke_checks.json`, and `benchmark_summary.json`.
+6. **Emit summary.** Print `LlmExternalBenchmarkSummary` as JSON to stdout.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Benchmark summary JSON | `{workspace}/data/benchmarks/llm_external/{benchmark_id}/benchmark_summary.json` |
+| Scorecard-by-case JSONL | `{workspace}/data/benchmarks/llm_external/{benchmark_id}/scorecard_by_case.jsonl` |
+| Benchmark smoke JSON | `{workspace}/data/benchmarks/llm_external/{benchmark_id}/smoke_checks.json` |
+| Per-target run manifest JSON | `{workspace}/data/benchmarks/llm_external/{benchmark_id}/targets/{target_id}/run_manifest.json` |
+| Per-target case results JSONL | `{workspace}/data/benchmarks/llm_external/{benchmark_id}/targets/{target_id}/case_results.jsonl` |
+| Per-target raw responses JSONL | `{workspace}/data/benchmarks/llm_external/{benchmark_id}/targets/{target_id}/raw_responses.jsonl` |
+
+### Return type
+
+`LlmExternalBenchmarkSummary` (JSON to stdout).
+
+### Failure rules
+
+- Missing benchmark spec exits with code 2.
+- Invalid spec, benchmark-set, registration, or summary data exits with code 2.
+- Runtime or parser failures remain visible inside the benchmark artifacts and summary instead of silently disappearing from the benchmark run.
+
+---
+
+## 26. `mdisc llm-inspect-external-benchmark`
+
+Print a human-readable summary of a comparative benchmark scorecard and,
+optionally, focus one target only.
+
+### CLI syntax
+
+```
+mdisc llm-inspect-external-benchmark --summary PATH [--target-id TEXT]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--summary` | PATH | Yes | -- | Path to a comparative benchmark `benchmark_summary.json` |
+| `--target-id` | STR | No | `None` | Optional filter that narrows the output to one target summary |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Benchmark summary JSON | `{workspace}/data/benchmarks/llm_external/{benchmark_id}/benchmark_summary.json` | `mdisc llm-external-benchmark` |
+
+### Internal steps
+
+1. **Load the benchmark summary.** Validate `LlmExternalBenchmarkSummary` from the supplied JSON path.
+2. **Filter optionally.** Apply `--target-id`; fail clearly when the requested target is absent from the summary.
+3. **Print benchmark header facts.** Emit benchmark ID, benchmark-set ID, generation timestamp, summary path, target count, and failed target IDs.
+4. **Print one scorecard trace per target.** Show target kind, control-arm identity, artifact paths, overall metrics, target-family slices, fidelity-tier slices, control deltas, recommendation lines, and failed state.
+
+### Artifacts
+
+This command is read-only. It does not write new files.
+
+### Return type
+
+Human-readable summary lines to stdout.
+
+### Failure rules
+
+- Missing benchmark summary exits with code 2.
+- Invalid summary JSON exits with code 2.
+- Unknown `--target-id` exits with code 2 instead of silently printing an empty report.
+
+---
+
 ## Pipeline data flow
 
 The commands are designed to run in sequence. Each stage reads the output of a
@@ -1534,4 +1645,8 @@ scorecard phases. Phase 35 adds `llm-register-external-target`,
 `llm-inspect-external-target`, and `llm-smoke-external-target` as the runtime
 registration side branch: they consume standalone target specs, write
 `data/llm_external_models/{model_id}/` artifacts, and stop short of Phase 36
-comparative benchmark execution.
+comparative benchmark execution. Phase 36 closes that loop with
+`llm-external-benchmark` and `llm-inspect-external-benchmark`, which execute
+the shared translated case slice across external and internal arms and surface
+fidelity-aware scorecards without turning benchmark winners into automatic
+workflow actions.

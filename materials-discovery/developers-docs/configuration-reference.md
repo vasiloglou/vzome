@@ -432,6 +432,48 @@ Phase 34 stops at the benchmark-pack contract itself. These specs do not carry:
 
 Those surfaces are deferred to Phases 35 and 36.
 
+### External comparative benchmark spec reference (Phase 36)
+
+Phase 36 adds committed benchmark specs under `configs/llm/` that drive:
+
+- `mdisc llm-external-benchmark --spec PATH`
+- `mdisc llm-inspect-external-benchmark --summary PATH`
+
+The shipped example is:
+
+- `configs/llm/al_cu_fe_external_benchmark.yaml`
+
+That spec ties together one frozen translated benchmark-set manifest, a small
+external target list keyed by Phase 35 `model_id`s, and one or more internal
+control arms that reuse the existing serving-lane machinery.
+
+| Field | Type | Description |
+|---|---|---|
+| `benchmark_id` | `str` | Stable artifact key used under `data/benchmarks/llm_external/{benchmark_id}/...`. |
+| `benchmark_set_manifest_path` | `str` | Frozen Phase 34 benchmark-set manifest that defines the shared translated case slice. |
+| `external_targets[].target_id` | `str` | Human-readable benchmark arm identifier used in summaries and artifact paths. |
+| `external_targets[].model_id` | `str` | Phase 35 registered target ID to resolve from `data/llm_external_models/{model_id}/registration.json`. |
+| `external_targets[].supported_target_families` | `list["cif" \| "material_string"]` | Target families this benchmark arm is allowed to answer. |
+| `external_targets[].supported_systems` | `list[str]` | Optional system allowlist for explicit exclusion handling. |
+| `external_targets[].prompt_contract_id` | `str \| None` | Optional override for the registered prompt contract. |
+| `external_targets[].response_parser_key` | `str \| None` | Optional override for the registered parser key. |
+| `internal_controls[].control_role` | `"promoted_default" \| "explicit_pin"` | Whether the control resolves a current promoted lane or an intentionally pinned arm. |
+| `internal_controls[].system_config_path` | `str` | Phase 7/19/29-style system config that owns the serving-lane definition. |
+| `internal_controls[].generation_model_lane` | `"general_purpose" \| "specialized_materials"` | Internal control lane resolved through the existing serving-lane helpers. |
+| `internal_controls[].supported_target_families` | `list["cif" \| "material_string"]` | Target families the control is allowed to answer. |
+| `internal_controls[].prompt_contract_id` | `str` | Prompt contract the control arm uses for benchmark requests. |
+| `internal_controls[].response_parser_key` | `str` | Parser used for benchmark responses from that control arm. |
+| `operator_note` | `str \| None` | Optional benchmark-level note preserved in the typed spec and useful in committed examples. |
+
+Phase 36 keeps the benchmark spec narrow on purpose:
+
+- it points at frozen benchmark manifests instead of live translation bundles
+- it references registered external target IDs instead of embedding runtime
+  download details
+- it resolves internal controls from existing `SystemConfig` lane definitions
+- it does **not** encode autonomous promotion, workflow expansion, or future
+  milestone selection rules
+
 ---
 
 ## ZomicDesignConfig Reference

@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 36 Plan 03 comparative benchmark docs and example spec | Added a committed `al_cu_fe_external_benchmark.yaml`, shipped an operator runbook for benchmark execute or inspect plus artifact interpretation, and refreshed the configuration reference, pipeline stages guide, and docs index so the Phase 36 workflow is discoverable beside the Phase 34 and Phase 35 handoff docs |
 | 2026-04-07 | Phase 36 Plan 03 comparative benchmark CLI workflow | Added `mdisc llm-external-benchmark` and `mdisc llm-inspect-external-benchmark`, kept the repo-standard exit-code-2 failure posture for missing or invalid benchmark specs and summaries, and locked the new operator surface with focused CLI plus root-help coverage |
 | 2026-04-07 | Phase 36 Plan 02 fidelity-aware benchmark scorecards | Tightened `build_external_benchmark_summary(...)` so recommendation lines privilege the periodic-safe exact or anchored slice even when overall shared-slice deltas look better on lossy cases, and added typed benchmark-summary coverage that proves weak periodic-safe performance cannot hide behind diagnostic-only wins |
 | 2026-04-07 | Phase 36 Plan 02 comparative benchmark execution core | Added `llm/external_benchmark.py` with spec loading, frozen benchmark-set replay, prompt rendering, response parsing, external-target and internal-control execution, deterministic per-target artifact writing, and focused benchmark-core tests that lock explicit exclusions plus smoke-failure handling without requiring real model weights |
@@ -161,6 +162,8 @@
 
 ### 2026-04-07
 
+- 04:23 EDT — Finished the Phase 36 Plan 03 docs and example-spec slice for comparative benchmarks.
+- Added a committed `al_cu_fe_external_benchmark.yaml`, shipped a dedicated external-benchmark runbook that covers execute or inspect plus scorecard interpretation and the `data/benchmarks/llm_external/{benchmark_id}/` artifact family, and refreshed the configuration reference, pipeline stages guide, and docs index so the Phase 36 workflow is discoverable without reading code first.
 - 04:20 EDT — Implemented the Phase 36 Plan 03 comparative benchmark CLI workflow and inspect surface.
 - Added `llm-external-benchmark` and `llm-inspect-external-benchmark` to `cli.py`, kept the repo-standard exit-code-2 behavior for missing or invalid benchmark artifacts, and locked the new run or inspect or root-help surface with focused CLI coverage over typed benchmark summaries.
 - 04:13 EDT — Implemented the Phase 36 Plan 02 comparative benchmark execution core in `llm/external_benchmark.py`.
