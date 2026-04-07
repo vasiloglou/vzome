@@ -7,7 +7,7 @@ current_phase_name: cif-and-material-string-exporters
 current_plan: 2
 status: executing
 stopped_at: Ready for 32-02-PLAN.md
-last_updated: "2026-04-07T03:11:17.539Z"
+last_updated: "2026-04-07T03:11:53.077Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
@@ -130,6 +130,8 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Phase 31]: Reserved exact for candidates with strong periodic-safe evidence plus stored fractional coordinates; mixed-origin candidates stay conservative at approximate.
 - [Phase 31]: QC-native periodic exports are marked lossy with explicit reasons instead of silently degrading to a weaker success state.
 - [Phase 31]: Kept approximate covered in translation-core tests rather than adding a third fixture because Plan 03 needed to freeze the two exporter-facing boundary cases first.
+- [Phase 32]: Centralized translation export validation in translation_export.py so CIF and later target families share one export-readiness gate and copy-not-mutate dispatch contract. — Plan 01 needed a stable seam before adding the material-string target, and the new tests prove both deterministic behavior and clear failure modes from one shared API.
+- [Phase 32]: Kept CIF output deterministic and explicitly labeled with source/fidelity/loss metadata in comment lines so lossy periodic-proxy exports remain visibly honest. — The repo-local CIF parser accepts the emitted payload after comment stripping, while the comment preamble preserves the interoperability boundary that Phase 31 established.
 
 ### Pending Todos
 
