@@ -4,17 +4,17 @@ milestone: v1.6
 milestone_name: Translator-Backed External Materials-LLM Benchmark MVP
 current_phase: 36
 current_phase_name: comparative benchmark workflow and fidelity aware scorecards
-current_plan: Not started
-status: executing
-stopped_at: Completed 35-03-PLAN.md
-last_updated: "2026-04-07T07:29:56.996Z"
+current_plan: Completed 36-03-PLAN.md
+status: ready_for_milestone_audit
+stopped_at: Completed 36-03-PLAN.md
+last_updated: "2026-04-07T08:26:52Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 67
+  completed_phases: 3
+  total_plans: 9
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-07)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 36 — Comparative Benchmark Workflow and Fidelity-Aware Scorecards
+**Current focus:** Milestone audit and archival for `v1.6`
 
 ## Current Position
 
 Current Phase: 36
 Current Phase Name: comparative benchmark workflow and fidelity aware scorecards
 Total Phases: 3
-Current Plan: Not started
+Current Plan: Completed 36-03-PLAN.md
 Total Plans in Phase: 3
-Phase: 36 (Comparative Benchmark Workflow and Fidelity-Aware Scorecards) — EXECUTING
-Plan: 0 of 3
-Status: Phase 35 complete — ready to begin Phase 36
+Phase: 36 (Comparative Benchmark Workflow and Fidelity-Aware Scorecards) — COMPLETE
+Plan: 3 of 3
+Status: Phase 36 complete — ready for milestone audit
 Last activity: 2026-04-07
-Last Activity Description: Phase 35 complete, transitioned to Phase 36
+Last Activity Description: Phase 36 verified complete and milestone moved to audit-ready state
 
-Progress: [███████░░░] 67%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -59,7 +59,7 @@ Progress: [███████░░░] 67%
 | v1.3 | 25-27 | 9 | Shipped |
 | v1.4 | 28-30 | 9 | Shipped |
 | v1.5 | 31-33 | 9 | Shipped |
-| v1.6 | 34-36 | 0 | Roadmapped |
+| v1.6 | 34-36 | 9 | Implemented |
 | Phase 34 P01 | 8 min | 2 tasks | 5 files |
 | Phase 34-benchmark-pack-and-freeze-contract P02 | 10 min | 2 tasks | 5 files |
 | Phase 34-benchmark-pack-and-freeze-contract P03 | 15 min | 2 tasks | 16 files |

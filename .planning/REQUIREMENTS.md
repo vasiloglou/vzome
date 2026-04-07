@@ -12,12 +12,12 @@
 ### External Benchmark Operations
 
 - [x] **OPS-17**: Operator can register each curated downloaded external materials LLM as an immutable benchmark target with pinned revision or snapshot identity, compatible translation families, runtime settings, smoke checks, and reproducibility-grade environment lineage before benchmark execution.
-- [ ] **OPS-18**: Operator can inspect translated benchmark sets, external model registrations, and benchmark summaries through CLI and documentation surfaces that expose fidelity posture, control-arm identity, exclusions, and environment capture without reverse-engineering raw artifacts.
+- [x] **OPS-18**: Operator can inspect translated benchmark sets, external model registrations, and benchmark summaries through CLI and documentation surfaces that expose fidelity posture, control-arm identity, exclusions, and environment capture without reverse-engineering raw artifacts.
 
 ### Comparative Benchmarking
 
-- [ ] **LLM-32**: Operator can run one typed benchmark workflow that executes curated downloaded external materials LLMs and current promoted or explicitly pinned internal controls against the same translated benchmark cases and records per-target run artifacts.
-- [ ] **LLM-33**: Benchmark summaries are target-family-aware and fidelity-aware, report eligible and excluded counts plus internal-control deltas, and emit decision-grade recommendation lines about whether deeper external-model investment is justified.
+- [x] **LLM-32**: Operator can run one typed benchmark workflow that executes curated downloaded external materials LLMs and current promoted or explicitly pinned internal controls against the same translated benchmark cases and records per-target run artifacts.
+- [x] **LLM-33**: Benchmark summaries are target-family-aware and fidelity-aware, report eligible and excluded counts plus internal-control deltas, and emit decision-grade recommendation lines about whether deeper external-model investment is justified.
 
 ## v2 Requirements
 
@@ -48,9 +48,9 @@
 |-------------|-------|--------|
 | LLM-31 | Phase 34 | Complete |
 | OPS-17 | Phase 35 | Complete |
-| LLM-32 | Phase 36 | Pending |
-| LLM-33 | Phase 36 | Pending |
-| OPS-18 | Phase 36 | Pending |
+| LLM-32 | Phase 36 | Complete |
+| LLM-33 | Phase 36 | Complete |
+| OPS-18 | Phase 36 | Complete |
 
 **Coverage:**
 - v1.6 requirements: 5 total
@@ -59,4 +59,4 @@
 
 ---
 *Requirements defined: 2026-04-07*
-*Last updated: 2026-04-07 after creating milestone v1.6 roadmap*
+*Last updated: 2026-04-07 after completing Phase 36 and verifying v1.6 requirements*
