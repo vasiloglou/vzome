@@ -5,7 +5,9 @@
 `v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, and `v1.5` are shipped.
 
 The translation bridge milestone is now complete and archived. `v1.6` is now
-being defined.
+active, with the translated benchmark-pack contract and external-target
+registration workflow shipped through Phase 35 and comparative scorecards
+remaining in Phase 36.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -61,15 +63,17 @@ Archive references:
 
 **Current Milestone:** `v1.6` — Translator-Backed External Materials-LLM Benchmark MVP
 
-**Status:** Defining requirements and roadmap on 2026-04-07.
+**Status:** Phase 35 complete on 2026-04-07. Phase 36 comparative scorecards
+and control-arm benchmarking are now the active execution target.
 
 **Planning focus:**
 - benchmark a small curated set of downloaded external materials LLMs against
-  the shipped CIF and material-string artifacts
-- keep the milestone CLI-first, operator-governed, and file-backed
+  the shipped CIF and material-string artifacts and current internal controls
+- keep the milestone CLI-first, operator-governed, and file-backed while
+  turning benchmark outcomes into durable scorecards
 - use current promoted or pinned Zomic checkpoints as the control arm
 - limit any source-coverage or QA work to the minimum needed to support the
-  benchmark set cleanly
+  comparative benchmark set cleanly
 
 **Most Recent Shipped Milestone:** `v1.5` — External Materials-LLM Translation Bridge MVP
 
@@ -161,14 +165,19 @@ instead of living in separate prototypes.
   shipped end to end, including deterministic CIF/material-string exporters, a
   file-backed translation bundle CLI, operator tracing commands, and explicit
   runbook guidance for representational-loss boundaries.
+- Validated in Phase 34: translated benchmark packs can now be frozen from
+  shipped translation bundles with explicit inclusion/exclusion rules,
+  persisted lineage, and operator-facing inspect commands.
+- Validated in Phase 35: curated external materials LLM targets can now be
+  registered as immutable benchmark runtimes with pinned snapshot identity,
+  reproducibility-grade environment capture, typed smoke artifacts, CLI
+  inspect flows, and committed example specs/runbook guidance.
 
 ### Active
 
 - Benchmark a curated set of downloaded external materials LLMs against the
   shipped translation artifacts with fidelity-aware dataset rules and auditable
   comparison outputs.
-- Add reproducible external-model execution lanes with environment capture and
-  file-backed lineage before considering broader runtime automation.
 - Compare external models against current promoted or pinned internal Zomic
   checkpoints on the same translated artifacts so later automation decisions
   rest on evidence.
@@ -268,4 +277,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after starting milestone v1.6*
+*Last updated: 2026-04-07 after completing Phase 35 and transitioning to Phase 36*
