@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 34 Plan 01 benchmark-pack storage helpers | Added deterministic `llm_external_sets` storage helpers in `llm/storage.py` for the benchmark-pack root plus `freeze_contract.json`, `manifest.json`, `included.jsonl`, and `excluded.jsonl`, keeping this artifact family isolated from translation-export and serving-benchmark roots and turning the focused schema/storage slice green |
 | 2026-04-07 | Phase 34 Plan 01 RED benchmark-pack storage tests | Extended `test_llm_translated_benchmark_schema.py` with failing storage-layout coverage for `data/benchmarks/llm_external_sets/{benchmark_set_id}/`, dedicated `freeze_contract.json` and inventory filenames, blank-ID rejection, and proof that the new artifact family stays separate from translation-export and serving-benchmark roots |
 | 2026-04-07 | Phase 34 Plan 01 translated benchmark-pack contract | Added typed translated benchmark-set spec, included/excluded row, manifest, and summary models to `llm/schema.py`, re-exported the new public surface from `materials_discovery.llm`, and kept the new benchmark-pack schema slice green against the focused validator tests |
 | 2026-04-07 | Phase 34 Plan 01 RED benchmark-pack contract tests | Added failing `test_llm_translated_benchmark_schema.py` coverage that locks the translated benchmark freeze contract shape, typed loss-posture and exclusion vocabularies, included/excluded row lineage, and manifest path/count expectations before implementing the new schema surface |
@@ -141,6 +142,8 @@
 
 ### 2026-04-07
 
+- 01:39 EDT — Implemented the Phase 34 Plan 01 benchmark-pack storage helpers in `llm/storage.py`.
+- Added deterministic helpers for the `llm_external_sets` root plus `freeze_contract.json`, `manifest.json`, `included.jsonl`, and `excluded.jsonl`, reusing the shared artifact-id guard so blank benchmark-set IDs fail early and the new artifact family stays isolated from translation-export and serving-benchmark directories.
 - 01:38 EDT — Started the Phase 34 Plan 01 storage-helper RED slice by extending `tests/test_llm_translated_benchmark_schema.py`.
 - The new failing cases lock the `llm_external_sets` artifact root, dedicated freeze-contract and included/excluded inventory filenames, blank benchmark-set rejection through the shared artifact-id guard, and explicit separation from translation-export plus serving-benchmark directories.
 - 01:32 EDT — Implemented the Phase 34 Plan 01 translated benchmark-pack contract in `llm/schema.py` and exported it from `materials_discovery.llm`.

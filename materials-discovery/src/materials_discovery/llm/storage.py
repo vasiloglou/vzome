@@ -244,6 +244,37 @@ def llm_serving_benchmark_summary_path(
     return llm_serving_benchmark_dir(benchmark_id, root) / "benchmark_summary.json"
 
 
+def translated_benchmark_set_dir(
+    benchmark_set_id: str, root: Path | None = None
+) -> Path:
+    normalized_benchmark_set_id = _require_artifact_id(benchmark_set_id, "benchmark_set_id")
+    return _artifact_root(root) / "data" / "benchmarks" / "llm_external_sets" / normalized_benchmark_set_id
+
+
+def translated_benchmark_contract_path(
+    benchmark_set_id: str, root: Path | None = None
+) -> Path:
+    return translated_benchmark_set_dir(benchmark_set_id, root) / "freeze_contract.json"
+
+
+def translated_benchmark_manifest_path(
+    benchmark_set_id: str, root: Path | None = None
+) -> Path:
+    return translated_benchmark_set_dir(benchmark_set_id, root) / "manifest.json"
+
+
+def translated_benchmark_included_path(
+    benchmark_set_id: str, root: Path | None = None
+) -> Path:
+    return translated_benchmark_set_dir(benchmark_set_id, root) / "included.jsonl"
+
+
+def translated_benchmark_excluded_path(
+    benchmark_set_id: str, root: Path | None = None
+) -> Path:
+    return translated_benchmark_set_dir(benchmark_set_id, root) / "excluded.jsonl"
+
+
 def llm_campaign_dir(campaign_id: str, root: Path | None = None) -> Path:
     normalized_campaign_id = _require_artifact_id(campaign_id, "campaign_id")
     return _artifact_root(root) / "data" / "llm_campaigns" / normalized_campaign_id
