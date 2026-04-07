@@ -1,11 +1,11 @@
 ---
 phase: 35
 slug: external-target-registration-and-reproducible-execution
-status: draft
+status: verified
 nyquist_compliant: true
 wave_0_complete: true
 created: 2026-04-07
-last_updated: "2026-04-07T06:45:00Z"
+last_updated: "2026-04-07T07:26:10Z"
 ---
 
 # Phase 35 — Validation Strategy
@@ -39,12 +39,12 @@ last_updated: "2026-04-07T06:45:00Z"
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 35-01-01 | 01 | 1 | OPS-17 | schema | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_schema.py -x -v` | ❌ W0 | ⬜ pending |
-| 35-01-02 | 01 | 1 | OPS-17 | storage | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_schema.py -x -v` | ❌ W0 | ⬜ pending |
-| 35-02-01 | 02 | 2 | OPS-17 | registry-core | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_registry.py -x -v` | ❌ W0 | ⬜ pending |
-| 35-02-02 | 02 | 2 | OPS-17 | smoke-and-environment | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_registry.py tests/test_llm_external_target_cli.py -x -v` | ❌ W0 | ⬜ pending |
-| 35-03-01 | 03 | 3 | OPS-17 | cli-surface | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_cli.py tests/test_cli.py -x -v` | ❌ W0 | ⬜ pending |
-| 35-03-02 | 03 | 3 | OPS-17 | docs-example-flow | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_cli.py tests/test_cli.py -x -v` | ❌ W0 | ⬜ pending |
+| 35-01-01 | 01 | 1 | OPS-17 | schema | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_schema.py -x -v` | ✅ yes | ✅ green |
+| 35-01-02 | 01 | 1 | OPS-17 | storage | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_schema.py -x -v` | ✅ yes | ✅ green |
+| 35-02-01 | 02 | 2 | OPS-17 | registry-core | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_registry.py -x -v` | ✅ yes | ✅ green |
+| 35-02-02 | 02 | 2 | OPS-17 | smoke-and-environment | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_registry.py tests/test_llm_external_target_cli.py -x -v` | ✅ yes | ✅ green |
+| 35-03-01 | 03 | 3 | OPS-17 | cli-surface | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_cli.py tests/test_cli.py -x -v` | ✅ yes | ✅ green |
+| 35-03-02 | 03 | 3 | OPS-17 | docs-example-flow | `cd /Users/nikolaosvasiloglou/github-repos/vzome/materials-discovery && uv run pytest tests/test_llm_external_target_cli.py tests/test_cli.py -x -v` | ✅ yes | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,9 +52,9 @@ last_updated: "2026-04-07T06:45:00Z"
 
 ## Wave 0 Requirements
 
-- [ ] `materials-discovery/tests/test_llm_external_target_schema.py` — contract and storage expectations
-- [ ] `materials-discovery/tests/test_llm_external_target_registry.py` — normalization, fingerprinting, reload, and smoke persistence
-- [ ] `materials-discovery/tests/test_llm_external_target_cli.py` — CLI help, register, inspect, and smoke behavior
+- [x] `materials-discovery/tests/test_llm_external_target_schema.py` — contract and storage expectations
+- [x] `materials-discovery/tests/test_llm_external_target_registry.py` — normalization, fingerprinting, reload, and smoke persistence
+- [x] `materials-discovery/tests/test_llm_external_target_cli.py` — CLI help, register, inspect, and smoke behavior
 
 Existing infrastructure otherwise covers the phase.
 
@@ -76,4 +76,4 @@ monkeypatched runtime helpers, and CLI regression tests.
 - [x] Feedback latency < 20s
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** verified 2026-04-07T07:26:10Z after the phase-wide `41 passed` external-target suite and CLI spot-checks.
