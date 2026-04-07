@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 34 Plan 01 RED benchmark-pack contract tests | Added failing `test_llm_translated_benchmark_schema.py` coverage that locks the translated benchmark freeze contract shape, typed loss-posture and exclusion vocabularies, included/excluded row lineage, and manifest path/count expectations before implementing the new schema surface |
 | 2026-04-07 | Phase 33 Plan 03 translation operator docs and help coverage | Added `developers-docs/llm-translation-runbook.md`, refreshed README and docs entry points for the new translation workflow, updated the pipeline command reference and developer contract note to point operators at the runbook, and locked CLI help discoverability for `llm-translate` plus `llm-translate-inspect` |
 | 2026-04-07 | Phase 33 Plan 02 translation export CLI | Added `mdisc llm-translate` and `mdisc llm-translate-inspect`, wired translation bundle creation into standard stage-manifest writing plus campaign-lineage and benchmark-context passthrough, and added operator-readable bundle inspection with clear exit-code-2 failures for missing inputs or manifests |
 | 2026-04-06 | Phase 33 Plan 02 RED translation CLI tests | Added failing `test_llm_translation_cli.py` coverage for the new `llm-translate` and `llm-translate-inspect` commands, including stage-manifest writing, campaign-lineage and benchmark-context passthrough, bundle-summary inspection, candidate-level tracing, and clear exit-code-2 failures on missing inputs or manifests |
@@ -138,6 +139,8 @@
 
 ### 2026-04-07
 
+- 01:32 EDT — Started Phase 34 Plan 01 in TDD RED mode by adding `tests/test_llm_translated_benchmark_schema.py`.
+- The new failing coverage locks the benchmark-set spec filters, typed loss-posture and exclusion vocabularies, included/excluded translation-row lineage, and manifest path/count fields before the translated benchmark-pack contract or storage helpers exist.
 - 00:15 EDT — Finished the Phase 33 Plan 03 operator docs slice by adding an `llm-translation` runbook, threading it through the README/docs map and pipeline command reference, tightening the developer contract note so it points operators to the runbook, and verifying CLI help discoverability at `17 passed`.
 - 00:09 EDT — Implemented the Phase 33 Plan 02 CLI layer by adding `mdisc llm-translate` and `mdisc llm-translate-inspect`, wiring bundle export into the standard stage-manifest flow with campaign-lineage and benchmark-context passthrough, and verifying the focused CLI slice at `4 passed`.
 
