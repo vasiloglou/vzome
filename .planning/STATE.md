@@ -4,16 +4,16 @@ milestone: v1.5
 milestone_name: milestone
 current_phase: 32
 current_phase_name: cif-and-material-string-exporters
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Ready for 32-02-PLAN.md
-last_updated: "2026-04-07T03:11:53.077Z"
+stopped_at: Ready for 32-03-PLAN.md
+last_updated: "2026-04-07T03:22:19.754Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 33
 ---
 
@@ -31,10 +31,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-06)
 Current Phase: 32
 Current Phase Name: cif-and-material-string-exporters
 Total Phases: 3
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 3
 Phase: 32 (cif-and-material-string-exporters) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-07
 Last Activity Description: Phase 32 execution started
@@ -63,6 +63,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 31 P02 | 7min | 2 tasks | 6 files |
 | Phase 31 P03 | 5min | 2 tasks | 5 files |
 | Phase 32 P01 | 6 min | 2 tasks | 5 files |
+| Phase 32 P02 | 2 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -132,6 +133,8 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Phase 31]: Kept approximate covered in translation-core tests rather than adding a third fixture because Plan 03 needed to freeze the two exporter-facing boundary cases first.
 - [Phase 32]: Centralized translation export validation in translation_export.py so CIF and later target families share one export-readiness gate and copy-not-mutate dispatch contract. — Plan 01 needed a stable seam before adding the material-string target, and the new tests prove both deterministic behavior and clear failure modes from one shared API.
 - [Phase 32]: Kept CIF output deterministic and explicitly labeled with source/fidelity/loss metadata in comment lines so lossy periodic-proxy exports remain visibly honest. — The repo-local CIF parser accepts the emitted payload after comment stripping, while the comment preamble preserves the interoperability boundary that Phase 31 established.
+- [Phase 32]: Implemented crystaltextllm_material_string as a bare CrystalTextLLM-compatible body so the shipped target name remains honest about downstream parser compatibility. — The phase review showed that repo-only headers in emitted_text would break CrystalTextLLM parsing and make the target contract misleading, so the raw body now stays parser-compatible.
+- [Phase 32]: Kept source linkage, fidelity tier, and loss metadata on TranslatedStructureArtifact rather than embedding repo-only headers into the raw material string. — This preserves auditable provenance on the artifact while allowing the exported body to remain usable by downstream CrystalTextLLM-style tooling.
 
 ### Pending Todos
 
@@ -143,6 +146,6 @@ None right now.
 
 ## Session Continuity
 
-Last session: 2026-04-07T03:11:17.535Z
-Stopped at: Ready for 32-02-PLAN.md
-Resume file: .planning/phases/32-cif-and-material-string-exporters/32-02-PLAN.md
+Last session: 2026-04-07T03:22:19.751Z
+Stopped at: Ready for 32-03-PLAN.md
+Resume file: .planning/phases/32-cif-and-material-string-exporters/32-03-PLAN.md
