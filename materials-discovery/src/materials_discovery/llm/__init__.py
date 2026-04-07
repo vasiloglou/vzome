@@ -78,6 +78,11 @@ from materials_discovery.llm.translation import (
     infer_coordinate_sources,
     prepare_translated_structure,
 )
+from materials_discovery.llm.translation_export import (
+    emit_cif_text,
+    emit_translated_structure,
+    validate_translated_structure_for_export,
+)
 from materials_discovery.llm.runtime import (
     AnthropicApiLlmAdapter,
     LlmAdapter,
@@ -309,6 +314,8 @@ __all__ = [
     "find_prior_campaign_launch",
     "grade_corpus_example",
     "evaluate_llm_candidates",
+    "emit_cif_text",
+    "emit_translated_structure",
     "execute_serving_benchmark",
     "generate_llm_candidates",
     "LlmAdapter",
@@ -405,6 +412,7 @@ __all__ = [
     "ResolvedModelLaneSource",
     "resolve_llm_adapter",
     "validate_llm_adapter_ready",
+    "validate_translated_structure_for_export",
     "resolve_campaign_launch",
     "resolve_campaign_model_lane",
     "resolve_serving_lane",

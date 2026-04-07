@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 32 Plan 01 Task 1 shared export seam | Added `llm/translation_export.py` with deterministic export validation, a shared six-decimal float formatter, copy-not-mutate dispatch, a narrow pure-text CIF emitter, and public `llm` exports for the new Phase 32 seam |
 | 2026-04-06 | Phase 32 Plan 01 Task 1 RED export-seam tests | Added failing `test_llm_translation_export.py` coverage for shared export validation, deterministic dispatch, copy-not-mutate behavior, and the explicit `material_string` not-yet-implemented boundary before adding the new exporter module |
 | 2026-04-06 | Phase 31 Plan 03 Task 2 developer translation contract note | Added `developers-docs/llm-translation-contract.md` as an implementation-facing handoff for Phase 32, documented the source-of-truth boundary, the built-in target registry, all four fidelity states, and why the exact/lossy fixture pair anchors the exporter boundary while `approximate` remains covered in core tests |
 | 2026-04-06 | Phase 31 Plan 03 Task 1 translation fixtures | Added repo-backed Al-Cu-Fe periodic-safe and Sc-Zn QC-native candidate fixtures under `tests/fixtures/llm_translation/`, made the new regression suite green across both built-in translation targets, and kept the contract anchored on explicit fixture data-shape differences rather than prose alone |
@@ -253,6 +254,8 @@
 
 ### 2026-04-06
 
+- 23:09 EDT — Implemented Phase 32 Plan 01 Task 1 by adding `llm/translation_export.py` and exporting the new helpers from `materials_discovery.llm`.
+- The new seam validates periodic export readiness up front, shares one deterministic float formatter, returns copied artifacts with `emitted_text` populated, and keeps `material_string` explicitly unimplemented until Plan 02 while the CIF branch stays a narrow pure-text serializer ready for the stricter Task 2 contract.
 - 23:01 EDT — Started Phase 32 Plan 01 Task 1 in TDD RED mode by adding `tests/test_llm_translation_export.py`.
 - The new failing coverage locks shared export-readiness validation for missing periodic cell data, empty site lists, and missing fractional coordinates; it also requires byte-stable dispatch, copy-not-mutate semantics, and an explicit `NotImplementedError` for `material_string` until Plan 02 lands.
 
