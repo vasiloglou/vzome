@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 32 Plan 01 Task 2 RED CIF serializer tests | Added failing `test_llm_translation_cif.py` coverage for the deterministic CIF comment preamble, fixed scalar and loop-header order, parser compatibility after comment stripping, preserved site order, and explicit lossy periodic-proxy metadata before tightening the serializer |
 | 2026-04-06 | Phase 32 Plan 01 Task 1 shared export seam | Added `llm/translation_export.py` with deterministic export validation, a shared six-decimal float formatter, copy-not-mutate dispatch, a narrow pure-text CIF emitter, and public `llm` exports for the new Phase 32 seam |
 | 2026-04-06 | Phase 32 Plan 01 Task 1 RED export-seam tests | Added failing `test_llm_translation_export.py` coverage for shared export validation, deterministic dispatch, copy-not-mutate behavior, and the explicit `material_string` not-yet-implemented boundary before adding the new exporter module |
 | 2026-04-06 | Phase 31 Plan 03 Task 2 developer translation contract note | Added `developers-docs/llm-translation-contract.md` as an implementation-facing handoff for Phase 32, documented the source-of-truth boundary, the built-in target registry, all four fidelity states, and why the exact/lossy fixture pair anchors the exporter boundary while `approximate` remains covered in core tests |
@@ -254,6 +255,8 @@
 
 ### 2026-04-06
 
+- 23:05 EDT — Started Phase 32 Plan 01 Task 2 in TDD RED mode by adding `tests/test_llm_translation_cif.py`.
+- The new failing CIF coverage locks the deterministic comment preamble, fixed cell-field and atom-loop header order, parser compatibility after comment stripping, preserved translated site order, and explicit lossy periodic-proxy metadata for the QC-native fixture before tightening the serializer.
 - 23:09 EDT — Implemented Phase 32 Plan 01 Task 1 by adding `llm/translation_export.py` and exporting the new helpers from `materials_discovery.llm`.
 - The new seam validates periodic export readiness up front, shares one deterministic float formatter, returns copied artifacts with `emitted_text` populated, and keeps `material_string` explicitly unimplemented until Plan 02 while the CIF branch stays a narrow pure-text serializer ready for the stricter Task 2 contract.
 - 23:01 EDT — Started Phase 32 Plan 01 Task 1 in TDD RED mode by adding `tests/test_llm_translation_export.py`.
