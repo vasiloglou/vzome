@@ -117,6 +117,7 @@ from materials_discovery.llm.checkpoints import (
 from materials_discovery.llm.evaluate import evaluate_llm_candidates
 from materials_discovery.llm.generate import generate_llm_candidates
 from materials_discovery.llm.translation_bundle import export_translation_bundle
+from materials_discovery.llm.translated_benchmark import freeze_translated_benchmark_set
 from materials_discovery.llm.launch import (
     build_serving_identity,
     resolve_campaign_launch,
@@ -142,6 +143,9 @@ from materials_discovery.llm.schema import (
     LlmCheckpointPromotionSpec,
     LlmCheckpointRetirementSpec,
     LlmServingIdentity,
+    TranslatedBenchmarkExcludedRow,
+    TranslatedBenchmarkIncludedRow,
+    TranslatedBenchmarkSetManifest,
     TranslationBundleManifest,
     TranslationInventoryRow,
 )
@@ -1745,6 +1749,92 @@ def llm_translate_inspect_command(
             )
     except (FileNotFoundError, ValidationError, ValueError) as exc:
         _emit_error(f"llm-translate-inspect failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-translated-benchmark-freeze")
+def llm_translated_benchmark_freeze_command(
+    spec: Path = typer.Option(..., "--spec", exists=False, dir_okay=False),
+) -> None:
+    """Freeze one translated benchmark pack from a file-backed selection spec."""
+    try:
+        if not spec.exists():
+            raise FileNotFoundError(f"translated benchmark spec not found: {spec}")
+
+        summary = freeze_translated_benchmark_set(spec, root=workspace_root())
+        typer.echo(summary.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-translated-benchmark-freeze failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+def _load_translated_benchmark_rows(
+    benchmark_manifest: TranslatedBenchmarkSetManifest,
+) -> tuple[list[TranslatedBenchmarkIncludedRow], list[TranslatedBenchmarkExcludedRow]]:
+    included_rows = [
+        TranslatedBenchmarkIncludedRow.model_validate(row)
+        for row in load_jsonl(_workspace_path(benchmark_manifest.included_inventory_path))
+    ]
+    excluded_rows = [
+        TranslatedBenchmarkExcludedRow.model_validate(row)
+        for row in load_jsonl(_workspace_path(benchmark_manifest.excluded_inventory_path))
+    ]
+    return included_rows, excluded_rows
+
+
+@app.command("llm-translated-benchmark-inspect")
+def llm_translated_benchmark_inspect_command(
+    manifest: Path = typer.Option(..., "--manifest", exists=False, dir_okay=False),
+    show: str = typer.Option("all", "--show"),
+    candidate_id: str | None = typer.Option(None, "--candidate-id"),
+) -> None:
+    """Inspect a frozen translated benchmark pack and trace included or excluded rows."""
+    try:
+        if not manifest.exists():
+            raise FileNotFoundError(f"translated benchmark manifest not found: {manifest}")
+
+        show_token = show.strip().lower()
+        if show_token not in {"included", "excluded", "all"}:
+            raise ValueError("--show must be one of included, excluded, or all")
+
+        benchmark_manifest = TranslatedBenchmarkSetManifest.model_validate(load_json_object(manifest))
+        included_rows, excluded_rows = _load_translated_benchmark_rows(benchmark_manifest)
+
+        if show_token == "included":
+            excluded_rows = []
+        elif show_token == "excluded":
+            included_rows = []
+
+        if candidate_id is not None:
+            included_rows = [row for row in included_rows if row.candidate_id == candidate_id]
+            excluded_rows = [row for row in excluded_rows if row.candidate_id == candidate_id]
+            if not included_rows and not excluded_rows:
+                raise ValueError(
+                    f"candidate_id not found in translated benchmark set: {candidate_id}"
+                )
+
+        typer.echo(f"Benchmark set: {benchmark_manifest.benchmark_set_id}")
+        typer.echo(f"Target family: {benchmark_manifest.target_family}")
+        typer.echo(
+            "Systems: "
+            + (", ".join(benchmark_manifest.systems) if benchmark_manifest.systems else "all")
+        )
+        typer.echo(f"Included count: {benchmark_manifest.included_count}")
+        typer.echo(f"Excluded count: {benchmark_manifest.excluded_count}")
+        typer.echo(f"Contract: {benchmark_manifest.contract_path}")
+
+        for row in included_rows:
+            typer.echo(f"Included: {row.candidate_id} [{row.fidelity_tier}]")
+            typer.echo(f"Payload: {row.payload_path}")
+            typer.echo(f"Source bundle: {row.source_bundle_manifest_path}")
+
+        for row in excluded_rows:
+            typer.echo(f"Excluded: {row.candidate_id} [{row.exclusion_reason}]")
+            typer.echo(f"Payload: {row.payload_path}")
+            typer.echo(f"Source bundle: {row.source_bundle_manifest_path}")
+            typer.echo(f"Detail: {row.exclusion_detail or 'none'}")
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-translated-benchmark-inspect failed: {exc}")
         raise typer.Exit(code=2)
 
 
