@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 32 Plan 01 Task 1 RED export-seam tests | Added failing `test_llm_translation_export.py` coverage for shared export validation, deterministic dispatch, copy-not-mutate behavior, and the explicit `material_string` not-yet-implemented boundary before adding the new exporter module |
 | 2026-04-06 | Phase 31 Plan 03 Task 2 developer translation contract note | Added `developers-docs/llm-translation-contract.md` as an implementation-facing handoff for Phase 32, documented the source-of-truth boundary, the built-in target registry, all four fidelity states, and why the exact/lossy fixture pair anchors the exporter boundary while `approximate` remains covered in core tests |
 | 2026-04-06 | Phase 31 Plan 03 Task 1 translation fixtures | Added repo-backed Al-Cu-Fe periodic-safe and Sc-Zn QC-native candidate fixtures under `tests/fixtures/llm_translation/`, made the new regression suite green across both built-in translation targets, and kept the contract anchored on explicit fixture data-shape differences rather than prose alone |
 | 2026-04-06 | Phase 31 Plan 03 Task 1 RED fixture regression tests | Added failing `test_llm_translation_fixtures.py` coverage that loads repo-backed periodic-safe and QC-native candidate fixtures, locks exact versus lossy expectations for both built-in translation targets, and proves the new regression suite is file-based rather than inline-only |
@@ -251,6 +252,9 @@
 - `compare_benchmark_packs()`: builds LaneSnapshot for each pack, computes gate deltas and metric distribution diffs (8 key metrics: hifi_score, stability_probability, ood_score, xrd_confidence, xrd_distinctiveness, delta_e_proxy_hull_ev_per_atom, uncertainty_ev_per_atom, md_stability_score).
 
 ### 2026-04-06
+
+- 23:01 EDT — Started Phase 32 Plan 01 Task 1 in TDD RED mode by adding `tests/test_llm_translation_export.py`.
+- The new failing coverage locks shared export-readiness validation for missing periodic cell data, empty site lists, and missing fractional coordinates; it also requires byte-stable dispatch, copy-not-mutate semantics, and an explicit `NotImplementedError` for `material_string` until Plan 02 lands.
 
 - 20:03 EDT — Wrote `developers-docs/llm-translation-contract.md` as the Phase 31 implementation handoff for Phase 32 exporters.
 - The note keeps Zomic as the source of truth, defines `exact`, `anchored`, `approximate`, and `lossy`, documents the built-in CIF/material-string targets, and explicitly defers operator workflow docs to Phase 33.
