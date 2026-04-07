@@ -26,10 +26,10 @@ reinforce each other instead of living in separate prototypes.
 
 ### Operations and Governance
 
-- [ ] **OPS-15**: Operators can create, inspect, and trace translation artifacts
+- [x] **OPS-15**: Operators can create, inspect, and trace translation artifacts
   through a file-backed CLI/documented workflow instead of hand-written export
   scripts.
-- [ ] **OPS-16**: Developer and runbook docs explain the intended downstream
+- [x] **OPS-16**: Developer and runbook docs explain the intended downstream
   target formats, where representational loss occurs, and when CIF/material
   string exports are appropriate versus when Zomic must remain the source of
   truth.
@@ -72,10 +72,10 @@ reinforce each other instead of living in separate prototypes.
 |-------------|-------|--------|
 | LLM-27 | Phase 31 | Completed |
 | LLM-30 | Phase 31 | Completed |
-| LLM-28 | Phase 32 | Planned |
-| LLM-29 | Phase 32 | Planned |
-| OPS-15 | Phase 33 | Planned |
-| OPS-16 | Phase 33 | Planned |
+| LLM-28 | Phase 32 | Completed |
+| LLM-29 | Phase 32 | Completed |
+| OPS-15 | Phase 33 | Completed |
+| OPS-16 | Phase 33 | Completed |
 
 **Coverage:**
 - v1.5 requirements: 6 total
@@ -84,4 +84,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after completing Phase 31 Plan 01*
+*Last updated: 2026-04-07 after completing Phase 33 and verifying milestone v1.5 requirements*

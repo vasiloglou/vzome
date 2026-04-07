@@ -4,17 +4,17 @@ milestone: v1.5
 milestone_name: milestone
 current_phase: 33
 current_phase_name: cli, benchmark hooks, and operator docs
-current_plan: Not started
-status: verifying
-stopped_at: Completed 32-03-PLAN.md
-last_updated: "2026-04-07T03:43:41.442Z"
+current_plan: Verification complete
+status: lifecycle
+stopped_at: Completed 33-03-PLAN.md
+last_updated: "2026-04-07T04:17:05Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 33
+  completed_phases: 3
+  total_plans: 9
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -24,22 +24,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 32 — cif-and-material-string-exporters
+**Current focus:** Milestone v1.5 lifecycle after completing Phase 33
 
 ## Current Position
 
 Current Phase: 33
 Current Phase Name: cli, benchmark hooks, and operator docs
 Total Phases: 3
-Current Plan: Not started
+Current Plan: Verification complete
 Total Plans in Phase: 3
-Phase: 32 (cif-and-material-string-exporters) — EXECUTING
+Phase: 33 (cli, benchmark hooks, and operator docs) — COMPLETE
 Plan: 3 of 3
-Status: Phase complete — ready for verification
+Status: All milestone phases complete — lifecycle pending
 Last activity: 2026-04-07
-Last Activity Description: Phase 32 complete, transitioned to Phase 33
+Last Activity Description: Phase 33 verified, milestone audit/complete/cleanup next
 
-Progress: [███░░░░░░░] 33%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -65,6 +65,9 @@ Progress: [███░░░░░░░] 33%
 | Phase 32 P01 | 6 min | 2 tasks | 5 files |
 | Phase 32 P02 | 2 min | 2 tasks | 5 files |
 | Phase 32 P03 | 3 min | 2 tasks | 8 files |
+| Phase 33 P01 | 6 min | 2 tasks | 6 files |
+| Phase 33 P02 | 9 min | 2 tasks | 3 files |
+| Phase 33 P03 | 6 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
