@@ -1,7 +1,7 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.5
-milestone_name: milestone
+milestone_name: External Materials-LLM Translation Bridge MVP
 current_phase: 33
 current_phase_name: cli, benchmark hooks, and operator docs
 current_plan: Complete
@@ -21,7 +21,7 @@ progress:
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-06)
+See: `.planning/PROJECT.md` (updated 2026-04-07)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
 **Current focus:** Await the next milestone definition
@@ -58,7 +58,7 @@ Progress: [██████████] 100%
 | v1.2 | 19-24 | 18 | Shipped |
 | v1.3 | 25-27 | 9 | Shipped |
 | v1.4 | 28-30 | 9 | Shipped |
-| v1.5 | 31-33 | 3 | Active |
+| v1.5 | 31-33 | 3 | Shipped |
 | Phase 31 P01 | 6min | 2 tasks | 4 files |
 | Phase 31 P02 | 7min | 2 tasks | 6 files |
 | Phase 31 P03 | 5min | 2 tasks | 5 files |
