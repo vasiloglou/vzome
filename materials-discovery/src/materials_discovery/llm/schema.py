@@ -49,6 +49,7 @@ DEFAULT_LLM_EVALUATION_REQUEST_SCHEMA_VERSION = "llm-evaluation-request/v1"
 DEFAULT_LLM_EVALUATION_RUN_MANIFEST_VERSION = "llm-evaluation-run-manifest/v1"
 DEFAULT_LLM_EVAL_SET_SCHEMA_VERSION = "llm-eval-set-example/v1"
 DEFAULT_LLM_EVAL_SET_MANIFEST_VERSION = "llm-eval-set-manifest/v1"
+DEFAULT_TRANSLATION_BUNDLE_MANIFEST_VERSION = "llm-translation-bundle-manifest/v1"
 DEFAULT_LLM_ACCEPTANCE_PACK_VERSION = "llm-acceptance-pack/v1"
 DEFAULT_LLM_CHECKPOINT_REGISTRATION_VERSION = "llm-checkpoint-registration/v1"
 DEFAULT_LLM_CHECKPOINT_LIFECYCLE_INDEX_VERSION = "llm-checkpoint-lifecycle-index/v1"
@@ -1555,6 +1556,130 @@ class LlmEvalSetSummary(BaseModel):
     def validate_example_count(cls, value: int) -> int:
         if value < 0:
             raise ValueError("example_count must be >= 0")
+        return value
+
+
+class TranslationInventoryRow(BaseModel):
+    export_id: str
+    candidate_id: str
+    system: str
+    template_family: str
+    target_family: TranslationTargetFamily
+    target_format: TranslationTargetFormat
+    fidelity_tier: TranslationFidelityTier
+    loss_reasons: list[TranslationLossReason] = Field(default_factory=list)
+    diagnostic_codes: list[TranslationDiagnosticCode] = Field(default_factory=list)
+    composition: dict[str, float]
+    payload_path: str
+    payload_hash: str
+    emitted_text: str
+
+    @field_validator(
+        "export_id",
+        "candidate_id",
+        "system",
+        "template_family",
+        "payload_path",
+        "payload_hash",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("emitted_text")
+    @classmethod
+    def validate_emitted_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("field must not be blank")
+        return value
+
+    @field_validator("loss_reasons", "diagnostic_codes")
+    @classmethod
+    def normalize_string_lists(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @model_validator(mode="after")
+    def validate_composition(self) -> TranslationInventoryRow:
+        total = sum(self.composition.values())
+        if total <= 0.0:
+            raise ValueError("composition must have positive total")
+        self.composition = {
+            key: value / total for key, value in sorted(self.composition.items())
+        }
+        return self
+
+
+class TranslationBundleManifest(BaseModel):
+    schema_version: str = DEFAULT_TRANSLATION_BUNDLE_MANIFEST_VERSION
+    export_id: str
+    created_at_utc: str
+    input_path: str
+    target_family: TranslationTargetFamily
+    target_format: TranslationTargetFormat
+    inventory_path: str
+    payload_dir: str
+    candidate_count: int
+    exported_count: int
+    lossy_count: int
+    stage_manifest_path: str | None = None
+    source_lineage: dict[str, Any] | None = None
+    benchmark_context: dict[str, Any] | None = None
+
+    @field_validator(
+        "schema_version",
+        "export_id",
+        "created_at_utc",
+        "input_path",
+        "inventory_path",
+        "payload_dir",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("stage_manifest_path")
+    @classmethod
+    def normalize_optional_stage_manifest_path(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("candidate_count", "exported_count", "lossy_count")
+    @classmethod
+    def validate_non_negative_counts(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("count fields must be >= 0")
+        return value
+
+
+class TranslationExportSummary(BaseModel):
+    export_id: str
+    target_family: TranslationTargetFamily
+    target_format: TranslationTargetFormat
+    candidate_count: int
+    exported_count: int
+    lossy_count: int
+    manifest_path: str
+    inventory_path: str
+    payload_dir: str
+    stage_manifest_path: str | None = None
+
+    @field_validator(
+        "export_id",
+        "manifest_path",
+        "inventory_path",
+        "payload_dir",
+        "stage_manifest_path",
+    )
+    @classmethod
+    def validate_paths(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return _require_non_blank_string(value)
+
+    @field_validator("candidate_count", "exported_count", "lossy_count")
+    @classmethod
+    def validate_non_negative_counts(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("count fields must be >= 0")
         return value
 
 

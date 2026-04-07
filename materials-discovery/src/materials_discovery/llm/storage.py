@@ -62,6 +62,38 @@ def llm_eval_set_manifest_path(export_id: str, root: Path | None = None) -> Path
     return llm_eval_set_dir(export_id, root) / "manifest.json"
 
 
+def llm_translation_export_dir(export_id: str, root: Path | None = None) -> Path:
+    normalized_export_id = _require_artifact_id(export_id, "export_id")
+    return _artifact_root(root) / "data" / "llm_translation_exports" / normalized_export_id
+
+
+def llm_translation_manifest_path(export_id: str, root: Path | None = None) -> Path:
+    return llm_translation_export_dir(export_id, root) / "manifest.json"
+
+
+def llm_translation_inventory_path(export_id: str, root: Path | None = None) -> Path:
+    return llm_translation_export_dir(export_id, root) / "inventory.jsonl"
+
+
+def llm_translation_payload_dir(export_id: str, root: Path | None = None) -> Path:
+    return llm_translation_export_dir(export_id, root) / "payloads"
+
+
+def llm_translate_stage_manifest_path(
+    system_slug: str,
+    export_id: str,
+    root: Path | None = None,
+) -> Path:
+    normalized_system_slug = _require_artifact_id(system_slug, "system_slug")
+    normalized_export_id = _require_artifact_id(export_id, "export_id")
+    return (
+        _artifact_root(root)
+        / "data"
+        / "manifests"
+        / f"{normalized_system_slug}_{normalized_export_id}_llm_translate_manifest.json"
+    )
+
+
 def llm_acceptance_dir(pack_id: str, root: Path | None = None) -> Path:
     normalized_pack_id = _require_artifact_id(pack_id, "pack_id")
     return _artifact_root(root) / "data" / "benchmarks" / "llm_acceptance" / normalized_pack_id
