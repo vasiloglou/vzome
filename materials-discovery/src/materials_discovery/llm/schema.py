@@ -35,6 +35,18 @@ TranslationDiagnosticCode = Literal[
     "unsupported_exactness_claim",
 ]
 TranslationDiagnosticSeverity = Literal["info", "warning", "error"]
+TranslatedBenchmarkLossPosture = Literal[
+    "lossless_only",
+    "allow_explicit_loss",
+    "lossy_only",
+]
+TranslatedBenchmarkExclusionReason = Literal[
+    "system_not_selected",
+    "target_family_mismatch",
+    "fidelity_tier_not_selected",
+    "loss_posture_rejected",
+    "duplicate_translation_row",
+]
 ReleaseTier = Literal["pending", "gold", "silver", "reject"]
 ValidationStatus = Literal["pending", "passed", "failed"]
 
@@ -50,6 +62,7 @@ DEFAULT_LLM_EVALUATION_RUN_MANIFEST_VERSION = "llm-evaluation-run-manifest/v1"
 DEFAULT_LLM_EVAL_SET_SCHEMA_VERSION = "llm-eval-set-example/v1"
 DEFAULT_LLM_EVAL_SET_MANIFEST_VERSION = "llm-eval-set-manifest/v1"
 DEFAULT_TRANSLATION_BUNDLE_MANIFEST_VERSION = "llm-translation-bundle-manifest/v1"
+DEFAULT_TRANSLATED_BENCHMARK_SET_MANIFEST_VERSION = "llm-translated-benchmark-set-manifest/v1"
 DEFAULT_LLM_ACCEPTANCE_PACK_VERSION = "llm-acceptance-pack/v1"
 DEFAULT_LLM_CHECKPOINT_REGISTRATION_VERSION = "llm-checkpoint-registration/v1"
 DEFAULT_LLM_CHECKPOINT_LIFECYCLE_INDEX_VERSION = "llm-checkpoint-lifecycle-index/v1"
@@ -130,6 +143,26 @@ def _normalize_optional_string(value: str | None) -> str | None:
         return None
     stripped = value.strip()
     return stripped or None
+
+
+def _require_non_empty_string_list(values: Sequence[str], field_name: str) -> list[str]:
+    normalized = _normalize_string_list(values)
+    if not normalized:
+        raise ValueError(f"{field_name} must not be empty")
+    return normalized
+
+
+def _require_populated_string_list(values: Sequence[str], field_name: str) -> list[str]:
+    normalized: list[str] = []
+    for value in values:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("field must not be blank")
+        if stripped not in normalized:
+            normalized.append(stripped)
+    if not normalized:
+        raise ValueError(f"{field_name} must not be empty")
+    return normalized
 
 
 class TranslatedStructureSourceReference(BaseModel):
@@ -1607,6 +1640,186 @@ class TranslationInventoryRow(BaseModel):
             key: value / total for key, value in sorted(self.composition.items())
         }
         return self
+
+
+class TranslatedBenchmarkSetSpec(BaseModel):
+    benchmark_set_id: str
+    bundle_manifest_paths: list[str]
+    systems: list[str] = Field(default_factory=list)
+    target_family: TranslationTargetFamily
+    allowed_fidelity_tiers: list[TranslationFidelityTier]
+    loss_posture: TranslatedBenchmarkLossPosture
+    operator_note: str | None = None
+
+    @field_validator("benchmark_set_id")
+    @classmethod
+    def validate_benchmark_set_id(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("bundle_manifest_paths")
+    @classmethod
+    def validate_bundle_manifest_paths(cls, values: Sequence[str]) -> list[str]:
+        return _require_populated_string_list(values, "bundle_manifest_paths")
+
+    @field_validator("systems")
+    @classmethod
+    def normalize_systems(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("allowed_fidelity_tiers")
+    @classmethod
+    def validate_allowed_fidelity_tiers(
+        cls, values: Sequence[TranslationFidelityTier]
+    ) -> list[TranslationFidelityTier]:
+        return _require_non_empty_string_list(values, "allowed_fidelity_tiers")
+
+    @field_validator("operator_note")
+    @classmethod
+    def normalize_operator_note(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+
+class TranslatedBenchmarkIncludedRow(BaseModel):
+    benchmark_set_id: str
+    source_export_id: str
+    source_bundle_manifest_path: str
+    candidate_id: str
+    system: str
+    template_family: str
+    target_family: TranslationTargetFamily
+    target_format: TranslationTargetFormat
+    fidelity_tier: TranslationFidelityTier
+    loss_reasons: list[TranslationLossReason] = Field(default_factory=list)
+    diagnostic_codes: list[TranslationDiagnosticCode] = Field(default_factory=list)
+    composition: dict[str, float]
+    payload_path: str
+    payload_hash: str
+    emitted_text: str
+
+    @field_validator(
+        "benchmark_set_id",
+        "source_export_id",
+        "source_bundle_manifest_path",
+        "candidate_id",
+        "system",
+        "template_family",
+        "payload_path",
+        "payload_hash",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("emitted_text")
+    @classmethod
+    def validate_emitted_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("field must not be blank")
+        return value
+
+    @field_validator("loss_reasons", "diagnostic_codes")
+    @classmethod
+    def normalize_string_lists(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @model_validator(mode="after")
+    def validate_composition(self) -> TranslatedBenchmarkIncludedRow:
+        total = sum(self.composition.values())
+        if total <= 0.0:
+            raise ValueError("composition must have positive total")
+        self.composition = {
+            key: value / total for key, value in sorted(self.composition.items())
+        }
+        return self
+
+
+class TranslatedBenchmarkExcludedRow(TranslatedBenchmarkIncludedRow):
+    exclusion_reason: TranslatedBenchmarkExclusionReason
+    exclusion_detail: str | None = None
+
+    @field_validator("exclusion_detail")
+    @classmethod
+    def normalize_exclusion_detail(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+
+class TranslatedBenchmarkSetManifest(BaseModel):
+    schema_version: str = DEFAULT_TRANSLATED_BENCHMARK_SET_MANIFEST_VERSION
+    benchmark_set_id: str
+    contract_path: str
+    included_inventory_path: str
+    excluded_inventory_path: str
+    source_bundle_manifest_paths: list[str]
+    source_export_ids: list[str]
+    included_count: int
+    excluded_count: int
+    target_family: TranslationTargetFamily
+    systems: list[str] = Field(default_factory=list)
+    filter_contract: TranslatedBenchmarkSetSpec
+
+    @field_validator(
+        "schema_version",
+        "benchmark_set_id",
+        "contract_path",
+        "included_inventory_path",
+        "excluded_inventory_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("source_bundle_manifest_paths", "source_export_ids")
+    @classmethod
+    def validate_required_string_lists(cls, values: Sequence[str], info: Any) -> list[str]:
+        return _require_populated_string_list(values, info.field_name)
+
+    @field_validator("systems")
+    @classmethod
+    def normalize_systems(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("included_count", "excluded_count")
+    @classmethod
+    def validate_non_negative_counts(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("count fields must be >= 0")
+        return value
+
+
+class TranslatedBenchmarkSetSummary(BaseModel):
+    benchmark_set_id: str
+    target_family: TranslationTargetFamily
+    loss_posture: TranslatedBenchmarkLossPosture
+    systems: list[str] = Field(default_factory=list)
+    included_count: int
+    excluded_count: int
+    contract_path: str
+    manifest_path: str
+    included_inventory_path: str
+    excluded_inventory_path: str
+
+    @field_validator(
+        "benchmark_set_id",
+        "contract_path",
+        "manifest_path",
+        "included_inventory_path",
+        "excluded_inventory_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        return _require_non_blank_string(value)
+
+    @field_validator("systems")
+    @classmethod
+    def normalize_systems(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("included_count", "excluded_count")
+    @classmethod
+    def validate_non_negative_counts(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("count fields must be >= 0")
+        return value
 
 
 class TranslationBundleManifest(BaseModel):
