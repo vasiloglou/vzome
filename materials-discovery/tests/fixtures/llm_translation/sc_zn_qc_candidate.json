@@ -1,0 +1,43 @@
+{
+  "candidate_id": "sc_zn_fixture_qc_001",
+  "system": "Sc-Zn",
+  "template_family": "pyqcstrc_projection",
+  "cell": {
+    "a": 13.8,
+    "b": 13.8,
+    "c": 13.8,
+    "alpha": 90.0,
+    "beta": 90.0,
+    "gamma": 90.0
+  },
+  "sites": [
+    {
+      "label": "Q1",
+      "qphi": [[1, 0], [0, 1], [1, 1]],
+      "species": "Sc",
+      "occ": 1.0
+    },
+    {
+      "label": "Q2",
+      "qphi": [[0, 1], [1, 1], [1, 0]],
+      "species": "Zn",
+      "occ": 1.0
+    },
+    {
+      "label": "Q3",
+      "qphi": [[1, 1], [1, 0], [0, 1]],
+      "species": "Zn",
+      "occ": 1.0
+    }
+  ],
+  "composition": {
+    "Sc": 0.3333333333,
+    "Zn": 0.6666666667
+  },
+  "provenance": {
+    "fixture_kind": "phase31_qc_native_lossy",
+    "structure_class": "qc_native_projection",
+    "qc_family": ["quasicrystal"],
+    "source_note": "qphi_only_fixture"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "candidate_id": "al_cu_fe_fixture_periodic_001",
+  "system": "Al-Cu-Fe",
+  "template_family": "icosahedral_approximant_2_1",
+  "cell": {
+    "a": 14.2,
+    "b": 14.2,
+    "c": 14.2,
+    "alpha": 90.0,
+    "beta": 90.0,
+    "gamma": 90.0
+  },
+  "sites": [
+    {
+      "label": "A1",
+      "qphi": [[1, 0], [0, 1], [0, 0]],
+      "species": "Al",
+      "occ": 1.0,
+      "fractional_position": [0.125, 0.25, 0.375]
+    },
+    {
+      "label": "C1",
+      "qphi": [[0, 1], [1, 0], [0, 0]],
+      "species": "Cu",
+      "occ": 1.0,
+      "fractional_position": [0.425, 0.55, 0.675]
+    },
+    {
+      "label": "F1",
+      "qphi": [[1, 1], [0, 1], [1, 0]],
+      "species": "Fe",
+      "occ": 1.0,
+      "fractional_position": [0.725, 0.85, 0.125]
+    }
+  ],
+  "composition": {
+    "Al": 0.3333333333,
+    "Cu": 0.3333333333,
+    "Fe": 0.3333333334
+  },
+  "provenance": {
+    "fixture_kind": "phase31_periodic_safe",
+    "structure_class": "periodic_approximant",
+    "qc_family": ["approximant"],
+    "source_note": "stored_fractional_fixture"
+  }
+}
