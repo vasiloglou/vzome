@@ -1,0 +1,22 @@
+# source_candidate_id=al_cu_fe_fixture_periodic_001
+# system=Al-Cu-Fe
+# target_family=cif
+# fidelity_tier=exact
+# loss_reasons=none
+data_al_cu_fe_fixture_periodic_001
+_cell_length_a 14.2
+_cell_length_b 14.2
+_cell_length_c 14.2
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+A1 Al 0.125 0.25 0.375 1.0
+C1 Cu 0.425 0.55 0.675 1.0
+F1 Fe 0.725 0.85 0.125 1.0

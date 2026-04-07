@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 34 Plan 03 translated benchmark runbook, example spec, and demo bundles | Added a committed `configs/llm/al_cu_fe_translated_benchmark_freeze.yaml`, shipped two repo-backed Phase 34 demo translation bundles under `data/llm_translation_exports/`, taught the freeze loader to accept YAML specs, and added a dedicated translated-benchmark runbook plus docs-map and pipeline-reference updates that keep Phase 35 runtime registration and Phase 36 scorecards explicitly deferred |
 | 2026-04-07 | Phase 34 Plan 03 translated benchmark CLI commands | Added `mdisc llm-translated-benchmark-freeze` and `mdisc llm-translated-benchmark-inspect` to `cli.py`, kept the repo’s exit-code-2 error pattern for missing specs or manifests plus invalid contract requests, and added a human-readable inspect trace for benchmark-set metadata, included rows, excluded rows, and `--show` or `--candidate-id` filtering |
 | 2026-04-07 | Phase 34 Plan 03 RED translated benchmark CLI tests | Added failing `test_llm_translated_benchmark_cli.py` coverage for the new freeze and inspect commands, including JSON summary output, clear exit-code-2 failures, human-readable inspect traces with `--show included|excluded|all` plus `--candidate-id`, and top-level CLI help discoverability before wiring the commands into `cli.py` |
 | 2026-04-07 | Phase 34 Plan 02 acceptance artifact-name follow-up | Added explicit artifact-name assertions in the freeze persistence tests and a matching module note in `llm/translated_benchmark.py` so the fixed `freeze_contract.json`, `manifest.json`, `included.jsonl`, and `excluded.jsonl` contract remains visible in the code surface while still flowing through the storage helpers |
@@ -149,6 +150,8 @@
 
 ### 2026-04-07
 
+- 02:24 EDT — Finished the Phase 34 Plan 03 operator-doc and example-spec slice.
+- Added a committed `al_cu_fe_translated_benchmark_freeze.yaml` that points at two shipped demo translation-bundle manifests, generated those demo bundles from the checked-in Al-Cu-Fe translation fixture so the sample spec resolves to real repo-backed artifacts, updated the freeze loader so YAML specs work end to end, and documented the new freeze or inspect workflow plus the Phase 35 and Phase 36 scope boundary in the docs map, configuration reference, and pipeline command reference.
 - 02:15 EDT — Implemented the Phase 34 Plan 03 translated benchmark CLI surface in `cli.py`.
 - Added `llm-translated-benchmark-freeze` to call the Phase 34 freeze core and emit the typed JSON summary, added `llm-translated-benchmark-inspect` to read `manifest.json` plus included and excluded inventories and print a concise human-readable trace, and kept the repo-standard exit-code-2 failure path for missing spec or manifest files, invalid `--show` values, and absent `--candidate-id` requests.
 - 02:10 EDT — Started Phase 34 Plan 03 in TDD RED mode by adding translated benchmark CLI tests and help coverage.

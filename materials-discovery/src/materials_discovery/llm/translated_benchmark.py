@@ -6,6 +6,7 @@ from pathlib import Path
 from materials_discovery.common.io import (
     load_json_object,
     load_jsonl,
+    load_yaml,
     write_json_object,
     write_jsonl,
     workspace_root,
@@ -46,7 +47,7 @@ def _translation_bundle_root(bundle_manifest_path: Path) -> Path:
 
 
 def load_translated_benchmark_spec(spec_path: Path) -> TranslatedBenchmarkSetSpec:
-    return TranslatedBenchmarkSetSpec.model_validate(load_json_object(spec_path))
+    return TranslatedBenchmarkSetSpec.model_validate(load_yaml(spec_path))
 
 
 def _path_for_storage(path: Path, *, root: Path | None = None) -> str:

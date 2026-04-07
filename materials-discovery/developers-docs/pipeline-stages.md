@@ -7,8 +7,9 @@ common error-handling pattern: `FileNotFoundError`, `ValidationError`, and
 `ValueError` are caught, printed to stderr, and the process exits with code 2.
 `mdisc export-zomic` also catches `RuntimeError` so subprocess export failures are
 reported with the same exit code. Most commands print a JSON summary object to
-stdout on success; `mdisc llm-translate-inspect` intentionally prints a
-human-readable bundle summary instead.
+stdout on success; `mdisc llm-translate-inspect` and
+`mdisc llm-translated-benchmark-inspect` intentionally print human-readable
+summaries instead.
 
 Path placeholders used below:
 
@@ -17,6 +18,7 @@ Path placeholders used below:
 | `{slug}` | `system_name` from the config, lowercased with hyphens replaced by underscores (`_system_slug`) |
 | `{batch_slug}` | The `--batch` value normalized to lowercase alphanumeric with underscores (`_batch_slug`) |
 | `{export_id}` | The explicit translation export identifier passed to `mdisc llm-translate` |
+| `{benchmark_set_id}` | The explicit translated benchmark-pack identifier passed through the freeze spec |
 | `{workspace}` | The workspace root directory resolved by `workspace_root()` |
 
 ---
@@ -1223,6 +1225,113 @@ Human-readable summary lines to stdout.
 
 ---
 
+## 20. `mdisc llm-translated-benchmark-freeze`
+
+Freeze one translated benchmark pack from one or more translation-bundle
+manifests.
+
+### CLI syntax
+
+```
+mdisc llm-translated-benchmark-freeze --spec PATH
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--spec` | PATH | Yes | -- | Path to a translated benchmark freeze spec YAML file |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Freeze spec YAML | operator-selected, e.g. `{workspace}/configs/llm/al_cu_fe_translated_benchmark_freeze.yaml` | one or more translation bundles already exist |
+| Translation bundle manifests | paths listed in `bundle_manifest_paths` | `mdisc llm-translate` |
+| Translation inventories | paths referenced by each selected bundle manifest | must still exist and match the bundle manifest |
+
+### Internal steps
+
+1. **Load the freeze spec.** Parse `TranslatedBenchmarkSetSpec` from the supplied YAML file.
+2. **Load source bundles.** Read every listed `TranslationBundleManifest` and inventory JSONL.
+3. **Apply the freeze rules.** Filter rows by `systems`, `target_family`, `allowed_fidelity_tiers`, and `loss_posture`, then handle duplicates deterministically.
+4. **Write the benchmark-pack artifacts.** Persist `freeze_contract.json`, `manifest.json`, `included.jsonl`, and `excluded.jsonl` under `data/benchmarks/llm_external_sets/{benchmark_set_id}/`.
+5. **Emit summary.** Print `TranslatedBenchmarkSetSummary` as JSON to stdout.
+
+### Artifacts
+
+| Artifact | Default path |
+|---|---|
+| Freeze contract | `{workspace}/data/benchmarks/llm_external_sets/{benchmark_set_id}/freeze_contract.json` |
+| Benchmark-set manifest | `{workspace}/data/benchmarks/llm_external_sets/{benchmark_set_id}/manifest.json` |
+| Included inventory | `{workspace}/data/benchmarks/llm_external_sets/{benchmark_set_id}/included.jsonl` |
+| Excluded inventory | `{workspace}/data/benchmarks/llm_external_sets/{benchmark_set_id}/excluded.jsonl` |
+
+### Return type
+
+`TranslatedBenchmarkSetSummary` (JSON to stdout).
+
+### Failure rules
+
+- Missing freeze spec exits with code 2.
+- Invalid freeze-spec, bundle-manifest, or inventory data exits with code 2.
+- Conflicting duplicate payload hashes for one candidate ID exit with code 2 instead of picking a winner silently.
+
+---
+
+## 21. `mdisc llm-translated-benchmark-inspect`
+
+Print a human-readable summary of an existing translated benchmark pack and,
+optionally, only the included rows, only the excluded rows, or one candidate's
+trace.
+
+### CLI syntax
+
+```
+mdisc llm-translated-benchmark-inspect --manifest PATH [--show included|excluded|all] [--candidate-id TEXT]
+```
+
+### Arguments
+
+| Argument | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `--manifest` | PATH | Yes | -- | Path to a translated benchmark-pack `manifest.json` |
+| `--show` | STR | No | `all` | Whether to print `included`, `excluded`, or both inventories |
+| `--candidate-id` | STR | No | `None` | Optional filter that narrows output to one benchmark candidate |
+
+### Inputs
+
+| Input | Path | Prerequisite |
+|---|---|---|
+| Benchmark-set manifest JSON | `{workspace}/data/benchmarks/llm_external_sets/{benchmark_set_id}/manifest.json` | `mdisc llm-translated-benchmark-freeze` |
+| Included inventory JSONL | path referenced by the benchmark-set manifest | must still exist and match the manifest |
+| Excluded inventory JSONL | path referenced by the benchmark-set manifest | must still exist and match the manifest |
+
+### Internal steps
+
+1. **Load the benchmark-set manifest.** Parse `TranslatedBenchmarkSetManifest` from the supplied path.
+2. **Load both inventories.** Read and validate `TranslatedBenchmarkIncludedRow` and `TranslatedBenchmarkExcludedRow` objects.
+3. **Filter optionally.** Apply `--show` and then `--candidate-id`; fail clearly when the requested candidate is absent from the selected view.
+4. **Print a concise summary.** Emit benchmark-set ID, target family, systems, included/excluded counts, and the persisted contract path.
+5. **Print per-row trace lines.** Show included fidelity tiers or excluded reasons plus payload and source-bundle paths.
+
+### Artifacts
+
+This command is read-only. It does not write new files.
+
+### Return type
+
+Human-readable summary lines to stdout.
+
+### Failure rules
+
+- Missing benchmark-set manifest exits with code 2.
+- Invalid manifest or inventory JSON exits with code 2.
+- Invalid `--show` values exit with code 2.
+- Unknown `--candidate-id` exits with code 2 instead of silently printing an empty report.
+
+---
+
 ## Pipeline data flow
 
 The commands are designed to run in sequence. Each stage reads the output of a
@@ -1270,3 +1379,7 @@ replace them with a separate serving-only pipeline. Phase 33 adds
 `llm-translate` and `llm-translate-inspect` as an interoperability side branch
 for external crystal-oriented consumers; those commands read existing
 `CandidateRecord` JSONL but do not replace the main Zomic-first pipeline.
+Phase 34 extends that branch with `llm-translated-benchmark-freeze` and
+`llm-translated-benchmark-inspect`, which turn selected translation bundles
+into one explicit benchmark-pack contract for later external-target and
+scorecard phases.

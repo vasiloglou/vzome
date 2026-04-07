@@ -346,6 +346,41 @@ Additional target requirements:
   specialized lane so the benchmark does not compare an unrelated or generic
   evaluation batch.
 
+### Translated benchmark freeze spec reference
+
+Phase 34 adds committed freeze specs under `configs/llm/` that drive
+`mdisc llm-translated-benchmark-freeze`. These specs describe which translation
+bundles feed the benchmark pack and which rule contract decides inclusion
+versus exclusion.
+
+The shipped example is:
+
+- `configs/llm/al_cu_fe_translated_benchmark_freeze.yaml`
+
+That example points at two repo-backed demo bundle manifests under
+`data/llm_translation_exports/` so operators can exercise the freeze workflow
+without first authoring new bundle artifacts. Replace those paths with your own
+Phase 33 bundle manifests for real benchmark work.
+
+| Field | Type | Description |
+|---|---|---|
+| `benchmark_set_id` | `str` | Stable artifact key used under `data/benchmarks/llm_external_sets/{benchmark_set_id}/...`. |
+| `bundle_manifest_paths` | `list[str]` | One or more translation-bundle manifests to evaluate. Blank entries are rejected. |
+| `systems` | `list[str]` | Optional allowlist of systems to keep. Empty means all systems found in the selected bundles. |
+| `target_family` | `"cif"` \| `"material_string"` | Hard filter for the final benchmark pack, even if one source bundle disagrees. |
+| `allowed_fidelity_tiers` | `list["exact" \| "anchored" \| "approximate" \| "lossy"]` | Fidelity tiers permitted in the pack. Must not be empty. |
+| `loss_posture` | `"lossless_only"` \| `"allow_explicit_loss"` \| `"lossy_only"` | Additional rule that accepts only lossless rows, only explicitly lossy rows, or both. |
+| `operator_note` | `str \| None` | Optional human note recorded in the persisted freeze contract. |
+
+Phase 34 stops at the benchmark-pack contract itself. These specs do not carry:
+
+- external target registrations
+- runtime settings
+- benchmark execution targets
+- scorecard thresholds
+
+Those surfaces are deferred to Phases 35 and 36.
+
 ---
 
 ## ZomicDesignConfig Reference

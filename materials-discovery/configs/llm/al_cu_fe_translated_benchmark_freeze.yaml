@@ -1,0 +1,16 @@
+benchmark_set_id: al_cu_fe_translated_benchmark_v1
+bundle_manifest_paths:
+  - data/llm_translation_exports/phase34_demo_al_cu_fe_cif_v1/manifest.json
+  - data/llm_translation_exports/phase34_demo_al_cu_fe_material_string_v1/manifest.json
+systems:
+  - Al-Cu-Fe
+target_family: cif
+allowed_fidelity_tiers:
+  - exact
+  - anchored
+loss_posture: lossless_only
+operator_note: >
+  Freeze the shipped Al-Cu-Fe demo translation bundles into a CIF-only benchmark
+  pack. The material-string bundle remains in the source set on purpose so the
+  inspect workflow shows a typed target-family exclusion without requiring extra
+  operator setup.

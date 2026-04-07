@@ -1,0 +1,16 @@
+{
+  "benchmark_context": null,
+  "candidate_count": 1,
+  "created_at_utc": "2026-04-07T06:13:04.690014Z",
+  "export_id": "phase34_demo_al_cu_fe_material_string_v1",
+  "exported_count": 1,
+  "input_path": "tests/fixtures/llm_translation/al_cu_fe_periodic_candidate.json",
+  "inventory_path": "data/llm_translation_exports/phase34_demo_al_cu_fe_material_string_v1/inventory.jsonl",
+  "lossy_count": 0,
+  "payload_dir": "data/llm_translation_exports/phase34_demo_al_cu_fe_material_string_v1/payloads",
+  "schema_version": "llm-translation-bundle-manifest/v1",
+  "source_lineage": null,
+  "stage_manifest_path": null,
+  "target_family": "material_string",
+  "target_format": "crystaltextllm_material_string"
+}

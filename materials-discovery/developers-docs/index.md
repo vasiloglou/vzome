@@ -36,6 +36,8 @@ future phase.
 | LLM-guided suggestions | `mdisc llm-suggest` | `llm/` | Implemented (Phase 9 dry-run MVP) |
 | LLM translation bundle export | `mdisc llm-translate` | `llm/` | Implemented (Phase 33 MVP) |
 | LLM translation bundle inspection | `mdisc llm-translate-inspect` | `llm/` | Implemented (Phase 33 MVP) |
+| Translated benchmark-pack freeze | `mdisc llm-translated-benchmark-freeze` | `llm/` | Implemented (Phase 34 MVP) |
+| Translated benchmark-pack inspection | `mdisc llm-translated-benchmark-inspect` | `llm/` | Implemented (Phase 34 MVP) |
 
 ## Quickstart
 
@@ -61,6 +63,8 @@ uv run mdisc hifi-validate --config configs/systems/sc_zn_real.yaml --batch all
 uv run mdisc hifi-rank --config configs/systems/sc_zn_real.yaml
 uv run mdisc llm-translate --config configs/systems/al_cu_fe.yaml --input data/ranked/al_cu_fe_ranked.jsonl --target cif --export-id al_cu_fe_ranked_cif_v1
 uv run mdisc llm-translate-inspect --manifest data/llm_translation_exports/al_cu_fe_ranked_cif_v1/manifest.json
+uv run mdisc llm-translated-benchmark-freeze --spec configs/llm/al_cu_fe_translated_benchmark_freeze.yaml
+uv run mdisc llm-translated-benchmark-inspect --manifest data/benchmarks/llm_external_sets/al_cu_fe_translated_benchmark_v1/manifest.json
 ```
 
 ## Documentation Map
@@ -83,6 +87,7 @@ uv run mdisc llm-translate-inspect --manifest data/llm_translation_exports/al_cu
 | How do I benchmark deterministic vs LLM lanes through report? | [LLM Integration](llm-integration.md) |
 | How do I compute an acceptance pack and get dry-run next steps? | [LLM Integration](llm-integration.md) |
 | How do I export CIF or CrystalTextLLM-style bundles from candidate JSONL? | [LLM Translation Runbook](llm-translation-runbook.md) |
+| How do I freeze and inspect translated benchmark packs for external-model evaluation? | [Translated Benchmark Runbook](llm-translated-benchmark-runbook.md) |
 | What fidelity and loss rules govern translation exports? | [LLM Translation Contract](llm-translation-contract.md) |
 
 ## Scope
