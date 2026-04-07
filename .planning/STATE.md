@@ -1,20 +1,19 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.5
-milestone_name: External Materials-LLM Translation Bridge MVP
-current_phase: 33
-current_phase_name: cli, benchmark hooks, and operator docs
-current_plan: Complete
-status: complete
-stopped_at: Milestone v1.5 archived and cleaned
-last_updated: "2026-04-07T04:24:27Z"
+milestone: v1.6
+milestone_name: Translator-Backed External Materials-LLM Benchmark MVP
+current_phase: Not started
+current_phase_name: defining requirements
+current_plan: Requirements
+status: active
+last_updated: "2026-04-07T04:44:29Z"
 last_activity: 2026-04-07
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -24,22 +23,22 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-07)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Await the next milestone definition
+**Current focus:** Define v1.6 requirements and roadmap for translator-backed external materials-LLM benchmarking
 
 ## Current Position
 
-Current Phase: 33
-Current Phase Name: cli, benchmark hooks, and operator docs
-Total Phases: 3
-Current Plan: Complete
-Total Plans in Phase: 3
-Phase: 33 (cli, benchmark hooks, and operator docs) — COMPLETE
-Plan: 3 of 3
-Status: Milestone v1.5 archived and complete
+Current Phase: Not started
+Current Phase Name: defining requirements
+Total Phases: TBD
+Current Plan: Requirements
+Total Plans in Phase: TBD
+Phase: Not started (defining requirements)
+Plan: -
+Status: Defining requirements
 Last activity: 2026-04-07
-Last Activity Description: Archived v1.5 roadmap/requirements, shipped the milestone, and moved Phase 31-33 planning directories into .planning/milestones/v1.5-phases
+Last Activity Description: Started milestone v1.6 and began defining the external materials-LLM benchmark scope, requirements, and roadmap
 
-Progress: [██████████] 100%
+Progress: [----------] 0%
 
 ## Performance Metrics
 
@@ -59,6 +58,7 @@ Progress: [██████████] 100%
 | v1.3 | 25-27 | 9 | Shipped |
 | v1.4 | 28-30 | 9 | Shipped |
 | v1.5 | 31-33 | 3 | Shipped |
+| v1.6 | TBD | 0 | Defining requirements |
 | Phase 31 P01 | 6min | 2 tasks | 4 files |
 | Phase 31 P02 | 7min | 2 tasks | 6 files |
 | Phase 31 P03 | 5min | 2 tasks | 5 files |
@@ -128,6 +128,14 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
   artifacts with explicit fidelity/loss metadata rather than replacements for
   Zomic as the QC-native source of truth.
 
+- [Milestone v1.6]: Start the next milestone with translator-backed external
+  materials-LLM benchmarking before adding training automation or expanding
+  campaign autonomy.
+
+- [Milestone v1.6]: Keep the benchmark workflow CLI-first, operator-governed,
+  and file-backed, with current promoted or pinned internal checkpoints as the
+  control arm and only a small curated external model set in initial scope.
+
 - [Phase 31]: Kept translation fidelity separate from corpus FidelityTier so lossy export semantics do not alter shipped LLM corpus workflows.
 - [Phase 31]: Standardized translation loss-reason names and added requires_periodic_cell metadata so later exporters can classify representational loss explicitly.
 - [Phase 31]: Exposed list_translation_targets() and resolve_translation_target() as the stable registry API for later translation phases.
@@ -152,6 +160,6 @@ None right now.
 
 ## Session Continuity
 
-Last session: 2026-04-07T03:30:13.389Z
-Stopped at: Completed 32-03-PLAN.md
+Last session: 2026-04-07T04:44:29Z
+Stopped at: Started milestone v1.6 requirements and roadmap definition
 Resume file: None

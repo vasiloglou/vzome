@@ -4,8 +4,8 @@
 
 `v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, and `v1.5` are shipped.
 
-The translation bridge milestone is now complete and archived. The next
-milestone has not been defined yet.
+The translation bridge milestone is now complete and archived. `v1.6` is now
+being defined.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -18,6 +18,24 @@ LLM operating surface:
   rollback, and retirement guidance
 - the groundwork for a new interoperability layer between Zomic-native
   candidates and external downloadable materials LLM formats
+
+## Current Milestone: v1.6 Translator-Backed External Materials-LLM Benchmark MVP
+
+**Goal:** Determine whether downloaded external materials LLMs merit deeper
+workflow investment by benchmarking them against the shipped translation
+artifacts and current internal controls in one reproducible, fidelity-aware
+workflow.
+
+**Target features:**
+- freeze a fidelity-aware translated-artifact benchmark set with explicit
+  inclusion rules and representational-loss boundaries
+- add reproducible downloaded-model execution lanes with file-backed lineage,
+  environment capture, and operator-safe invocation
+- run comparative benchmark workflows on the same translated artifacts against
+  current promoted or pinned internal controls
+- ship operator scorecards and follow-on guidance that inform whether training
+  automation, campaign automation, or benchmark-driven source QA should come
+  next
 
 Archive references:
 - `.planning/milestones/v1.0-ROADMAP.md`
@@ -41,11 +59,21 @@ Archive references:
 
 ## Current Milestone Status
 
-**Most Recent Milestone:** `v1.5` — External Materials-LLM Translation Bridge MVP
+**Current Milestone:** `v1.6` — Translator-Backed External Materials-LLM Benchmark MVP
 
-**Outcome:** Shipped and archived on 2026-04-07.
+**Status:** Defining requirements and roadmap on 2026-04-07.
 
-**Delivered:**
+**Planning focus:**
+- benchmark a small curated set of downloaded external materials LLMs against
+  the shipped CIF and material-string artifacts
+- keep the milestone CLI-first, operator-governed, and file-backed
+- use current promoted or pinned Zomic checkpoints as the control arm
+- limit any source-coverage or QA work to the minimum needed to support the
+  benchmark set cleanly
+
+**Most Recent Shipped Milestone:** `v1.5` — External Materials-LLM Translation Bridge MVP
+
+**Delivered in `v1.5`:**
 - deterministic translation from compiled Zomic candidates into reusable
   structure-interoperability artifacts
 - CIF export for supported approximant/periodic views of translated candidates
@@ -54,12 +82,8 @@ Archive references:
 - explicit fidelity/loss metadata plus operator docs for translation
   boundaries
 
-**Next milestone:** not started yet
-
 ## Later Milestone Candidates
 
-- benchmark downloaded external materials LLMs against the translated interop
-  artifacts only after CIF/material-string exports are stable and auditable
 - add controlled checkpoint training automation only after lifecycle,
   promotion, rollback, and translator-backed benchmarking remain reliable across
   multiple checkpoints
@@ -140,15 +164,17 @@ instead of living in separate prototypes.
 
 ### Active
 
-- Benchmark downloaded external materials LLMs against the shipped translation
-  artifacts only after the current interop layer has settled in operator use.
-- Add controlled checkpoint training automation only after lifecycle,
-  promotion, rollback, and translator-backed benchmarking remain reliable
-  across multiple checkpoints.
-- Expand campaign automation only after promoted-checkpoint selection stays
-  stable under the current operator-governed workflow.
-- Broaden source coverage or deepen source QA after the checkpoint lifecycle
-  workflow and translation bridge remain stable.
+- Benchmark a curated set of downloaded external materials LLMs against the
+  shipped translation artifacts with fidelity-aware dataset rules and auditable
+  comparison outputs.
+- Add reproducible external-model execution lanes with environment capture and
+  file-backed lineage before considering broader runtime automation.
+- Compare external models against current promoted or pinned internal Zomic
+  checkpoints on the same translated artifacts so later automation decisions
+  rest on evidence.
+- Produce operator scorecards that decide whether the next milestone should
+  prioritize training automation, campaign automation, or benchmark-driven
+  source QA.
 
 ### Out of Scope
 
@@ -222,6 +248,7 @@ instead of living in separate prototypes.
 | Archive milestone v1.3 after direct in-phase verification | The checkpoint workflow now ships with its own proof chain instead of requiring later cleanup phases | ✓ Good |
 | Start Project 3 v1.4 with checkpoint lifecycle and promotion | One adapted checkpoint is now proven, so the next risk is operational curation rather than another one-off lane | ✓ Good |
 | Start Project 3 v1.5 with a Zomic translation bridge before external-model execution | The immediate gap is not another model alias but an auditable representation bridge from Zomic into formats external materials LLMs actually consume | ✓ Good |
+| Start Project 3 v1.6 with translator-backed external-model benchmarking | The translation bridge is shipped, so the next dependency-breaking question is which downloaded materials LLMs are worth deeper automation or training investment | ✓ Good |
 
 ## Evolution
 
@@ -241,4 +268,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after completing and archiving v1.5*
+*Last updated: 2026-04-07 after starting milestone v1.6*
