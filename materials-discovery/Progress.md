@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 33 Plan 02 RED translation CLI tests | Added failing `test_llm_translation_cli.py` coverage for the new `llm-translate` and `llm-translate-inspect` commands, including stage-manifest writing, campaign-lineage and benchmark-context passthrough, bundle-summary inspection, candidate-level tracing, and clear exit-code-2 failures on missing inputs or manifests |
 | 2026-04-06 | Phase 33 Plan 01 translation bundle core | Added translation-bundle schema models, dedicated `data/llm_translation_exports/{export_id}/` storage helpers, a deterministic bundle writer that emits raw payload files plus inline-text inventory rows and bundle manifests for both CIF and CrystalTextLLM-compatible material-string targets, and public `materials_discovery.llm` exports for the new Phase 33 artifact layer |
 | 2026-04-06 | Phase 33 Plan 01 RED translation bundle tests | Added failing `test_llm_translation_bundle.py` coverage that locks the new translation-bundle path layout, schema validators, manifest/inventory shape, raw payload file expectations, explicit lossy material-string sidecar semantics, and byte-stable repeated bundle writing before implementing the Phase 33 artifact layer |
 | 2026-04-06 | Phase 32 Plan 03 Task 2 parser and malformed-artifact regressions | Extended CIF and shared-export coverage so repo-local `parse_cif()` is explicitly exercised against the checked-in periodic golden and the stripped lossy payload, while malformed periodic artifacts fail through `emit_translated_structure(...)` and legitimate lossy exports continue to serialize |
@@ -266,6 +267,8 @@
 
 ### 2026-04-06
 
+- 00:04 EDT — Started Phase 33 Plan 02 in TDD RED mode by adding `tests/test_llm_translation_cli.py`.
+- The new failing CLI coverage requires `llm-translate` to pass source-lineage and benchmark-context hooks through to the bundle writer while writing a standard stage manifest, and requires `llm-translate-inspect` to summarize bundle manifests plus candidate-level payload tracing without custom Python.
 - 00:02 EDT — Implemented the Phase 33 Plan 01 translation-bundle layer in `llm/schema.py`, `llm/storage.py`, `llm/translation_bundle.py`, and `materials_discovery.llm`.
 - The new core writes dedicated translation bundle directories with raw payload files, inventory rows that keep emitted text inline for later experiment reuse, bundle manifests that preserve input-path and optional lineage/benchmark hooks, and byte-stable reruns for the same export ID across both CIF and material-string targets.
 - 23:56 EDT — Started Phase 33 Plan 01 in TDD RED mode by adding `tests/test_llm_translation_bundle.py`.
