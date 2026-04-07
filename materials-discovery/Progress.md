@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 31 Plan 03 Task 1 RED fixture regression tests | Added failing `test_llm_translation_fixtures.py` coverage that loads repo-backed periodic-safe and QC-native candidate fixtures, locks exact versus lossy expectations for both built-in translation targets, and proves the new regression suite is file-based rather than inline-only |
 | 2026-04-06 | Phase 31 Plan 02 Task 2 translation fidelity classification | Implemented conservative translation-fidelity assessment in `llm/translation.py`, made mixed-origin candidates top out at `approximate`, required explicit lossy reasons for QC-native periodic exports, and kept the focused translation/realization slice green at 10 passing tests |
 | 2026-04-06 | Phase 31 Plan 02 Task 2 RED fidelity tests | Added failing translation-core coverage for conservative exact/anchored/approximate/lossy classification, explicit lossy reasons for QC-native periodic exports, and a clear unsupported-exactness failure path before implementing fidelity assessment |
 | 2026-04-06 | Phase 31 Plan 02 Task 1 translation normalization seam | Added `llm/translation.py` with deterministic normalized-artifact construction, exported translation-core helpers, introduced an explicit per-site coordinate-origin helper in structure realization, and kept the focused translation/realization slice green at 7 passing tests |
@@ -249,6 +250,8 @@
 
 ### 2026-04-06
 
+- 20:00 EDT — Started Phase 31 Plan 03 Task 1 in TDD mode by adding failing `test_llm_translation_fixtures.py` coverage that reads planned repo fixtures instead of inline dicts.
+- The RED slice locks a periodic-safe Al-Cu-Fe candidate at `exact`, a QC-native Sc-Zn candidate at explicit `lossy`, and checks both built-in translation target families before any fixture JSON is added.
 - 19:53 EDT — Implemented Phase 31 Plan 02 Task 2 by replacing the placeholder fidelity stub with conservative exact/anchored/approximate/lossy assessment in `llm/translation.py`.
 - The classifier now requires positive periodic-safe evidence for `exact`, caps mixed-origin candidates at `approximate`, marks QC-native periodic exports `lossy` with explicit reasons, and raises a clear error for unsupported `exact` claims; the focused pytest slice passed at `10 passed`.
 - 19:51 EDT — Added the Task 2 RED translation-fidelity tests for conservative exact/anchored/approximate/lossy classification, explicit QC-native loss reasons, and a hard failure when callers request unsupported `exact` periodic export.
