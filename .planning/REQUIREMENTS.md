@@ -7,7 +7,7 @@
 
 ### External Benchmark Sets
 
-- [ ] **LLM-31**: Operator can freeze a translated benchmark set from one or more shipped translation bundles with explicit inclusion and exclusion rules by system, target family, fidelity tier, and representational-loss posture.
+- [x] **LLM-31**: Operator can freeze a translated benchmark set from one or more shipped translation bundles with explicit inclusion and exclusion rules by system, target family, fidelity tier, and representational-loss posture.
 
 ### External Benchmark Operations
 
@@ -46,7 +46,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LLM-31 | Phase 34 | Pending |
+| LLM-31 | Phase 34 | Complete |
 | OPS-17 | Phase 35 | Pending |
 | LLM-32 | Phase 36 | Pending |
 | LLM-33 | Phase 36 | Pending |
