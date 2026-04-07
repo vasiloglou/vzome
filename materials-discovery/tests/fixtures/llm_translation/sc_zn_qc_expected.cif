@@ -1,0 +1,22 @@
+# source_candidate_id=sc_zn_fixture_qc_001
+# system=Sc-Zn
+# target_family=cif
+# fidelity_tier=lossy
+# loss_reasons=aperiodic_to_periodic_proxy,coordinate_derivation_required,qc_semantics_dropped
+data_sc_zn_fixture_qc_001
+_cell_length_a 13.8
+_cell_length_b 13.8
+_cell_length_c 13.8
+_cell_angle_alpha 90.0
+_cell_angle_beta 90.0
+_cell_angle_gamma 90.0
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+Q1 Sc 0.134215 0.414779 0.89452 1.0
+Q2 Zn 0.415724 0.896228 0.128026 1.0
+Q3 Zn 0.899644 0.128971 0.411827 1.0
