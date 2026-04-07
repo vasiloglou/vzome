@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 32 Plan 03 Task 1 RED golden regression tests | Added failing `test_llm_translation_export_fixtures.py` coverage that requires four checked-in golden exporter outputs, exact byte matches for both boundary candidates across CIF and material-string targets, and explicit lossy periodic-proxy semantics without reintroducing repo-only metadata into the raw CrystalTextLLM-compatible body |
 | 2026-04-06 | Phase 32 Plan 02 Task 2 cross-target dispatch | Finished `emit_translated_structure(...)` for both built-in target families so CIF and CrystalTextLLM-compatible material-string payloads now share the same validation gate, copy-not-mutate artifact return shape, preserved provenance/fidelity/loss metadata, and explicit unsupported-family failure |
 | 2026-04-06 | Phase 32 Plan 02 Task 2 RED cross-target dispatch tests | Replaced the temporary `material_string` NotImplemented expectation with failing dispatch coverage that requires byte-stable emission for both target families, preserved artifact identity across CIF and material-string exports, parseable dispatched material-string output, and a clear unsupported-family failure path |
 | 2026-04-06 | Phase 32 Plan 02 Task 1 CrystalTextLLM material-string emitter | Added `emit_material_string_text(...)` and public `materials_discovery.llm` exports for the first concrete material-string target, keeping the emitted body parser-compatible with CrystalTextLLM lengths/angles/species/coordinate lines while preserving provenance and loss metadata on the translated artifact itself |
@@ -261,6 +262,8 @@
 
 ### 2026-04-06
 
+- 23:35 EDT — Started Phase 32 Plan 03 Task 1 in TDD RED mode by adding `tests/test_llm_translation_export_fixtures.py`.
+- The new failing regression suite requires four checked-in golden exporter outputs, exact emitted-byte matches for both Phase 31 boundary fixtures across CIF and CrystalTextLLM-compatible material-string targets, and explicit lossy periodic-proxy semantics while keeping the raw material-string body free of repo-only metadata headers.
 - 23:26 EDT — Implemented Phase 32 Plan 02 Task 2 by finishing the `emit_translated_structure(...)` branch for `material_string`.
 - CIF and material-string exports now share the same readiness validation and copy-not-mutate dispatch path, emitted artifacts preserve source linkage/fidelity/loss diagnostics/site ordering unchanged, and unsupported target-family values still fail clearly instead of silently falling back.
 - 23:23 EDT — Started Phase 32 Plan 02 Task 2 in TDD RED mode by replacing the old `material_string` NotImplemented boundary with real cross-target dispatch expectations.
