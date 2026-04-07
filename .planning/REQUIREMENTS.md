@@ -13,10 +13,10 @@ reinforce each other instead of living in separate prototypes.
   deterministic structure-interoperability artifact with explicit cell, species,
   positions, provenance, and representation metadata that downstream
   crystal/material LLM workflows can reuse.
-- [ ] **LLM-28**: The platform can export supported translated candidates as CIF
+- [x] **LLM-28**: The platform can export supported translated candidates as CIF
   artifacts for CIF-oriented external materials LLM workflows without requiring
   ad hoc notebook conversion.
-- [ ] **LLM-29**: The platform can export at least one model-oriented
+- [x] **LLM-29**: The platform can export at least one model-oriented
   crystal/material string encoding from the same translated candidate for
   CrystalTextLLM- or CSLLM-style downstream workflows.
 - [x] **LLM-30**: Every translation artifact records whether it is exact,
