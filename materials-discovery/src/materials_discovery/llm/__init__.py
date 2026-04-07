@@ -85,6 +85,10 @@ from materials_discovery.llm.translation_export import (
     validate_translated_structure_for_export,
 )
 from materials_discovery.llm.translation_bundle import export_translation_bundle
+from materials_discovery.llm.translated_benchmark import (
+    freeze_translated_benchmark_set,
+    load_translated_benchmark_spec,
+)
 from materials_discovery.llm.runtime import (
     AnthropicApiLlmAdapter,
     LlmAdapter,
@@ -340,6 +344,7 @@ __all__ = [
     "list_translation_targets",
     "resolve_translation_target",
     "export_translation_bundle",
+    "freeze_translated_benchmark_set",
     "export_llm_eval_set",
     "find_prior_campaign_launch",
     "grade_corpus_example",
@@ -400,6 +405,7 @@ __all__ = [
     "load_eval_set",
     "load_seed_zomic_text",
     "load_serving_benchmark_spec",
+    "load_translated_benchmark_spec",
     "run_serving_smoke_check",
     "llm_artifact_root_from_acceptance_pack_path",
     "llm_acceptance_dir",

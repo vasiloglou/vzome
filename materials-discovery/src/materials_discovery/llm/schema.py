@@ -1755,6 +1755,7 @@ class TranslatedBenchmarkSetManifest(BaseModel):
     excluded_count: int
     target_family: TranslationTargetFamily
     systems: list[str] = Field(default_factory=list)
+    exclusion_reason_counts: dict[TranslatedBenchmarkExclusionReason, int] = Field(default_factory=dict)
     filter_contract: TranslatedBenchmarkSetSpec
 
     @field_validator(
@@ -1777,6 +1778,19 @@ class TranslatedBenchmarkSetManifest(BaseModel):
     @classmethod
     def normalize_systems(cls, values: Sequence[str]) -> list[str]:
         return _normalize_string_list(values)
+
+    @field_validator("exclusion_reason_counts")
+    @classmethod
+    def validate_exclusion_reason_counts(
+        cls,
+        value: dict[TranslatedBenchmarkExclusionReason, int],
+    ) -> dict[TranslatedBenchmarkExclusionReason, int]:
+        normalized: dict[TranslatedBenchmarkExclusionReason, int] = {}
+        for reason, count in value.items():
+            if count < 0:
+                raise ValueError("exclusion_reason_counts values must be >= 0")
+            normalized[reason] = count
+        return dict(sorted(normalized.items()))
 
     @field_validator("included_count", "excluded_count")
     @classmethod

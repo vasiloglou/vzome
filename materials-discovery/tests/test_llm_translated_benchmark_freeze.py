@@ -376,6 +376,10 @@ def test_freeze_translated_benchmark_set_writes_contract_manifest_and_lineage(
     assert manifest_path.exists()
     assert Path(summary.included_inventory_path).exists()
     assert Path(summary.excluded_inventory_path).exists()
+    assert contract_path.name == "freeze_contract.json"
+    assert manifest_path.name == "manifest.json"
+    assert Path(summary.included_inventory_path).name == "included.jsonl"
+    assert Path(summary.excluded_inventory_path).name == "excluded.jsonl"
 
     contract = TranslatedBenchmarkSetSpec.model_validate(load_json_object(contract_path))
     manifest = TranslatedBenchmarkSetManifest.model_validate(load_json_object(manifest_path))

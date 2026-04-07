@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 
-from materials_discovery.common.io import load_json_object, load_jsonl, write_jsonl, workspace_root
+from materials_discovery.common.io import (
+    load_json_object,
+    load_jsonl,
+    write_json_object,
+    write_jsonl,
+    workspace_root,
+)
 from materials_discovery.llm.schema import (
     TranslatedBenchmarkExcludedRow,
     TranslatedBenchmarkExclusionReason,
     TranslatedBenchmarkIncludedRow,
+    TranslatedBenchmarkSetManifest,
     TranslatedBenchmarkSetSpec,
     TranslatedBenchmarkSetSummary,
     TranslationBundleManifest,
@@ -39,6 +47,15 @@ def _translation_bundle_root(bundle_manifest_path: Path) -> Path:
 
 def load_translated_benchmark_spec(spec_path: Path) -> TranslatedBenchmarkSetSpec:
     return TranslatedBenchmarkSetSpec.model_validate(load_json_object(spec_path))
+
+
+def _path_for_storage(path: Path, *, root: Path | None = None) -> str:
+    resolved = path.resolve()
+    artifact_root = _artifact_root(root)
+    try:
+        return str(resolved.relative_to(artifact_root))
+    except ValueError:
+        return str(resolved)
 
 
 def _load_translation_bundle(
@@ -122,22 +139,30 @@ def _build_excluded_row(
     )
 
 
+def _normalized_freeze_spec(spec: TranslatedBenchmarkSetSpec) -> TranslatedBenchmarkSetSpec:
+    return spec.model_copy(update={"bundle_manifest_paths": sorted(spec.bundle_manifest_paths)})
+
+
 def freeze_translated_benchmark_set(
     spec_path: Path, root: Path | None = None
 ) -> TranslatedBenchmarkSetSummary:
     artifact_root = _artifact_root(root)
     resolved_spec_path = _resolve_artifact_path(spec_path, root=artifact_root)
-    spec = load_translated_benchmark_spec(resolved_spec_path)
+    spec = _normalized_freeze_spec(load_translated_benchmark_spec(resolved_spec_path))
 
+    # The frozen artifact family is fixed: freeze_contract.json, manifest.json,
+    # included.jsonl, and excluded.jsonl, all resolved through storage helpers.
     included_path = translated_benchmark_included_path(spec.benchmark_set_id, root=artifact_root)
     excluded_path = translated_benchmark_excluded_path(spec.benchmark_set_id, root=artifact_root)
     contract_path = translated_benchmark_contract_path(spec.benchmark_set_id, root=artifact_root)
     manifest_path = translated_benchmark_manifest_path(spec.benchmark_set_id, root=artifact_root)
 
+    source_export_ids: list[str] = []
     bundle_rows: list[tuple[str, TranslationBundleManifest, TranslationInventoryRow]] = []
     for bundle_manifest_text in spec.bundle_manifest_paths:
         bundle_manifest_path = _resolve_artifact_path(Path(bundle_manifest_text), root=artifact_root)
         manifest, rows = _load_translation_bundle(bundle_manifest_path)
+        source_export_ids.append(manifest.export_id)
         for row in rows:
             bundle_rows.append((bundle_manifest_text, manifest, row))
 
@@ -197,8 +222,28 @@ def freeze_translated_benchmark_set(
             )
         )
 
+    exclusion_reason_counts = dict(
+        sorted(Counter(row.exclusion_reason for row in excluded_rows).items())
+    )
+
+    write_json_object(spec.model_dump(mode="json"), contract_path)
     write_jsonl([row.model_dump(mode="json") for row in included_rows], included_path)
     write_jsonl([row.model_dump(mode="json") for row in excluded_rows], excluded_path)
+    manifest = TranslatedBenchmarkSetManifest(
+        benchmark_set_id=spec.benchmark_set_id,
+        contract_path=_path_for_storage(contract_path, root=artifact_root),
+        included_inventory_path=_path_for_storage(included_path, root=artifact_root),
+        excluded_inventory_path=_path_for_storage(excluded_path, root=artifact_root),
+        source_bundle_manifest_paths=spec.bundle_manifest_paths,
+        source_export_ids=source_export_ids,
+        included_count=len(included_rows),
+        excluded_count=len(excluded_rows),
+        target_family=spec.target_family,
+        systems=spec.systems,
+        exclusion_reason_counts=exclusion_reason_counts,
+        filter_contract=spec,
+    )
+    write_json_object(manifest.model_dump(mode="json"), manifest_path)
 
     return TranslatedBenchmarkSetSummary(
         benchmark_set_id=spec.benchmark_set_id,
