@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 31
 current_phase_name: translation-contracts-and-representation-loss-semantics
 current_plan: 3
-status: executing
-stopped_at: Completed 31-02-PLAN.md
-last_updated: "2026-04-06T23:56:01.432Z"
-last_activity: 2026-04-06
+status: verifying
+stopped_at: Completed 31-03-PLAN.md
+last_updated: "2026-04-07T00:04:44.796Z"
+last_activity: 2026-04-07
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 67
 ---
 
@@ -35,8 +35,8 @@ Current Plan: 3
 Total Plans in Phase: 3
 Phase: 31 (translation-contracts-and-representation-loss-semantics) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-04-06
+Status: Phase complete — ready for verification
+Last activity: 2026-04-07
 Last Activity Description: Completed 31-02-PLAN.md
 
 Progress: [███████░░░] 67%
@@ -61,6 +61,7 @@ Progress: [███████░░░] 67%
 | v1.5 | 31-33 | 1 | Active |
 | Phase 31 P01 | 6min | 2 tasks | 4 files |
 | Phase 31 P02 | 7min | 2 tasks | 6 files |
+| Phase 31 P03 | 5min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -127,6 +128,7 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Phase 31]: Made coordinate origin explicit through a stable structure-realization helper rather than hiding branch logic inside the translation module.
 - [Phase 31]: Reserved exact for candidates with strong periodic-safe evidence plus stored fractional coordinates; mixed-origin candidates stay conservative at approximate.
 - [Phase 31]: QC-native periodic exports are marked lossy with explicit reasons instead of silently degrading to a weaker success state.
+- [Phase 31]: Kept approximate covered in translation-core tests rather than adding a third fixture because Plan 03 needed to freeze the two exporter-facing boundary cases first.
 
 ### Pending Todos
 
@@ -138,6 +140,6 @@ None right now.
 
 ## Session Continuity
 
-Last session: 2026-04-06T23:55:31.409Z
-Stopped at: Completed 31-02-PLAN.md
+Last session: 2026-04-07T00:04:44.794Z
+Stopped at: Completed 31-03-PLAN.md
 Resume file: None
