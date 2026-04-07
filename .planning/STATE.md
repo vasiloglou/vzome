@@ -5,15 +5,15 @@ milestone_name: milestone
 current_phase: 32
 current_phase_name: cif-and-material-string-exporters
 current_plan: 3
-status: executing
-stopped_at: Ready for 32-03-PLAN.md
-last_updated: "2026-04-07T03:22:19.754Z"
+status: verifying
+stopped_at: Completed 32-03-PLAN.md
+last_updated: "2026-04-07T03:30:13.391Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 33
 ---
 
@@ -35,7 +35,7 @@ Current Plan: 3
 Total Plans in Phase: 3
 Phase: 32 (cif-and-material-string-exporters) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-07
 Last Activity Description: Phase 32 execution started
 
@@ -64,6 +64,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 31 P03 | 5min | 2 tasks | 5 files |
 | Phase 32 P01 | 6 min | 2 tasks | 5 files |
 | Phase 32 P02 | 2 min | 2 tasks | 5 files |
+| Phase 32 P03 | 3 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -135,6 +136,8 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Phase 32]: Kept CIF output deterministic and explicitly labeled with source/fidelity/loss metadata in comment lines so lossy periodic-proxy exports remain visibly honest. — The repo-local CIF parser accepts the emitted payload after comment stripping, while the comment preamble preserves the interoperability boundary that Phase 31 established.
 - [Phase 32]: Implemented crystaltextllm_material_string as a bare CrystalTextLLM-compatible body so the shipped target name remains honest about downstream parser compatibility. — The phase review showed that repo-only headers in emitted_text would break CrystalTextLLM parsing and make the target contract misleading, so the raw body now stays parser-compatible.
 - [Phase 32]: Kept source linkage, fidelity tier, and loss metadata on TranslatedStructureArtifact rather than embedding repo-only headers into the raw material string. — This preserves auditable provenance on the artifact while allowing the exported body to remain usable by downstream CrystalTextLLM-style tooling.
+- [Phase 32]: Frozen the shipped exporter contract on checked-in goldens: CIF keeps fidelity/loss comments, while material-string outputs remain bare CrystalTextLLM-compatible bodies.
+- [Phase 32]: Kept lossy material-string provenance on TranslatedStructureArtifact and used repo-local parse_cif regressions to freeze parser compatibility before CLI integration.
 
 ### Pending Todos
 
@@ -146,6 +149,6 @@ None right now.
 
 ## Session Continuity
 
-Last session: 2026-04-07T03:22:19.751Z
-Stopped at: Ready for 32-03-PLAN.md
-Resume file: .planning/phases/32-cif-and-material-string-exporters/32-03-PLAN.md
+Last session: 2026-04-07T03:30:13.389Z
+Stopped at: Completed 32-03-PLAN.md
+Resume file: None
