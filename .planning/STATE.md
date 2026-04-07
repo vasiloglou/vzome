@@ -5,15 +5,15 @@ milestone_name: Translator-Backed External Materials-LLM Benchmark MVP
 current_phase: 34
 current_phase_name: Benchmark Pack and Freeze Contract
 current_plan: 3
-status: executing
-stopped_at: Completed 34-02-PLAN.md
-last_updated: "2026-04-07T06:01:47.217Z"
+status: verifying
+stopped_at: Completed 34-03-PLAN.md
+last_updated: "2026-04-07T06:19:09.486Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 67
 ---
 
@@ -35,7 +35,7 @@ Current Plan: 3
 Total Plans in Phase: 3
 Phase: 34 (Benchmark Pack and Freeze Contract) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-07
 Last Activity Description: Phase 34 execution started
 
@@ -62,6 +62,7 @@ Progress: [███████░░░] 67%
 | v1.6 | 34-36 | 0 | Roadmapped |
 | Phase 34 P01 | 8 min | 2 tasks | 5 files |
 | Phase 34-benchmark-pack-and-freeze-contract P02 | 10 min | 2 tasks | 5 files |
+| Phase 34-benchmark-pack-and-freeze-contract P03 | 15 min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,9 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting current work:
 - [Phase 34-benchmark-pack-and-freeze-contract]: Freeze evaluation applies system, target-family, fidelity-tier, and loss-posture rules in a fixed order before duplicate handling so every rejected row gets one typed exclusion reason.
 - [Phase 34-benchmark-pack-and-freeze-contract]: The persisted freeze contract normalizes bundle manifest ordering so manifest, contract, and inventory bytes remain stable across repeat runs.
 - [Phase 34-benchmark-pack-and-freeze-contract]: Conflicting payload hashes for the same candidate ID fail closed instead of picking an arbitrary winning bundle.
+- [Phase 34-benchmark-pack-and-freeze-contract]: Used one Al-Cu-Fe CIF demo bundle plus one Al-Cu-Fe material-string demo bundle so the shipped example spec shows both included and excluded rows without inventing a separate cross-system benchmark story.
+- [Phase 34-benchmark-pack-and-freeze-contract]: Kept llm-translated-benchmark-inspect human-readable, matching the earlier translation-bundle inspect pattern instead of adding another JSON artifact command.
+- [Phase 34-benchmark-pack-and-freeze-contract]: Accepted YAML freeze specs in the core loader because the committed operator config lives under configs/llm and should run directly without JSON conversion.
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ None right now.
 
 ## Session Continuity
 
-Last session: 2026-04-07T06:01:24.865Z
-Stopped at: Completed 34-02-PLAN.md
+Last session: 2026-04-07T06:19:09.482Z
+Stopped at: Completed 34-03-PLAN.md
 Resume file: None

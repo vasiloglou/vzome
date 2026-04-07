@@ -21,7 +21,7 @@ reproducible, fidelity-aware workflow.
 - Integer phases continue from the previous milestone.
 - `v1.6` starts at Phase 34 because `v1.5` ended at Phase 33.
 
-- [ ] **Phase 34: Benchmark Pack and Freeze Contract** - Freeze a
+- [x] **Phase 34: Benchmark Pack and Freeze Contract** - Freeze a (completed 2026-04-07)
   fidelity-aware translated benchmark set from shipped bundles.
 - [ ] **Phase 35: External Target Registration and Reproducible Execution** -
   Register curated downloaded external models as immutable, smoke-tested
@@ -98,6 +98,6 @@ next-milestone decision.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 34. Benchmark Pack and Freeze Contract | 2/3 | In Progress|  |
+| 34. Benchmark Pack and Freeze Contract | 3/3 | Complete   | 2026-04-07 |
 | 35. External Target Registration and Reproducible Execution | 0/TBD | Not started | - |
 | 36. Comparative Benchmark Workflow and Fidelity-Aware Scorecards | 0/TBD | Not started | - |
