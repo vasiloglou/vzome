@@ -47,7 +47,12 @@ on an explicit, fidelity-aware case slice.
   3. The frozen benchmark set records its source translation bundles and filter
      contract as file-backed lineage that can be reused unchanged in later
      benchmark runs.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] `34-01-PLAN.md` - Define the translated benchmark-pack contract, exclusion vocabulary, and storage layout.
+- [ ] `34-02-PLAN.md` - Freeze included and excluded benchmark rows from shipped translation bundles with reusable lineage.
+- [ ] `34-03-PLAN.md` - Add CLI freeze and inspect commands, an example freeze spec, and operator docs.
 
 ### Phase 35: External Target Registration and Reproducible Execution
 **Goal**: Operators can register each curated downloaded external materials LLM
@@ -93,6 +98,6 @@ next-milestone decision.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 34. Benchmark Pack and Freeze Contract | 0/TBD | Not started | - |
+| 34. Benchmark Pack and Freeze Contract | 0/3 | Not started | - |
 | 35. External Target Registration and Reproducible Execution | 0/TBD | Not started | - |
 | 36. Comparative Benchmark Workflow and Fidelity-Aware Scorecards | 0/TBD | Not started | - |
