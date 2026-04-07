@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 36 Plan 03 comparative benchmark CLI workflow | Added `mdisc llm-external-benchmark` and `mdisc llm-inspect-external-benchmark`, kept the repo-standard exit-code-2 failure posture for missing or invalid benchmark specs and summaries, and locked the new operator surface with focused CLI plus root-help coverage |
 | 2026-04-07 | Phase 36 Plan 02 fidelity-aware benchmark scorecards | Tightened `build_external_benchmark_summary(...)` so recommendation lines privilege the periodic-safe exact or anchored slice even when overall shared-slice deltas look better on lossy cases, and added typed benchmark-summary coverage that proves weak periodic-safe performance cannot hide behind diagnostic-only wins |
 | 2026-04-07 | Phase 36 Plan 02 comparative benchmark execution core | Added `llm/external_benchmark.py` with spec loading, frozen benchmark-set replay, prompt rendering, response parsing, external-target and internal-control execution, deterministic per-target artifact writing, and focused benchmark-core tests that lock explicit exclusions plus smoke-failure handling without requiring real model weights |
 | 2026-04-07 | Phase 36 Plan 01 comparative benchmark storage helpers | Added deterministic `llm_external` benchmark storage helpers in `llm/storage.py` for benchmark-level and per-target artifacts including `benchmark_summary.json`, `scorecard_by_case.jsonl`, `run_manifest.json`, `case_results.jsonl`, and `raw_responses.jsonl`, and locked the new artifact family in focused schema/storage coverage so it stays isolated from benchmark-set and external-target roots |
@@ -160,6 +161,8 @@
 
 ### 2026-04-07
 
+- 04:20 EDT — Implemented the Phase 36 Plan 03 comparative benchmark CLI workflow and inspect surface.
+- Added `llm-external-benchmark` and `llm-inspect-external-benchmark` to `cli.py`, kept the repo-standard exit-code-2 behavior for missing or invalid benchmark artifacts, and locked the new run or inspect or root-help surface with focused CLI coverage over typed benchmark summaries.
 - 04:13 EDT — Implemented the Phase 36 Plan 02 comparative benchmark execution core in `llm/external_benchmark.py`.
 - Added spec loading for frozen translated benchmark manifests, prompt-contract and parser registries, explicit per-case exclusion handling, external-target registration and smoke reuse, internal-control serving-identity resolution, and deterministic writing of benchmark summary plus per-target run manifests and raw-response or case-result artifacts.
 - 04:13 EDT — Tightened the Phase 36 Plan 02 scorecard layer so recommendations stay periodic-safe-first.

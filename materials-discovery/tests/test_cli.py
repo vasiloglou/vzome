@@ -285,6 +285,8 @@ def test_cli_help_lists_translation_workflow_commands() -> None:
     assert "llm-translate-inspect" in result.stdout
     assert "llm-translated-benchmark-freeze" in result.stdout
     assert "llm-translated-benchmark-inspect" in result.stdout
+    assert "llm-external-benchmark" in result.stdout
+    assert "llm-inspect-external-benchmark" in result.stdout
 
 
 def test_cli_help_lists_external_target_workflow_commands() -> None:

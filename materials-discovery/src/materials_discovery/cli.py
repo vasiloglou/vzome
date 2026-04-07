@@ -120,6 +120,7 @@ from materials_discovery.llm.external_targets import (
     register_external_target,
     smoke_external_target,
 )
+from materials_discovery.llm.external_benchmark import execute_external_benchmark
 from materials_discovery.llm.generate import generate_llm_candidates
 from materials_discovery.llm.translation_bundle import export_translation_bundle
 from materials_discovery.llm.translated_benchmark import freeze_translated_benchmark_set
@@ -147,6 +148,9 @@ from materials_discovery.llm.schema import (
     LlmCampaignSpec,
     LlmCheckpointPromotionSpec,
     LlmCheckpointRetirementSpec,
+    LlmExternalBenchmarkSliceSummary,
+    LlmExternalBenchmarkSummary,
+    LlmExternalBenchmarkTargetSummary,
     LlmExternalTargetEnvironmentManifest,
     LlmExternalTargetSmokeCheck,
     LlmServingIdentity,
@@ -435,6 +439,70 @@ def _workspace_path(path_str: str) -> Path:
     if path.is_absolute():
         return path
     return workspace_root() / path
+
+
+def _format_benchmark_rate(value: float | None) -> str:
+    return "n/a" if value is None else f"{value:.3f}"
+
+
+def _format_benchmark_latency(value: float | None) -> str:
+    return "n/a" if value is None else f"{value:.3f}s"
+
+
+def _emit_external_benchmark_slice(
+    label: str,
+    slice_summary: LlmExternalBenchmarkSliceSummary,
+) -> None:
+    typer.echo(
+        f"{label}: eligible {slice_summary.eligible_count}, "
+        f"excluded {slice_summary.excluded_count}, "
+        f"response {_format_benchmark_rate(slice_summary.response_success_rate)}, "
+        f"parse {_format_benchmark_rate(slice_summary.parse_success_rate)}, "
+        f"exact {_format_benchmark_rate(slice_summary.exact_text_match_rate)}, "
+        f"composition {_format_benchmark_rate(slice_summary.composition_match_rate)}, "
+        f"mean latency {_format_benchmark_latency(slice_summary.mean_latency_s)}"
+    )
+
+
+def _emit_external_benchmark_target_summary(
+    target: LlmExternalBenchmarkTargetSummary,
+) -> None:
+    typer.echo(f"Target: {target.target_id} [{target.target_kind}]")
+    typer.echo(f"Label: {target.target_label}")
+    if target.target_kind == "internal_control":
+        typer.echo(f"Control role: {target.control_role}")
+    if target.model_id is not None:
+        typer.echo(f"Model ID: {target.model_id}")
+    if target.registration_path is not None:
+        typer.echo(f"Registration artifact: {target.registration_path}")
+    if target.environment_path is not None:
+        typer.echo(f"Environment artifact: {target.environment_path}")
+    if target.smoke_check_path is not None:
+        typer.echo(f"Smoke artifact: {target.smoke_check_path}")
+    if target.serving_identity is not None:
+        typer.echo(
+            "Control arm: "
+            f"{target.control_role} via {target.serving_identity.model} "
+            f"[{target.serving_identity.resolved_model_lane}]"
+        )
+    typer.echo(f"Run manifest: {target.run_manifest_path}")
+    _emit_external_benchmark_slice("Overall", target.overall)
+    for family, slice_summary in target.by_target_family.items():
+        _emit_external_benchmark_slice(f"By family {family}", slice_summary)
+    for fidelity_tier, slice_summary in target.by_fidelity_tier.items():
+        _emit_external_benchmark_slice(f"By fidelity {fidelity_tier}", slice_summary)
+    for delta in target.control_deltas:
+        typer.echo(
+            "Control delta vs "
+            f"{delta.control_target_id} [{delta.control_role}]: "
+            f"shared eligible {delta.shared_eligible_count}, "
+            f"parse {_format_benchmark_rate(delta.parse_success_rate_delta)}, "
+            f"exact {_format_benchmark_rate(delta.exact_text_match_rate_delta)}, "
+            f"composition {_format_benchmark_rate(delta.composition_match_rate_delta)}"
+        )
+    for line in target.recommendation_lines:
+        typer.echo(f"Recommendation: {line}")
+    typer.echo(f"Failed target: {'yes' if target.failed else 'no'}")
 
 
 def _new_launch_id() -> str:
@@ -1749,6 +1817,61 @@ def llm_serving_benchmark_command(
         typer.echo(f"Benchmark summary: {summary_path}")
     except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
         _emit_error(f"llm-serving-benchmark failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-external-benchmark")
+def llm_external_benchmark_command(
+    spec: Path = typer.Option(..., "--spec", exists=False, dir_okay=False),
+    out: Path | None = typer.Option(None, "--out", exists=False, dir_okay=False),
+) -> None:
+    """Run one translated comparative benchmark across external targets and internal controls."""
+    try:
+        if not spec.exists():
+            raise FileNotFoundError(f"external benchmark spec not found: {spec}")
+
+        summary = execute_external_benchmark(spec, root=workspace_root(), out_path=out)
+        typer.echo(summary.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
+        _emit_error(f"llm-external-benchmark failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("llm-inspect-external-benchmark")
+def llm_inspect_external_benchmark_command(
+    summary: Path = typer.Option(..., "--summary", exists=False, dir_okay=False),
+    target_id: str | None = typer.Option(None, "--target-id"),
+) -> None:
+    """Inspect a comparative benchmark summary and print a concise scorecard trace."""
+    try:
+        if not summary.exists():
+            raise FileNotFoundError(f"external benchmark summary not found: {summary}")
+
+        benchmark_summary = LlmExternalBenchmarkSummary.model_validate(
+            load_json_object(summary)
+        )
+        targets = list(benchmark_summary.targets)
+        if target_id is not None:
+            targets = [target for target in targets if target.target_id == target_id]
+            if not targets:
+                raise ValueError(f"target_id not found in external benchmark summary: {target_id}")
+
+        typer.echo(f"Benchmark: {benchmark_summary.benchmark_id}")
+        typer.echo(f"Benchmark set: {benchmark_summary.benchmark_set_id}")
+        typer.echo(f"Generated: {benchmark_summary.generated_at_utc}")
+        typer.echo(f"Summary artifact: {benchmark_summary.summary_path or str(summary)}")
+        typer.echo(f"Target count: {len(targets)}")
+        typer.echo(
+            "Failed targets: "
+            + (", ".join(benchmark_summary.failed_targets) if benchmark_summary.failed_targets else "none")
+        )
+
+        for index, target_summary in enumerate(targets):
+            if index > 0:
+                typer.echo("")
+            _emit_external_benchmark_target_summary(target_summary)
+    except (FileNotFoundError, ValidationError, ValueError) as exc:
+        _emit_error(f"llm-inspect-external-benchmark failed: {exc}")
         raise typer.Exit(code=2)
 
 
