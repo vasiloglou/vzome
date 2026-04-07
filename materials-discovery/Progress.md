@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 33 Plan 01 RED translation bundle tests | Added failing `test_llm_translation_bundle.py` coverage that locks the new translation-bundle path layout, schema validators, manifest/inventory shape, raw payload file expectations, explicit lossy material-string sidecar semantics, and byte-stable repeated bundle writing before implementing the Phase 33 artifact layer |
 | 2026-04-06 | Phase 32 Plan 03 Task 2 parser and malformed-artifact regressions | Extended CIF and shared-export coverage so repo-local `parse_cif()` is explicitly exercised against the checked-in periodic golden and the stripped lossy payload, while malformed periodic artifacts fail through `emit_translated_structure(...)` and legitimate lossy exports continue to serialize |
 | 2026-04-06 | Phase 32 Plan 03 Task 1 checked-in exporter goldens | Added four repo-backed expected-output files that freeze the shipped CIF preamble contract and the bare CrystalTextLLM-compatible material-string body for the exact Al-Cu-Fe and lossy Sc-Zn boundary fixtures |
 | 2026-04-06 | Phase 32 Plan 03 Task 1 RED golden regression tests | Added failing `test_llm_translation_export_fixtures.py` coverage that requires four checked-in golden exporter outputs, exact byte matches for both boundary candidates across CIF and material-string targets, and explicit lossy periodic-proxy semantics without reintroducing repo-only metadata into the raw CrystalTextLLM-compatible body |
@@ -264,6 +265,8 @@
 
 ### 2026-04-06
 
+- 23:56 EDT — Started Phase 33 Plan 01 in TDD RED mode by adding `tests/test_llm_translation_bundle.py`.
+- The new failing coverage locks a dedicated `data/llm_translation_exports/{export_id}/` artifact family, translation bundle manifest/inventory contracts, raw payload file expectations for exact and lossy fixtures, inline emitted-text experiment hooks, and byte-stable repeated bundle writing before the new Phase 33 writer exists.
 - 23:44 EDT — Added the final Phase 32 parser/failure regression coverage in `tests/test_llm_translation_cif.py` and `tests/test_llm_translation_export.py`.
 - The new tests pin repo-local CIF parsing against the checked-in periodic golden and the stripped lossy QC payload, assert that malformed periodic artifacts fail through `emit_translated_structure(...)`, and keep legitimate lossy exports distinct from malformed inputs by requiring successful serialization for both built-in target families.
 - 23:39 EDT — Implemented Phase 32 Plan 03 Task 1 by checking in four golden exporter outputs under `tests/fixtures/llm_translation/`.
