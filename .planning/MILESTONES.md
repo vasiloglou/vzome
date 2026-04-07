@@ -2,27 +2,27 @@
 
 ## v1.5 — External Materials-LLM Translation Bridge MVP
 
-**Status:** Active as of 2026-04-06
+**Status:** Shipped on 2026-04-07
 **Phases:** 31-33
-**Plans:** 3 completed so far (Phase 31 shipped; Phase 32 next)
+**Plans:** 9
 
-### Focus
+### Highlights
 
-- Add an auditable translation layer from QC-native Zomic candidates into
-  downstream structure/material artifacts external downloadable materials LLMs
-  can consume.
-- Export supported candidates as CIF plus at least one CrystalTextLLM- or
-  CSLLM-style material string representation.
-- Keep exact versus lossy translation boundaries explicit in the workflow and
-  docs.
+- Added a typed translation artifact contract, registry-backed target families,
+  and explicit exact/anchored/approximate/lossy semantics for compiled Zomic
+  candidates.
+- Shipped deterministic CIF and CrystalTextLLM-compatible material-string
+  exporters from one shared translation seam, with golden outputs and parser
+  regression coverage.
+- Added a file-backed translation bundle/CLI workflow, operator runbook, and
+  discoverable docs surface so external materials-LLM interop is usable without
+  notebooks or hand-written scripts.
 
-### Current Status
+### Archives
 
-- Phase 31 is complete and verified: the repo now has the typed translation
-  contract, target registry, deterministic normalization seam, fixture-backed
-  regression coverage, and a developer handoff note for exporters.
-- Phase 32 is planned and ready to execute: concrete CIF and material-string
-  exporters from the new translated-structure artifact.
+- `.planning/milestones/v1.5-ROADMAP.md`
+- `.planning/milestones/v1.5-REQUIREMENTS.md`
+- `.planning/v1.5-MILESTONE-AUDIT.md`
 
 ## v1.4 — Adapted Checkpoint Lifecycle and Promotion MVP
 

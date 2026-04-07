@@ -4,10 +4,10 @@ milestone: v1.5
 milestone_name: milestone
 current_phase: 33
 current_phase_name: cli, benchmark hooks, and operator docs
-current_plan: Verification complete
-status: lifecycle
-stopped_at: Completed 33-03-PLAN.md
-last_updated: "2026-04-07T04:17:05Z"
+current_plan: Complete
+status: complete
+stopped_at: Milestone v1.5 archived
+last_updated: "2026-04-07T04:20:51Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
@@ -24,20 +24,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 **Core value:** Build one reproducible system where trusted materials data, physically grounded no-DFT validation, and LLM-guided structure generation reinforce each other instead of living in separate prototypes.
-**Current focus:** Milestone v1.5 lifecycle after completing Phase 33
+**Current focus:** Await the next milestone definition
 
 ## Current Position
 
 Current Phase: 33
 Current Phase Name: cli, benchmark hooks, and operator docs
 Total Phases: 3
-Current Plan: Verification complete
+Current Plan: Complete
 Total Plans in Phase: 3
 Phase: 33 (cli, benchmark hooks, and operator docs) — COMPLETE
 Plan: 3 of 3
-Status: All milestone phases complete — lifecycle pending
+Status: Milestone v1.5 archived and complete
 Last activity: 2026-04-07
-Last Activity Description: Phase 33 verified, milestone audit/complete/cleanup next
+Last Activity Description: Archived v1.5 roadmap/requirements, shipped the milestone, and prepared cleanup of phase directories
 
 Progress: [██████████] 100%
 

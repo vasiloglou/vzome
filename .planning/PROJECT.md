@@ -2,9 +2,10 @@
 
 ## Current State
 
-`v1.0`, `v1.1`, `v1.2`, `v1.3`, and `v1.4` are shipped. `v1.5` is active.
+`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, and `v1.5` are shipped.
 
-Phase 31 is complete and verified. Phase 32 is the next active planning step.
+The translation bridge milestone is now complete and archived. The next
+milestone has not been defined yet.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -34,22 +35,26 @@ Archive references:
 - `.planning/milestones/v1.4-ROADMAP.md`
 - `.planning/milestones/v1.4-REQUIREMENTS.md`
 - `.planning/milestones/v1.4-MILESTONE-AUDIT.md`
+- `.planning/milestones/v1.5-ROADMAP.md`
+- `.planning/milestones/v1.5-REQUIREMENTS.md`
+- `.planning/v1.5-MILESTONE-AUDIT.md`
 
 ## Current Milestone Status
 
-**Current Milestone:** `v1.5` — External Materials-LLM Translation Bridge MVP
+**Most Recent Milestone:** `v1.5` — External Materials-LLM Translation Bridge MVP
 
-**Goal:** Bridge QC-native Zomic candidates into auditable periodic/material
-encodings for external downloadable materials LLMs without pretending the
-translation is lossless.
+**Outcome:** Shipped and archived on 2026-04-07.
 
-**Target features:**
+**Delivered:**
 - deterministic translation from compiled Zomic candidates into reusable
   structure-interoperability artifacts
 - CIF export for supported approximant/periodic views of translated candidates
 - crystal/material string export for CrystalTextLLM- or CSLLM-style downstream
   workflows
-- explicit fidelity/loss metadata and operator docs for translation boundaries
+- explicit fidelity/loss metadata plus operator docs for translation
+  boundaries
+
+**Next milestone:** not started yet
 
 ## Later Milestone Candidates
 
@@ -128,16 +133,22 @@ instead of living in separate prototypes.
   families, deterministic normalization from `CandidateRecord`, explicit
   exact/anchored/approximate/lossy semantics, fixture-backed regression
   coverage, and a developer handoff note for Phase 32 exporters.
+- Validated in v1.5: the external materials-LLM translation bridge is now
+  shipped end to end, including deterministic CIF/material-string exporters, a
+  file-backed translation bundle CLI, operator tracing commands, and explicit
+  runbook guidance for representational-loss boundaries.
 
 ### Active
 
-- Export supported translated candidates into CIF and model-oriented
-  crystal/material string encodings for external downloadable materials LLMs.
-- Ship a file-backed CLI and docs surface for translation artifacts before
-  broader external-model benchmarking or training automation.
-- Extend the validated translation contract into concrete serializer outputs and
-  operator-usable artifact workflows without weakening Zomic as the QC-native
-  source of truth.
+- Benchmark downloaded external materials LLMs against the shipped translation
+  artifacts only after the current interop layer has settled in operator use.
+- Add controlled checkpoint training automation only after lifecycle,
+  promotion, rollback, and translator-backed benchmarking remain reliable
+  across multiple checkpoints.
+- Expand campaign automation only after promoted-checkpoint selection stays
+  stable under the current operator-governed workflow.
+- Broaden source coverage or deepen source QA after the checkpoint lifecycle
+  workflow and translation bridge remain stable.
 
 ### Out of Scope
 
@@ -230,4 +241,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after completing Phase 31*
+*Last updated: 2026-04-07 after completing and archiving v1.5*
