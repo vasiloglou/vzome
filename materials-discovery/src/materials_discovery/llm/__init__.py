@@ -41,6 +41,11 @@ from materials_discovery.llm.external_targets import (
     register_external_target,
     smoke_external_target,
 )
+from materials_discovery.llm.external_benchmark import (
+    build_external_benchmark_summary,
+    execute_external_benchmark,
+    load_external_benchmark_spec,
+)
 from materials_discovery.llm.compare import (
     build_campaign_comparison,
     build_campaign_outcome_snapshot,
@@ -299,6 +304,7 @@ __all__ = [
     "build_corpus_manifest",
     "build_campaign_comparison",
     "build_campaign_outcome_snapshot",
+    "build_external_benchmark_summary",
     "build_inventory",
     "collect_candidate_inventory",
     "collect_generated_export_inventory",
@@ -403,6 +409,7 @@ __all__ = [
     "emit_cif_text",
     "emit_translated_structure",
     "execute_serving_benchmark",
+    "execute_external_benchmark",
     "generate_llm_candidates",
     "LlmAdapter",
     "LlmAcceptanceBenchmarkInput",
@@ -478,6 +485,7 @@ __all__ = [
     "load_eval_set",
     "load_seed_zomic_text",
     "load_serving_benchmark_spec",
+    "load_external_benchmark_spec",
     "load_translated_benchmark_spec",
     "run_serving_smoke_check",
     "smoke_external_target",

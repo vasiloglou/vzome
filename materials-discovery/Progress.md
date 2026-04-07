@@ -4,6 +4,8 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 36 Plan 02 fidelity-aware benchmark scorecards | Tightened `build_external_benchmark_summary(...)` so recommendation lines privilege the periodic-safe exact or anchored slice even when overall shared-slice deltas look better on lossy cases, and added typed benchmark-summary coverage that proves weak periodic-safe performance cannot hide behind diagnostic-only wins |
+| 2026-04-07 | Phase 36 Plan 02 comparative benchmark execution core | Added `llm/external_benchmark.py` with spec loading, frozen benchmark-set replay, prompt rendering, response parsing, external-target and internal-control execution, deterministic per-target artifact writing, and focused benchmark-core tests that lock explicit exclusions plus smoke-failure handling without requiring real model weights |
 | 2026-04-07 | Phase 36 Plan 01 comparative benchmark storage helpers | Added deterministic `llm_external` benchmark storage helpers in `llm/storage.py` for benchmark-level and per-target artifacts including `benchmark_summary.json`, `scorecard_by_case.jsonl`, `run_manifest.json`, `case_results.jsonl`, and `raw_responses.jsonl`, and locked the new artifact family in focused schema/storage coverage so it stays isolated from benchmark-set and external-target roots |
 | 2026-04-07 | Phase 36 Plan 01 comparative benchmark contract | Added typed Phase 36 benchmark-spec, target-variant, case-result, run-manifest, slice-summary, control-delta, and benchmark-summary models to `llm/schema.py`, re-exported the new public surface plus storage helpers from `materials_discovery.llm`, and added focused schema tests that lock the family-aware and fidelity-aware contract before benchmark execution lands |
 | 2026-04-07 | Phase 35 Plan 03 external-target docs and example specs | Added committed CIF and material-string external-target example specs, shipped an operator runbook for registration or inspect or smoke plus artifact layout and Phase 36 boundary notes, and refreshed the docs map plus configuration and pipeline references so the new workflow is discoverable beside translated benchmark and checkpoint docs |
@@ -158,6 +160,10 @@
 
 ### 2026-04-07
 
+- 04:13 EDT — Implemented the Phase 36 Plan 02 comparative benchmark execution core in `llm/external_benchmark.py`.
+- Added spec loading for frozen translated benchmark manifests, prompt-contract and parser registries, explicit per-case exclusion handling, external-target registration and smoke reuse, internal-control serving-identity resolution, and deterministic writing of benchmark summary plus per-target run manifests and raw-response or case-result artifacts.
+- 04:13 EDT — Tightened the Phase 36 Plan 02 scorecard layer so recommendations stay periodic-safe-first.
+- Added typed `build_external_benchmark_summary(...)` coverage proving that strong lossy-slice deltas cannot overrule weak exact or anchored performance, while keeping shared eligible control deltas visible in the typed summary for later inspect surfaces.
 - 03:51 EDT — Implemented the Phase 36 Plan 01 comparative benchmark contract in `llm/schema.py` and exported it from `materials_discovery.llm`.
 - Added typed benchmark specs with explicit external-target and internal-control variants, case-result and run-manifest models that preserve translated-benchmark lineage plus fidelity metadata, and scorecard contracts for overall slices, family or fidelity slices, shared eligible control deltas, and recommendation lines; the new schema slice stays additive to the Phase 34 benchmark-set and Phase 35 external-target artifacts.
 - 03:51 EDT — Added the Phase 36 Plan 01 `llm_external` benchmark storage helpers and focused schema coverage.
