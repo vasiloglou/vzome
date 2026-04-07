@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-07 | Phase 34 Plan 02 RED persisted freeze-artifact tests | Extended `test_llm_translated_benchmark_freeze.py` with failing coverage that requires `freeze_contract.json` and `manifest.json` writes, typed manifest lineage plus exclusion-reason tallies, repeat-run byte stability for all freeze artifacts, and public `materials_discovery.llm` exports for the freeze helpers before the persistence pass lands |
 | 2026-04-07 | Phase 34 Plan 02 freeze engine core | Added `llm/translated_benchmark.py` with the first benchmark-pack freeze engine pass: spec loading, shipped bundle inventory loading, explicit system or target-family or fidelity-tier or loss-posture filtering, deterministic duplicate handling, conflicting-payload failure, and included or excluded inventory writing |
 | 2026-04-07 | Phase 34 Plan 02 RED freeze-engine tests | Added failing `test_llm_translated_benchmark_freeze.py` coverage that drives the future freeze engine through real shipped translation bundles and locks eligibility filtering, typed exclusions, exact duplicate handling, conflicting-duplicate failure, and deterministic row ordering before `llm/translated_benchmark.py` exists |
 | 2026-04-07 | Phase 34 Plan 01 benchmark-pack storage helpers | Added deterministic `llm_external_sets` storage helpers in `llm/storage.py` for the benchmark-pack root plus `freeze_contract.json`, `manifest.json`, `included.jsonl`, and `excluded.jsonl`, keeping this artifact family isolated from translation-export and serving-benchmark roots and turning the focused schema/storage slice green |
@@ -144,6 +145,8 @@
 
 ### 2026-04-07
 
+- 01:53 EDT — Started the Phase 34 Plan 02 persistence RED slice by extending `tests/test_llm_translated_benchmark_freeze.py`.
+- The new failing cases require `freeze_contract.json` and `manifest.json` to exist beside the written inventories, validate those files through the benchmark-pack schema models, lock stable artifact bytes across repeat runs, require exclusion-reason tallies in the manifest, and force the freeze helpers onto the public `materials_discovery.llm` surface before the persistence implementation.
 - 01:51 EDT — Implemented the first Phase 34 Plan 02 freeze-engine pass in `llm/translated_benchmark.py`.
 - The new module loads typed freeze specs plus shipped bundle manifests and inventory rows, applies explicit system or target-family or fidelity-tier or loss-posture filters, sorts deterministically by bundle path and candidate and payload hash, excludes exact duplicates after the first kept row, fails closed on conflicting payload hashes for the same candidate ID, and writes included or excluded benchmark inventories for later manifest work.
 - 01:48 EDT — Started Phase 34 Plan 02 in TDD RED mode by adding `tests/test_llm_translated_benchmark_freeze.py`.

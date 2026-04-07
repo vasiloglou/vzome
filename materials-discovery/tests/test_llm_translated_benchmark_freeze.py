@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import json
 from pathlib import Path
 
@@ -10,6 +11,8 @@ from materials_discovery.common.schema import CandidateRecord
 from materials_discovery.llm import (
     TranslatedBenchmarkExcludedRow,
     TranslatedBenchmarkIncludedRow,
+    TranslatedBenchmarkSetManifest,
+    TranslatedBenchmarkSetSpec,
     export_translation_bundle,
 )
 from materials_discovery.llm.storage import (
@@ -330,3 +333,110 @@ def test_freeze_translated_benchmark_set_sorts_rows_deterministically_across_spe
     assert first_excluded == second_excluded
     assert Path(translated_benchmark_included_path("freeze_order_a_v1", root=workspace)).exists()
     assert Path(translated_benchmark_excluded_path("freeze_order_a_v1", root=workspace)).exists()
+
+
+def test_freeze_translated_benchmark_set_writes_contract_manifest_and_lineage(
+    tmp_path: Path,
+) -> None:
+    workspace = tmp_path / "workspace"
+    exact_candidate = _load_candidate_fixture("al_cu_fe_periodic_candidate.json")
+    lossy_candidate = _load_candidate_fixture("sc_zn_qc_candidate.json")
+
+    target_manifest = _export_bundle(
+        workspace,
+        candidate=exact_candidate,
+        export_id="03-target-mismatch",
+        target_family="material_string",
+    )
+    lossy_manifest = _export_bundle(
+        workspace, candidate=lossy_candidate, export_id="02-loss-posture"
+    )
+    exact_manifest = _export_bundle(
+        workspace, candidate=exact_candidate, export_id="01-eligible-cif"
+    )
+
+    spec_path = _write_spec(
+        workspace,
+        benchmark_set_id="freeze_artifacts_v1",
+        bundle_manifest_paths=[
+            str(target_manifest),
+            str(lossy_manifest),
+            str(exact_manifest),
+        ],
+        systems=["Al-Cu-Fe", "Sc-Zn"],
+        allowed_fidelity_tiers=["exact", "anchored", "lossy"],
+        loss_posture="lossless_only",
+    )
+
+    summary = freeze_translated_benchmark_set(spec_path, root=workspace)
+    contract_path = Path(summary.contract_path)
+    manifest_path = Path(summary.manifest_path)
+
+    assert contract_path.exists()
+    assert manifest_path.exists()
+    assert Path(summary.included_inventory_path).exists()
+    assert Path(summary.excluded_inventory_path).exists()
+
+    contract = TranslatedBenchmarkSetSpec.model_validate(load_json_object(contract_path))
+    manifest = TranslatedBenchmarkSetManifest.model_validate(load_json_object(manifest_path))
+    included_rows = _load_included_rows(summary.included_inventory_path)
+    excluded_rows = _load_excluded_rows(summary.excluded_inventory_path)
+
+    assert contract.bundle_manifest_paths == sorted(
+        [str(target_manifest), str(lossy_manifest), str(exact_manifest)]
+    )
+    assert manifest.source_bundle_manifest_paths == contract.bundle_manifest_paths
+    assert set(manifest.source_export_ids) == {
+        "01-eligible-cif",
+        "02-loss-posture",
+        "03-target-mismatch",
+    }
+    assert manifest.exclusion_reason_counts == {
+        "loss_posture_rejected": 1,
+        "target_family_mismatch": 1,
+    }
+    assert manifest.included_count == summary.included_count == len(included_rows)
+    assert manifest.excluded_count == summary.excluded_count == len(excluded_rows)
+    assert summary.manifest_path == str(manifest_path.resolve())
+    assert summary.included_inventory_path == str(Path(summary.included_inventory_path).resolve())
+
+
+def test_freeze_translated_benchmark_set_rewrites_stable_artifacts_on_repeat_run(
+    tmp_path: Path,
+) -> None:
+    workspace = tmp_path / "workspace"
+    candidate = _load_candidate_fixture("al_cu_fe_periodic_candidate.json")
+
+    later_manifest = _export_bundle(
+        workspace, candidate=candidate, export_id="02-duplicate-later"
+    )
+    earlier_manifest = _export_bundle(
+        workspace, candidate=candidate, export_id="01-duplicate-earlier"
+    )
+
+    spec_path = _write_spec(
+        workspace,
+        benchmark_set_id="freeze_repeatability_v1",
+        bundle_manifest_paths=[str(later_manifest), str(earlier_manifest)],
+        systems=["Al-Cu-Fe"],
+    )
+
+    first_summary = freeze_translated_benchmark_set(spec_path, root=workspace)
+    first_contract = Path(first_summary.contract_path).read_text(encoding="utf-8")
+    first_manifest = Path(first_summary.manifest_path).read_text(encoding="utf-8")
+    first_included = Path(first_summary.included_inventory_path).read_text(encoding="utf-8")
+    first_excluded = Path(first_summary.excluded_inventory_path).read_text(encoding="utf-8")
+
+    second_summary = freeze_translated_benchmark_set(spec_path, root=workspace)
+
+    assert Path(second_summary.contract_path).read_text(encoding="utf-8") == first_contract
+    assert Path(second_summary.manifest_path).read_text(encoding="utf-8") == first_manifest
+    assert Path(second_summary.included_inventory_path).read_text(encoding="utf-8") == first_included
+    assert Path(second_summary.excluded_inventory_path).read_text(encoding="utf-8") == first_excluded
+
+
+def test_llm_public_freeze_surface_reexports_freeze_helpers() -> None:
+    llm_module = importlib.import_module("materials_discovery.llm")
+
+    assert llm_module.freeze_translated_benchmark_set is freeze_translated_benchmark_set
+    assert llm_module.load_translated_benchmark_spec is load_translated_benchmark_spec
