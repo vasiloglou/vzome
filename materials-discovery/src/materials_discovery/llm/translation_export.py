@@ -94,6 +94,23 @@ def emit_cif_text(artifact: TranslatedStructureArtifact) -> str:
     return "\n".join(lines) + "\n"
 
 
+def emit_material_string_text(artifact: TranslatedStructureArtifact) -> str:
+    validate_translated_structure_for_export(artifact)
+    assert artifact.cell is not None
+
+    # Keep the raw body CrystalTextLLM-compatible; provenance stays on the artifact.
+    lines = [
+        _format_vector_line(artifact.cell[key] for key, _ in _CELL_FIELD_ORDER[:3]),
+        _format_vector_line(artifact.cell[key] for key, _ in _CELL_FIELD_ORDER[3:]),
+    ]
+    for site in artifact.sites:
+        assert site.fractional_position is not None
+        lines.append(site.species)
+        lines.append(_format_vector_line(site.fractional_position))
+
+    return "\n".join(lines) + "\n"
+
+
 def _format_float(value: float) -> str:
     rounded = float(f"{float(value):.6f}")
     if rounded == 0.0:
@@ -118,3 +135,7 @@ def _format_cif_token(value: str) -> str:
         return value
     escaped = value.replace("'", "''")
     return f"'{escaped}'"
+
+
+def _format_vector_line(values: object) -> str:
+    return " ".join(_format_float(value) for value in values)

@@ -80,6 +80,7 @@ from materials_discovery.llm.translation import (
 )
 from materials_discovery.llm.translation_export import (
     emit_cif_text,
+    emit_material_string_text,
     emit_translated_structure,
     validate_translated_structure_for_export,
 )
