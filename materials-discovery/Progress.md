@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 32 Plan 02 Task 1 RED CrystalTextLLM material-string tests | Added failing `test_llm_translation_material_string.py` coverage for a real CrystalTextLLM-compatible body layout, parser-style line decoding, preserved site order, explicit loss metadata staying on the artifact contract, and byte-stable repeated emission before implementing the first material-string exporter |
 | 2026-04-06 | Phase 32 Plan 01 Task 2 CIF site-order test fix | Corrected the new CIF site-order assertion to ignore the `loop_` control line after the first green run showed the serializer was preserving site order and the test was counting the CIF loop marker as data |
 | 2026-04-06 | Phase 32 Plan 01 Task 2 deterministic CIF serializer | Tightened `emit_cif_text(...)` to emit the fixed CIF comment preamble with source and fidelity metadata while preserving the shared scalar formatting, fixed cell-field order, parser-compatible atom loop, and explicit lossy periodic-proxy labeling |
 | 2026-04-06 | Phase 32 Plan 01 Task 2 RED CIF serializer tests | Added failing `test_llm_translation_cif.py` coverage for the deterministic CIF comment preamble, fixed scalar and loop-header order, parser compatibility after comment stripping, preserved site order, and explicit lossy periodic-proxy metadata before tightening the serializer |
@@ -257,6 +258,8 @@
 
 ### 2026-04-06
 
+- 23:18 EDT — Started Phase 32 Plan 02 Task 1 in TDD RED mode by adding `tests/test_llm_translation_material_string.py`.
+- The new failing coverage deliberately follows the review-backed deviation: the emitted `crystaltextllm_material_string` body must stay parser-compatible with CrystalTextLLM-style lengths/angles/species/coordinates lines, while source/fidelity/loss metadata remains on the translated artifact contract instead of breaking the first line with repo-only headers.
 - 23:08 EDT — Corrected the new CIF site-order assertion in `tests/test_llm_translation_cif.py` after the first Task 2 green run showed the serializer was fine and the test was mistakenly counting the `loop_` marker as a site row.
 - 23:07 EDT — Implemented Phase 32 Plan 01 Task 2 by tightening `emit_cif_text(...)` to the fixed CIF contract.
 - The serializer now starts with source/fidelity/loss comment lines, keeps the required scalar-field and atom-loop order, stays parser-compatible with the repo-local CIF reader after comment stripping, and makes the lossy periodic-proxy posture visible in the emitted text instead of only on the artifact wrapper.
