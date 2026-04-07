@@ -40,6 +40,8 @@ TranslatedBenchmarkLossPosture = Literal[
     "allow_explicit_loss",
     "lossy_only",
 ]
+LlmExternalTargetRunnerKey = Literal["transformers_causal_lm", "peft_causal_lm"]
+LlmExternalTargetSmokeStatus = Literal["passed", "failed"]
 TranslatedBenchmarkExclusionReason = Literal[
     "system_not_selected",
     "target_family_mismatch",
@@ -65,6 +67,9 @@ DEFAULT_TRANSLATION_BUNDLE_MANIFEST_VERSION = "llm-translation-bundle-manifest/v
 DEFAULT_TRANSLATED_BENCHMARK_SET_MANIFEST_VERSION = "llm-translated-benchmark-set-manifest/v1"
 DEFAULT_LLM_ACCEPTANCE_PACK_VERSION = "llm-acceptance-pack/v1"
 DEFAULT_LLM_CHECKPOINT_REGISTRATION_VERSION = "llm-checkpoint-registration/v1"
+DEFAULT_LLM_EXTERNAL_TARGET_REGISTRATION_VERSION = "llm-external-target-registration/v1"
+DEFAULT_LLM_EXTERNAL_TARGET_ENVIRONMENT_VERSION = "llm-external-target-environment/v1"
+DEFAULT_LLM_EXTERNAL_TARGET_SMOKE_CHECK_VERSION = "llm-external-target-smoke-check/v1"
 DEFAULT_LLM_CHECKPOINT_LIFECYCLE_INDEX_VERSION = "llm-checkpoint-lifecycle-index/v1"
 DEFAULT_LLM_CHECKPOINT_PROMOTION_SPEC_VERSION = "llm-checkpoint-promotion/v1"
 DEFAULT_LLM_CHECKPOINT_RETIREMENT_SPEC_VERSION = "llm-checkpoint-retirement/v1"
@@ -940,6 +945,275 @@ class LlmCheckpointRegistrationSummary(BaseModel):
     @classmethod
     def normalize_optional_strings(cls, value: str | None) -> str | None:
         return _normalize_optional_string(value)
+
+
+class LlmExternalTargetRegistrationSpec(BaseModel):
+    model_id: str
+    model_family: str
+    supported_systems: list[str] = Field(default_factory=list)
+    supported_target_families: list[TranslationTargetFamily]
+    runner_key: LlmExternalTargetRunnerKey
+    provider: str
+    model: str
+    model_revision: str
+    tokenizer_revision: str | None = None
+    local_snapshot_path: str
+    snapshot_manifest_path: str | None = None
+    dtype: str | None = None
+    quantization: str | None = None
+    prompt_contract_id: str
+    response_parser_key: str
+    notes: str | None = None
+
+    @field_validator(
+        "model_id",
+        "model_family",
+        "provider",
+        "model",
+        "model_revision",
+        "local_snapshot_path",
+        "prompt_contract_id",
+        "response_parser_key",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @field_validator("supported_systems")
+    @classmethod
+    def normalize_supported_systems(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("supported_target_families")
+    @classmethod
+    def validate_supported_target_families(
+        cls, values: Sequence[TranslationTargetFamily]
+    ) -> list[TranslationTargetFamily]:
+        return _require_non_empty_string_list(values, "supported_target_families")
+
+    @field_validator(
+        "tokenizer_revision",
+        "snapshot_manifest_path",
+        "dtype",
+        "quantization",
+        "notes",
+    )
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        normalized = _normalize_optional_string(value)
+        if normalized is None:
+            return None
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+
+class LlmExternalTargetRegistration(BaseModel):
+    schema_version: str = DEFAULT_LLM_EXTERNAL_TARGET_REGISTRATION_VERSION
+    model_id: str
+    model_family: str
+    supported_systems: list[str] = Field(default_factory=list)
+    supported_target_families: list[TranslationTargetFamily]
+    runner_key: LlmExternalTargetRunnerKey
+    provider: str
+    model: str
+    model_revision: str
+    tokenizer_revision: str | None = None
+    local_snapshot_path: str
+    snapshot_manifest_path: str | None = None
+    dtype: str | None = None
+    quantization: str | None = None
+    prompt_contract_id: str
+    response_parser_key: str
+    created_at_utc: str
+    fingerprint: str
+    registration_path: str
+    environment_path: str
+    smoke_check_path: str
+    notes: str | None = None
+
+    @field_validator(
+        "schema_version",
+        "model_id",
+        "model_family",
+        "provider",
+        "model",
+        "model_revision",
+        "local_snapshot_path",
+        "prompt_contract_id",
+        "response_parser_key",
+        "created_at_utc",
+        "fingerprint",
+        "registration_path",
+        "environment_path",
+        "smoke_check_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @field_validator("supported_systems")
+    @classmethod
+    def normalize_supported_systems(cls, values: Sequence[str]) -> list[str]:
+        return _normalize_string_list(values)
+
+    @field_validator("supported_target_families")
+    @classmethod
+    def validate_supported_target_families(
+        cls, values: Sequence[TranslationTargetFamily]
+    ) -> list[TranslationTargetFamily]:
+        return _require_non_empty_string_list(values, "supported_target_families")
+
+    @field_validator(
+        "tokenizer_revision",
+        "snapshot_manifest_path",
+        "dtype",
+        "quantization",
+        "notes",
+    )
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        normalized = _normalize_optional_string(value)
+        if normalized is None:
+            return None
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+
+class LlmExternalTargetEnvironmentManifest(BaseModel):
+    schema_version: str = DEFAULT_LLM_EXTERNAL_TARGET_ENVIRONMENT_VERSION
+    model_id: str
+    registration_fingerprint: str
+    captured_at_utc: str
+    python_version: str
+    platform_system: str
+    platform_release: str | None = None
+    platform_machine: str | None = None
+    package_versions: dict[str, str] = Field(default_factory=dict)
+    cuda_available: bool | None = None
+    gpu_count: int | None = None
+    visible_devices: str | None = None
+    local_snapshot_path: str
+    snapshot_manifest_path: str | None = None
+    tokenizer_revision: str | None = None
+    model_revision: str
+
+    @field_validator(
+        "schema_version",
+        "model_id",
+        "registration_fingerprint",
+        "captured_at_utc",
+        "python_version",
+        "platform_system",
+        "local_snapshot_path",
+        "model_revision",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @field_validator(
+        "platform_release",
+        "platform_machine",
+        "visible_devices",
+        "snapshot_manifest_path",
+        "tokenizer_revision",
+    )
+    @classmethod
+    def normalize_optional_strings(cls, value: str | None) -> str | None:
+        normalized = _normalize_optional_string(value)
+        if normalized is None:
+            return None
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @field_validator("gpu_count")
+    @classmethod
+    def validate_gpu_count(cls, value: int | None) -> int | None:
+        if value is not None and value < 0:
+            raise ValueError("gpu_count must be >= 0")
+        return value
+
+    @field_validator("package_versions")
+    @classmethod
+    def validate_package_versions(cls, values: dict[str, str]) -> dict[str, str]:
+        normalized: dict[str, str] = {}
+        for key, value in values.items():
+            normalized_key = _require_non_blank_string(key)
+            normalized_value = _require_non_blank_string(value)
+            normalized[normalized_key] = normalized_value
+        return dict(sorted(normalized.items()))
+
+
+class LlmExternalTargetSmokeCheck(BaseModel):
+    schema_version: str = DEFAULT_LLM_EXTERNAL_TARGET_SMOKE_CHECK_VERSION
+    model_id: str
+    status: LlmExternalTargetSmokeStatus
+    registration_fingerprint: str
+    checked_at_utc: str
+    latency_s: float
+    environment_path: str
+    runner_key: LlmExternalTargetRunnerKey
+    provider: str
+    model: str
+    model_revision: str
+    local_snapshot_path: str
+    detail: str | None = None
+
+    @field_validator(
+        "schema_version",
+        "model_id",
+        "registration_fingerprint",
+        "checked_at_utc",
+        "environment_path",
+        "provider",
+        "model",
+        "model_revision",
+        "local_snapshot_path",
+    )
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
+
+    @field_validator("detail")
+    @classmethod
+    def normalize_optional_detail(cls, value: str | None) -> str | None:
+        return _normalize_optional_string(value)
+
+    @field_validator("latency_s")
+    @classmethod
+    def validate_latency(cls, value: float) -> float:
+        if value < 0.0:
+            raise ValueError("latency_s must be >= 0")
+        return value
+
+
+class LlmExternalTargetRegistrationSummary(BaseModel):
+    model_id: str
+    fingerprint: str
+    registration_path: str
+
+    @field_validator("model_id", "fingerprint", "registration_path")
+    @classmethod
+    def validate_required_strings(cls, value: str) -> str:
+        normalized = _require_non_blank_string(value)
+        if normalized.startswith("http://") or normalized.startswith("https://"):
+            return normalized.rstrip("/")
+        return normalized
 
 
 class LlmCheckpointLifecycleMemberSummary(BaseModel):
