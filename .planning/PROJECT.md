@@ -4,6 +4,8 @@
 
 `v1.0`, `v1.1`, `v1.2`, `v1.3`, and `v1.4` are shipped. `v1.5` is active.
 
+Phase 31 is complete and verified. Phase 32 is the next active planning step.
+
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
 - multi-source materials ingestion
@@ -121,17 +123,21 @@ instead of living in separate prototypes.
   lifecycle state, promoted-default and explicit-pin execution through the
   shipped workflow, benchmark-backed candidate promotion guidance, and a
   documented rollback/retirement procedure.
+- Validated in Phase 31: the translation bridge now has a typed additive
+  translated-structure artifact contract, registry-backed downstream target
+  families, deterministic normalization from `CandidateRecord`, explicit
+  exact/anchored/approximate/lossy semantics, fixture-backed regression
+  coverage, and a developer handoff note for Phase 32 exporters.
 
 ### Active
 
-- Add a deterministic Zomic-to-structure translation layer that can be traced
-  back to the original compiled candidate.
 - Export supported translated candidates into CIF and model-oriented
   crystal/material string encodings for external downloadable materials LLMs.
-- Keep representational loss explicit whenever QC-native Zomic cannot map
-  exactly into periodic/material-string formats.
 - Ship a file-backed CLI and docs surface for translation artifacts before
   broader external-model benchmarking or training automation.
+- Extend the validated translation contract into concrete serializer outputs and
+  operator-usable artifact workflows without weakening Zomic as the QC-native
+  source of truth.
 
 ### Out of Scope
 
@@ -204,7 +210,7 @@ instead of living in separate prototypes.
 | Start Project 3 v1.3 with Zomic-adapted local checkpoints | The serving surface was stable enough to judge adapted local generation honestly | ✓ Good |
 | Archive milestone v1.3 after direct in-phase verification | The checkpoint workflow now ships with its own proof chain instead of requiring later cleanup phases | ✓ Good |
 | Start Project 3 v1.4 with checkpoint lifecycle and promotion | One adapted checkpoint is now proven, so the next risk is operational curation rather than another one-off lane | ✓ Good |
-| Start Project 3 v1.5 with a Zomic translation bridge before external-model execution | The immediate gap is not another model alias but an auditable representation bridge from Zomic into formats external materials LLMs actually consume | — Pending |
+| Start Project 3 v1.5 with a Zomic translation bridge before external-model execution | The immediate gap is not another model alias but an auditable representation bridge from Zomic into formats external materials LLMs actually consume | ✓ Good |
 
 ## Evolution
 
@@ -224,4 +230,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after starting milestone v1.5*
+*Last updated: 2026-04-06 after completing Phase 31*
