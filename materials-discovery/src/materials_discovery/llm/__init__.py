@@ -34,6 +34,13 @@ from materials_discovery.llm.checkpoints import (
     retire_checkpoint,
     resolve_checkpoint_lane,
 )
+from materials_discovery.llm.external_targets import (
+    capture_external_target_environment,
+    load_external_target_spec,
+    load_registered_external_target,
+    register_external_target,
+    smoke_external_target,
+)
 from materials_discovery.llm.compare import (
     build_campaign_comparison,
     build_campaign_outcome_snapshot,
@@ -309,8 +316,11 @@ __all__ = [
     "build_campaign_proposals",
     "list_checkpoint_family_members",
     "load_checkpoint_lifecycle",
+    "load_external_target_spec",
     "load_registered_checkpoint",
+    "load_registered_external_target",
     "promote_checkpoint",
+    "register_external_target",
     "register_llm_checkpoint",
     "retire_checkpoint",
     "resolve_checkpoint_lane",
@@ -391,6 +401,7 @@ __all__ = [
     "LlmCheckpointRegistrationSpec",
     "LlmCheckpointRegistrationSummary",
     "LlmCheckpointRetirementSpec",
+    "capture_external_target_environment",
     "LlmExternalTargetEnvironmentManifest",
     "LlmExternalTargetRegistration",
     "LlmExternalTargetRegistrationSpec",
@@ -425,6 +436,7 @@ __all__ = [
     "load_serving_benchmark_spec",
     "load_translated_benchmark_spec",
     "run_serving_smoke_check",
+    "smoke_external_target",
     "llm_artifact_root_from_acceptance_pack_path",
     "llm_acceptance_dir",
     "llm_acceptance_approval_path",
