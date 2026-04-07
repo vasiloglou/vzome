@@ -51,7 +51,7 @@ def emit_translated_structure(
     if artifact.target.family == "cif":
         emitted_text = emit_cif_text(artifact)
     elif artifact.target.family == "material_string":
-        raise NotImplementedError("material_string export not implemented yet")
+        emitted_text = emit_material_string_text(artifact)
     else:  # pragma: no cover - schema registry should prevent this branch
         raise ValueError(f"unsupported translation export target family: {artifact.target.family}")
 
