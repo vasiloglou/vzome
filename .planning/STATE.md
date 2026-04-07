@@ -6,8 +6,8 @@ current_phase: 33
 current_phase_name: cli, benchmark hooks, and operator docs
 current_plan: Complete
 status: complete
-stopped_at: Milestone v1.5 archived
-last_updated: "2026-04-07T04:20:51Z"
+stopped_at: Milestone v1.5 archived and cleaned
+last_updated: "2026-04-07T04:24:27Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 3
@@ -37,7 +37,7 @@ Phase: 33 (cli, benchmark hooks, and operator docs) — COMPLETE
 Plan: 3 of 3
 Status: Milestone v1.5 archived and complete
 Last activity: 2026-04-07
-Last Activity Description: Archived v1.5 roadmap/requirements, shipped the milestone, and prepared cleanup of phase directories
+Last Activity Description: Archived v1.5 roadmap/requirements, shipped the milestone, and moved Phase 31-33 planning directories into .planning/milestones/v1.5-phases
 
 Progress: [██████████] 100%
 
