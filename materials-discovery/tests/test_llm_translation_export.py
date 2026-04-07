@@ -26,6 +26,11 @@ def _periodic_artifact(target_family: str = "cif"):
     return prepare_translated_structure(candidate, resolve_translation_target(target_family))
 
 
+def _lossy_artifact(target_family: str = "cif"):
+    candidate = _load_candidate_fixture("sc_zn_qc_candidate.json")
+    return prepare_translated_structure(candidate, resolve_translation_target(target_family))
+
+
 @pytest.mark.parametrize("target_family", ["cif", "material_string"])
 def test_emit_translated_structure_is_byte_stable_for_same_artifact(target_family: str) -> None:
     artifact = _periodic_artifact(target_family)
@@ -59,6 +64,41 @@ def test_validate_translated_structure_for_export_rejects_missing_fractional_coo
 
     with pytest.raises(ValueError, match="fractional_position"):
         validate_translated_structure_for_export(invalid_artifact)
+
+
+@pytest.mark.parametrize(
+    ("artifact", "error_match"),
+    [
+        pytest.param(
+            _periodic_artifact().model_copy(update={"cell": None}),
+            "cell",
+            id="missing-cell",
+        ),
+        pytest.param(
+            _periodic_artifact().model_copy(update={"sites": []}),
+            "at least one site",
+            id="empty-sites",
+        ),
+        pytest.param(
+            _periodic_artifact().model_copy(
+                update={
+                    "sites": [
+                        _periodic_artifact().sites[0].model_copy(update={"fractional_position": None}),
+                        *_periodic_artifact().sites[1:],
+                    ]
+                }
+            ),
+            "fractional_position",
+            id="missing-fractional-position",
+        ),
+    ],
+)
+def test_emit_translated_structure_rejects_malformed_periodic_artifacts(
+    artifact,
+    error_match: str,
+) -> None:
+    with pytest.raises(ValueError, match=error_match):
+        emit_translated_structure(artifact)
 
 
 @pytest.mark.parametrize("target_family", ["cif", "material_string"])
@@ -100,6 +140,25 @@ def test_cross_target_exports_preserve_normalized_identity_for_same_candidate() 
     assert emitted_cif.cell == emitted_material.cell
     assert emitted_cif.sites == emitted_material.sites
     assert emitted_cif.emitted_text != emitted_material.emitted_text
+
+
+@pytest.mark.parametrize("target_family", ["cif", "material_string"])
+def test_legitimate_lossy_exports_still_serialize_successfully(target_family: str) -> None:
+    artifact = _lossy_artifact(target_family)
+
+    emitted = emit_translated_structure(artifact)
+
+    assert emitted.fidelity_tier == "lossy"
+    assert emitted.loss_reasons == [
+        "aperiodic_to_periodic_proxy",
+        "coordinate_derivation_required",
+        "qc_semantics_dropped",
+    ]
+    assert emitted.emitted_text
+    if target_family == "cif":
+        assert "# fidelity_tier=lossy" in emitted.emitted_text
+    else:
+        assert not emitted.emitted_text.startswith("#")
 
 
 def test_emit_translated_structure_rejects_unsupported_target_families() -> None:

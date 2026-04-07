@@ -110,6 +110,32 @@ def test_parse_cif_can_read_emitted_payload_after_comments_are_stripped(tmp_path
     ]
 
 
+def test_parse_cif_can_read_checked_in_periodic_safe_golden_output() -> None:
+    cif = parse_cif(FIXTURE_DIR / "al_cu_fe_periodic_expected.cif")
+    atom_loop = next(loop for loop in cif["loops"] if "_atom_site_label" in loop["headers"])
+
+    assert cif["values"]["_cell_length_a"] == 14.2
+    assert cif["values"]["_cell_angle_gamma"] == 90.0
+    assert [row["_atom_site_label"] for row in atom_loop["rows"]] == ["A1", "C1", "F1"]
+    assert [row["_atom_site_type_symbol"] for row in atom_loop["rows"]] == ["Al", "Cu", "Fe"]
+
+
+def test_parse_cif_can_read_lossy_qc_payload_after_comments_are_stripped(tmp_path: Path) -> None:
+    artifact = _artifact("sc_zn_qc_candidate.json")
+
+    cif = parse_cif(_write_comment_stripped_cif(tmp_path, emit_cif_text(artifact)))
+    atom_loop = next(loop for loop in cif["loops"] if "_atom_site_label" in loop["headers"])
+
+    assert cif["values"]["_cell_length_a"] == artifact.cell["a"]
+    assert cif["values"]["_cell_angle_gamma"] == artifact.cell["gamma"]
+    assert [row["_atom_site_label"] for row in atom_loop["rows"]] == [
+        site.label for site in artifact.sites
+    ]
+    assert [row["_atom_site_type_symbol"] for row in atom_loop["rows"]] == [
+        site.species for site in artifact.sites
+    ]
+
+
 def test_lossy_qc_native_cif_export_keeps_periodic_proxy_metadata_visible() -> None:
     artifact = _artifact("sc_zn_qc_candidate.json")
 
