@@ -88,7 +88,11 @@ def test_emit_cif_text_preserves_translated_site_order() -> None:
     atom_rows = [
         line.split()[0]
         for line in emitted.splitlines()
-        if line and not line.startswith("#") and not line.startswith("data_") and not line.startswith("_")
+        if line
+        and line != "loop_"
+        and not line.startswith("#")
+        and not line.startswith("data_")
+        and not line.startswith("_")
     ]
 
     assert atom_rows == [site.label for site in artifact.sites]

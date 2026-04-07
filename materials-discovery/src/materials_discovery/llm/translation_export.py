@@ -62,7 +62,14 @@ def emit_cif_text(artifact: TranslatedStructureArtifact) -> str:
     validate_translated_structure_for_export(artifact)
     assert artifact.cell is not None
 
-    lines = [f"data_{_sanitize_data_block_name(artifact.source.candidate_id)}"]
+    lines = [
+        f"# source_candidate_id={artifact.source.candidate_id}",
+        f"# system={artifact.source.system or 'none'}",
+        f"# target_family={artifact.target.family}",
+        f"# fidelity_tier={artifact.fidelity_tier}",
+        f"# loss_reasons={_format_loss_reasons(artifact.loss_reasons)}",
+        f"data_{_sanitize_data_block_name(artifact.source.candidate_id)}",
+    ]
     for cell_key, cif_key in _CELL_FIELD_ORDER:
         lines.append(f"{cif_key} {_format_float(artifact.cell[cell_key])}")
 
@@ -100,6 +107,10 @@ def _format_float(value: float) -> str:
 def _sanitize_data_block_name(value: str) -> str:
     sanitized = re.sub(r"[^A-Za-z0-9_-]+", "_", value.strip())
     return sanitized or "translated_structure"
+
+
+def _format_loss_reasons(loss_reasons: list[str]) -> str:
+    return ",".join(loss_reasons) if loss_reasons else "none"
 
 
 def _format_cif_token(value: str) -> str:

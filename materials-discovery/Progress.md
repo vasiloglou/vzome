@@ -4,6 +4,8 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-06 | Phase 32 Plan 01 Task 2 CIF site-order test fix | Corrected the new CIF site-order assertion to ignore the `loop_` control line after the first green run showed the serializer was preserving site order and the test was counting the CIF loop marker as data |
+| 2026-04-06 | Phase 32 Plan 01 Task 2 deterministic CIF serializer | Tightened `emit_cif_text(...)` to emit the fixed CIF comment preamble with source and fidelity metadata while preserving the shared scalar formatting, fixed cell-field order, parser-compatible atom loop, and explicit lossy periodic-proxy labeling |
 | 2026-04-06 | Phase 32 Plan 01 Task 2 RED CIF serializer tests | Added failing `test_llm_translation_cif.py` coverage for the deterministic CIF comment preamble, fixed scalar and loop-header order, parser compatibility after comment stripping, preserved site order, and explicit lossy periodic-proxy metadata before tightening the serializer |
 | 2026-04-06 | Phase 32 Plan 01 Task 1 shared export seam | Added `llm/translation_export.py` with deterministic export validation, a shared six-decimal float formatter, copy-not-mutate dispatch, a narrow pure-text CIF emitter, and public `llm` exports for the new Phase 32 seam |
 | 2026-04-06 | Phase 32 Plan 01 Task 1 RED export-seam tests | Added failing `test_llm_translation_export.py` coverage for shared export validation, deterministic dispatch, copy-not-mutate behavior, and the explicit `material_string` not-yet-implemented boundary before adding the new exporter module |
@@ -255,6 +257,9 @@
 
 ### 2026-04-06
 
+- 23:08 EDT — Corrected the new CIF site-order assertion in `tests/test_llm_translation_cif.py` after the first Task 2 green run showed the serializer was fine and the test was mistakenly counting the `loop_` marker as a site row.
+- 23:07 EDT — Implemented Phase 32 Plan 01 Task 2 by tightening `emit_cif_text(...)` to the fixed CIF contract.
+- The serializer now starts with source/fidelity/loss comment lines, keeps the required scalar-field and atom-loop order, stays parser-compatible with the repo-local CIF reader after comment stripping, and makes the lossy periodic-proxy posture visible in the emitted text instead of only on the artifact wrapper.
 - 23:05 EDT — Started Phase 32 Plan 01 Task 2 in TDD RED mode by adding `tests/test_llm_translation_cif.py`.
 - The new failing CIF coverage locks the deterministic comment preamble, fixed cell-field and atom-loop header order, parser compatibility after comment stripping, preserved translated site order, and explicit lossy periodic-proxy metadata for the QC-native fixture before tightening the serializer.
 - 23:09 EDT — Implemented Phase 32 Plan 01 Task 1 by adding `llm/translation_export.py` and exporting the new helpers from `materials_discovery.llm`.
