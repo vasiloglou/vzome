@@ -4,9 +4,10 @@
 
 `v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, and `v1.6` are shipped.
 
-The translator-backed benchmark milestone is now archived. `v1.7` is now being
-defined around documentation alignment and one guided operator tutorial built
-on the shipped workflow through `v1.6`.
+The translator-backed benchmark milestone is now archived. Phase 37 of `v1.7`
+is complete, so the milestone now has a git-backed provenance audit for the
+deep-dive refresh and a locked Sc-Zn tutorial path built on the shipped
+workflow through `v1.6`. Phase 38 is next.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -66,10 +67,12 @@ Archive references:
 **Current Milestone:** `v1.7` — Documentation Refresh and Guided Design
 Tutorial MVP
 
-**Status:** Defining requirements and roadmap on 2026-04-14.
+**Status:** Phase 37 completed on 2026-04-15. Phase 38, narrative refresh and
+cross-linked deep dive, is next.
 
-**Planning focus:**
-- refresh the long-form deep-dive narrative so it matches the shipped
+**Current focus:**
+- refresh the long-form deep-dive narrative from the Phase 37 evidence packet
+  so it matches the shipped
   `materials-discovery/` tool surface through `v1.6`
 - produce one checked, end-to-end tutorial that ties design authoring,
   evaluation artifacts, and visualization together for new operators
@@ -180,12 +183,16 @@ instead of living in separate prototypes.
   external-target registration, comparative benchmark execution, fidelity-aware
   scorecards, bounded recommendation lines, and operator execute/inspect
   surfaces.
+- Validated in Phase 37: the repo now has a git-backed provenance audit for
+  `podcast-deep-dive-source.md`, a stale-claim and shipped-surface correction
+  checklist for the refresh, and a locked Sc-Zn Zomic-backed tutorial path for
+  later tutorial authoring.
 
 ### Active
 
 - Refresh `materials-discovery/developers-docs/podcast-deep-dive-source.md`
-  using git-backed provenance and shipped milestone evidence so it no longer
-  under- or over-states the system.
+  from the Phase 37 provenance audit so it no longer under- or over-states the
+  system.
 - Publish a guided design -> evaluate -> visualize tutorial with runnable
   examples, expected artifacts, and interpretation notes for the current
   operator workflow.
@@ -274,7 +281,7 @@ instead of living in separate prototypes.
 | Start Project 3 v1.5 with a Zomic translation bridge before external-model execution | The immediate gap is not another model alias but an auditable representation bridge from Zomic into formats external materials LLMs actually consume | ✓ Good |
 | Start Project 3 v1.6 with translator-backed external-model benchmarking | The translation bridge was shipped, so the next dependency-breaking question was which downloaded materials LLMs are worth deeper automation or training investment | ✓ Good |
 | Keep `v1.6` benchmark-first and advisory rather than auto-promoting winners | Benchmark evidence needed to guide the next milestone, not silently become automation policy | ✓ Good |
-| Start Project 3 v1.7 with documentation refresh and one guided workflow tutorial | The shipped tool surface now exceeds the accuracy and usability of the long-form narrative docs, and a checked tutorial lowers onboarding risk before more automation work | — Pending |
+| Start Project 3 v1.7 with documentation refresh and one guided workflow tutorial | The shipped tool surface now exceeds the accuracy and usability of the long-form narrative docs, and a checked tutorial lowers onboarding risk before more automation work | ✓ Good |
 
 ## Evolution
 
@@ -294,4 +301,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-14 after creating milestone v1.7 roadmap*
+*Last updated: 2026-04-15 after completing Phase 37 and advancing to Phase 38*
