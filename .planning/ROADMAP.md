@@ -51,7 +51,10 @@ refresh.
      refreshed narrative.
   3. One worked example path and artifact set are chosen for the tutorial so
      later phases do not drift across too many systems or modes.
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 37-01-PLAN.md - Create the planning-side provenance audit and Sc-Zn tutorial scope lock.
 
 ### Phase 38: Narrative Refresh and Cross-Linked Deep Dive
 **Goal**: The long-form deep-dive source accurately describes the shipped
