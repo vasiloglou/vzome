@@ -82,7 +82,8 @@ uv run mdisc llm-inspect-external-benchmark --summary data/benchmarks/llm_extern
 | How does Z[phi] geometry work? | [Z[phi] Geometry & Candidate Generation](zphi-geometry.md) |
 | How do I author designs in Zomic? | [Zomic Design Workflow](zomic-design-workflow.md) |
 | How do I walk one checked design -> evaluate -> visualize example quickly? | [Guided Design Tutorial](guided-design-tutorial.md) |
-| How do I run the same checked example cell-by-cell with more detail? | [Guided Design Tutorial Notebook](../notebooks/guided_design_tutorial.ipynb) |
+| How do I run the same checked example cell-by-cell with the richest branch guidance? | [Guided Design Tutorial Notebook](../notebooks/guided_design_tutorial.ipynb) |
+| How do I preview the checked Sc-Zn geometry programmatically without the full tutorial? | [Programmatic Zomic Visualization](programmatic-zomic-visualization.md) |
 | What does each CLI command do? | [Pipeline Stages](pipeline-stages.md) |
 | How do backend adapters work? | [Backend System](backend-system.md) |
 | What are the YAML config options? | [Configuration Reference](configuration-reference.md) |

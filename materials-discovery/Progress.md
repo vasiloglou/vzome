@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-15 | Phase 43 notebook visualization and llm walkthrough integration | Rebuilt `notebooks/guided_design_tutorial.ipynb` into the richest runnable companion for the checked Sc-Zn walkthrough, added the repo-owned programmatic preview-vs-refresh path plus deeper same-system and translation/external benchmark guidance, aligned the docs map with the standalone visualization reference, and refreshed the notebook/visualization cross-links without reintroducing a desktop-only happy path |
 | 2026-04-15 | Phase 42 extensive guided tutorial expansion | Reframed `developers-docs/guided-design-tutorial.md` around the Sc-Zn deterministic spine, added the explicit branch map, moved the repo-owned preview path into the main walkthrough, replaced the old desktop-only visualization handoff with a clearer repo-preview versus desktop-vZome boundary, expanded the same-system plus translation/external benchmark branches into concrete artifact-backed operator guidance, and restored campaign plus serving/checkpoint workflow handoffs without collapsing the page into a command catalog |
 | 2026-04-15 | Phase 41 raw export viewer | Added `materials_discovery.visualization` for checked raw-export loading and standalone HTML rendering, shipped `mdisc preview-zomic` with browser and label-toggle options, documented the programmatic preview path, and replaced the happy-path desktop-only visualization handoff with a repo-owned viewer surface |
 | 2026-04-15 | Phase 40 LLM docs and notebook tutorial | Enriched `developers-docs/guided-design-tutorial.md` with explicit LLM workflow framing, added `notebooks/guided_design_tutorial.ipynb` as the detailed notebook companion, updated the docs index and deep-dive cross-links, and refreshed the podcast PDF alongside the new docs surface |
@@ -168,6 +169,10 @@
 
 ### 2026-04-15
 
+- 13:37 EDT — Started the Phase 43 notebook walkthrough integration pass.
+- Rebuilt `notebooks/guided_design_tutorial.ipynb` around the Sc-Zn deterministic spine, added explicit execution flags plus a preview-vs-refresh path using the repo-owned visualization helper, and replaced the old notebook-ending desktop-only visualization handoff with clearer preview/refresh/desktop roles.
+- 13:37 EDT — Expanded the notebook's LLM branches and docs-map alignment.
+- Added a deeper same-system Sc-Zn lane, a fixture-backed Al-Cu-Fe interoperability branch with the full shipped translate/freeze/register/smoke/benchmark command family, updated the docs index to distinguish tutorial versus notebook versus standalone visualization reference, and revised the focused visualization doc so notebook embedding is now a shipped path rather than a future-only note.
 - 13:14 EDT — Started the Phase 42 guided tutorial expansion.
 - Reframed the Markdown tutorial around the Sc-Zn deterministic spine, added a branch map that keeps the LLM lanes attached to the same evidence chain, moved the repo-owned `preview-zomic` path into the main walkthrough, and rewrote the old visualization section into a clearer repo-preview versus desktop-vZome handoff.
 - 13:16 EDT — Expanded the Phase 42 LLM branch walkthroughs.

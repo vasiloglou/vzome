@@ -91,6 +91,10 @@ Use `preview_zomic_design(...)` when you want one function call that refreshes
 through the existing export chain first. Use `write_raw_export_viewer(...)` or
 `build_view_model(...)` when you already trust the current raw export artifact.
 
+If you want the richer runnable walkthrough that embeds this helper into the
+full Sc-Zn tutorial flow, use the
+[Guided Design Tutorial Notebook](../notebooks/guided_design_tutorial.ipynb).
+
 ## What This Replaces
 
 The new viewer is for programmatic preview of the checked raw export.
@@ -110,5 +114,4 @@ Deferred work for later phases includes:
 
 - `.vZome` compatibility
 - `.shapes.json` compatibility
-- richer notebook embedding and tutorial wiring
 - broader browser-side feature parity with desktop vZome
