@@ -27,10 +27,10 @@ reinforce each other instead of living in separate prototypes.
 
 ### Notebook Workflow
 
-- [ ] **OPS-25**: Operator can use the guided tutorial notebook to render or
+- [x] **OPS-25**: Operator can use the guided tutorial notebook to render or
   launch the checked design programmatically with documented preview or execute
   behavior.
-- [ ] **OPS-26**: Operator can use the notebook as the most detailed walkthrough
+- [x] **OPS-26**: Operator can use the notebook as the most detailed walkthrough
   for the shipped LLM surfaces, with richer command, artifact, and branch
   guidance than the Markdown tutorial alone.
 
@@ -73,8 +73,8 @@ reinforce each other instead of living in separate prototypes.
 | VIS-02 | Phase 41 | Complete |
 | DOC-06 | Phase 42 | Complete |
 | DOC-07 | Phase 42 | Complete |
-| OPS-25 | Phase 43 | Pending |
-| OPS-26 | Phase 43 | Pending |
+| OPS-25 | Phase 43 | Complete |
+| OPS-26 | Phase 43 | Complete |
 
 **Coverage:**
 - v1.81 requirements: 6 total

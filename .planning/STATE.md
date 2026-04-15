@@ -4,17 +4,17 @@ milestone: v1.81
 milestone_name: Extensive LLM Tutorial and Programmatic vZome Visualization MVP
 current_phase: 43
 current_phase_name: Notebook Visualization and LLM Walkthrough Integration
-current_plan: Not started
-status: ready for planning
-stopped_at: phase 42 complete; phase 43 ready for planning
-last_updated: "2026-04-15T17:21:22Z"
+current_plan: 1 complete
+status: ready for lifecycle
+stopped_at: phase 43 complete; milestone ready for audit
+last_updated: "2026-04-15T17:39:14Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
-  percent: 67
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -26,26 +26,25 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 **Core value:** Build one reproducible system where trusted materials data,
 physically grounded no-DFT validation, and LLM-guided structure generation
 reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 43 — notebook-visualization-and-llm-walkthrough-integration.
-Make the notebook the most detailed executable walkthrough of the checked
-Sc-Zn path, reusing the repo-owned preview helper and the expanded Markdown
-branch map from Phase 42.
+**Current focus:** Milestone lifecycle for `v1.81`.
+All planned phases are complete; the next step is audit, archive, and cleanup
+for the documentation-and-visualization milestone.
 
 ## Current Position
 
-Phase: 43 (Notebook Visualization and LLM Walkthrough Integration) — READY FOR PLANNING
-Plan: Not started
+Phase: 43 (Notebook Visualization and LLM Walkthrough Integration) — COMPLETE
+Plan: 1/1 complete
 Current Milestone: v1.81
 Most Recent Milestone: v1.8
 Current Phase: 43
 Current Phase Name: Notebook Visualization and LLM Walkthrough Integration
 Total Phases in Current Milestone: 3
-Current Plan: Not started
-Status: Phase 42 complete; Phase 43 ready for planning
+Current Plan: 1 complete
+Status: Phase 43 complete; milestone ready for audit
 Last activity: 2026-04-15
-Last Activity Description: Phase 42 complete, transitioned to Phase 43
+Last Activity Description: Phase 43 complete; all milestone phases implemented
 
-Progress: [######----] 67%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
@@ -146,15 +145,26 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
   `mdisc preview-zomic`, and a standalone HTML viewer so the checked Sc-Zn
   design can be previewed programmatically without a mandatory desktop-vZome
   handoff.
+
 - [Phase 42]: Keep the Sc-Zn deterministic spine as the main Markdown tutorial
   authority chain and present the shipped LLM surfaces as explicit branches
   rather than a loose feature catalog.
+
 - [Phase 42]: Use the repo-owned preview path as the normal checked inspection
   surface, and keep desktop vZome positioned as the authoring and
   deeper-inspection tool.
+
 - [Phase 42]: Frame the Al-Cu-Fe translation and external benchmark walkthrough
   as a fixture-backed context switch, not as a replacement for the Sc-Zn
   tutorial anchor.
+- [Phase 43]: Make the notebook the richest runnable companion while keeping
+  the Markdown tutorial as the shortest checked operator story.
+- [Phase 43]: Use the repo-owned preview helper directly in the notebook with
+  a safe preview-vs-refresh split instead of a desktop-only visualization
+  handoff.
+- [Phase 43]: Keep the full translation/external benchmark branch explicit in
+  the notebook, but stay preview-first and artifact-honest when bundled
+  external-target runtimes are not available.
 
 ### Pending Todos
 
@@ -162,12 +172,11 @@ None yet.
 
 ### Blockers/Concerns
 
-No active blockers. The next execution risk is keeping the notebook aligned
-with the expanded Markdown tutorial while adding richer preview and LLM branch
-guidance without duplicating every runbook verbatim.
+No active blockers. The next step is the milestone lifecycle sequence: audit,
+archive, and cleanup for `v1.81`.
 
 ## Session Continuity
 
-Last session: 2026-04-15T17:21:22Z
-Stopped at: phase 42 complete; phase 43 ready for planning
+Last session: 2026-04-15T17:39:14Z
+Stopped at: phase 43 complete; milestone ready for audit
 Resume file: .planning/ROADMAP.md
