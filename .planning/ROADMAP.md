@@ -26,9 +26,9 @@ the current ones more legible, evidence-backed, and teachable.
 - [x] **Phase 37: Deep-Dive Provenance Audit and Tutorial Scope** - Trace the (completed 2026-04-15)
   podcast source doc, audit stale claims, and lock the worked-example scope for
   the tutorial.
-- [ ] **Phase 38: Narrative Refresh and Cross-Linked Deep Dive** - Refresh the
+- [x] **Phase 38: Narrative Refresh and Cross-Linked Deep Dive** - Refresh the
   long-form source document so it accurately reflects the shipped system and
-  points at the current docs surface.
+  points at the current docs surface. (completed 2026-04-15)
 - [ ] **Phase 39: Guided Design, Evaluation, and Visualization Tutorial** -
   Publish a step-by-step example for using the current tool to design,
   evaluate, and visualize candidate materials.
@@ -74,7 +74,7 @@ present capabilities.
 **Plans**: 1 plan
 
 Plans:
-- [ ] 38-01-PLAN.md - Refresh the deep-dive narrative, source links, future-work labels, and required Progress.md entry.
+- [x] 38-01-PLAN.md - Refresh the deep-dive narrative, source links, future-work labels, and required Progress.md entry.
 
 ### Phase 39: Guided Design, Evaluation, and Visualization Tutorial
 **Goal**: Operators can follow one reproducible example that uses the current
@@ -99,5 +99,5 @@ the geometry through the existing vZome/Zomic path.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 37. Deep-Dive Provenance Audit and Tutorial Scope | 1/1 | Complete    | 2026-04-15 |
-| 38. Narrative Refresh and Cross-Linked Deep Dive | 0/1 | Not started | - |
+| 38. Narrative Refresh and Cross-Linked Deep Dive | 1/1 | Complete    | 2026-04-15 |
 | 39. Guided Design, Evaluation, and Visualization Tutorial | 0/TBD | Not started | - |

@@ -17,12 +17,12 @@ reinforce each other instead of living in separate prototypes.
 
 ### Narrative Refresh
 
-- [ ] **DOC-02**: The refreshed
+- [x] **DOC-02**: The refreshed
   `materials-discovery/developers-docs/podcast-deep-dive-source.md` accurately
   describes the currently shipped `materials-discovery/` workflow through
   `v1.6`, including the design, evaluation, serving/checkpoint, translation,
   and comparative benchmarking surfaces at the right level of fidelity.
-- [ ] **DOC-03**: The refreshed narrative clearly distinguishes shipped
+- [x] **DOC-03**: The refreshed narrative clearly distinguishes shipped
   capabilities from planned or future work and points readers to the current
   source-of-truth runbooks and references for deeper technical detail.
 
@@ -69,8 +69,8 @@ reinforce each other instead of living in separate prototypes.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DOC-01 | Phase 37 | Complete |
-| DOC-02 | Phase 38 | Pending |
-| DOC-03 | Phase 38 | Pending |
+| DOC-02 | Phase 38 | Complete |
+| DOC-03 | Phase 38 | Complete |
 | OPS-19 | Phase 39 | Pending |
 | OPS-20 | Phase 39 | Pending |
 | OPS-21 | Phase 39 | Pending |
@@ -82,4 +82,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-14*
-*Last updated: 2026-04-15 after completing Phase 37*
+*Last updated: 2026-04-15 after completing Phase 38*
