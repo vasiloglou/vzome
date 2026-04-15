@@ -4,9 +4,9 @@
 
 `v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, and `v1.6` are shipped.
 
-The translator-backed benchmark milestone is now archived. The repo currently
-has no active milestone, and the next planning cycle should choose among the
-validated follow-up directions surfaced by `v1.6`.
+The translator-backed benchmark milestone is now archived. `v1.7` is now being
+defined around documentation alignment and one guided operator tutorial built
+on the shipped workflow through `v1.6`.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -20,23 +20,23 @@ LLM operating surface:
 - the groundwork for a new interoperability layer between Zomic-native
   candidates and external downloadable materials LLM formats
 
-## Most Recent Shipped Milestone: v1.6 Translator-Backed External Materials-LLM Benchmark MVP
+## Current Milestone: v1.7 Documentation Refresh and Guided Design Tutorial MVP
 
-**Goal:** Determine whether downloaded external materials LLMs merit deeper
-workflow investment by benchmarking them against the shipped translation
-artifacts and current internal controls in one reproducible, fidelity-aware
-workflow.
+**Goal:** Refresh the long-form external narrative and publish one
+evidence-backed operator tutorial that shows how to design candidate materials,
+evaluate them with the current pipeline, and visualize the geometry in the
+existing vZome/Zomic toolchain.
 
 **Target features:**
-- freeze a fidelity-aware translated-artifact benchmark set with explicit
-  inclusion rules and representational-loss boundaries
-- add reproducible downloaded-model execution lanes with file-backed lineage,
-  environment capture, and operator-safe invocation
-- run comparative benchmark workflows on the same translated artifacts against
-  current promoted or pinned internal controls
-- ship operator scorecards and follow-on guidance that inform whether training
-  automation, campaign automation, or benchmark-driven source QA should come
-  next
+- trace the origin of `podcast-deep-dive-source.md`, audit what shipped after
+  it, and use that evidence to refresh stale capability claims
+- update the deep-dive source so it accurately reflects the current CLI
+  surface, milestone history, and shipped translation and benchmark workflow
+- create a step-by-step tutorial with example commands, expected artifacts, and
+  interpretation notes for designing and evaluating candidate materials with
+  the current tool
+- show how the same example flows into the vZome/Zomic visualization path so
+  geometry and materials artifacts stay connected
 
 Archive references:
 - `.planning/milestones/v1.0-ROADMAP.md`
@@ -61,29 +61,33 @@ Archive references:
 - `.planning/milestones/v1.6-REQUIREMENTS.md`
 - `.planning/v1.6-MILESTONE-AUDIT.md`
 
-## Current Planning Status
+## Current Milestone Status
 
-**Active Milestone:** none
+**Current Milestone:** `v1.7` — Documentation Refresh and Guided Design
+Tutorial MVP
 
-**Status:** `v1.6` shipped and archived on 2026-04-07.
+**Status:** Defining requirements and roadmap on 2026-04-14.
 
-**Next planning focus:**
-- use the archived `v1.6` benchmark evidence to decide whether the next
-  milestone should prioritize training automation, campaign automation, or
-  benchmark-driven source QA
-- keep the next milestone CLI-first, operator-governed, and file-backed unless
-  the archived evidence clearly justifies broader infrastructure
+**Planning focus:**
+- refresh the long-form deep-dive narrative so it matches the shipped
+  `materials-discovery/` tool surface through `v1.6`
+- produce one checked, end-to-end tutorial that ties design authoring,
+  evaluation artifacts, and visualization together for new operators
+- keep the milestone CLI-first, file-backed, and documentation-centric rather
+  than inventing new discovery or automation surfaces
 
-**Previous Milestone:** `v1.5` — External Materials-LLM Translation Bridge MVP
+**Most Recent Shipped Milestone:** `v1.6` — Translator-Backed External
+Materials-LLM Benchmark MVP
 
-**Delivered in `v1.5`:**
-- deterministic translation from compiled Zomic candidates into reusable
-  structure-interoperability artifacts
-- CIF export for supported approximant/periodic views of translated candidates
-- crystal/material string export for CrystalTextLLM- or CSLLM-style downstream
-  workflows
-- explicit fidelity/loss metadata plus operator docs for translation
-  boundaries
+**Delivered in `v1.6`:**
+- frozen translated benchmark packs with explicit inclusion, exclusion, and
+  lineage semantics
+- immutable external-target registration with reproducibility-grade smoke and
+  environment capture
+- comparative external-vs-internal benchmark execution on the same translated
+  case slice
+- fidelity-aware scorecards and operator inspect surfaces for next-step
+  decisions
 
 ## Later Milestone Candidates
 
@@ -179,9 +183,14 @@ instead of living in separate prototypes.
 
 ### Active
 
-- No active milestone is currently defined. Use the archived `v1.6` benchmark
-  evidence to define the next milestone deliberately instead of carrying
-  forward stale requirement text.
+- Refresh `materials-discovery/developers-docs/podcast-deep-dive-source.md`
+  using git-backed provenance and shipped milestone evidence so it no longer
+  under- or over-states the system.
+- Publish a guided design -> evaluate -> visualize tutorial with runnable
+  examples, expected artifacts, and interpretation notes for the current
+  operator workflow.
+- Keep the milestone documentation-first and CLI-first: improve explainability
+  and onboarding without broadening the scientific or automation surface.
 
 ### Out of Scope
 
@@ -210,12 +219,20 @@ instead of living in separate prototypes.
 - The LLM design already assumes Zomic is the right generative representation
   because CIF-native crystal LLMs do not naturally model aperiodic quasicrystal
   geometry.
-- The current corpus/converter stack is intentionally one-way into Zomic; the
-  repo does not yet ship a reverse exporter from Zomic/candidates into CIF or
-  CrystalTextLLM-/CSLLM-style material strings.
-- The current runtime already has the geometry needed for that bridge:
-  `CandidateRecord` carries cell/site data and can already be realized into ASE
-  atoms or a pymatgen `Structure`.
+- The repo now ships additive translation and benchmark tooling from
+  QC-native candidates into CIF/material-string bundles, translated benchmark
+  packs, and external-vs-internal scorecards.
+- `podcast-deep-dive-source.md` was first added on 2026-03-06 and then moved
+  during later docs reorganizations, so it predates the shipped `v1.5`/`v1.6`
+  workflow surface.
+- The repo already has strong reference docs (`RUNBOOK.md`,
+  `zomic-design-workflow.md`, `pipeline-stages.md`,
+  `vzome-geometry-tutorial.md`), but no single checked tutorial currently ties
+  design authoring, evaluation interpretation, and vZome visualization into
+  one example.
+- The current runtime can realize `CandidateRecord` data into ASE atoms or a
+  pymatgen `Structure`, while the Zomic bridge preserves a vZome-rooted
+  geometry path for design authoring and visualization.
 
 ## Constraints
 
@@ -257,6 +274,7 @@ instead of living in separate prototypes.
 | Start Project 3 v1.5 with a Zomic translation bridge before external-model execution | The immediate gap is not another model alias but an auditable representation bridge from Zomic into formats external materials LLMs actually consume | ✓ Good |
 | Start Project 3 v1.6 with translator-backed external-model benchmarking | The translation bridge was shipped, so the next dependency-breaking question was which downloaded materials LLMs are worth deeper automation or training investment | ✓ Good |
 | Keep `v1.6` benchmark-first and advisory rather than auto-promoting winners | Benchmark evidence needed to guide the next milestone, not silently become automation policy | ✓ Good |
+| Start Project 3 v1.7 with documentation refresh and one guided workflow tutorial | The shipped tool surface now exceeds the accuracy and usability of the long-form narrative docs, and a checked tutorial lowers onboarding risk before more automation work | — Pending |
 
 ## Evolution
 
@@ -276,4 +294,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-07 after completing Phase 35 and transitioning to Phase 36*
+*Last updated: 2026-04-14 after creating milestone v1.7 roadmap*
