@@ -325,58 +325,203 @@ That is the right reading of the current example: the tooling is not telling you
 "ship this"; it is telling you why the batch is still a watchlist rather than a
 promotion candidate set.
 
-## 9. Where the LLM Workflows Fit
+## 9. Where the LLM Workflows Branch from the Spine
 
-The checked Sc-Zn walkthrough above is the deterministic spine of the repo:
-geometry authority starts in `.zomic`, the standard pipeline writes the main
-candidate/report artifacts, and the current example teaches how to read that
-evidence honestly.
+The checked Sc-Zn walkthrough above is still the operator baseline. The repo's
+LLM commands branch from that evidence chain; they do not replace it.
 
-The repo's shipped LLM workflows are additive around that spine rather than a
-replacement for it.
+### 9.1 Same-system companion lane
 
-### 9.1 Same-System Companion Lane
-
-If you want to stay in the Sc-Zn family while exploring the LLM component, use
-the companion configs:
+Use this branch when you want to stay in the Sc-Zn family while adding an LLM
+proposal or assessment lane on top of the checked Zomic-backed workflow.
 
 | Path | Role |
 |------|------|
-| `configs/systems/sc_zn_llm_mock.yaml` | Fixture-backed Sc-Zn LLM generation/evaluation lane for dry runs and tests |
-| `configs/systems/sc_zn_llm_local.yaml` | Local OpenAI-compatible Sc-Zn lane with general-purpose generation and specialized evaluation |
+| `configs/systems/sc_zn_llm_mock.yaml` | Fixture-backed Sc-Zn lane for dry runs and tests |
+| `configs/systems/sc_zn_llm_local.yaml` | Local OpenAI-compatible Sc-Zn lane with general-purpose generation plus specialized evaluation |
 
-Representative companion commands:
+Representative commands:
 
 ```bash
 uv run mdisc llm-generate --config configs/systems/sc_zn_llm_mock.yaml --count 5 \
   --out data/candidates/sc_zn_llm_candidates.jsonl
 
-uv run mdisc llm-evaluate --config configs/systems/sc_zn_llm_mock.yaml --batch all
+uv run mdisc llm-evaluate --config configs/systems/sc_zn_llm_local.yaml --batch all
 ```
 
-What changes, and what does not:
+Artifact families this branch writes:
 
-- `llm-generate` adds an alternate proposal lane that still compiles Zomic and
-  writes standard candidate/manifests artifacts.
-- `llm-evaluate` adds assessment artifacts on top of ranked candidates; it does
-  not replace the deterministic validation/report evidence already shown above.
-- The `.zomic` file remains the geometry authority for the checked design path.
-- The deterministic `export-zomic -> generate -> screen -> hifi-validate ->
-  hifi-rank -> report` sequence is still the cleanest first walkthrough.
+- `data/candidates/` for the candidate JSONL emitted by `llm-generate`
+- `data/manifests/` for the `llm_generate` and `llm_evaluate` stage manifests
+- `data/llm_runs/` for `llm-generate` request, attempt, compile, and run audit
+  artifacts
+- `data/llm_evaluated/` for the additive evaluated candidate JSONL
+- `data/llm_evaluations/` for evaluation requests, assessments, and run-level
+  audit artifacts
 
-### 9.2 Other Shipped LLM Workflow Families
+What to inspect:
 
-| Workflow family | Commands | When it fits | Start here |
-|----------------|----------|--------------|------------|
-| Additive generation and assessment | `llm-generate`, `llm-evaluate` | When you want alternate Zomic proposals or additive assessment on top of the deterministic evidence | [LLM Integration](llm-integration.md) |
-| Campaign governance | `llm-suggest`, `llm-approve`, `llm-launch`, `llm-replay`, `llm-compare` | After you have acceptance-pack evidence and want an operator-governed campaign loop | [Operator Runbook](../RUNBOOK.md) |
-| Serving and checkpoint operations | `llm-serving-benchmark`, `llm-register-checkpoint`, `llm-list-checkpoints`, `llm-promote-checkpoint`, `llm-retire-checkpoint` | When you need to compare lanes or manage adapted checkpoints without changing the base workflow contract | [Operator Runbook](../RUNBOOK.md) |
-| Translation and external benchmarking | `llm-translate`, `llm-translate-inspect`, `llm-translated-benchmark-freeze`, `llm-translated-benchmark-inspect`, `llm-register-external-target`, `llm-inspect-external-target`, `llm-smoke-external-target`, `llm-external-benchmark`, `llm-inspect-external-benchmark` | When you want to export QC-native candidates for downstream materials-LLM comparison and benchmark them honestly | [LLM Translation Runbook](llm-translation-runbook.md), [Translated Benchmark Runbook](llm-translated-benchmark-runbook.md), [External Target Runbook](llm-external-target-runbook.md), [External Benchmark Runbook](llm-external-benchmark-runbook.md) |
+- the candidate JSONL and `data/manifests/{slug}_llm_generate_manifest.json`
+  when you want to verify that the proposal lane still writes standard
+  candidate-stage artifacts
+- `data/llm_runs/{run_id}/run_manifest.json` when you want the prompt/request
+  side of the generation lane
+- `data/llm_evaluated/{slug}_{batch_slug}_llm_evaluated.jsonl` and
+  `data/llm_evaluations/{run_id}/run_manifest.json` when you want to inspect
+  additive synthesis or precursor assessment
 
-If you want all of that in one executable walkthrough format, open the
-[Guided Design Tutorial Notebook](../notebooks/guided_design_tutorial.ipynb).
-It keeps the same deterministic Sc-Zn path but adds more setup detail, helper
-cells, and explicit companion notes for the LLM surfaces.
+What the signal means:
+
+- `llm-generate` is an alternate proposal source that still feeds the same
+  screening and validation stages shown earlier
+- `llm-evaluate` is an additive assessment layer on ranked candidates; it does
+  not replace the deterministic validation or report evidence
+- the `.zomic` design and the deterministic `export-zomic -> generate ->
+  screen -> hifi-validate -> hifi-rank -> report` spine remain the cleanest
+  first path even when you later compare the LLM branch against it
+
+For the broader architecture, see [LLM Integration](llm-integration.md) and the
+command reference in [Pipeline Stages](pipeline-stages.md).
+
+### 9.2 Why this branch switches to Al-Cu-Fe
+
+The next branch changes chemistry on purpose.
+
+The deterministic spine in this tutorial stays Sc-Zn because the checked
+programmatic visualization seam and the current watched-batch evidence chain are
+already anchored there. The translation and external benchmark branch switches
+to Al-Cu-Fe because the repo already ships checked fixture-backed benchmark
+artifacts, demo translation bundles, and example benchmark specs for that
+family.
+
+Treat this as a fixture-availability context switch, not as a new authority
+chain. The lesson is still the same: move through explicit artifact handoffs and
+read the loss posture or benchmark evidence honestly.
+
+### 9.3 Translation and external benchmark branch
+
+This branch hands work across four artifact roots:
+
+- `data/llm_translation_exports/` — exported CIF or material-string bundles plus
+  translation inventories and payloads
+- `data/benchmarks/llm_external_sets/` — frozen benchmark-set manifests plus
+  included/excluded inventories
+- `data/llm_external_models/` — registered external-target identity, environment
+  capture, and smoke artifacts
+- `data/benchmarks/llm_external/` — comparative benchmark summaries, scorecards,
+  and per-target results
+
+#### Export and inspect translated bundles
+
+```bash
+uv run mdisc llm-translate \
+  --config configs/systems/al_cu_fe.yaml \
+  --input data/ranked/al_cu_fe_ranked.jsonl \
+  --target cif \
+  --export-id al_cu_fe_ranked_cif_v1
+
+uv run mdisc llm-translate-inspect \
+  --manifest data/llm_translation_exports/al_cu_fe_ranked_cif_v1/manifest.json
+```
+
+What to inspect:
+
+- `data/llm_translation_exports/al_cu_fe_ranked_cif_v1/manifest.json`
+- `data/llm_translation_exports/al_cu_fe_ranked_cif_v1/inventory.jsonl`
+- the stage manifest under `data/manifests/`
+
+What the signal means:
+
+- this is an interoperability export, not a new source of truth
+- fidelity tiers and loss reasons tell you whether a row stayed periodic-safe or
+  became a weaker periodic proxy
+- the original candidate JSONL and Zomic/QC-native structure remain
+  authoritative
+
+See [LLM Translation Runbook](llm-translation-runbook.md) for the deeper export
+contract.
+
+#### Freeze and inspect one benchmark pack
+
+```bash
+uv run mdisc llm-translated-benchmark-freeze \
+  --spec configs/llm/al_cu_fe_translated_benchmark_freeze.yaml
+
+uv run mdisc llm-translated-benchmark-inspect \
+  --manifest data/benchmarks/llm_external_sets/al_cu_fe_translated_benchmark_v1/manifest.json
+```
+
+What to inspect:
+
+- `data/benchmarks/llm_external_sets/al_cu_fe_translated_benchmark_v1/manifest.json`
+- `data/benchmarks/llm_external_sets/al_cu_fe_translated_benchmark_v1/included.jsonl`
+- `data/benchmarks/llm_external_sets/al_cu_fe_translated_benchmark_v1/excluded.jsonl`
+
+What the signal means:
+
+- `included.jsonl` is the case slice the later benchmark is allowed to score
+- `excluded.jsonl` keeps mismatches and rejected rows visible instead of hiding
+  them
+- the freeze contract is the durable handoff from translation into benchmarking
+
+See [Translated Benchmark Runbook](llm-translated-benchmark-runbook.md) for the
+freeze contract and exclusion vocabulary.
+
+#### Register, inspect, and smoke-test the external target
+
+```bash
+uv run mdisc llm-register-external-target \
+  --spec configs/llm/al_cu_fe_external_cif_target.yaml
+
+uv run mdisc llm-inspect-external-target \
+  --model-id al_cu_fe_external_cif_demo
+
+uv run mdisc llm-smoke-external-target \
+  --model-id al_cu_fe_external_cif_demo
+```
+
+What to inspect:
+
+- `data/llm_external_models/al_cu_fe_external_cif_demo/registration.json`
+- `data/llm_external_models/al_cu_fe_external_cif_demo/environment.json`
+- `data/llm_external_models/al_cu_fe_external_cif_demo/smoke_check.json`
+
+What the signal means:
+
+- the shipped example specs are templates, so registration only succeeds after
+  you replace the placeholder local snapshot paths with a real downloaded model
+- `registration.json` is the immutable target identity
+- `environment.json` and `smoke_check.json` tell you whether the target is
+  currently reproducible and ready to benchmark
+
+See [External Target Runbook](llm-external-target-runbook.md) for the target
+registration boundary and failure posture.
+
+#### Run and inspect the comparative benchmark
+
+```bash
+uv run mdisc llm-external-benchmark \
+  --spec configs/llm/al_cu_fe_external_benchmark.yaml
+
+uv run mdisc llm-inspect-external-benchmark \
+  --summary data/benchmarks/llm_external/al_cu_fe_external_benchmark_v1/benchmark_summary.json
+```
+
+What to inspect:
+
+- `data/benchmarks/llm_external/al_cu_fe_external_benchmark_v1/benchmark_summary.json`
+- `data/benchmarks/llm_external/al_cu_fe_external_benchmark_v1/scorecard_by_case.jsonl`
+- `data/benchmarks/llm_external/al_cu_fe_external_benchmark_v1/targets/{target_id}/run_manifest.json`
+
+What the signal means:
+
+- the summary keeps exact/anchored evidence separate from approximate/lossy
+  diagnostics
+- excluded counts and smoke failures stay visible instead of disappearing
+- recommendation lines are advisory milestone evidence, not automatic promotion
+
+See [External Benchmark Runbook](llm-external-benchmark-runbook.md) for the full
+scorecard interpretation rules.
 
 ## 10. When to open desktop vZome
 
