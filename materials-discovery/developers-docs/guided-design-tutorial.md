@@ -523,7 +523,47 @@ What the signal means:
 See [External Benchmark Runbook](llm-external-benchmark-runbook.md) for the full
 scorecard interpretation rules.
 
-## 10. When to open desktop vZome
+## 10. Follow-on Workflow Families
+
+The two branches above are the detailed LLM paths for this page. The remaining
+workflow families stay explicit here, but they hand off quickly to the deeper
+operator references instead of turning this tutorial into a giant command list.
+
+### 10.1 Campaign governance
+
+Commands in this family:
+
+- `llm-suggest`
+- `llm-approve`
+- `llm-launch`
+- `llm-replay`
+- `llm-compare`
+
+Use this when you already have acceptance-pack or launch evidence and need an
+operator-governed campaign loop rather than another one-off branch walkthrough.
+The full governance flow lives in the [Operator Runbook](../RUNBOOK.md).
+
+### 10.2 Serving and checkpoint operations
+
+Commands in this family:
+
+- `llm-serving-benchmark`
+- `llm-register-checkpoint`
+- `llm-list-checkpoints`
+- `llm-promote-checkpoint`
+- `llm-retire-checkpoint`
+
+Use this when you need to compare serving lanes, register adapted checkpoints,
+or manage promotion and rollback decisions without changing the base candidate
+or benchmark contracts. The full lifecycle guidance also lives in the
+[Operator Runbook](../RUNBOOK.md).
+
+For this Phase 42 page, the Markdown tutorial is the extensive operator story.
+The [Guided Design Tutorial Notebook](../notebooks/guided_design_tutorial.ipynb)
+remains the more executable companion surface, and Phase 43 is where that
+notebook gets the denser inline walkthrough treatment.
+
+## 11. When to open desktop vZome
 
 Use the repo-owned preview first, then open desktop vZome only when the task
 actually needs authoring or deeper geometric inspection.
@@ -558,7 +598,7 @@ Deeper references:
 - [vZome Geometry Tutorial](vzome-geometry-tutorial.md)
 - [Zomic Language Reference](../../core/docs/ZomicReference.md)
 
-## 11. What a Good Next Iteration Looks Like
+## 12. What a Good Next Iteration Looks Like
 
 After you finish one pass through this tutorial:
 
