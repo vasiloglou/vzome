@@ -21,6 +21,12 @@ extensive operator story for the deterministic Sc-Zn spine, the repo-owned
 preview handoff, the same-system LLM lane, the translation and external
 benchmark branch, and the lighter governance or serving follow-ons.
 
+Phase 43 is now complete. It turned `guided_design_tutorial.ipynb` into the
+richest runnable companion for that same Sc-Zn spine, wired the repo-owned
+preview helper into the notebook path, expanded the notebook's LLM branches,
+and aligned the docs map around the tutorial, notebook, and standalone
+visualization reference.
+
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
 - multi-source materials ingestion
@@ -42,15 +48,13 @@ LLM operating surface:
 **Current Milestone:** `v1.81` — Extensive LLM Tutorial and Programmatic
 vZome Visualization MVP
 
-**Status:** active; Phase 42 completed on 2026-04-15.
+**Status:** all planned phases complete; ready for audit and archival as of
+2026-04-15.
 
 **Current focus:**
-- deepen `notebooks/guided_design_tutorial.ipynb` into the most executable
-  companion for the same Sc-Zn deterministic spine and shipped LLM branches
-- reuse the repo-owned preview/helper path inside the notebook without
-  reintroducing a desktop-only happy path
-- keep the Markdown tutorial and notebook roles explicit: Markdown as the
-  operator story, notebook as the richer runnable companion
+- audit the completed `v1.81` milestone against its tutorial-first scope
+- archive the milestone now that all three planned phases are complete
+- clean up completed phase artifacts after the archive lands
 
 **Most Recent Shipped Milestone:** `v1.8` — LLM Narrative Enrichment and
 Notebook Tutorial MVP
@@ -205,14 +209,18 @@ instead of living in separate prototypes.
   replaces, what desktop vZome still handles, and why the Al-Cu-Fe
   interoperability branch is a fixture-backed context switch rather than a new
   authority chain.
+- Validated in Phase 43: the guided tutorial notebook now renders or launches
+  the checked design programmatically through the repo-owned preview helper
+  with a documented preview-versus-refresh path.
+- Validated in Phase 43: the notebook is now the richest walkthrough for the
+  shipped LLM surfaces, and the docs map distinguishes the Markdown tutorial,
+  notebook companion, and standalone visualization reference clearly.
 
 ### Active
 
-- Operators can use the guided tutorial notebook to render or launch the
-  checked design programmatically with a documented preview or execute path.
-- Operators can use the notebook as the most detailed walkthrough for the
-  shipped LLM surfaces, with richer command, artifact, and branch guidance
-  than the Markdown tutorial alone.
+- No active `v1.81` scope remains. All milestone requirements are now
+  validated, and the project is in audit/archive/cleanup mode for this
+  milestone.
 
 ### Out of Scope
 
@@ -263,8 +271,8 @@ instead of living in separate prototypes.
   including the `vzome-viewer` web component and checked `.vZome` /
   `.shapes.json` preview assets.
 - The Markdown tutorial now uses the repo-owned preview path as the normal
-  checked inspection surface, while the notebook still needs the richer
-  programmatic preview and branch walkthrough integration planned for Phase 43.
+  checked inspection surface, and the notebook now deepens that same path with
+  richer preview controls and fuller LLM branch walkthroughs.
 - The `core` module already exposes file-backed export machinery such as
   `ExportZomicLabeledGeometry`, `ShapesJsonExporter`, and `GitHubShare`, which
   suggests the new visualization milestone should extend existing geometry and
@@ -341,4 +349,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-15 after Phase 42 completion*
+*Last updated: 2026-04-15 after Phase 43 completion*
