@@ -95,6 +95,6 @@ the geometry through the existing vZome/Zomic path.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 37. Deep-Dive Provenance Audit and Tutorial Scope | 1/1 | Complete   | 2026-04-15 |
+| 37. Deep-Dive Provenance Audit and Tutorial Scope | 1/1 | Complete    | 2026-04-15 |
 | 38. Narrative Refresh and Cross-Linked Deep Dive | 0/TBD | Not started | - |
 | 39. Guided Design, Evaluation, and Visualization Tutorial | 0/TBD | Not started | - |
