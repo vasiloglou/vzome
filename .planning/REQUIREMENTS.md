@@ -28,15 +28,15 @@ reinforce each other instead of living in separate prototypes.
 
 ### Guided Workflow Tutorial
 
-- [ ] **OPS-19**: Operator can follow one end-to-end example that starts from a
+- [x] **OPS-19**: Operator can follow one end-to-end example that starts from a
   current Zomic-backed or built-in system config, runs the design/generate/
   evaluate/report workflow, and records the key artifact paths produced at each
   stage.
-- [ ] **OPS-20**: The tutorial explains how to interpret the current screening,
+- [x] **OPS-20**: The tutorial explains how to interpret the current screening,
   validation, ranking, and report artifacts for the worked example so a reader
   can understand what properties, evidence, and risk signals the tool exposes
   today.
-- [ ] **OPS-21**: The tutorial shows how to take the same example into the
+- [x] **OPS-21**: The tutorial shows how to take the same example into the
   vZome/Zomic visualization path, including the exact design/export artifacts
   or commands needed to inspect the geometry with the existing toolchain.
 
@@ -71,9 +71,9 @@ reinforce each other instead of living in separate prototypes.
 | DOC-01 | Phase 37 | Complete |
 | DOC-02 | Phase 38 | Complete |
 | DOC-03 | Phase 38 | Complete |
-| OPS-19 | Phase 39 | Pending |
-| OPS-20 | Phase 39 | Pending |
-| OPS-21 | Phase 39 | Pending |
+| OPS-19 | Phase 39 | Complete |
+| OPS-20 | Phase 39 | Complete |
+| OPS-21 | Phase 39 | Complete |
 
 **Coverage:**
 - v1.7 requirements: 6 total
@@ -82,4 +82,4 @@ reinforce each other instead of living in separate prototypes.
 
 ---
 *Requirements defined: 2026-04-14*
-*Last updated: 2026-04-15 after completing Phase 38*
+*Last updated: 2026-04-15 after completing Phase 39*

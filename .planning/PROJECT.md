@@ -4,10 +4,11 @@
 
 `v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, and `v1.6` are shipped.
 
-The translator-backed benchmark milestone is now archived. Phases 37 and 38 of
-`v1.7` are complete, so the milestone now has both a git-backed provenance
-audit for the deep-dive refresh and a refreshed long-form source document that
-matches the shipped workflow through `v1.6`. Phase 39 is next.
+The translator-backed benchmark milestone is now archived. All three phases of
+`v1.7` are now complete, so the milestone has a git-backed provenance audit, a
+refreshed long-form source document that matches the shipped workflow through
+`v1.6`, and a checked Sc-Zn tutorial that teaches the current design,
+evaluation, and visualization path.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -67,17 +68,17 @@ Archive references:
 **Current Milestone:** `v1.7` — Documentation Refresh and Guided Design
 Tutorial MVP
 
-**Status:** Phases 37 and 38 completed on 2026-04-15. Phase 39, guided design,
-evaluation, and visualization tutorial, is next.
+**Status:** Phases 37, 38, and 39 completed on 2026-04-15. `v1.7` is ready for
+milestone audit and archival.
 
 **Current focus:**
-- produce one checked, end-to-end tutorial that starts from the locked Sc-Zn
-  Zomic-backed path and runs the current design, evaluation, and report stages
-- show how the same worked example flows through the existing vZome/Zomic
-  visualization path and which artifact remains the geometry authority
-- keep the milestone CLI-first, file-backed, and documentation-centric now
-  that the deep-dive narrative has been refreshed for the shipped `v1.6`
-  surface
+- archive the completed `v1.7` milestone cleanly once the milestone audit is
+  recorded
+- carry the refreshed deep-dive and the new guided tutorial forward as the
+  documentation baseline for the next milestone
+- keep the next milestone honest about whether it expands campaigns,
+  checkpoints, benchmark automation, or chemistry scope beyond the current
+  CLI-first documentation surface
 
 **Most Recent Shipped Milestone:** `v1.6` — Translator-Backed External
 Materials-LLM Benchmark MVP

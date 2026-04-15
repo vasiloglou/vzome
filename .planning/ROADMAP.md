@@ -29,9 +29,9 @@ the current ones more legible, evidence-backed, and teachable.
 - [x] **Phase 38: Narrative Refresh and Cross-Linked Deep Dive** - Refresh the
   long-form source document so it accurately reflects the shipped system and
   points at the current docs surface. (completed 2026-04-15)
-- [ ] **Phase 39: Guided Design, Evaluation, and Visualization Tutorial** -
+- [x] **Phase 39: Guided Design, Evaluation, and Visualization Tutorial** -
   Publish a step-by-step example for using the current tool to design,
-  evaluate, and visualize candidate materials.
+  evaluate, and visualize candidate materials. (completed 2026-04-15)
 
 ## Phase Details
 
@@ -92,7 +92,10 @@ the geometry through the existing vZome/Zomic path.
   3. The tutorial includes explicit visualization steps using the existing
      vZome/Zomic toolchain for the same example and makes clear which artifact
      is the geometry authority at each step.
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 39-01-PLAN.md - Publish the Sc-Zn Zomic-backed guided tutorial, docs index link, and required Progress.md update.
 
 ## Progress
 
@@ -100,4 +103,4 @@ the geometry through the existing vZome/Zomic path.
 |-------|----------------|--------|-----------|
 | 37. Deep-Dive Provenance Audit and Tutorial Scope | 1/1 | Complete    | 2026-04-15 |
 | 38. Narrative Refresh and Cross-Linked Deep Dive | 1/1 | Complete    | 2026-04-15 |
-| 39. Guided Design, Evaluation, and Visualization Tutorial | 0/TBD | Not started | - |
+| 39. Guided Design, Evaluation, and Visualization Tutorial | 1/1 | Complete    | 2026-04-15 |
