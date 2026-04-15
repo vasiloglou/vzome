@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-15 | Phase 39 guided tutorial | Added `developers-docs/guided-design-tutorial.md`, linked it from the docs index, and documented the Sc-Zn Zomic-backed design -> evaluate -> visualize path with concrete artifact interpretation and vZome handoff guidance |
 | 2026-04-15 | Phase 38 narrative refresh | Refreshed `developers-docs/podcast-deep-dive-source.md` so it describes the shipped workflow through `v1.6`, links to the current runbooks and reference docs, and removes stale command-count, capability, and quantitative claims from the older deep-dive draft |
 | 2026-04-07 | Phase 36 Plan 03 comparative benchmark docs and example spec | Added a committed `al_cu_fe_external_benchmark.yaml`, shipped an operator runbook for benchmark execute or inspect plus artifact interpretation, and refreshed the configuration reference, pipeline stages guide, and docs index so the Phase 36 workflow is discoverable beside the Phase 34 and Phase 35 handoff docs |
 | 2026-04-07 | Phase 36 Plan 03 comparative benchmark CLI workflow | Added `mdisc llm-external-benchmark` and `mdisc llm-inspect-external-benchmark`, kept the repo-standard exit-code-2 failure posture for missing or invalid benchmark specs and summaries, and locked the new operator surface with focused CLI plus root-help coverage |
@@ -165,6 +166,8 @@
 
 - 00:11 EDT — Refreshed the long-form narrative in `developers-docs/podcast-deep-dive-source.md` for Phase 38.
 - Reframed the stale seven-stage and four-layer story around the shipped `v1.6` workflow families, added cross-links to the current runbooks and reference docs, softened or removed volatile repo-state counts, and made explicit that no new workflow capability was added.
+- 00:21 EDT — Added the Phase 39 guided tutorial and wired it into the docs index.
+- Documented the locked Sc-Zn Zomic-backed path from `export-zomic` through `report`, added artifact interpretation notes for the current screening, validation, and report snapshots, and made the `.zomic` -> raw export -> orbit-library -> candidate geometry authority chain explicit for vZome iteration.
 
 ### 2026-04-07
 
