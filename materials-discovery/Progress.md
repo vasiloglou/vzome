@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-15 | Phase 42 extensive guided tutorial expansion | Reframed `developers-docs/guided-design-tutorial.md` around the Sc-Zn deterministic spine, added the explicit branch map, moved the repo-owned preview path into the main walkthrough, and replaced the old desktop-only visualization handoff with a clearer repo-preview versus desktop-vZome boundary |
 | 2026-04-15 | Phase 41 raw export viewer | Added `materials_discovery.visualization` for checked raw-export loading and standalone HTML rendering, shipped `mdisc preview-zomic` with browser and label-toggle options, documented the programmatic preview path, and replaced the happy-path desktop-only visualization handoff with a repo-owned viewer surface |
 | 2026-04-15 | Phase 40 LLM docs and notebook tutorial | Enriched `developers-docs/guided-design-tutorial.md` with explicit LLM workflow framing, added `notebooks/guided_design_tutorial.ipynb` as the detailed notebook companion, updated the docs index and deep-dive cross-links, and refreshed the podcast PDF alongside the new docs surface |
 | 2026-04-15 | Podcast deep-dive PDF export | Re-rendered `developers-docs/podcast-deep-dive-source.pdf` from the refreshed markdown so the updated long-form narrative can be shared as a standalone PDF artifact |
@@ -167,6 +168,8 @@
 
 ### 2026-04-15
 
+- 13:14 EDT — Started the Phase 42 guided tutorial expansion.
+- Reframed the Markdown tutorial around the Sc-Zn deterministic spine, added a branch map that keeps the LLM lanes attached to the same evidence chain, moved the repo-owned `preview-zomic` path into the main walkthrough, and rewrote the old visualization section into a clearer repo-preview versus desktop-vZome handoff.
 - 12:09 EDT — Added the Phase 41 raw-export viewer, preview CLI wrapper, and programmatic-visualization reference doc.
 - Created `materials_discovery.visualization` for typed raw-export loading, normalized view-model generation, and standalone HTML rendering, added `mdisc preview-zomic` so the checked Sc-Zn geometry can be previewed without opening desktop vZome for the common read-only path, and documented the new repo-owned preview workflow in `developers-docs/programmatic-zomic-visualization.md` plus the existing Zomic workflow page.
 - 01:01 EDT — Extended the docs stack with Phase 40 LLM framing and a notebook companion for the guided tutorial.

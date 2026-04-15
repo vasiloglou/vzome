@@ -1,8 +1,9 @@
 # Guided Design Tutorial
 
-One checked Sc-Zn walkthrough for designing a Zomic-backed motif, generating
-candidates, evaluating the resulting structures, and keeping the geometry tied
-to the existing vZome/Zomic workflow.
+One checked Sc-Zn walkthrough for designing a Zomic-backed motif, previewing
+the compiled geometry, generating candidates, evaluating the resulting
+structures, and keeping the geometry tied to the existing vZome/Zomic
+workflow.
 
 Use this page with the [Operator Runbook](../RUNBOOK.md),
 [Pipeline Stages](pipeline-stages.md), and
@@ -10,11 +11,12 @@ Use this page with the [Operator Runbook](../RUNBOOK.md),
 worked example so the commands, artifacts, and geometry authority chain do not
 drift.
 
-Use the Markdown page when you want the shortest checked walkthrough. Use the
+Use the Markdown page when you want the extensive operator story for the
+checked workflow. Use the
 [Guided Design Tutorial Notebook](../notebooks/guided_design_tutorial.ipynb)
-when you want cell-by-cell execution helpers, inline artifact inspection, and a
-more detailed companion explanation of where the repo's additive LLM workflows
-fit.
+when you want the more executable companion surface with cell-by-cell helpers.
+Phase 43 will deepen that notebook further; this page keeps the whole story
+legible in one checked document.
 
 ## 1. Before You Start
 
@@ -46,7 +48,26 @@ The geometry authority chain in this tutorial is:
 
 `sc_zn_tsai_bridge.zomic` -> `sc_zn_tsai_bridge.raw.json` -> `sc_zn_tsai_bridge.json` -> candidate and report artifacts
 
-The `.zomic` file is the design source. Everything downstream is derived from it.
+This page treats that as the `Sc-Zn deterministic spine`:
+`.zomic -> raw export -> orbit library -> candidates`.
+
+The `.zomic` file is the design source. Everything downstream is derived from
+it.
+
+That deterministic spine is the authority chain even when you branch into the
+repo's LLM workflows later. The branches attach to the same operator story
+instead of replacing it:
+
+```text
+Sc-Zn deterministic spine
+  .zomic -> export-zomic -> preview-zomic -> generate -> screen -> hifi-validate -> hifi-rank -> report
+    |
+    +-- same-system companion lane
+    |     llm-generate -> llm-evaluate
+    |
+    `-- translation/external benchmark branch
+          llm-translate -> llm-translated-benchmark-freeze -> llm-register-external-target -> llm-external-benchmark
+```
 
 ## 3. Export the Zomic Design
 
@@ -82,6 +103,51 @@ What to look for:
 - As of 2026-04-15, the checked raw export contains 52 labeled points and 52
   segments, and the orbit-library JSON expands to 5 anchor-selected orbits with
   100 total sites.
+
+### 3.1 Preview the Checked Geometry
+
+The normal read-only preview path now stays inside the repo:
+
+```bash
+uv run mdisc preview-zomic --design designs/zomic/sc_zn_tsai_bridge.yaml
+```
+
+That command keeps the same export contract and writes a standalone viewer next
+to the checked raw export:
+
+- `data/prototypes/generated/sc_zn_tsai_bridge.viewer.html`
+
+If you want the same preview flow from Python, use the library helper directly:
+
+```python
+from pathlib import Path
+
+from materials_discovery.visualization import preview_zomic_design
+
+summary = preview_zomic_design(
+    Path("designs/zomic/sc_zn_tsai_bridge.yaml"),
+    show_labels=True,
+)
+```
+
+What to inspect:
+
+- the viewer should reflect the checked raw export, not an alternate geometry
+  source
+- the header metadata should still point back to the `.zomic` source and the
+  current symmetry
+- the output is a preview seam over `.zomic -> raw export -> orbit library ->
+  candidates`, not a replacement for that chain
+
+What the signal means:
+
+- `preview-zomic` is now the happy-path inspection tool for the checked design
+- `export-zomic` remains the authoritative refresh path
+- the preview helper is the reusable surface for notebook or script-driven
+  inspection, not a separate service
+
+For the focused reference page, see
+[Programmatic Zomic Visualization](programmatic-zomic-visualization.md).
 
 ## 4. Generate Candidates
 
@@ -312,24 +378,19 @@ If you want all of that in one executable walkthrough format, open the
 It keeps the same deterministic Sc-Zn path but adds more setup detail, helper
 cells, and explicit companion notes for the LLM surfaces.
 
-## 10. Visualize with vZome and Zomic
+## 10. When to open desktop vZome
 
-Use the existing vZome/Zomic path for visualization and iteration:
+Use the repo-owned preview first, then open desktop vZome only when the task
+actually needs authoring or deeper geometric inspection.
 
-1. Keep `designs/zomic/sc_zn_tsai_bridge.zomic` as the editable geometry source.
-2. Open the vZome desktop app's Zomic editor and load that `.zomic` file.
-3. Run the script in the editor to inspect the current motif directly in the
-   existing vZome workflow.
-4. After you edit the script, rerun:
+| Question | Use this first | Why |
+|----------|----------------|-----|
+| "Do I want to inspect the current checked geometry quickly?" | `uv run mdisc preview-zomic --design designs/zomic/sc_zn_tsai_bridge.yaml` | The repo preview is the normal checked read-only inspection path. |
+| "Do I need to refresh the compiled artifacts after editing the design?" | `uv run mdisc export-zomic --design designs/zomic/sc_zn_tsai_bridge.yaml` | `export-zomic` is still the authority for raw export and orbit-library refresh. |
+| "Do I need to edit the actual motif, try manual orbit changes, or inspect the script interactively?" | Desktop vZome | Desktop vZome remains the authoring and deeper-inspection tool. |
+| "Do I need `.vZome` or `.shapes.json` browser parity?" | Not available in this milestone | `.vZome` and `.shapes.json` parity are future work, not current behavior. |
 
-   ```bash
-   uv run mdisc export-zomic --design designs/zomic/sc_zn_tsai_bridge.yaml
-   ```
-
-5. Regenerate candidates only after the raw export and orbit-library JSON are
-   current again.
-
-Use these files for different questions:
+Keep these files straight while iterating:
 
 | File | Use it for |
 |------|-------------|
@@ -338,7 +399,15 @@ Use these files for different questions:
 | `data/prototypes/generated/sc_zn_tsai_bridge.json` | Inspecting the orbit library actually consumed by `mdisc generate` |
 | `data/candidates/sc_zn_candidates.jsonl` | Inspecting downstream decorated material candidates, not the original geometry source |
 
-If you need deeper reference while iterating, use:
+When you do need desktop vZome:
+
+1. Open the Zomic editor and load `designs/zomic/sc_zn_tsai_bridge.zomic`.
+2. Make the geometry change there.
+3. Re-run `uv run mdisc export-zomic --design designs/zomic/sc_zn_tsai_bridge.yaml`.
+4. Re-run `preview-zomic` or the downstream pipeline only after the raw export
+   and orbit-library JSON are current again.
+
+Deeper references:
 
 - [Zomic Design Workflow](zomic-design-workflow.md)
 - [vZome Geometry Tutorial](vzome-geometry-tutorial.md)
