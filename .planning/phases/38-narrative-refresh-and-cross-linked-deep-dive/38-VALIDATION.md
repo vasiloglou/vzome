@@ -19,7 +19,7 @@ created: 2026-04-15
 |----------|-------|
 | **Framework** | grep-based docs validation plus `pytest` smoke when command references materially change |
 | **Config file** | `materials-discovery/pyproject.toml` |
-| **Quick run command** | `bash -lc 'git diff --check && rg -n "4,238 commits|seven commands|60 modules|7,200|21 test files|Seven Pipeline Stages|four execution layers|targets three real alloy systems|full seven-stage pipeline" materials-discovery/developers-docs/podcast-deep-dive-source.md'` |
+| **Quick run command** | `bash -lc 'git diff --check && ! rg -n "4,238 commits|seven commands|60 modules|7,200|21 test files|Seven Pipeline Stages|four execution layers|targets three real alloy systems|full seven-stage pipeline" materials-discovery/developers-docs/podcast-deep-dive-source.md'` |
 | **Full suite command** | `bash -lc 'git diff --check && rg -n "export-zomic|llm-serving-benchmark|llm-list-checkpoints|llm-promote-checkpoint|llm-retire-checkpoint|llm-translate|llm-translated-benchmark-freeze|llm-register-external-target|llm-external-benchmark" materials-discovery/developers-docs/podcast-deep-dive-source.md && rg -n "RUNBOOK.md|pipeline-stages.md|backend-system.md|zomic-design-workflow.md|llm-translation-runbook.md|llm-external-benchmark-runbook.md" materials-discovery/developers-docs/podcast-deep-dive-source.md && rg -n "future work|not shipped|planned beyond|not yet|operator-governed" materials-discovery/developers-docs/podcast-deep-dive-source.md && rg -n "^\| .* \|.*Narrative Refresh.*\|^\| .* \|.*podcast-deep-dive.*" materials-discovery/Progress.md && cd materials-discovery && uv run pytest tests/test_cli.py -q'` |
 | **Estimated runtime** | ~15 seconds |
 
