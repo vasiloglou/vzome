@@ -2,8 +2,8 @@
 
 ## Current State
 
-`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, `v1.6`, and `v1.7` are
-shipped.
+`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, `v1.6`, `v1.7`, and `v1.8`
+are shipped.
 
 The documentation refresh milestone is now archived. It delivered a git-backed
 provenance audit for `podcast-deep-dive-source.md`, a refreshed long-form
@@ -11,9 +11,10 @@ deep-dive aligned with the shipped workflow through `v1.6`, and a checked
 Sc-Zn tutorial that teaches the current design, evaluation, and visualization
 path.
 
-`v1.8` is the next docs-centered follow-up milestone. Its job is to make the
-repo's shipped LLM surface more legible in the narrative/tutorial stack and to
-turn the checked guided tutorial into a notebook with fuller execution detail.
+The `v1.8` docs-and-notebook follow-up milestone is now archived. It made the
+shipped LLM workflow families legible across the deep dive and guided tutorial,
+added a detailed notebook companion for the checked Sc-Zn walkthrough, and
+refreshed the shareable PDF/docs-hub cross-links for that documentation stack.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -26,49 +27,40 @@ LLM operating surface:
   rollback, and retirement guidance
 - the groundwork for a new interoperability layer between Zomic-native
   candidates and external downloadable materials LLM formats
-
-## Current Milestone: v1.8 LLM Narrative Enrichment and Notebook Tutorial MVP
-
-**Goal:** Enrich the current docs/tutorial bundle so it explains the shipped
-LLM surface clearly and offers a detailed notebook version of the guided
-workflow.
-
-**Target features:**
-- make the repo's additive LLM surfaces legible beside the deterministic
-  geometry -> generate -> validate spine
-- expand the docs set so readers can see how generation/evaluation, campaign
-  governance, serving, checkpoints, translation, and external benchmarking fit
-  into the shipped system
-- convert the guided Sc-Zn walkthrough into a notebook with runnable cells,
-  setup notes, artifact inspection, and fuller commentary
+- an LLM-aware docs/tutorial layer that connects the deterministic Sc-Zn
+  walkthrough to campaigns, serving, checkpoints, translation, and external
+  benchmarking without overstating future automation
 
 ## Current Milestone Status
 
-**Current Milestone:** `v1.8` — LLM Narrative Enrichment and Notebook Tutorial
-MVP
+**Current Milestone:** None active
 
-**Status:** Phase 40 completed on 2026-04-15. The milestone is ready for audit
-and archival.
+**Status:** `v1.8` — LLM Narrative Enrichment and Notebook Tutorial MVP —
+shipped and archived on 2026-04-15.
 
 **Current focus:**
-- audit the completed v1.8 scope against DOC-04, DOC-05, OPS-22, OPS-23, and
-  OPS-24
-- archive the milestone once the phase summary, verification, and milestone
-  audit are in place
-- keep the milestone framing documentation-first rather than turning it into a
-  hidden product-surface expansion
+- define the next milestone from the archived docs-and-notebook baseline
+- decide whether the next expansion should emphasize campaign automation,
+  checkpoint/training workflows, benchmark-driven evaluation, or chemistry
+  scope
+- keep future scope honest about what is already shipped versus still planned
 
-**Most Recent Shipped Milestone:** `v1.7` — Documentation Refresh and Guided
-Design Tutorial MVP
+**Most Recent Shipped Milestone:** `v1.8` — LLM Narrative Enrichment and
+Notebook Tutorial MVP
 
-**Delivered in `v1.7`:**
-- git-backed provenance audit for `podcast-deep-dive-source.md`
-- refreshed deep-dive narrative with current-source cross-links and explicit
-  shipped-versus-future boundaries
-- guided Sc-Zn tutorial for design, evaluation, report interpretation, and
-  vZome/Zomic visualization handoff
+**Delivered in `v1.8`:**
+- guided tutorial refresh that maps the deterministic Sc-Zn path to the
+  shipped additive LLM workflow families
+- notebook companion for the same checked example with setup notes, shell
+  helpers, artifact inspection, and LLM companion guidance
+- docs-hub and deep-dive cross-links plus a refreshed PDF export for the
+  updated narrative/tutorial stack
 
 Archive references:
+- `.planning/milestones/v1.8-ROADMAP.md`
+- `.planning/milestones/v1.8-REQUIREMENTS.md`
+- `.planning/milestones/v1.8-phases/`
+- `.planning/v1.8-MILESTONE-AUDIT.md`
 - `.planning/milestones/v1.7-ROADMAP.md`
 - `.planning/milestones/v1.7-REQUIREMENTS.md`
 - `.planning/milestones/v1.7-phases/`
@@ -190,16 +182,15 @@ instead of living in separate prototypes.
   including a git-backed deep-dive provenance audit, a refreshed long-form
   narrative aligned to the shipped workflow through `v1.6`, and a checked
   Sc-Zn tutorial that ties design, evaluation, and visualization together.
+- Validated in v1.8: the docs/tutorial stack now explicitly separates the
+  deterministic Sc-Zn workflow spine from the additive LLM workflow families,
+  includes a detailed notebook companion, and cross-links the deep dive, docs
+  hub, and operator runbooks for the shipped LLM surface.
 
 ### Active
 
-- Make the shipped LLM surface explicit across the deep-dive/tutorial docs
-  without overstating future automation or treating every workflow as mandatory
-  for one deterministic run.
-- Convert the guided tutorial into a detailed notebook with setup guidance,
-  execution cells, artifact interpretation, and clear environment assumptions.
-- Cross-link the notebook and Markdown tutorial so readers can choose the right
-  format without losing the current checked Sc-Zn path.
+- No active milestone requirements. Run `$gsd-new-milestone` to define the
+  next milestone-specific requirements.
 
 ### Out of Scope
 
@@ -290,6 +281,7 @@ instead of living in separate prototypes.
 | Start Project 3 v1.7 with documentation refresh and one guided workflow tutorial | The shipped tool surface now exceeds the accuracy and usability of the long-form narrative docs, and a checked tutorial lowers onboarding risk before more automation work | ✓ Good |
 | Archive `v1.7` after the documentation refresh and guided tutorial ship | The docs baseline is now trustworthy enough to support the next milestone without carrying active milestone clutter | ✓ Good |
 | Start Project 3 v1.8 with LLM-aware docs enrichment and notebook conversion | The current docs now need one follow-up pass that makes the shipped LLM story legible and gives operators a richer executable tutorial format before more product expansion | ✓ Good |
+| Archive `v1.8` after the LLM-aware docs refresh and notebook companion ship | The narrative/tutorial stack is now coherent enough to support the next milestone without leaving an active docs-only milestone open | ✓ Good |
 
 ## Evolution
 
@@ -309,4 +301,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-15 after completing Phase 40*
+*Last updated: 2026-04-15 after archiving shipped milestone v1.8*

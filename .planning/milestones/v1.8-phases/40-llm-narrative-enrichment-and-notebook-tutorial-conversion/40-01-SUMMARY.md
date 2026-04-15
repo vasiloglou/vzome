@@ -76,7 +76,7 @@ completed: 2026-04-15
 
 The implementation for Tasks 1-3 landed together in one atomic phase commit:
 
-1. **Task 1-3: Publish the LLM-aware tutorial companion, notebook, and planning closeout** - `fd922629` (`docs(40): add llm-aware tutorial notebook`)
+1. **Task 1-3: Publish the LLM-aware tutorial companion, notebook, and planning closeout** - `9b1dc9de` (`docs(40): add llm-aware tutorial notebook`)
 
 ## Files Created/Modified
 

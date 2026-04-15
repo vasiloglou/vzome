@@ -1,5 +1,35 @@
 # Milestones
 
+## v1.8 — LLM Narrative Enrichment and Notebook Tutorial MVP
+
+**Status:** Shipped on 2026-04-15
+**Phases:** 40
+**Plans:** 1
+
+### Highlights
+
+- Added explicit LLM workflow-family framing across the deep dive and guided
+  tutorial without reshaping the checked deterministic Sc-Zn path.
+
+- Published a detailed guided-design notebook companion with setup guidance,
+  shell helpers, artifact inspection, and a bounded LLM companion lane.
+
+- Wired the notebook and refreshed tutorial back into the docs hub and
+  deep-dive source, then regenerated the shareable PDF and logged the same
+  change in `materials-discovery/Progress.md`.
+
+- Closed the milestone with a passing audit and a clean planning archive for
+  the next milestone.
+
+### Archives
+
+- `.planning/milestones/v1.8-ROADMAP.md`
+- `.planning/milestones/v1.8-REQUIREMENTS.md`
+- `.planning/milestones/v1.8-phases/`
+- `.planning/v1.8-MILESTONE-AUDIT.md`
+
+---
+
 ## v1.7 — Documentation Refresh and Guided Design Tutorial MVP
 
 **Status:** Shipped on 2026-04-15
