@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-15 | Notebook venv requirements and execution check | Added `requirements.txt` for the shipped `guided_design_tutorial.ipynb` preview-safe path and notebook tooling, then validated it by creating a fresh virtual environment and executing the notebook end to end without depending on the project’s existing uv-managed environment |
 | 2026-04-15 | Guided tutorial notebook artifact glossary | Added a compact end-of-notebook artifact glossary to `notebooks/guided_design_tutorial.ipynb` covering raw exports, orbit libraries, manifests, translation inventories and freeze outputs, external-target registration artifacts, and benchmark summaries or scorecards so readers can decode the tutorial outputs without jumping into runbooks first |
 | 2026-04-15 | Guided tutorial notebook documentation pass | Expanded `notebooks/guided_design_tutorial.ipynb` with clearer helper/setup conventions, richer stage-by-stage artifact interpretation around the deterministic and same-system Sc-Zn lanes, and explicit step documentation for translation, translated benchmark freezing, external-target registration, and external benchmarking without changing the underlying workflow |
 | 2026-04-15 | Phase 43 notebook visualization and llm walkthrough integration | Rebuilt `notebooks/guided_design_tutorial.ipynb` into the richest runnable companion for the checked Sc-Zn walkthrough, added the repo-owned programmatic preview-vs-refresh path plus deeper same-system and translation/external benchmark guidance, aligned the docs map with the standalone visualization reference, and refreshed the notebook/visualization cross-links without reintroducing a desktop-only happy path |
@@ -171,6 +172,12 @@
 
 ### 2026-04-15
 
+- 16:48 EDT — Added `materials-discovery/requirements.txt` for the guided tutorial notebook.
+- Captured the external package set needed for the shipped preview-safe notebook path plus notebook execution tooling, while leaving optional MLIP and heavier workflow extras out of this first-pass venv file.
+- 16:48 EDT — Started a clean-venv execution check for `notebooks/guided_design_tutorial.ipynb`.
+- Using the new requirements file to build a fresh virtual environment and run the notebook end to end so the dependency list reflects a real execution path rather than a guessed one.
+- 16:57 EDT — Verified the notebook in a fresh Python 3.11 virtual environment.
+- Installed `materials-discovery/requirements.txt` into a throwaway Python 3.11 venv, registered a temporary kernel, and executed `notebooks/guided_design_tutorial.ipynb` successfully with `NOTEBOOK_EXEC_OK`, confirming that the requirements file matches the shipped preview-safe notebook path.
 - 15:46 EDT — Added an artifact glossary near the end of `notebooks/guided_design_tutorial.ipynb`.
 - Documented the common JSON and JSONL artifact families in the tutorial itself, including raw exports, orbit libraries, manifests, translated-bundle inventories and freeze decisions, external-target registration or smoke files, and the benchmark summary or scorecard or run-result outputs that readers inspect next.
 - 15:41 EDT — Started a documentation pass on `notebooks/guided_design_tutorial.ipynb`.

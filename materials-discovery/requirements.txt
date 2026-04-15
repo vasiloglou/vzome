@@ -1,0 +1,16 @@
+# Requires Python 3.11+ to match materials-discovery/pyproject.toml.
+#
+# Dependencies needed to execute notebooks/guided_design_tutorial.ipynb
+# in its shipped preview-safe mode from a plain Python virtual environment.
+#
+# Optional heavyweight extras for full MLIP, ingestion, or data-analysis
+# workflows are intentionally excluded here.
+
+typer>=0.12.3
+pydantic>=2.8.0
+pyyaml>=6.0.1
+numpy>=1.26.4
+ipython>=8.27.0
+ipykernel>=6.29.5
+notebook>=7.2.2
+nbclient>=0.10.0
