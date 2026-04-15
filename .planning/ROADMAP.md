@@ -71,7 +71,10 @@ present capabilities.
   3. The deep-dive source cross-links the current runbook and reference docs so
      it can serve as an external narrative without becoming the only technical
      source of truth.
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 38-01-PLAN.md - Refresh the deep-dive narrative, source links, future-work labels, and required Progress.md entry.
 
 ### Phase 39: Guided Design, Evaluation, and Visualization Tutorial
 **Goal**: Operators can follow one reproducible example that uses the current
@@ -96,5 +99,5 @@ the geometry through the existing vZome/Zomic path.
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 37. Deep-Dive Provenance Audit and Tutorial Scope | 1/1 | Complete    | 2026-04-15 |
-| 38. Narrative Refresh and Cross-Linked Deep Dive | 0/TBD | Not started | - |
+| 38. Narrative Refresh and Cross-Linked Deep Dive | 0/1 | Not started | - |
 | 39. Guided Design, Evaluation, and Visualization Tutorial | 0/TBD | Not started | - |
