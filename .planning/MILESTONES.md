@@ -1,5 +1,36 @@
 # Milestones
 
+## v1.81 — Extensive LLM Tutorial and Programmatic vZome Visualization MVP
+
+**Status:** Shipped on 2026-04-15
+**Phases:** 41-43
+**Plans:** 3
+
+### Highlights
+
+- Added a repo-owned programmatic preview surface for the checked Sc-Zn design
+  through `materials_discovery.visualization` and `mdisc preview-zomic`.
+
+- Expanded the guided tutorial into one extensive operator walkthrough that
+  keeps the deterministic Sc-Zn spine visible while mapping the shipped LLM
+  workflow families and the desktop-vZome boundary.
+
+- Turned the notebook into the richest runnable companion, including
+  programmatic preview wiring and the full translated and external benchmark
+  inspect chain.
+
+- Closed the milestone with passing phase verifications, a passing milestone
+  audit, and a clean planning archive.
+
+### Archives
+
+- `.planning/milestones/v1.81-ROADMAP.md`
+- `.planning/milestones/v1.81-REQUIREMENTS.md`
+- `.planning/milestones/v1.81-phases/`
+- `.planning/v1.81-MILESTONE-AUDIT.md`
+
+---
+
 ## v1.8 — LLM Narrative Enrichment and Notebook Tutorial MVP
 
 **Status:** Shipped on 2026-04-15
@@ -246,4 +277,5 @@
 
 - `.planning/milestones/v1.0-ROADMAP.md`
 - `.planning/milestones/v1.0-REQUIREMENTS.md`
+- `.planning/milestones/v1.0-phases/`
 - `.planning/milestones/v1.0-MILESTONE-AUDIT.md`

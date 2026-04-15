@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.81
 milestone_name: Extensive LLM Tutorial and Programmatic vZome Visualization MVP
-current_phase: 43
-current_phase_name: Notebook Visualization and LLM Walkthrough Integration
-current_plan: 1 complete
-status: ready for lifecycle
-stopped_at: phase 43 complete; milestone ready for audit
-last_updated: "2026-04-15T17:39:14Z"
+current_phase: null
+current_phase_name: no active phase
+current_plan: Complete
+status: archived
+stopped_at: v1.81 milestone archived; ready for next milestone
+last_updated: "2026-04-15T17:44:49Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 3
@@ -26,23 +26,21 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 **Core value:** Build one reproducible system where trusted materials data,
 physically grounded no-DFT validation, and LLM-guided structure generation
 reinforce each other instead of living in separate prototypes.
-**Current focus:** Milestone lifecycle for `v1.81`.
-All planned phases are complete; the next step is audit, archive, and cleanup
-for the documentation-and-visualization milestone.
+**Current focus:** Define the next milestone from the archived `v1.81`
+tutorial and programmatic visualization baseline
 
 ## Current Position
 
-Phase: 43 (Notebook Visualization and LLM Walkthrough Integration) — COMPLETE
-Plan: 1/1 complete
-Current Milestone: v1.81
-Most Recent Milestone: v1.8
-Current Phase: 43
-Current Phase Name: Notebook Visualization and LLM Walkthrough Integration
-Total Phases in Current Milestone: 3
-Current Plan: 1 complete
-Status: Phase 43 complete; milestone ready for audit
+Current Milestone: none active
+Most Recent Milestone: v1.81
+Current Phase: none active
+Current Phase Name: no active phase
+Total Phases in Most Recent Milestone: 3
+Current Plan: Complete
+Status: v1.81 shipped and archived; ready for next milestone definition
 Last activity: 2026-04-15
-Last Activity Description: Phase 43 complete; all milestone phases implemented
+Last Activity Description: v1.81 milestone archived and planning reset for the
+next milestone
 
 Progress: [##########] 100%
 
@@ -50,7 +48,7 @@ Progress: [##########] 100%
 
 **Velocity:**
 
-- Total plans completed: 110
+- Total plans completed: 113
 - Average duration: archived across prior milestones
 - Total execution time: archived across prior milestones
 
@@ -67,6 +65,7 @@ Progress: [##########] 100%
 | v1.6 | 34-36 | 9 | Shipped |
 | v1.7 | 37-39 | 3 | Shipped |
 | v1.8 | 40 | 1 | Shipped |
+| v1.81 | 41-43 | 3 | Shipped |
 | Phase 37 P01 | 537 | 3 tasks | 2 files |
 | Phase 38 P01 | 289 | 3 tasks | 2 files |
 | Phase 39 P01 | 0b8 | 3 tasks | 3 files |
@@ -165,6 +164,9 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
 - [Phase 43]: Keep the full translation/external benchmark branch explicit in
   the notebook, but stay preview-first and artifact-honest when bundled
   external-target runtimes are not available.
+- [Milestone v1.81]: Archive the tutorial-and-visualization milestone now that
+  the preview surface, extensive Markdown walkthrough, and notebook companion
+  are verified and shipped.
 
 ### Pending Todos
 
@@ -172,11 +174,11 @@ None yet.
 
 ### Blockers/Concerns
 
-No active blockers. The next step is the milestone lifecycle sequence: audit,
-archive, and cleanup for `v1.81`.
+No active blockers. No milestone is currently active; next work is to define
+the next milestone with `$gsd-new-milestone`.
 
 ## Session Continuity
 
-Last session: 2026-04-15T17:39:14Z
-Stopped at: phase 43 complete; milestone ready for audit
-Resume file: .planning/ROADMAP.md
+Last session: 2026-04-15T17:44:49Z
+Stopped at: v1.81 milestone archived; ready for next milestone
+Resume file: .planning/PROJECT.md

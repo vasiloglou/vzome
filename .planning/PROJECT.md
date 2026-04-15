@@ -2,8 +2,8 @@
 
 ## Current State
 
-`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, `v1.6`, `v1.7`, and `v1.8`
-are shipped.
+`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, `v1.6`, `v1.7`, `v1.8`, and
+`v1.81` are shipped.
 
 The documentation refresh milestone is now archived. It delivered a git-backed
 provenance audit for `podcast-deep-dive-source.md`, a refreshed long-form
@@ -16,16 +16,11 @@ shipped LLM workflow families legible across the deep dive and guided tutorial,
 added a detailed notebook companion for the checked Sc-Zn walkthrough, and
 refreshed the shareable PDF/docs-hub cross-links for that documentation stack.
 
-Phase 42 is now complete. It turned `guided-design-tutorial.md` into the
-extensive operator story for the deterministic Sc-Zn spine, the repo-owned
-preview handoff, the same-system LLM lane, the translation and external
-benchmark branch, and the lighter governance or serving follow-ons.
-
-Phase 43 is now complete. It turned `guided_design_tutorial.ipynb` into the
-richest runnable companion for that same Sc-Zn spine, wired the repo-owned
-preview helper into the notebook path, expanded the notebook's LLM branches,
-and aligned the docs map around the tutorial, notebook, and standalone
-visualization reference.
+The `v1.81` tutorial-and-visualization follow-up milestone is now archived. It
+added a repo-owned programmatic preview surface for the checked Sc-Zn design,
+expanded the guided tutorial into the extensive operator walkthrough for the
+shipped LLM branches, and turned the notebook into the richest runnable
+companion for that same preview-first workflow.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -45,29 +40,35 @@ LLM operating surface:
 
 ## Current Milestone Status
 
-**Current Milestone:** `v1.81` — Extensive LLM Tutorial and Programmatic
-vZome Visualization MVP
+**Current Milestone:** None active
 
-**Status:** all planned phases complete; ready for audit and archival as of
-2026-04-15.
+**Status:** `v1.81` — Extensive LLM Tutorial and Programmatic vZome
+Visualization MVP — shipped and archived on 2026-04-15.
 
 **Current focus:**
-- audit the completed `v1.81` milestone against its tutorial-first scope
-- archive the milestone now that all three planned phases are complete
-- clean up completed phase artifacts after the archive lands
+- define the next milestone from the archived `v1.81` tutorial and
+  programmatic-preview baseline
+- decide whether the next expansion should emphasize checkpoint training,
+  campaign automation, source QA, or a broader visualization surface
+- keep future scope honest about what is already shipped versus still planned
 
-**Most Recent Shipped Milestone:** `v1.8` — LLM Narrative Enrichment and
-Notebook Tutorial MVP
+**Most Recent Shipped Milestone:** `v1.81` — Extensive LLM Tutorial and
+Programmatic vZome Visualization MVP
 
-**Delivered in `v1.8`:**
-- guided tutorial refresh that maps the deterministic Sc-Zn path to the
-  shipped additive LLM workflow families
-- notebook companion for the same checked example with setup notes, shell
-  helpers, artifact inspection, and LLM companion guidance
-- docs-hub and deep-dive cross-links plus a refreshed PDF export for the
-  updated narrative/tutorial stack
+**Delivered in `v1.81`:**
+- repo-owned programmatic preview for the checked Sc-Zn design through
+  `materials_discovery.visualization` and `mdisc preview-zomic`
+- extensive Markdown tutorial coverage for the deterministic Sc-Zn spine, the
+  same-system LLM lane, the translation and external benchmark branch, and the
+  desktop-vZome boundary
+- notebook companion with preview helpers, richer branch guidance, and the
+  full translated and external benchmark inspect chain
 
 Archive references:
+- `.planning/milestones/v1.81-ROADMAP.md`
+- `.planning/milestones/v1.81-REQUIREMENTS.md`
+- `.planning/milestones/v1.81-phases/`
+- `.planning/v1.81-MILESTONE-AUDIT.md`
 - `.planning/milestones/v1.8-ROADMAP.md`
 - `.planning/milestones/v1.8-REQUIREMENTS.md`
 - `.planning/milestones/v1.8-phases/`
@@ -78,6 +79,7 @@ Archive references:
 - `.planning/v1.7-MILESTONE-AUDIT.md`
 - `.planning/milestones/v1.0-ROADMAP.md`
 - `.planning/milestones/v1.0-REQUIREMENTS.md`
+- `.planning/milestones/v1.0-phases/`
 - `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
 - `.planning/milestones/v1.1-ROADMAP.md`
 - `.planning/milestones/v1.1-REQUIREMENTS.md`
@@ -197,30 +199,25 @@ instead of living in separate prototypes.
   deterministic Sc-Zn workflow spine from the additive LLM workflow families,
   includes a detailed notebook companion, and cross-links the deep dive, docs
   hub, and operator runbooks for the shipped LLM surface.
-- Validated in Phase 41: the checked Sc-Zn raw export now has a repo-owned
+- Validated in `v1.81`: the checked Sc-Zn raw export now has a repo-owned
   programmatic preview surface via `materials_discovery.visualization` and
   `mdisc preview-zomic`, removing the happy-path requirement to open desktop
   vZome just to inspect the current checked geometry.
-- Validated in Phase 42: the checked Markdown tutorial now keeps the Sc-Zn
+- Validated in `v1.81`: the checked Markdown tutorial now keeps the Sc-Zn
   deterministic spine visible while demonstrating the repo-owned preview path,
-  same-system LLM lane, translation and external benchmark branch, and the
-  lighter governance or serving follow-ons in one operator story.
-- Validated in Phase 42: the docs now state clearly what the repo preview
-  replaces, what desktop vZome still handles, and why the Al-Cu-Fe
-  interoperability branch is a fixture-backed context switch rather than a new
-  authority chain.
-- Validated in Phase 43: the guided tutorial notebook now renders or launches
-  the checked design programmatically through the repo-owned preview helper
-  with a documented preview-versus-refresh path.
-- Validated in Phase 43: the notebook is now the richest walkthrough for the
-  shipped LLM surfaces, and the docs map distinguishes the Markdown tutorial,
-  notebook companion, and standalone visualization reference clearly.
+  same-system LLM lane, translation and external benchmark branch, the lighter
+  governance or serving follow-ons, and the desktop-vZome boundary in one
+  operator story.
+- Validated in `v1.81`: the guided tutorial notebook now renders or launches
+  the checked design programmatically through the repo-owned preview helper,
+  teaches the full translated and external benchmark inspect chain, and sits
+  clearly alongside the Markdown tutorial and standalone visualization
+  reference.
 
 ### Active
 
-- No active `v1.81` scope remains. All milestone requirements are now
-  validated, and the project is in audit/archive/cleanup mode for this
-  milestone.
+- No active milestone requirements. Run `$gsd-new-milestone` to define the
+  next milestone-specific requirements.
 
 ### Out of Scope
 
@@ -274,9 +271,9 @@ instead of living in separate prototypes.
   checked inspection surface, and the notebook now deepens that same path with
   richer preview controls and fuller LLM branch walkthroughs.
 - The `core` module already exposes file-backed export machinery such as
-  `ExportZomicLabeledGeometry`, `ShapesJsonExporter`, and `GitHubShare`, which
-  suggests the new visualization milestone should extend existing geometry and
-  preview contracts rather than inventing a parallel format.
+  `ExportZomicLabeledGeometry`, `ShapesJsonExporter`, and `GitHubShare`, and
+  the shipped programmatic preview path now extends those existing geometry and
+  preview contracts instead of inventing a parallel format.
 
 ## Constraints
 
@@ -330,6 +327,7 @@ instead of living in separate prototypes.
 | Archive `v1.8` after the LLM-aware docs refresh and notebook companion ship | The narrative/tutorial stack is now coherent enough to support the next milestone without leaving an active docs-only milestone open | ✓ Good |
 | Start Project 3 `v1.81` with extensive LLM tutorial coverage and programmatic vZome visualization | The docs stack is now coherent enough to deepen the tutorial and remove the last manual desktop visualization handoff before broader automation work resumes | ✓ Good |
 | Prefer reusing the repo-owned online viewer and preview/export contracts before building a bespoke visualization service | The repo already contains `vzome-viewer`, `.shapes.json` preview handling, and export machinery, so the lowest-risk milestone path is reuse plus packaging | ✓ Good |
+| Archive `v1.81` after the preview surface, extensive tutorial, and notebook companion ship | The tutorial-and-visualization baseline is now strong enough to support the next milestone without keeping documentation-only scope open | ✓ Good |
 
 ## Evolution
 
@@ -349,4 +347,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-15 after Phase 43 completion*
+*Last updated: 2026-04-15 after v1.81 archival*
