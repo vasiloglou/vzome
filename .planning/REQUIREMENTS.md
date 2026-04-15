@@ -69,18 +69,18 @@ reinforce each other instead of living in separate prototypes.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| VIS-01 | TBD | Pending |
-| VIS-02 | TBD | Pending |
-| DOC-06 | TBD | Pending |
-| DOC-07 | TBD | Pending |
-| OPS-25 | TBD | Pending |
-| OPS-26 | TBD | Pending |
+| VIS-01 | Phase 41 | Pending |
+| VIS-02 | Phase 41 | Pending |
+| DOC-06 | Phase 42 | Pending |
+| DOC-07 | Phase 42 | Pending |
+| OPS-25 | Phase 43 | Pending |
+| OPS-26 | Phase 43 | Pending |
 
 **Coverage:**
 - v1.81 requirements: 6 total
-- Mapped to phases: 0
-- Unmapped: 6
+- Mapped to phases: 6
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-15*
-*Last updated: 2026-04-15 after initial definition*
+*Last updated: 2026-04-15 after roadmap creation*
