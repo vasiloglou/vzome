@@ -332,6 +332,190 @@ def test_cli_export_zomic_success(monkeypatch: MonkeyPatch, tmp_path: Path) -> N
     assert "orbit_library_path" in result.stdout
 
 
+def _preview_raw_export_payload() -> dict[str, object]:
+    return {
+        "zomic_file": "designs/zomic/demo.zomic",
+        "parser": "antlr4",
+        "symmetry": "icosahedral",
+        "labeled_points": [
+            {"label": "core.01", "source_label": "core.01", "cartesian": [0.0, 0.0, 0.0]},
+            {"label": "shell.01", "source_label": "shell.01", "cartesian": [2.0, 0.0, 0.0]},
+        ],
+        "segments": [
+            {
+                "signature": "core-shell",
+                "start": {"components": [{"evaluate": 0.0}, {"evaluate": 0.0}, {"evaluate": 0.0}]},
+                "end": {"components": [{"evaluate": 2.0}, {"evaluate": 0.0}, {"evaluate": 0.0}]},
+            }
+        ],
+    }
+
+
+def _write_preview_raw_export(tmp_path: Path) -> Path:
+    raw_export_path = tmp_path / "demo.raw.json"
+    raw_export_path.write_text(
+        json.dumps(_preview_raw_export_payload()),
+        encoding="utf-8",
+    )
+    return raw_export_path
+
+
+def test_cli_preview_zomic_design_writes_viewer(
+    monkeypatch: MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = CliRunner()
+    design_path = tmp_path / "demo.yaml"
+    design_path.write_text("zomic_file: demo.zomic\n", encoding="utf-8")
+    raw_export_path = _write_preview_raw_export(tmp_path)
+    captured: dict[str, object] = {}
+
+    def _fake_export(design: Path, output_path=None, force: bool = False) -> ZomicExportSummary:
+        del output_path
+        captured["design"] = design
+        captured["force"] = force
+        return ZomicExportSummary(
+            design_path=str(design),
+            zomic_file="demo.zomic",
+            raw_export_path=str(raw_export_path),
+            orbit_library_path=str(tmp_path / "demo.json"),
+            labeled_site_count=2,
+            orbit_count=2,
+        )
+
+    monkeypatch.setattr("materials_discovery.visualization.viewer.export_zomic_design", _fake_export)
+
+    result = runner.invoke(
+        app,
+        [
+            "preview-zomic",
+            "--design",
+            str(design_path),
+            "--show-labels",
+        ],
+    )
+
+    payload = json.loads(result.stdout)
+
+    assert result.exit_code == 0
+    assert captured == {"design": design_path.resolve(), "force": False}
+    assert payload["design_path"] == str(design_path.resolve())
+    assert payload["raw_export_path"] == str(raw_export_path.resolve())
+    assert payload["html_path"].endswith("demo.viewer.html")
+    assert Path(payload["html_path"]).exists()
+    assert payload["labeled_point_count"] == 2
+    assert payload["segment_count"] == 1
+    assert payload["opened_browser"] is False
+    assert payload["show_labels"] is True
+
+
+def test_cli_preview_zomic_raw_bypasses_export(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    runner = CliRunner()
+    raw_export_path = _write_preview_raw_export(tmp_path)
+    out_path = tmp_path / "custom-preview.html"
+
+    def _unexpected_export(*args, **kwargs):
+        raise AssertionError("export_zomic_design should not be called for --raw previews")
+
+    monkeypatch.setattr(
+        "materials_discovery.visualization.viewer.export_zomic_design",
+        _unexpected_export,
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "preview-zomic",
+            "--raw",
+            str(raw_export_path),
+            "--out",
+            str(out_path),
+        ],
+    )
+
+    payload = json.loads(result.stdout)
+
+    assert result.exit_code == 0
+    assert payload["design_path"] is None
+    assert payload["raw_export_path"] == str(raw_export_path.resolve())
+    assert payload["html_path"] == str(out_path.resolve())
+    assert payload["show_labels"] is False
+    assert out_path.exists()
+
+
+def test_cli_preview_zomic_rejects_missing_inputs() -> None:
+    runner = CliRunner()
+
+    result = runner.invoke(app, ["preview-zomic"])
+
+    assert result.exit_code == 2
+    assert "either --design or --raw" in result.stderr
+
+
+def test_cli_preview_zomic_rejects_both_design_and_raw(tmp_path: Path) -> None:
+    runner = CliRunner()
+    design_path = tmp_path / "demo.yaml"
+    raw_export_path = _write_preview_raw_export(tmp_path)
+    design_path.write_text("zomic_file: demo.zomic\n", encoding="utf-8")
+
+    result = runner.invoke(
+        app,
+        [
+            "preview-zomic",
+            "--design",
+            str(design_path),
+            "--raw",
+            str(raw_export_path),
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "only one of --design or --raw" in result.stderr
+
+
+def test_cli_preview_zomic_open_browser_uses_monkeypatched_browser(
+    monkeypatch: MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    runner = CliRunner()
+    design_path = tmp_path / "demo.yaml"
+    design_path.write_text("zomic_file: demo.zomic\n", encoding="utf-8")
+    raw_export_path = _write_preview_raw_export(tmp_path)
+    browser_open: dict[str, str] = {}
+
+    monkeypatch.setattr(
+        "materials_discovery.visualization.viewer.export_zomic_design",
+        lambda design, output_path=None, force=False: ZomicExportSummary(
+            design_path=str(design),
+            zomic_file="demo.zomic",
+            raw_export_path=str(raw_export_path),
+            orbit_library_path=str(tmp_path / "demo.json"),
+            labeled_site_count=2,
+            orbit_count=2,
+        ),
+    )
+    monkeypatch.setattr(
+        "materials_discovery.visualization.viewer.webbrowser.open",
+        lambda url: browser_open.setdefault("url", url) or True,
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "preview-zomic",
+            "--design",
+            str(design_path),
+            "--open-browser",
+        ],
+    )
+
+    payload = json.loads(result.stdout)
+
+    assert result.exit_code == 0
+    assert browser_open["url"].startswith("file://")
+    assert payload["opened_browser"] is True
+
+
 def test_cli_invalid_config_returns_2() -> None:
     runner = CliRunner()
 

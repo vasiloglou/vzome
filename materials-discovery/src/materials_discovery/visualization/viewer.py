@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import html
 import json
+import webbrowser
 from pathlib import Path
 from typing import Any
 
 from materials_discovery.common.io import ensure_parent
+from materials_discovery.common.schema import ZomicPreviewSummary
+from materials_discovery.generator.zomic_bridge import export_zomic_design
 from materials_discovery.visualization.raw_export import RawExportViewModel, build_view_model
 
 _VIEWER_TEMPLATE = """<!doctype html>
@@ -340,3 +343,62 @@ def write_raw_export_viewer(
     ensure_parent(resolved_out_path)
     resolved_out_path.write_text(html_text, encoding="utf-8")
     return resolved_out_path
+
+
+def _browser_opened(path: Path, *, open_browser: bool) -> bool:
+    if not open_browser:
+        return False
+    return bool(webbrowser.open(path.resolve().as_uri()))
+
+
+def preview_raw_export(
+    raw_export_path: Path,
+    *,
+    out_path: Path | None = None,
+    open_browser: bool = False,
+    show_labels: bool = False,
+) -> ZomicPreviewSummary:
+    resolved_raw_export_path = raw_export_path.resolve()
+    html_path = write_raw_export_viewer(
+        resolved_raw_export_path,
+        out_path=out_path,
+        show_labels=show_labels,
+    )
+    view_model = build_view_model(resolved_raw_export_path)
+    return ZomicPreviewSummary(
+        design_path=None,
+        raw_export_path=str(resolved_raw_export_path),
+        html_path=str(html_path),
+        labeled_point_count=view_model.labeled_point_count,
+        segment_count=view_model.segment_count,
+        opened_browser=_browser_opened(html_path, open_browser=open_browser),
+        show_labels=show_labels,
+    )
+
+
+def preview_zomic_design(
+    design_path: Path,
+    *,
+    out_path: Path | None = None,
+    force: bool = False,
+    open_browser: bool = False,
+    show_labels: bool = False,
+) -> ZomicPreviewSummary:
+    resolved_design_path = design_path.resolve()
+    export_summary = export_zomic_design(resolved_design_path, force=force)
+    raw_export_path = Path(export_summary.raw_export_path).resolve()
+    html_path = write_raw_export_viewer(
+        raw_export_path,
+        out_path=out_path,
+        show_labels=show_labels,
+    )
+    view_model = build_view_model(raw_export_path)
+    return ZomicPreviewSummary(
+        design_path=str(resolved_design_path),
+        raw_export_path=str(raw_export_path),
+        html_path=str(html_path),
+        labeled_point_count=view_model.labeled_point_count,
+        segment_count=view_model.segment_count,
+        opened_browser=_browser_opened(html_path, open_browser=open_browser),
+        show_labels=show_labels,
+    )

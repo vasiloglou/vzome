@@ -698,6 +698,16 @@ class ZomicExportSummary(BaseModel):
     orbit_count: int
 
 
+class ZomicPreviewSummary(BaseModel):
+    design_path: str | None = None
+    raw_export_path: str
+    html_path: str
+    labeled_point_count: int
+    segment_count: int
+    opened_browser: bool
+    show_labels: bool
+
+
 class ScreenSummary(BaseModel):
     input_count: int
     relaxed_count: int

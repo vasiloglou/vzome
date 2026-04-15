@@ -51,6 +51,7 @@ from materials_discovery.common.schema import (
     ScreenSummary,
     SystemConfig,
     ZomicExportSummary,
+    ZomicPreviewSummary,
 )
 from materials_discovery.common.stage_metrics import (
     generation_metrics,
@@ -174,6 +175,7 @@ from materials_discovery.llm.storage import (
 )
 from materials_discovery.llm.suggest import write_llm_suggestions
 from materials_discovery.llm.runtime import resolve_llm_adapter, validate_llm_adapter_ready
+from materials_discovery.visualization import preview_raw_export, preview_zomic_design
 
 app = typer.Typer(add_completion=False, help="No-DFT materials discovery CLI scaffold")
 
@@ -2076,6 +2078,45 @@ def export_zomic_command(
         typer.echo(summary.model_dump_json())
     except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
         _emit_error(f"export-zomic failed: {exc}")
+        raise typer.Exit(code=2)
+
+
+@app.command("preview-zomic")
+def preview_zomic_command(
+    design: Path | None = typer.Option(None, "--design", exists=False, dir_okay=False),
+    raw: Path | None = typer.Option(None, "--raw", exists=False, dir_okay=False),
+    out: Path | None = typer.Option(None, "--out", exists=False, dir_okay=False),
+    force: bool = typer.Option(False, "--force"),
+    open_browser: bool = typer.Option(False, "--open-browser/--no-open-browser"),
+    show_labels: bool = typer.Option(False, "--show-labels/--hide-labels"),
+) -> None:
+    """Render a raw Zomic export to a standalone HTML preview."""
+    try:
+        if design is None and raw is None:
+            raise ValueError("preview-zomic requires either --design or --raw")
+        if design is not None and raw is not None:
+            raise ValueError("preview-zomic accepts only one of --design or --raw")
+
+        summary: ZomicPreviewSummary
+        if design is not None:
+            summary = preview_zomic_design(
+                design,
+                out_path=out,
+                force=force,
+                open_browser=open_browser,
+                show_labels=show_labels,
+            )
+        else:
+            assert raw is not None
+            summary = preview_raw_export(
+                raw,
+                out_path=out,
+                open_browser=open_browser,
+                show_labels=show_labels,
+            )
+        typer.echo(summary.model_dump_json())
+    except (FileNotFoundError, ValidationError, ValueError, RuntimeError) as exc:
+        _emit_error(f"preview-zomic failed: {exc}")
         raise typer.Exit(code=2)
 
 
