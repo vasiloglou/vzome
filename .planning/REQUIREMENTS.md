@@ -9,10 +9,10 @@ reinforce each other instead of living in separate prototypes.
 
 ### Visualization Runtime
 
-- [ ] **VIS-01**: Operator can generate or refresh a checked visualization
+- [x] **VIS-01**: Operator can generate or refresh a checked visualization
   artifact for the Sc-Zn Zomic design from repo commands or documented helpers
   without manually opening desktop vZome.
-- [ ] **VIS-02**: Operator can render that checked visualization artifact
+- [x] **VIS-02**: Operator can render that checked visualization artifact
   programmatically through a standalone library or thin wrapper with a stable
   usage path.
 
@@ -69,8 +69,8 @@ reinforce each other instead of living in separate prototypes.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| VIS-01 | Phase 41 | Pending |
-| VIS-02 | Phase 41 | Pending |
+| VIS-01 | Phase 41 | Complete |
+| VIS-02 | Phase 41 | Complete |
 | DOC-06 | Phase 42 | Pending |
 | DOC-07 | Phase 42 | Pending |
 | OPS-25 | Phase 43 | Pending |

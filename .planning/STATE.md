@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.81
 milestone_name: Extensive LLM Tutorial and Programmatic vZome Visualization MVP
-current_phase: "41"
-current_phase_name: Programmatic Visualization Artifact and Library Surface
-current_plan: "01"
-status: phase planned
-stopped_at: phase 41 replanned with review feedback; ready for execution
-last_updated: "2026-04-15T15:59:30Z"
+current_phase: "42"
+current_phase_name: Extensive Guided Tutorial Expansion
+current_plan: Not started
+status: ready for planning
+stopped_at: phase 41 complete; phase 42 ready for planning
+last_updated: "2026-04-15T16:14:42.900Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 1
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -26,24 +26,25 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 **Core value:** Build one reproducible system where trusted materials data,
 physically grounded no-DFT validation, and LLM-guided structure generation
 reinforce each other instead of living in separate prototypes.
-**Current focus:** Expand the guided tutorial and notebook into an extensive
-LLM-aware walkthrough and replace the manual desktop visualization handoff with
-a programmatic vZome path
+**Current focus:** Phase 42 — extensive-guided-tutorial-expansion. Expand the
+checked tutorial around the new repo-owned preview seam and make the shipped LLM
+workflow families legible inside one deeper walkthrough.
 
 ## Current Position
 
+Phase: 42 (extensive guided tutorial expansion) — READY FOR PLANNING
+Plan: Not started
 Current Milestone: v1.81
 Most Recent Milestone: v1.8
-Current Phase: 41
-Current Phase Name: Programmatic Visualization Artifact and Library Surface
+Current Phase: 42
+Current Phase Name: Extensive Guided Tutorial Expansion
 Total Phases in Current Milestone: 3
-Current Plan: 01
-Status: Phase 41 planned; ready for execution
+Current Plan: Not started
+Status: Phase 41 complete; Phase 42 ready for planning
 Last activity: 2026-04-15
-Last Activity Description: Phase 41 replanned with review feedback for the
-raw-export viewer and preview wrapper
+Last Activity Description: Phase 41 complete, transitioned to Phase 42
 
-Progress: [----------] 0%
+Progress: [###-------] 33%
 
 ## Performance Metrics
 
@@ -118,21 +119,31 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
 - [Phase 41]: Use the checked `*.raw.json` labeled-geometry export as the
   official v1.81 visualization input; defer richer `.vZome` and
   `.shapes.json` compatibility to later work.
+
 - [Phase 41]: Make the public usage path Python-first for docs and notebooks,
   backed by a small JavaScript rendering layer rather than a default service.
+
 - [Phase 41]: Optimize the MVP for clear tutorial geometry rather than desktop
   vZome visual parity.
+
 - [Phase 41]: Reuse `mdisc export-zomic` as the official artifact refresh path
   unless a paper-thin helper is needed solely for tutorial ergonomics.
+
 - [Phase 41]: Implement the first programmatic preview path inside
   `materials_discovery.visualization` and keep `online/` as reference material
   rather than a required runtime dependency for the tutorial MVP.
+
 - [Phase 41]: Expose the viewer through one thin `preview-zomic` CLI wrapper
   over the Python library instead of building a service or a second render
   stack.
+
 - [Phase 41 review]: Replan execution so malformed segment coordinates raise
   `ValueError`, simultaneous `--design` and `--raw` inputs are rejected, and
   the checked Sc-Zn raw export gets a smoke-test expectation when present.
+- [Phase 41]: Ship `materials_discovery.visualization`,
+  `mdisc preview-zomic`, and a standalone HTML viewer so the checked Sc-Zn
+  design can be previewed programmatically without a mandatory desktop-vZome
+  handoff.
 
 ### Pending Todos
 
@@ -140,12 +151,12 @@ None yet.
 
 ### Blockers/Concerns
 
-No active blockers. The main execution risk is keeping Phase 41 focused on a
-small tutorial-first visualization surface instead of drifting into a broader
-viewer or service project.
+No active blockers. The next execution risk is keeping Phase 42 tutorial work
+tied to the shipped visualization seam instead of letting the walkthrough drift
+back into a manual desktop-only path or a shallow LLM catalog.
 
 ## Session Continuity
 
 Last session: 2026-04-15T15:06:49Z
-Stopped at: phase 41 replanned with review feedback; ready for execution
-Resume file: .planning/phases/41-programmatic-visualization-artifact-and-library-surface/41-01-PLAN.md
+Stopped at: phase 41 complete; phase 42 ready for planning
+Resume file: .planning/ROADMAP.md

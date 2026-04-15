@@ -1,9 +1,9 @@
 ---
 phase: 41
 slug: programmatic-visualization-artifact-and-library-surface
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: approved
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-15
 ---
 
@@ -38,9 +38,9 @@ created: 2026-04-15
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 41-01-01 | 01 | 1 | VIS-02 | unit | `cd materials-discovery && uv run pytest tests/test_zomic_visualization.py -q` | ❌ W0 | ⬜ pending |
-| 41-01-02 | 01 | 1 | VIS-01, VIS-02 | cli | `cd materials-discovery && uv run pytest tests/test_cli.py -q -k "preview_zomic or export_zomic"` | ✅ | ⬜ pending |
-| 41-01-03 | 01 | 1 | VIS-01, VIS-02 | docs + policy | `bash -lc 'rg -n "preview-zomic|sc_zn_tsai_bridge.raw.json|desktop vZome|\\.vZome|\\.shapes.json" materials-discovery/developers-docs/programmatic-zomic-visualization.md materials-discovery/developers-docs/zomic-design-workflow.md && rg -n "Phase 41 raw export viewer" materials-discovery/Progress.md'` | ❌ W0 | ⬜ pending |
+| 41-01-01 | 01 | 1 | VIS-02 | unit | `cd materials-discovery && uv run pytest tests/test_zomic_visualization.py -q` | ✅ | ✅ green |
+| 41-01-02 | 01 | 1 | VIS-01, VIS-02 | cli | `cd materials-discovery && uv run pytest tests/test_cli.py -q -k "preview_zomic or export_zomic"` | ✅ | ✅ green |
+| 41-01-03 | 01 | 1 | VIS-01, VIS-02 | docs + policy | `bash -lc 'rg -n "preview-zomic|sc_zn_tsai_bridge.raw.json|desktop vZome|\\.vZome|\\.shapes.json" materials-discovery/developers-docs/programmatic-zomic-visualization.md materials-discovery/developers-docs/zomic-design-workflow.md && rg -n "Phase 41 raw export viewer" materials-discovery/Progress.md'` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -48,9 +48,9 @@ created: 2026-04-15
 
 ## Wave 0 Requirements
 
-- [ ] `materials-discovery/tests/test_zomic_visualization.py` — focused coverage for VIS-02 raw export loading, malformed segment rejection, and a guarded smoke test against `sc_zn_tsai_bridge.raw.json`
-- [ ] `materials-discovery/tests/test_cli.py` — preview-zomic command cases for VIS-01 and VIS-02, including both-provided input rejection and patched browser opening
-- [ ] Existing pytest + Typer infrastructure covers the phase after those test additions
+- [x] `materials-discovery/tests/test_zomic_visualization.py` — focused coverage for VIS-02 raw export loading, malformed segment rejection, and a guarded smoke test against `sc_zn_tsai_bridge.raw.json`
+- [x] `materials-discovery/tests/test_cli.py` — preview-zomic command cases for VIS-01 and VIS-02, including both-provided input rejection and patched browser opening
+- [x] Existing pytest + Typer infrastructure covers the phase after those test additions
 
 ---
 
@@ -65,11 +65,11 @@ created: 2026-04-15
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved
