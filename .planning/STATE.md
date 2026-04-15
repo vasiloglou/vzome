@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Documentation Refresh and Guided Design Tutorial MVP
-current_phase: 39
-current_phase_name: guided design evaluation and visualization tutorial
+current_phase: null
+current_phase_name: no active phase
 current_plan: Complete
-status: completed
-stopped_at: All v1.7 phases complete; ready for milestone lifecycle
-last_updated: "2026-04-15T04:23:13Z"
-last_activity: 2026-04-15 -- Phase 39 complete, milestone ready for audit
+status: archived
+stopped_at: v1.7 milestone archived; ready for next milestone
+last_updated: "2026-04-15T04:40:35Z"
+last_activity: 2026-04-15
 progress:
   total_phases: 3
   completed_phases: 3
@@ -26,21 +26,21 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 **Core value:** Build one reproducible system where trusted materials data,
 physically grounded no-DFT validation, and LLM-guided structure generation
 reinforce each other instead of living in separate prototypes.
-**Current focus:** Milestone lifecycle after Phase 39 completion
+**Current focus:** Define the next milestone from the archived v1.7
+documentation baseline
 
 ## Current Position
 
-Current Milestone: v1.7
-Current Phase: 39
-Current Phase Name: guided design evaluation and visualization tutorial
-Total Phases: 3
+Current Milestone: none active
+Most Recent Milestone: v1.7
+Current Phase: none
+Current Phase Name: no active phase
+Total Phases in Most Recent Milestone: 3
 Current Plan: Complete
-Total Plans in Phase: 1
-Phase: 39 (guided design evaluation and visualization tutorial) — COMPLETE
-Plan: 1 completed
-Status: All v1.7 phases complete; ready for milestone audit and archival
-Last activity: 2026-04-15 -- Phase 39 complete, milestone ready for audit
-Last Activity Description: Phase 39 tutorial shipped and milestone execution completed
+Status: v1.7 shipped and archived; ready for next milestone definition
+Last activity: 2026-04-15
+Last Activity Description: v1.7 milestone archived and planning reset for the
+next milestone
 
 Progress: [##########] 100%
 
@@ -63,7 +63,7 @@ Progress: [##########] 100%
 | v1.4 | 28-30 | 9 | Shipped |
 | v1.5 | 31-33 | 9 | Shipped |
 | v1.6 | 34-36 | 9 | Shipped |
-| v1.7 | 37-39 | 3 | Complete |
+| v1.7 | 37-39 | 3 | Shipped |
 | Phase 37 P01 | 537 | 3 tasks | 2 files |
 | Phase 38 P01 | 289 | 3 tasks | 2 files |
 | Phase 39 P01 | 0b8 | 3 tasks | 3 files |
@@ -103,6 +103,7 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
 - [Phase 39]: Publish the guided tutorial as its own doc page and wire it into the docs index instead of overloading RUNBOOK.md or the deep-dive narrative.
 - [Phase 39]: Keep the geometry authority chain explicit: `.zomic` source first, then raw export, then orbit-library JSON, then downstream candidate artifacts.
 - [Phase 39]: Use the checked Sc-Zn snapshot to teach interpretation, even when the correct conclusion is "hold" rather than "promote".
+- [Milestone v1.7]: Archive the documentation refresh milestone now that the refreshed deep dive and guided tutorial are shipped and audited, and use them as the baseline for next-milestone scoping.
 
 ### Pending Todos
 
@@ -110,10 +111,11 @@ None yet.
 
 ### Blockers/Concerns
 
-No active blockers. All v1.7 phases are complete; next work is milestone audit and archival.
+No active blockers. No milestone is currently active; next work is to define
+the next milestone with `$gsd-new-milestone`.
 
 ## Session Continuity
 
-Last session: 2026-04-15T04:23:13Z
-Stopped at: All v1.7 phases complete; ready for milestone lifecycle
-Resume file: .planning/ROADMAP.md
+Last session: 2026-04-15T04:40:35Z
+Stopped at: v1.7 milestone archived; ready for next milestone
+Resume file: .planning/PROJECT.md

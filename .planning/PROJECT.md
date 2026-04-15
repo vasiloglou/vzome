@@ -2,13 +2,14 @@
 
 ## Current State
 
-`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, and `v1.6` are shipped.
+`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, `v1.6`, and `v1.7` are
+shipped.
 
-The translator-backed benchmark milestone is now archived. All three phases of
-`v1.7` are now complete, so the milestone has a git-backed provenance audit, a
-refreshed long-form source document that matches the shipped workflow through
-`v1.6`, and a checked Sc-Zn tutorial that teaches the current design,
-evaluation, and visualization path.
+The documentation refresh milestone is now archived. It delivered a git-backed
+provenance audit for `podcast-deep-dive-source.md`, a refreshed long-form
+deep-dive aligned with the shipped workflow through `v1.6`, and a checked
+Sc-Zn tutorial that teaches the current design, evaluation, and visualization
+path.
 
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
@@ -22,25 +23,35 @@ LLM operating surface:
 - the groundwork for a new interoperability layer between Zomic-native
   candidates and external downloadable materials LLM formats
 
-## Current Milestone: v1.7 Documentation Refresh and Guided Design Tutorial MVP
+## Current Milestone Status
 
-**Goal:** Refresh the long-form external narrative and publish one
-evidence-backed operator tutorial that shows how to design candidate materials,
-evaluate them with the current pipeline, and visualize the geometry in the
-existing vZome/Zomic toolchain.
+**Current Milestone:** None active
 
-**Target features:**
-- trace the origin of `podcast-deep-dive-source.md`, audit what shipped after
-  it, and use that evidence to refresh stale capability claims
-- update the deep-dive source so it accurately reflects the current CLI
-  surface, milestone history, and shipped translation and benchmark workflow
-- create a step-by-step tutorial with example commands, expected artifacts, and
-  interpretation notes for designing and evaluating candidate materials with
-  the current tool
-- show how the same example flows into the vZome/Zomic visualization path so
-  geometry and materials artifacts stay connected
+**Status:** `v1.7` — Documentation Refresh and Guided Design Tutorial MVP —
+shipped and archived on 2026-04-15.
+
+**Current focus:**
+- define the next milestone from the refreshed documentation baseline
+- decide whether the next expansion should emphasize campaign automation,
+  checkpoint/training workflows, benchmark-driven evaluation, or chemistry
+  scope
+- keep future scope honest about what is already shipped versus still planned
+
+**Most Recent Shipped Milestone:** `v1.7` — Documentation Refresh and Guided
+Design Tutorial MVP
+
+**Delivered in `v1.7`:**
+- git-backed provenance audit for `podcast-deep-dive-source.md`
+- refreshed deep-dive narrative with current-source cross-links and explicit
+  shipped-versus-future boundaries
+- guided Sc-Zn tutorial for design, evaluation, report interpretation, and
+  vZome/Zomic visualization handoff
 
 Archive references:
+- `.planning/milestones/v1.7-ROADMAP.md`
+- `.planning/milestones/v1.7-REQUIREMENTS.md`
+- `.planning/milestones/v1.7-phases/`
+- `.planning/v1.7-MILESTONE-AUDIT.md`
 - `.planning/milestones/v1.0-ROADMAP.md`
 - `.planning/milestones/v1.0-REQUIREMENTS.md`
 - `.planning/milestones/v1.0-MILESTONE-AUDIT.md`
@@ -62,36 +73,6 @@ Archive references:
 - `.planning/milestones/v1.6-ROADMAP.md`
 - `.planning/milestones/v1.6-REQUIREMENTS.md`
 - `.planning/v1.6-MILESTONE-AUDIT.md`
-
-## Current Milestone Status
-
-**Current Milestone:** `v1.7` — Documentation Refresh and Guided Design
-Tutorial MVP
-
-**Status:** Phases 37, 38, and 39 completed on 2026-04-15. `v1.7` is ready for
-milestone audit and archival.
-
-**Current focus:**
-- archive the completed `v1.7` milestone cleanly once the milestone audit is
-  recorded
-- carry the refreshed deep-dive and the new guided tutorial forward as the
-  documentation baseline for the next milestone
-- keep the next milestone honest about whether it expands campaigns,
-  checkpoints, benchmark automation, or chemistry scope beyond the current
-  CLI-first documentation surface
-
-**Most Recent Shipped Milestone:** `v1.6` — Translator-Backed External
-Materials-LLM Benchmark MVP
-
-**Delivered in `v1.6`:**
-- frozen translated benchmark packs with explicit inclusion, exclusion, and
-  lineage semantics
-- immutable external-target registration with reproducibility-grade smoke and
-  environment capture
-- comparative external-vs-internal benchmark execution on the same translated
-  case slice
-- fidelity-aware scorecards and operator inspect surfaces for next-step
-  decisions
 
 ## Later Milestone Candidates
 
@@ -184,21 +165,15 @@ instead of living in separate prototypes.
   external-target registration, comparative benchmark execution, fidelity-aware
   scorecards, bounded recommendation lines, and operator execute/inspect
   surfaces.
-- Validated in Phase 37: the repo now has a git-backed provenance audit for
-  `podcast-deep-dive-source.md`, a stale-claim and shipped-surface correction
-  checklist for the refresh, and a locked Sc-Zn Zomic-backed tutorial path for
-  later tutorial authoring.
+- Validated in v1.7: documentation refresh is now shipped end to end,
+  including a git-backed deep-dive provenance audit, a refreshed long-form
+  narrative aligned to the shipped workflow through `v1.6`, and a checked
+  Sc-Zn tutorial that ties design, evaluation, and visualization together.
 
 ### Active
 
-- Refresh `materials-discovery/developers-docs/podcast-deep-dive-source.md`
-  from the Phase 37 provenance audit so it no longer under- or over-states the
-  system.
-- Publish a guided design -> evaluate -> visualize tutorial with runnable
-  examples, expected artifacts, and interpretation notes for the current
-  operator workflow.
-- Keep the milestone documentation-first and CLI-first: improve explainability
-  and onboarding without broadening the scientific or automation surface.
+- No active milestone requirements. Run `$gsd-new-milestone` to define the
+  next milestone-specific requirements.
 
 ### Out of Scope
 
@@ -231,13 +206,13 @@ instead of living in separate prototypes.
   QC-native candidates into CIF/material-string bundles, translated benchmark
   packs, and external-vs-internal scorecards.
 - `podcast-deep-dive-source.md` was first added on 2026-03-06 and then moved
-  during later docs reorganizations, so it predates the shipped `v1.5`/`v1.6`
-  workflow surface.
-- The repo already has strong reference docs (`RUNBOOK.md`,
+  during later docs reorganizations. `v1.7` refreshed it and aligned the
+  narrative with the shipped `v1.6` workflow surface.
+- The repo now has strong reference docs (`RUNBOOK.md`,
   `zomic-design-workflow.md`, `pipeline-stages.md`,
-  `vzome-geometry-tutorial.md`), but no single checked tutorial currently ties
-  design authoring, evaluation interpretation, and vZome visualization into
-  one example.
+  `vzome-geometry-tutorial.md`) plus a checked
+  `guided-design-tutorial.md` that ties design authoring, evaluation
+  interpretation, and vZome visualization into one example.
 - The current runtime can realize `CandidateRecord` data into ASE atoms or a
   pymatgen `Structure`, while the Zomic bridge preserves a vZome-rooted
   geometry path for design authoring and visualization.
@@ -283,6 +258,7 @@ instead of living in separate prototypes.
 | Start Project 3 v1.6 with translator-backed external-model benchmarking | The translation bridge was shipped, so the next dependency-breaking question was which downloaded materials LLMs are worth deeper automation or training investment | ✓ Good |
 | Keep `v1.6` benchmark-first and advisory rather than auto-promoting winners | Benchmark evidence needed to guide the next milestone, not silently become automation policy | ✓ Good |
 | Start Project 3 v1.7 with documentation refresh and one guided workflow tutorial | The shipped tool surface now exceeds the accuracy and usability of the long-form narrative docs, and a checked tutorial lowers onboarding risk before more automation work | ✓ Good |
+| Archive `v1.7` after the documentation refresh and guided tutorial ship | The docs baseline is now trustworthy enough to support the next milestone without carrying active milestone clutter | ✓ Good |
 
 ## Evolution
 
@@ -302,4 +278,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-15 after completing Phase 37 and advancing to Phase 38*
+*Last updated: 2026-04-15 after archiving shipped milestone v1.7*

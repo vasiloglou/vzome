@@ -1,5 +1,34 @@
 # Milestones
 
+## v1.7 — Documentation Refresh and Guided Design Tutorial MVP
+
+**Status:** Shipped on 2026-04-15
+**Phases:** 37-39
+**Plans:** 3
+
+### Highlights
+
+- Git-backed deep-dive provenance audit with shipped v1.0-v1.6 deltas and a
+  locked Sc-Zn Zomic tutorial path.
+
+- Workflow-family deep-dive refresh with source-of-truth cross-links and
+  explicit future-work boundaries.
+
+- Sc-Zn Zomic-backed tutorial for design, evaluation, artifact reading, and
+  vZome handoff.
+
+- Closed the milestone with a passing audit and a clean planning archive for
+  the next milestone.
+
+### Archives
+
+- `.planning/milestones/v1.7-ROADMAP.md`
+- `.planning/milestones/v1.7-REQUIREMENTS.md`
+- `.planning/milestones/v1.7-phases/`
+- `.planning/v1.7-MILESTONE-AUDIT.md`
+
+---
+
 ## v1.6 — Translator-Backed External Materials-LLM Benchmark MVP
 
 **Status:** Shipped on 2026-04-07
@@ -10,12 +39,15 @@
 
 - Added typed translated benchmark-pack freezing, deterministic `llm_external`
   artifact layout, and inspectable included/excluded benchmark inventories.
+
 - Shipped immutable external-target registration plus reproducibility-grade
   environment/smoke artifacts and CLI inspect flows for curated downloaded
   materials LLMs.
+
 - Added one shared comparative benchmark workflow, fidelity-aware scorecards,
   periodic-safe recommendation logic, and operator execute/inspect surfaces
   with a committed example spec and runbook.
+
 - Closed the milestone with passing phase verifications and a passing
   milestone audit.
 
@@ -36,9 +68,11 @@
 - Added a typed translation artifact contract, registry-backed target families,
   and explicit exact/anchored/approximate/lossy semantics for compiled Zomic
   candidates.
+
 - Shipped deterministic CIF and CrystalTextLLM-compatible material-string
   exporters from one shared translation seam, with golden outputs and parser
   regression coverage.
+
 - Added a file-backed translation bundle/CLI workflow, operator runbook, and
   discoverable docs surface so external materials-LLM interop is usable without
   notebooks or hand-written scripts.
@@ -59,10 +93,13 @@
 
 - Added file-backed checkpoint-family lifecycle state with promotion,
   retirement, and stale-write protection.
+
 - Integrated promoted-default and explicit-pin checkpoint resolution through
   generate, launch, replay, compare, and benchmark flows.
+
 - Added committed lifecycle benchmark configs plus operator docs for candidate
   promotion, rollback, and retirement.
+
 - Closed the milestone with per-phase verification, a passing milestone audit,
   and archive-ready planning metadata.
 
