@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.7
 milestone_name: Documentation Refresh and Guided Design Tutorial MVP
-current_phase: Not started
-current_phase_name: defining requirements
-current_plan: Requirements
-status: active
-stopped_at: Started milestone v1.7 and began defining requirements
-last_updated: "2026-04-15T02:10:19Z"
+current_phase: 37
+current_phase_name: deep-dive-provenance-audit-and-tutorial-scope
+current_plan: Not started
+status: planning
+stopped_at: Phase 37 context gathered
+last_updated: "2026-04-15T02:27:00Z"
 last_activity: 2026-04-14
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -26,23 +26,22 @@ See: `.planning/PROJECT.md` (updated 2026-04-14)
 **Core value:** Build one reproducible system where trusted materials data,
 physically grounded no-DFT validation, and LLM-guided structure generation
 reinforce each other instead of living in separate prototypes.
-**Current focus:** Define v1.7 requirements and roadmap for documentation
-refresh and one guided design/evaluate/visualize tutorial.
+**Current focus:** Phase 37 - Deep-Dive Provenance Audit and Tutorial Scope
 
 ## Current Position
 
 Current Milestone: v1.7
-Current Phase: Not started
-Current Phase Name: defining requirements
-Total Phases: TBD
-Current Plan: Requirements
-Total Plans in Phase: TBD
-Phase: Not started (defining requirements)
-Plan: -
-Status: Defining requirements
+Current Phase: 37
+Current Phase Name: Deep-Dive Provenance Audit and Tutorial Scope
+Total Phases: 3
+Current Plan: Not started
+Total Plans in Phase: Not planned yet
+Phase: 37 (Deep-Dive Provenance Audit and Tutorial Scope) — READY TO PLAN
+Plan: Not started
+Status: Ready to plan
 Last activity: 2026-04-14
-Last Activity Description: Started milestone v1.7 and began defining the
-documentation-refresh and guided tutorial scope
+Last Activity Description: Phase 37 context gathered and the milestone is ready
+for planning
 
 Progress: [----------] 0%
 
@@ -76,6 +75,12 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
 - Use a documentation-first `v1.7` milestone to align the external-facing
   narrative and onboarding docs with the shipped workflow before expanding
   automation again.
+- [Phase 37]: Keep the deep-dive refresh as an evidence-backed narrative with
+  cross-links rather than turning it into a standalone operator manual.
+- [Phase 37]: Use one Sc-Zn Zomic-backed worked example as the tutorial anchor
+  so design, evaluation, and visualization stay in one coherent path.
+- [Phase 37]: Require shipped-only claims and explicit future-work labeling in
+  the refreshed narrative and tutorial.
 - Keep the platform CLI-first, file-backed, and operator-governed until
   stronger evidence justifies broader automation.
 - Use `v1.6` benchmark scorecards to decide whether the next milestone should
@@ -88,11 +93,10 @@ None yet.
 
 ### Blockers/Concerns
 
-No active blockers. The current open scoping question is how much example
-breadth the tutorial needs beyond one checked end-to-end path.
+No active blockers. Phase 37 is ready for planning.
 
 ## Session Continuity
 
-Last session: 2026-04-15T02:10:19Z
-Stopped at: Started milestone v1.7 and began defining requirements
-Resume file: None
+Last session: 2026-04-15T02:27:00Z
+Stopped at: Phase 37 context gathered
+Resume file: .planning/phases/37-deep-dive-provenance-audit-and-tutorial-scope/37-CONTEXT.md
