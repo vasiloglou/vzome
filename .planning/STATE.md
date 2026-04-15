@@ -1,20 +1,20 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.8
-milestone_name: LLM Narrative Enrichment and Notebook Tutorial MVP
+milestone: v1.81
+milestone_name: Extensive LLM Tutorial and Programmatic vZome Visualization MVP
 current_phase: null
 current_phase_name: no active phase
-current_plan: Complete
-status: archived
-stopped_at: v1.8 milestone archived; ready for next milestone
-last_updated: "2026-04-15T05:23:38Z"
+current_plan: "\u2014"
+status: defining requirements
+stopped_at: milestone v1.81 started; defining requirements
+last_updated: "2026-04-15T14:59:56Z"
 last_activity: 2026-04-15
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -26,23 +26,24 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 **Core value:** Build one reproducible system where trusted materials data,
 physically grounded no-DFT validation, and LLM-guided structure generation
 reinforce each other instead of living in separate prototypes.
-**Current focus:** Define the next milestone from the archived `v1.8`
-documentation and notebook baseline
+**Current focus:** Expand the guided tutorial and notebook into an extensive
+LLM-aware walkthrough and replace the manual desktop visualization handoff with
+a programmatic vZome path
 
 ## Current Position
 
-Current Milestone: none active
+Current Milestone: v1.81
 Most Recent Milestone: v1.8
 Current Phase: none active
 Current Phase Name: no active phase
 Total Phases in Most Recent Milestone: 1
-Current Plan: Complete
-Status: v1.8 shipped and archived; ready for next milestone definition
+Current Plan: —
+Status: Defining requirements
 Last activity: 2026-04-15
-Last Activity Description: v1.8 milestone archived and planning reset for the
-next milestone
+Last Activity Description: Milestone v1.81 started and planning reset to
+requirements definition
 
-Progress: [##########] 100%
+Progress: [----------] 0%
 
 ## Performance Metrics
 
@@ -112,6 +113,8 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
 - [Phase 40]: Publish the notebook as a detailed companion artifact, not as a replacement for the shorter Markdown walkthrough.
 - [Phase 40]: Cross-link the deep dive, docs index, Markdown tutorial, notebook, and LLM runbooks so readers can move between narrative, checked walkthrough, and operator references without ambiguity.
 - [Milestone v1.8]: Archive the LLM-aware docs-and-notebook milestone now that the tutorial, notebook, deep-dive cross-links, and PDF refresh are verified and shipped.
+- [Milestone v1.81]: Extend the guided tutorial and notebook from one bounded companion lane into an extensive walkthrough of the shipped LLM functionality.
+- [Milestone v1.81]: Replace the manual desktop vZome visualization handoff with a programmatic repo-owned visualization path, preferably by packaging the existing viewer/export surfaces rather than inventing a brand-new service.
 
 ### Pending Todos
 
@@ -119,11 +122,12 @@ None yet.
 
 ### Blockers/Concerns
 
-No active blockers. No milestone is currently active; next work is to define
-the next milestone with `$gsd-new-milestone`.
+No active blockers. The main planning risk is choosing the smallest credible
+programmatic visualization surface for the tutorial without accidentally
+expanding the milestone into a general-purpose visualization platform.
 
 ## Session Continuity
 
-Last session: 2026-04-15T05:23:38Z
-Stopped at: v1.8 milestone archived; ready for next milestone
+Last session: 2026-04-15T14:59:56Z
+Stopped at: milestone v1.81 started; defining requirements
 Resume file: .planning/PROJECT.md

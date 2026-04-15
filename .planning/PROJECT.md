@@ -33,17 +33,18 @@ LLM operating surface:
 
 ## Current Milestone Status
 
-**Current Milestone:** None active
+**Current Milestone:** `v1.81` — Extensive LLM Tutorial and Programmatic
+vZome Visualization MVP
 
-**Status:** `v1.8` — LLM Narrative Enrichment and Notebook Tutorial MVP —
-shipped and archived on 2026-04-15.
+**Status:** active planning started on 2026-04-15.
 
 **Current focus:**
-- define the next milestone from the archived docs-and-notebook baseline
-- decide whether the next expansion should emphasize campaign automation,
-  checkpoint/training workflows, benchmark-driven evaluation, or chemistry
-  scope
-- keep future scope honest about what is already shipped versus still planned
+- expand the guided tutorial and notebook into a genuinely extensive walkthrough
+  of the shipped LLM workflow families
+- replace the current desktop-only visualization handoff with a programmatic
+  vZome visualization path that readers can trigger from the repo workflow
+- automate or document viewer-ready artifact generation so the tutorial can stay
+  inside one reproducible path
 
 **Most Recent Shipped Milestone:** `v1.8` — LLM Narrative Enrichment and
 Notebook Tutorial MVP
@@ -189,8 +190,13 @@ instead of living in separate prototypes.
 
 ### Active
 
-- No active milestone requirements. Run `$gsd-new-milestone` to define the
-  next milestone-specific requirements.
+- Readers can follow one extensive checked tutorial path that keeps the
+  deterministic Sc-Zn workflow visible while also demonstrating the shipped
+  additive LLM surfaces end to end.
+- Operators can visualize the checked Zomic/vZome design programmatically,
+  without being required to open the desktop app manually.
+- The visualization path reuses repo-owned artifacts or code where possible,
+  so notebook or docs examples stay reproducible and file-backed.
 
 ### Out of Scope
 
@@ -237,6 +243,16 @@ instead of living in separate prototypes.
 - The current runtime can realize `CandidateRecord` data into ASE atoms or a
   pymatgen `Structure`, while the Zomic bridge preserves a vZome-rooted
   geometry path for design authoring and visualization.
+- The repo already contains an online visualization surface under `online/`,
+  including the `vzome-viewer` web component and checked `.vZome` /
+  `.shapes.json` preview assets.
+- The current guided tutorial and notebook explain where the LLM workflows fit,
+  but the final visualization step still hands the user off to desktop vZome
+  instead of staying inside a programmatic repo-owned path.
+- The `core` module already exposes file-backed export machinery such as
+  `ExportZomicLabeledGeometry`, `ShapesJsonExporter`, and `GitHubShare`, which
+  suggests the new visualization milestone should extend existing geometry and
+  preview contracts rather than inventing a parallel format.
 
 ## Constraints
 
@@ -257,6 +273,12 @@ instead of living in separate prototypes.
   materials discovery product, and that product must mature before aggressive
   LLM automation — otherwise later tracks are trained or judged on weak
   foundations.
+- **Visualization delivery**: Prefer repo-owned viewer/library reuse and
+  file-backed preview artifacts over a mandatory manual desktop step or a new
+  always-on service.
+- **Tutorial scope**: Keep the walkthrough tied to shipped commands and checked
+  artifacts; do not imply broader chemistry coverage or autonomous workflow
+  orchestration than the repo actually supports.
 
 ## Key Decisions
 
@@ -282,6 +304,8 @@ instead of living in separate prototypes.
 | Archive `v1.7` after the documentation refresh and guided tutorial ship | The docs baseline is now trustworthy enough to support the next milestone without carrying active milestone clutter | ✓ Good |
 | Start Project 3 v1.8 with LLM-aware docs enrichment and notebook conversion | The current docs now need one follow-up pass that makes the shipped LLM story legible and gives operators a richer executable tutorial format before more product expansion | ✓ Good |
 | Archive `v1.8` after the LLM-aware docs refresh and notebook companion ship | The narrative/tutorial stack is now coherent enough to support the next milestone without leaving an active docs-only milestone open | ✓ Good |
+| Start Project 3 `v1.81` with extensive LLM tutorial coverage and programmatic vZome visualization | The docs stack is now coherent enough to deepen the tutorial and remove the last manual desktop visualization handoff before broader automation work resumes | — Pending |
+| Prefer reusing the repo-owned online viewer and preview/export contracts before building a bespoke visualization service | The repo already contains `vzome-viewer`, `.shapes.json` preview handling, and export machinery, so the lowest-risk milestone path is reuse plus packaging | — Pending |
 
 ## Evolution
 
@@ -301,4 +325,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-15 after archiving shipped milestone v1.8*
+*Last updated: 2026-04-15 after starting milestone v1.81*
