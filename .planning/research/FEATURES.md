@@ -1,107 +1,84 @@
-# Feature Landscape: v1.6 Translator-Backed External Materials-LLM Benchmark MVP
+# Feature Landscape: v1.81 Extensive LLM Tutorial and Programmatic vZome Visualization MVP
 
-**Domain:** External materials-LLM benchmarking over shipped translation artifacts  
-**Researched:** 2026-04-07
+**Domain:** Extensive tutorial expansion plus programmatic visualization for the
+checked Sc-Zn Zomic workflow
+**Researched:** 2026-04-15
 
 ## Scope Frame
 
-- This document covers only the net-new features needed for `v1.6`.
-- Already shipped and reused: translation artifacts, CIF/material-string
-  exporters, file-backed CLI tracing, internal serving lanes, replay/compare,
-  and checkpoint promotion/pinning workflows.
-- The milestone question is narrow: which downloaded external materials LLMs
-  are worth deeper workflow investment after a fair, fidelity-aware benchmark?
-- The milestone stays CLI-first, operator-governed, file-backed, and small in
-  model and benchmark-set scope.
+- This document covers only the net-new features needed for v1.81.
+- Already shipped and reused: the deterministic Sc-Zn walkthrough, the notebook
+  companion, the shipped LLM command families, the Zomic export bridge, and the
+  broader online vZome codebase.
+- The milestone question is narrow: how do we make the checked tutorial truly
+  extensive and keep visualization inside a programmatic repo-owned path?
+- The milestone stays CLI-first, file-backed, tutorial-first, and scoped to the
+  checked design path instead of broad product expansion.
 
 ## Suggested Requirement Categories
 
-| Candidate REQ ID | Theme | Why It Exists In v1.6 |
-|------------------|-------|-----------------------|
-| `LLM-31` | Fidelity-scoped translated benchmark set | Prevent misleading comparisons across CIF-safe, material-string-safe, and lossy artifacts. |
-| `OPS-17` | External model execution contract | Make downloaded external models reproducible, smoke-testable, and auditable instead of notebook-only. |
-| `LLM-32` | Shared comparative benchmark workflow | Run external models and internal controls on the same translated inputs under one typed benchmark surface. |
-| `LLM-33` | Decision-grade benchmark outputs | Turn raw runs into operator-usable evidence about whether deeper investment is justified. |
-| `OPS-18` | Operator docs and inspect surfaces | Keep the new benchmark workflow runnable and interpretable without reverse-engineering artifacts. |
+| Candidate REQ ID | Theme | Why It Exists In v1.81 |
+|------------------|-------|------------------------|
+| `VIS-01` | Viewer-ready geometry contract | Make the tutorial's checked Zomic export directly consumable by a programmatic viewer. |
+| `VIS-02` | Standalone programmatic visualization library | Give users a function-call or small library path instead of a desktop-only handoff. |
+| `DOC-06` | Extensive guided tutorial narrative | Turn the current concise walkthrough into a deeper explanation of the shipped LLM workflow families. |
+| `DOC-07` | Visualization and workflow boundary docs | Explain the new programmatic visualization path, the artifact chain, and what remains optional or future work. |
+| `OPS-25` | Notebook visualization cells | Let notebook users render the checked design programmatically inside the walkthrough. |
+| `OPS-26` | Notebook LLM workflow branches | Show where the shipped LLM command families fit through richer command and artifact guidance, not a brief companion note. |
 
 ## Table Stakes
 
-Features the milestone needs to feel complete for the external-benchmark goal.
+Features the milestone needs in order to feel complete for the stated goal.
 
 | Category | Candidate REQ IDs | Feature | Why Expected | Milestone-Scoping Notes |
 |----------|-------------------|---------|--------------|-------------------------|
-| Benchmark-set governance | `LLM-31` | Freeze one small translated benchmark set with explicit inclusion rules, target-family eligibility, fidelity-tier gating, and exclusion reasons per artifact. | Without this, the benchmark will quietly mix honest approximants, lossy proxies, and incompatible formats into one misleading score. | Headline scoring should default to the credible subset. Lossy or unsupported artifacts may exist as diagnostic-only slices, not the main leaderboard. |
-| External model registration and smoke checks | `OPS-17` | Register each downloaded external model with file-backed identity, compatible artifact families, local invocation settings, smoke-test behavior, and environment or weights lineage. | Operators need rerunnable executions, not shell history and one-off scripts. | Support only a curated handful of already-downloaded models. Do not build a generic model marketplace or downloader. |
-| Shared benchmark spec with internal controls | `LLM-32` | Add one typed benchmark workflow that benchmarks external models and current promoted or explicitly pinned internal controls against the same translated inputs. | This is the core milestone question. If the workflow cannot compare against current internal controls honestly, the milestone has not answered anything useful. | Reuse existing benchmark, compare, and control-resolution seams instead of inventing a second orchestration stack. |
-| Representation-aware scoring | `LLM-32`, `LLM-33` | Score results by compatible representation family and fidelity slice rather than forcing one fake apples-to-apples total across CIF-only and material-string-only cases. | Some external models consume CIF-like text, some material strings, and not every translated artifact is benchmark-safe. | Every summary should report eligible counts, excluded counts, and family-specific denominators so operators know what the score really covers. |
-| Decision-oriented output artifacts | `LLM-33`, `OPS-18` | Emit typed benchmark summaries plus concise CLI scorecards and recommendation lines that say whether an external model beats, matches, or fails against the control arm. | The milestone goal is a decision about what to do next, not just artifact generation. | The output should clearly answer whether to continue deeper benchmarking or automation work, keep the model exploratory, or stop. |
+| Visualization input contract | `VIS-01` | One checked geometry artifact can drive programmatic visualization without manual desktop work. | Without this, the tutorial still breaks its own reproducibility promise at the visualization step. | Prefer the existing raw export artifact over inventing a second primary geometry source. |
+| Standalone visualization surface | `VIS-02` | A scriptable library or wrapper can load the checked geometry and render it programmatically. | The user explicitly asked for a function-call or service alternative. | Prefer a small library over a service; keep server use optional. |
+| Extensive tutorial coverage | `DOC-06` | The Markdown tutorial explains the deterministic spine plus the shipped LLM workflow families in one coherent operator story. | The current tutorial is useful, but still bounded and too light for "demonstrate all the LLM based functionality." | Keep the Sc-Zn spine; do not turn this into a second unrelated example. |
+| Visualization documentation | `DOC-07` | The docs explain how programmatic visualization fits into the `.zomic -> raw export -> orbit library -> candidates` chain, and what desktop vZome is still good for. | Users need to know what the new path replaces and what it does not. | Desktop vZome can remain a reference path, but no longer the required tutorial step. |
+| Notebook programmatic rendering | `OPS-25` | The notebook can render or launch the checked design programmatically using the new viewer surface. | The notebook is the best place to prove the new path works in practice. | Avoid turning the notebook into a GUI shell or controller. |
+| Notebook LLM walkthrough depth | `OPS-26` | The notebook deepens the shipped LLM command coverage with command cells, artifact references, and bounded branch guidance. | The user's ask was explicitly to demonstrate all the LLM-based functionality in an extensive tutorial. | Stay grounded in shipped workflows and checked artifacts. |
 
 ## Differentiators
 
-High-value additions that make the MVP more decisive, but should not expand the
-milestone into a broader platform build.
+High-value additions that make the milestone more decisive, but should not
+expand it into a larger platform build.
 
 | Category | Candidate REQ IDs | Feature | Value Proposition | Milestone-Scoping Notes |
 |----------|-------------------|---------|-------------------|-------------------------|
-| Control-arm clarity | `LLM-32` | Allow one benchmark run to include both the current promoted internal default and an explicit pinned internal control when the operator wants both. | This reduces ambiguity about whether an external-model win is real or just an artifact of which internal baseline was chosen. | Useful for credibility, but the MVP can still ship if one clear internal control path is mandatory and the second is optional. |
-| Representation-sensitivity analysis | `LLM-33` | For models that can consume more than one translated artifact family, show whether performance changes between CIF and material-string inputs for the same benchmark slice. | This tells the operator whether the interesting signal is the model or the representation choice. | Keep this as a derived benchmark slice, not a reason to expand into broad format experimentation. |
-| Outcome routing for next milestone choice | `LLM-33` | Turn the scorecard into a small rule-based recommendation surface: deeper external-model automation, more internal training investment, benchmark-set cleanup, or no follow-up. | This shortens roadmap handoff and makes the benchmark immediately actionable. | Keep the routing simple and explicit. Do not build an autonomous planner. |
+| Viewer capture helpers | `OPS-25` | Allow notebook or script users to capture still images or stable embeds from the programmatic viewer. | This makes the tutorial and notebook easier to share and verify. | Useful, but secondary to basic rendering. |
+| Library packaging clarity | `VIS-02`, `DOC-07` | Publish one obvious import or usage path instead of burying the viewer inside the existing online app. | This makes the "standalone library" ask true in practice, not just in architecture notes. | Keep the packaging minimal; do not create a new product site. |
+| Branch-routing guidance | `DOC-06`, `OPS-26` | Tell readers when to branch from the deterministic spine into generation/evaluation, campaign governance, serving/checkpoints, and translation/external benchmarking. | This is the difference between an extensive tutorial and a long list of commands. | The routing can stay document-based; it does not need automation. |
 
 ## Anti-Features
 
-Features to explicitly avoid in `v1.6`.
+Features to explicitly avoid in v1.81.
 
-| Anti-Feature | Why Avoid It In v1.6 | What To Do Instead |
-|--------------|----------------------|--------------------|
-| Full training or fine-tuning automation for external models | The milestone is supposed to decide whether deeper investment is warranted, not assume it upfront. | Benchmark downloaded models first and defer training automation to a later milestone if the evidence justifies it. |
-| Autonomous campaign execution based on benchmark winners | This would bypass the current operator-governed workflow before the external-model value proposition is proven. | Keep benchmark outputs advisory and operator-reviewed. |
-| Broad model-zoo or plugin-platform support | A generic external-model framework would absorb the milestone and delay the actual benchmark question. | Support a small curated set of explicitly configured downloaded models. |
-| Broad chemistry or source expansion as the milestone headline | Expanding the dataset too far would blur whether results changed because of model quality or because the benchmark moved. | Add only the minimum benchmark-set cleanup needed for a credible curated slice. |
-| One blended leaderboard across incompatible artifact families and fidelity tiers | This would hide representational mismatch and make the headline score scientifically misleading. | Keep the benchmark family-aware and fidelity-aware, with explicit exclusions and sub-scores. |
-| UI-first dashboards or benchmark service infrastructure | The repo already uses a CLI-first, file-backed operator model, and a UI would be extra surface area without answering the milestone question better. | Emit inspectable JSON summaries and concise CLI scorecards. |
+| Anti-Feature | Why Avoid It In v1.81 | What To Do Instead |
+|--------------|-----------------------|--------------------|
+| Full vZome editing parity in the browser | Too much scope and not required to solve the tutorial handoff problem. | Render the checked geometry and keep authoring on the existing `.zomic` path. |
+| A permanent visualization backend or orchestration service | Too much operational weight for a tutorial-first milestone. | Use a library-first path, with a tiny local host helper only if browser embedding needs it. |
+| New chemistry examples as the headline | The tutorial already has one checked Sc-Zn anchor; broadening chemistry would dilute the milestone. | Keep the checked anchor and deepen explanation around it. |
+| New model-training, checkpoint, or campaign automation features | These are real future milestones, but not the one the user asked for here. | Demonstrate the shipped surfaces honestly instead of sneaking in new product work. |
+| Replacing the deterministic spine with an LLM-first story | The deterministic path remains the evidence chain that grounds the tutorial. | Keep the deterministic spine and explain LLM workflows as additive branches. |
 
-## Milestone-Scoping Notes
-
-- Reuse the shipped translation bundle inventory and fidelity metadata as the
-  benchmark-set source of truth. Do not invent a second artifact taxonomy.
-- External models should declare which translated artifact families they can
-  honestly consume. The benchmark should not coerce every model into every
-  representation.
-- The internal control arm should resolve through the shipped promoted-default
-  and explicit-pin checkpoint machinery, not through benchmark-only shortcuts.
-- Reproducibility needs to include enough external-runtime capture to explain a
-  result later, but not a full deployment platform.
-- The main benchmark conclusion should come from the credible benchmark slice.
-  Lossy slices are useful diagnostics, not the milestone headline.
-
-## Feature Dependencies
-
-```text
-translated bundle inventory + fidelity metadata
--> benchmark-set inclusion rules
--> external model registration and compatibility declaration
--> shared benchmark spec with internal controls
--> representation-aware benchmark summary
--> next-step recommendation
-```
-
-## Minimum Credible v1.6 Feature Set
+## Minimum Credible v1.81 Feature Set
 
 Prioritize:
 
-1. `LLM-31`: freeze one small fidelity-aware translated benchmark set with
-   explicit exclusions and compatible target-family rules.
-2. `OPS-17`: support a curated handful of downloaded external models with
-   reproducible local invocation, smoke checks, and environment lineage.
-3. `LLM-32`: run those external models against the current promoted internal
-   control, with explicit pinned-control support if it is cheap to add.
-4. `LLM-33`: emit representation-aware scorecards that tell the operator
-   whether any external model is strong enough to justify deeper follow-on
-   investment.
+1. `VIS-01`: the checked Sc-Zn export path produces a stable visualization
+   artifact for programmatic rendering.
+2. `VIS-02`: a standalone viewer surface can load that artifact from a script,
+   notebook, or simple page.
+3. `DOC-06`: the Markdown tutorial becomes an extensive walkthrough of the
+   shipped LLM workflow families without abandoning the deterministic spine.
+4. `OPS-25`: the notebook renders the checked geometry programmatically.
+5. `OPS-26`: the notebook deepens command and artifact coverage for the shipped
+   LLM surfaces.
 
-Defer broad model coverage, training automation, campaign automation, and
-large benchmark-set expansion. The minimum credible `v1.6` milestone is a
-small, honest, reproducible benchmark that can clearly say "continue" or
-"stop" for each external model family.
+Defer browser editing parity, server-backed visualization infrastructure,
+broader chemistry, and new workflow automation. The minimum credible milestone
+is a tutorial that stays inside the repo workflow from `.zomic` authoring to
+programmatic visualization and clear LLM-branch guidance.
 
 **File changed:** `/Users/nikolaosvasiloglou/github-repos/vzome/.planning/research/FEATURES.md`

@@ -1,198 +1,146 @@
 # Project Research Summary
 
 **Project:** Materials Design Program
-**Domain:** Translator-backed external materials-LLM benchmark MVP
-**Milestone:** `v1.6`
-**Researched:** 2026-04-07
-**Confidence:** MEDIUM
+**Domain:** Extensive tutorial expansion plus programmatic visualization for the
+checked Zomic workflow
+**Milestone:** `v1.81`
+**Researched:** 2026-04-15
+**Confidence:** MEDIUM-HIGH
 
 ## Executive Summary
 
-`v1.6` should be a narrow, benchmark-first extension of the existing
-`materials-discovery` workflow, not a generic external-model platform. The
-research converges on one practical shape: freeze a small benchmark pack from
-shipped translation artifacts, register a curated handful of downloaded
-external materials LLMs as immutable local artifacts, and compare them against
-the current promoted or explicitly pinned internal controls in one typed,
-CLI-first workflow.
+`v1.81` should stay tightly focused on one user-visible improvement: the guided
+tutorial and notebook need to become the extensive, practical entry point for
+the repo's shipped LLM workflow families, and they need to stop ejecting the
+reader into desktop vZome at the visualization step.
 
-The recommended build is additive to the repo's current architecture. Reuse the
-existing schema, manifest, storage, CLI, translation-bundle, and benchmark
-patterns; add a small `external-benchmark` runtime extra; benchmark only from
-resolved local snapshots pinned to exact revisions; and write fidelity-aware
-scorecards that stay explicit about target family, eligible slice, exclusions,
-and control deltas. The MVP succeeds if it can answer a simple roadmap
-question: which external models are worth deeper investment, and under what
-representation and fidelity constraints?
+The most credible path is not a new service and not a full browser rewrite of
+vZome authoring. It is a tutorial-first visualization surface built on the
+artifacts the checked workflow already produces. The key insight is that the
+current tutorial already trusts `mdisc export-zomic`, and that command already
+emits raw labeled geometry with segments and labeled points. That artifact is a
+clean MVP input for a standalone renderer.
 
-The main risks are all credibility risks, not feature-volume risks. Mixed
-fidelity packs, apples-to-oranges comparisons against internal controls, and
-runtime or prompt drift would make the benchmark untrustworthy. Prevent that by
-freezing benchmark cases before execution, stratifying results by
-`target_family` and `fidelity_tier`, pinning internal control IDs and external
-model revisions, capturing prompt and environment hashes, and refusing blended
-headline scores when the comparison contract is violated.
+The repo's existing online vZome code is still important. It proves that the
+repo already has browser rendering, packaging, and programmatic viewer patterns
+worth reusing. But the milestone should not depend on inventing a new
+`.zomic -> .vZome` share pipeline before the tutorial can improve. Start from
+the checked raw export path, package one small viewer around it, then wire the
+docs and notebook to that surface.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The stack addition is intentionally small. Stay on Python 3.11 and the repo's
-`uv`-first workflow, then add one optional `external-benchmark` dependency
-group for local external-model execution. Use one repo-owned benchmark runtime
-based on exact-pinned `torch` plus `transformers`, `huggingface_hub`,
-`safetensors`, and `accelerate`, with `peft` only for explicitly curated
-adapter-backed targets. Benchmark from local resolved snapshots with offline
-loading enabled and capture environment metadata as a first-class run artifact.
+The current stack is already sufficient:
 
-**Core technologies:**
-- `Python 3.11` + `uv`/`uv.lock`: keep one runtime baseline and one lock story.
-- `torch` with exact pinned build: reproducible local inference backend.
-- `transformers`: canonical model/tokenizer loading and generation control.
-- `huggingface_hub`: snapshot download, revision pinning, cache control, and offline execution.
-- `safetensors`: safe checkpoint loading where supported.
-- `accelerate`: device maps and offload for larger local checkpoints without adding serving infrastructure.
-- `peft` optional: explicit support for curated adapter-backed models only.
-- Existing `typer`, `pydantic`, manifests, translation bundles, and `pymatgen`: extend current repo patterns instead of introducing a parallel platform.
+- keep `materials-discovery/` on the existing Python + `uv` workflow
+- keep `mdisc export-zomic` and `ExportZomicLabeledGeometry` as the checked
+  geometry compiler
+- use the raw labeled geometry JSON as the first tutorial visualization input
+- reuse the repo's browser-side patterns from `online/`
+- package one standalone library or thin wrapper rather than a new service
+
+The richer `vzome-viewer` and `.shapes.json` preview path should be treated as
+valuable infrastructure and future compatibility, not as the first blocker for
+the milestone.
 
 ### Expected Features
 
-The minimum credible feature set is a small, honest benchmark that can produce
-decision-grade output. That means the workflow must freeze a fidelity-aware
-translated benchmark set, run a curated set of external models reproducibly,
-compare them against the internal control arm on the same translated slices,
-and emit scorecards that say whether a model is competitive enough to justify
-deeper follow-on work.
+The minimum credible feature set is:
 
-**Must have (table stakes):**
-- Freeze one small translated benchmark set with explicit inclusion, exclusion, `target_family`, and `fidelity_tier` rules.
-- Register each external model with immutable identity, local snapshot lineage, compatible input families, smoke checks, and environment capture.
-- Run a shared benchmark spec that includes curated external targets and the current promoted or explicitly pinned internal controls.
-- Score by representation family and fidelity slice, with eligible and excluded counts made explicit.
-- Emit typed summaries and CLI scorecards that produce a clear continue, explore, or stop recommendation per external target.
-
-**Should have (competitive):**
-- Support both promoted-default and explicit pinned internal controls in the same benchmark when useful.
-- Show representation-sensitivity slices for models that can consume both CIF and material-string inputs.
-- Add simple rule-based milestone routing in the summary output for next-step decisions.
-
-**Defer (v2+):**
-- Broad model-zoo support, auto-discovery, or autonomous downloading.
-- Training or fine-tuning automation for external models.
-- Autonomous campaign execution based on benchmark winners.
-- UI dashboards, benchmark services, or broader workflow orchestration.
-- Large benchmark-pack expansion or one blended cross-family leaderboard.
+- one stable visualization artifact contract for the checked Sc-Zn design
+- one standalone programmatic viewer surface for that artifact
+- one extensive Markdown tutorial that explains the shipped LLM families in the
+  same operator story
+- one notebook that renders the checked design programmatically and deepens the
+  command and artifact coverage for the shipped LLM surfaces
 
 ### Architecture Approach
 
-The architecture should be a dedicated sibling workflow, best thought of as
-`llm_external_benchmark`, layered on top of the shipped translation bundle
-surface. Translation bundles remain the reusable upstream export layer; a new
-frozen benchmark-set artifact captures the curated case slice; external models
-gain immutable registrations and benchmark-only execution; internal controls
-stay on existing promoted or pinned checkpoint lineage; and one scorecard layer
-normalizes all targets into per-case results and fidelity-aware summaries.
+The architecture should stay artifact-first:
 
-**Major components:**
-1. `TranslatedBenchmarkSet` artifact under `data/benchmarks/llm_external_sets/` — freezes benchmark cases, inclusion rules, and fidelity boundaries.
-2. `ExternalModelRegistration` under `data/llm_external_models/` — records immutable external model identity, revision, snapshot path, compatibility, and prompt/runtime contract.
-3. Benchmark-only runtime seam — runs curated local external models with smoke checks, prompt rendering, and environment capture without turning into a general serving platform.
-4. Shared `ExternalBenchmark` orchestrator under `data/benchmarks/llm_external/` — executes targets, writes run manifests and case results, and references internal controls.
-5. `ExternalBenchmarkScorecard` summary — aggregates by `target_family`, `fidelity_tier`, and control delta, then emits roadmap-facing recommendation lines.
+`.zomic -> export-zomic raw geometry -> standalone viewer -> docs/notebook`
+
+Do not force the milestone to solve general `.vZome` authoring, general sharing
+infrastructure, or a persistent visualization service. Those are valid future
+extensions, but they are not necessary to meet the user's ask here.
 
 ### Critical Pitfalls
 
-1. **Misleading benchmark packs** — freeze a typed benchmark pack from translation inventories, stratify exact or anchored versus approximate or lossy slices, and record exclusions explicitly.
-2. **Apples-to-oranges internal comparisons** — compare only on shared task families and shared translated slices, pin the internal control IDs in the benchmark spec, and do not emit one overall "best model" score across unlike tasks.
-3. **Environment and prompt drift** — pin model and tokenizer revisions, snapshot local artifacts, capture runtime and hardware metadata, version prompt templates, and fail closed when environment capture is incomplete.
-4. **Silent fidelity misuse** — carry `fidelity_tier`, `loss_reasons`, and `diagnostic_codes` through requests, results, and summaries so proxy slices cannot masquerade as QC-faithful evidence.
-5. **Scope creep into an external serving platform** — keep a hard allowlist of a few curated models, avoid generic provider abstractions, and do not add autonomous serving, scheduling, or training workflows in `v1.6`.
+The main risks are tutorial credibility risks, not rendering-performance risks:
+
+1. the "programmatic" path still hides a manual desktop step
+2. the milestone grows into a general visualization platform
+3. the docs blur raw geometry, orbit libraries, and downstream candidates
+4. the extensive tutorial becomes a long command catalog instead of a coherent
+   story
+5. the notebook rendering path becomes brittle or underdocumented
 
 ## Implications for Roadmap
 
 Based on the combined research, the milestone should be planned as three
-phases. That order matches the actual dependency chain: input credibility
-first, reproducible execution second, comparative judgment last.
+phases. That order matches the real dependency chain: artifact and viewer
+surface first, narrative second, notebook integration third.
 
-### Phase 34: Benchmark Pack Contract and Controls
-**Rationale:** Freeze the benchmark input and comparison contract before runtime work introduces variability.
-**Delivers:** Translated benchmark-set schema, storage helpers, freeze command, explicit inclusion and exclusion rules, fidelity slices, and explicit promoted or pinned internal control selection.
-**Addresses:** `LLM-31` and the comparison contract portion of `LLM-32`.
-**Avoids:** Misleading benchmark packs, apples-to-oranges comparisons, and silent fidelity misuse.
+### Phase 41: Programmatic Visualization Artifact and Library Surface
 
-### Phase 35: External Model Registration and Reproducible Execution
-**Rationale:** Prove each curated external target can be resolved, smoke-tested, and run reproducibly before attempting a milestone-grade comparison.
-**Delivers:** External model registration schema, local snapshot registration, benchmark runtime extra, smoke checks, environment manifests, prompt-template versioning, and a narrow benchmark-only execution seam.
-**Uses:** `torch`, `transformers`, `huggingface_hub`, `safetensors`, `accelerate`, and optional `peft`.
-**Implements:** External registration and runtime architecture without polluting `SystemConfig` or the normal `llm-generate` path.
-**Avoids:** Environment drift, prompt-wrapper instability, uncontrolled model scope, and side-script architecture drift.
+**Rationale:** The tutorial cannot stop depending on desktop vZome until there
+is one checked artifact and one standalone viewer path that render
+programmatically.
+**Delivers:** tutorial-facing geometry contract, standalone viewer packaging,
+and one stable asset-refresh path for the checked Sc-Zn design.
+**Addresses:** `VIS-01`, `VIS-02`.
 
-### Phase 36: Comparative Workflow and Fidelity-Aware Scorecards
-**Rationale:** Only after the benchmark cases and execution surfaces are stable should the repo produce decision-grade external-versus-internal outputs.
-**Delivers:** Shared benchmark spec, per-target run manifests, normalized case-result rows, aggregate summaries by family and fidelity, control deltas, inspect surfaces, and recommendation lines for roadmap follow-up.
-**Addresses:** `LLM-32`, `LLM-33`, and `OPS-18`.
-**Avoids:** Misleading aggregate scores, overclaiming from a tiny benchmark, and disconnected reporting artifacts.
+### Phase 42: Extensive Guided Tutorial Expansion
 
-### Phase Ordering Rationale
+**Rationale:** Once the programmatic visualization path exists, the Markdown
+tutorial can become the coherent long-form operator story the user requested.
+**Delivers:** deeper walkthrough of the deterministic spine plus shipped LLM
+workflow branches, explicit visualization artifact chain, and honest scope
+boundaries.
+**Addresses:** `DOC-06`, `DOC-07`.
 
-- Phase 34 first because benchmark credibility depends on frozen case selection and explicit control-arm definition, not on runtime completeness.
-- Phase 35 second because the benchmark cannot be trusted until external targets are revision-pinned, smoke-tested, and reproducibly executable.
-- Phase 36 last because scorecards and milestone decisions are only meaningful once per-case lineage and execution contracts are stable.
-- This grouping preserves the repo's additive architecture: immutable input artifacts first, execution lineage second, operator-facing summary last.
+### Phase 43: Notebook Visualization and LLM Walkthrough Integration
 
-### Research Flags
-
-Phases likely needing deeper research during planning:
-- **Phase 35:** Validate the initial external-model shortlist, adapter-backed cases, hardware envelopes, and any model-specific prompt or parser quirks before locking the final benchmark lane list.
-- **Phase 36:** Confirm the exact metric and parser contracts for each benchmark family if the milestone expands beyond simple CIF and material-string generation slices.
-
-Phases with standard patterns (skip research-phase):
-- **Phase 34:** Strong repo precedent already exists for schema-backed manifests, file-backed inventories, and freeze-style artifact creation.
-- **Most of Phase 36:** Summary artifact writing, CLI inspect surfaces, and compare-style aggregation align closely with existing benchmark patterns once the case-result schema is fixed.
+**Rationale:** The notebook should become the executable, most-detailed version
+of the same story after the viewer and narrative contracts are stable.
+**Delivers:** programmatic rendering cells or helpers, richer LLM command
+coverage, and clearer notebook-vs-Markdown guidance.
+**Addresses:** `OPS-25`, `OPS-26`.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Repo fit is strong and the runtime recommendations are grounded in official PyTorch and Hugging Face docs. |
-| Features | HIGH | The minimum credible feature set is consistent across all four research documents and tightly scoped to the milestone goal. |
-| Architecture | MEDIUM | Storage shape and component boundaries are clear, but the exact prompt and result contract still needs to be frozen during planning. |
-| Pitfalls | HIGH | The main failure modes are concrete, repo-specific, and already map cleanly to phase boundaries. |
+| Stack | HIGH | The repo already has almost everything needed; the main decision is packaging, not capability discovery. |
+| Features | HIGH | The user ask translates cleanly into one visualization track and one tutorial-depth track. |
+| Architecture | MEDIUM-HIGH | The tutorial-first raw export path is clear; richer integration with the existing online viewer can stay optional. |
+| Pitfalls | HIGH | The failure modes are concrete and strongly grounded in the current docs and codebase. |
 
-**Overall confidence:** MEDIUM
-
-### Gaps to Address
-
-- Final external-model shortlist: upstream packaging quality and adapter requirements vary, so the benchmark lane list still needs explicit operator validation.
-- Prompt and parser contract: the exact request template and parsed-output schema per benchmark family should be fixed before implementation starts.
-- Hardware envelope: the MVP needs one explicit tested device and offload policy so reruns do not silently change behavior.
-- Metric granularity: if the benchmark grows beyond basic validity and fidelity-aware comparisons, metric definitions will need a short research pass before phase planning finalizes.
+**Overall confidence:** MEDIUM-HIGH
 
 ## Sources
 
-### Primary (HIGH confidence)
-- Repo research documents: `.planning/research/STACK.md`, `.planning/research/FEATURES.md`, `.planning/research/ARCHITECTURE.md`, `.planning/research/PITFALLS.md`
-- Repo implementation references: `materials-discovery/src/materials_discovery/llm/schema.py`, `materials-discovery/src/materials_discovery/llm/storage.py`, `materials-discovery/src/materials_discovery/llm/runtime.py`, `materials-discovery/src/materials_discovery/llm/translation_bundle.py`, `materials-discovery/src/materials_discovery/llm/checkpoints.py`, `materials-discovery/src/materials_discovery/llm/serving_benchmark.py`
-- Repo docs: `materials-discovery/developers-docs/llm-translation-contract.md`, `materials-discovery/developers-docs/llm-translation-runbook.md`
-- Official docs: PyTorch reproducibility and deterministic algorithms docs; Hugging Face Hub download and environment-variable docs; Transformers model loading docs; Accelerate big-model docs
+### Primary
 
-### Secondary (MEDIUM confidence)
-- Hugging Face PEFT docs for adapter-backed model loading
-- CrystaLLM upstream repository
-- CrystalTextLLM upstream repository
-- Materials-LLM robustness paper: Wang et al., Digital Discovery (2025)
+- local repo: `materials-discovery/developers-docs/guided-design-tutorial.md`
+- local repo: `materials-discovery/notebooks/guided_design_tutorial.ipynb`
+- local repo: `materials-discovery/src/materials_discovery/generator/zomic_bridge.py`
+- local repo: `core/src/main/java/com/vzome/core/apps/ExportZomicLabeledGeometry.java`
+- local repo: `core/src/main/java/com/vzome/core/exporters/ShapesJsonExporter.java`
+- local repo: `online/src/wc/vzome-viewer.js`
+- local repo: `online/src/viewer/context/viewer.jsx`
+- local repo: `online/README.md`
+- local repo: `online/developer-docs/architecture.md`
+- official vZome docs: https://www.vzome.com/docs/web-component/
 
 ## Milestone Recommendation
 
-Plan `v1.6` as a three-phase, benchmark-first milestone and hold scope there.
-Success means one frozen fidelity-aware benchmark set, a small allowlisted set
-of reproducibly runnable external models, one shared benchmark against promoted
-or pinned internal controls, and a scorecard that can support a clear
-continue-or-stop decision without hiding fidelity caveats. Do not broaden the
-milestone into generic external serving, training automation, or UI work.
+Plan `v1.81` as a three-phase tutorial-and-visualization milestone. Success is
+not a full vZome web product. Success is a checked Sc-Zn walkthrough that
+stays inside the repo workflow from `.zomic` authoring to programmatic
+visualization, and that finally gives the shipped LLM workflow families the
+extensive tutorial coverage the user asked for.
 
 **File changed:** `/Users/nikolaosvasiloglou/github-repos/vzome/.planning/research/SUMMARY.md`
-
----
-*Research completed: 2026-04-07*
-*Ready for roadmap: yes*
