@@ -5,9 +5,9 @@ milestone_name: Extensive LLM Tutorial and Programmatic vZome Visualization MVP
 current_phase: "41"
 current_phase_name: Programmatic Visualization Artifact and Library Surface
 current_plan: Not started
-status: roadmap defined
-stopped_at: milestone v1.81 roadmap created; ready for phase 41 discussion
-last_updated: "2026-04-15T15:06:49Z"
+status: discussion complete
+stopped_at: phase 41 discussion captured; ready for phase planning
+last_updated: "2026-04-15T15:34:46Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 3
@@ -38,10 +38,10 @@ Current Phase: 41
 Current Phase Name: Programmatic Visualization Artifact and Library Surface
 Total Phases in Current Milestone: 3
 Current Plan: Not started
-Status: Roadmap defined; ready for phase planning
+Status: Phase 41 discussion captured; ready for phase planning
 Last activity: 2026-04-15
-Last Activity Description: Milestone v1.81 roadmap created and Phase 41 is
-ready for planning
+Last Activity Description: Phase 41 discussion captured with tutorial-first raw
+export visualization decisions
 
 Progress: [----------] 0%
 
@@ -115,6 +115,15 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
 - [Milestone v1.8]: Archive the LLM-aware docs-and-notebook milestone now that the tutorial, notebook, deep-dive cross-links, and PDF refresh are verified and shipped.
 - [Milestone v1.81]: Extend the guided tutorial and notebook from one bounded companion lane into an extensive walkthrough of the shipped LLM functionality.
 - [Milestone v1.81]: Replace the manual desktop vZome visualization handoff with a programmatic repo-owned visualization path, preferably by packaging the existing viewer/export surfaces rather than inventing a brand-new service.
+- [Phase 41]: Use the checked `*.raw.json` labeled-geometry export as the
+  official v1.81 visualization input; defer richer `.vZome` and
+  `.shapes.json` compatibility to later work.
+- [Phase 41]: Make the public usage path Python-first for docs and notebooks,
+  backed by a small JavaScript rendering layer rather than a default service.
+- [Phase 41]: Optimize the MVP for clear tutorial geometry rather than desktop
+  vZome visual parity.
+- [Phase 41]: Reuse `mdisc export-zomic` as the official artifact refresh path
+  unless a paper-thin helper is needed solely for tutorial ergonomics.
 
 ### Pending Todos
 
@@ -129,5 +138,5 @@ viewer or service project.
 ## Session Continuity
 
 Last session: 2026-04-15T15:06:49Z
-Stopped at: milestone v1.81 roadmap created; ready for phase 41 discussion
-Resume file: .planning/PROJECT.md
+Stopped at: phase 41 discussion captured; ready for phase planning
+Resume file: .planning/phases/41-programmatic-visualization-artifact-and-library-surface/41-CONTEXT.md
