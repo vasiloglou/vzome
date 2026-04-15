@@ -11,6 +11,10 @@ deep-dive aligned with the shipped workflow through `v1.6`, and a checked
 Sc-Zn tutorial that teaches the current design, evaluation, and visualization
 path.
 
+`v1.8` is the next docs-centered follow-up milestone. Its job is to make the
+repo's shipped LLM surface more legible in the narrative/tutorial stack and to
+turn the checked guided tutorial into a notebook with fuller execution detail.
+
 The shipped milestones delivered all three linked workstreams and the current
 LLM operating surface:
 - multi-source materials ingestion
@@ -23,19 +27,36 @@ LLM operating surface:
 - the groundwork for a new interoperability layer between Zomic-native
   candidates and external downloadable materials LLM formats
 
+## Current Milestone: v1.8 LLM Narrative Enrichment and Notebook Tutorial MVP
+
+**Goal:** Enrich the current docs/tutorial bundle so it explains the shipped
+LLM surface clearly and offers a detailed notebook version of the guided
+workflow.
+
+**Target features:**
+- make the repo's additive LLM surfaces legible beside the deterministic
+  geometry -> generate -> validate spine
+- expand the docs set so readers can see how generation/evaluation, campaign
+  governance, serving, checkpoints, translation, and external benchmarking fit
+  into the shipped system
+- convert the guided Sc-Zn walkthrough into a notebook with runnable cells,
+  setup notes, artifact inspection, and fuller commentary
+
 ## Current Milestone Status
 
-**Current Milestone:** None active
+**Current Milestone:** `v1.8` — LLM Narrative Enrichment and Notebook Tutorial
+MVP
 
-**Status:** `v1.7` — Documentation Refresh and Guided Design Tutorial MVP —
-shipped and archived on 2026-04-15.
+**Status:** Phase 40 completed on 2026-04-15. The milestone is ready for audit
+and archival.
 
 **Current focus:**
-- define the next milestone from the refreshed documentation baseline
-- decide whether the next expansion should emphasize campaign automation,
-  checkpoint/training workflows, benchmark-driven evaluation, or chemistry
-  scope
-- keep future scope honest about what is already shipped versus still planned
+- audit the completed v1.8 scope against DOC-04, DOC-05, OPS-22, OPS-23, and
+  OPS-24
+- archive the milestone once the phase summary, verification, and milestone
+  audit are in place
+- keep the milestone framing documentation-first rather than turning it into a
+  hidden product-surface expansion
 
 **Most Recent Shipped Milestone:** `v1.7` — Documentation Refresh and Guided
 Design Tutorial MVP
@@ -172,8 +193,13 @@ instead of living in separate prototypes.
 
 ### Active
 
-- No active milestone requirements. Run `$gsd-new-milestone` to define the
-  next milestone-specific requirements.
+- Make the shipped LLM surface explicit across the deep-dive/tutorial docs
+  without overstating future automation or treating every workflow as mandatory
+  for one deterministic run.
+- Convert the guided tutorial into a detailed notebook with setup guidance,
+  execution cells, artifact interpretation, and clear environment assumptions.
+- Cross-link the notebook and Markdown tutorial so readers can choose the right
+  format without losing the current checked Sc-Zn path.
 
 ### Out of Scope
 
@@ -213,6 +239,10 @@ instead of living in separate prototypes.
   `vzome-geometry-tutorial.md`) plus a checked
   `guided-design-tutorial.md` that ties design authoring, evaluation
   interpretation, and vZome visualization into one example.
+- That Markdown tutorial is currently strongest on the deterministic Sc-Zn
+  path; it does not yet give the repo's additive LLM surfaces equal narrative
+  weight or provide a notebook form for readers who want a more executable,
+  cell-by-cell walkthrough.
 - The current runtime can realize `CandidateRecord` data into ASE atoms or a
   pymatgen `Structure`, while the Zomic bridge preserves a vZome-rooted
   geometry path for design authoring and visualization.
@@ -259,6 +289,7 @@ instead of living in separate prototypes.
 | Keep `v1.6` benchmark-first and advisory rather than auto-promoting winners | Benchmark evidence needed to guide the next milestone, not silently become automation policy | ✓ Good |
 | Start Project 3 v1.7 with documentation refresh and one guided workflow tutorial | The shipped tool surface now exceeds the accuracy and usability of the long-form narrative docs, and a checked tutorial lowers onboarding risk before more automation work | ✓ Good |
 | Archive `v1.7` after the documentation refresh and guided tutorial ship | The docs baseline is now trustworthy enough to support the next milestone without carrying active milestone clutter | ✓ Good |
+| Start Project 3 v1.8 with LLM-aware docs enrichment and notebook conversion | The current docs now need one follow-up pass that makes the shipped LLM story legible and gives operators a richer executable tutorial format before more product expansion | ✓ Good |
 
 ## Evolution
 
@@ -278,4 +309,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-15 after archiving shipped milestone v1.7*
+*Last updated: 2026-04-15 after completing Phase 40*

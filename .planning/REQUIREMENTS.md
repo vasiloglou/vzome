@@ -1,0 +1,73 @@
+# Requirements: Materials Design Program
+
+**Defined:** 2026-04-15
+**Core Value:** Build one reproducible system where trusted materials data,
+physically grounded no-DFT validation, and LLM-guided structure generation
+reinforce each other instead of living in separate prototypes.
+
+## v1.8 Requirements
+
+### LLM Narrative
+
+- [x] **DOC-04**: Readers can see how the shipped LLM workflow families fit
+  into the current materials-discovery system, including generation and
+  evaluation, campaign governance, serving comparison, checkpoint lifecycle,
+  translation, and external benchmarking.
+- [x] **DOC-05**: The docs set clearly distinguishes the deterministic
+  geometry-driven workflow spine from the additive or optional LLM workflows
+  and labels future work explicitly instead of implying broader automation than
+  the repo currently ships.
+
+### Notebook Tutorial
+
+- [x] **OPS-22**: Operator can open one notebook version of the guided tutorial
+  with ordered cells, setup notes, commands or shell cells, expected artifact
+  paths, and interpretation guidance for the worked example.
+- [x] **OPS-23**: The notebook explains where the current LLM component fits
+  into the tutorial story for the same example or a clearly bounded companion
+  lane, so the repo's LLM surface is not absent from the walkthrough.
+- [x] **OPS-24**: The docs index and notebook header explain when to use the
+  notebook versus the Markdown tutorial and what environment assumptions each
+  path makes.
+
+## v2 Requirements
+
+### Product Expansion
+
+- **LLM-12**: Add optional autonomous campaign execution only after
+  multi-checkpoint selection and rollback remain reliable with promoted
+  checkpoints in the workflow.
+- **LLM-18**: Add controlled training and fine-tuning automation only after the
+  checkpoint lifecycle surface is stable enough to support automated
+  adaptation jobs, checkpoint promotion, retirement, and multi-checkpoint
+  management responsibly.
+- **PIPE-06**: Add more target chemistries beyond the current QC-centered
+  systems.
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| New LLM algorithms, serving modes, checkpoint mechanics, or external benchmark code in v1.8 | This milestone is about documentation fidelity and tutorial format, not a new product-surface expansion. |
+| Turning the notebook into a new execution engine, UI shell, or workflow controller | The notebook should document the current toolchain rather than replace it. |
+| Broad docs-site or marketing redesign outside the current `materials-discovery/` documentation set | The immediate gap is accurate, executable documentation for the shipped repo surface. |
+| Autonomous campaigns, checkpoint training, or wider chemistry expansion as part of the notebook effort | Those remain later product milestones and would blur this milestone's scope. |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DOC-04 | Phase 40 | Complete |
+| DOC-05 | Phase 40 | Complete |
+| OPS-22 | Phase 40 | Complete |
+| OPS-23 | Phase 40 | Complete |
+| OPS-24 | Phase 40 | Complete |
+
+**Coverage:**
+- v1.8 requirements: 5 total
+- Mapped to phases: 5
+- Unmapped: 0
+
+---
+*Requirements defined: 2026-04-15*
+*Last updated: 2026-04-15 after completing Phase 40*

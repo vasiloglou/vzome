@@ -4,6 +4,8 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-15 | Phase 40 LLM docs and notebook tutorial | Enriched `developers-docs/guided-design-tutorial.md` with explicit LLM workflow framing, added `notebooks/guided_design_tutorial.ipynb` as the detailed notebook companion, updated the docs index and deep-dive cross-links, and refreshed the podcast PDF alongside the new docs surface |
+| 2026-04-15 | Podcast deep-dive PDF export | Re-rendered `developers-docs/podcast-deep-dive-source.pdf` from the refreshed markdown so the updated long-form narrative can be shared as a standalone PDF artifact |
 | 2026-04-15 | Phase 39 guided tutorial | Added `developers-docs/guided-design-tutorial.md`, linked it from the docs index, and documented the Sc-Zn Zomic-backed design -> evaluate -> visualize path with concrete artifact interpretation and vZome handoff guidance |
 | 2026-04-15 | Phase 38 narrative refresh | Refreshed `developers-docs/podcast-deep-dive-source.md` so it describes the shipped workflow through `v1.6`, links to the current runbooks and reference docs, and removes stale command-count, capability, and quantitative claims from the older deep-dive draft |
 | 2026-04-07 | Phase 36 Plan 03 comparative benchmark docs and example spec | Added a committed `al_cu_fe_external_benchmark.yaml`, shipped an operator runbook for benchmark execute or inspect plus artifact interpretation, and refreshed the configuration reference, pipeline stages guide, and docs index so the Phase 36 workflow is discoverable beside the Phase 34 and Phase 35 handoff docs |
@@ -164,10 +166,14 @@
 
 ### 2026-04-15
 
+- 01:01 EDT — Extended the docs stack with Phase 40 LLM framing and a notebook companion for the guided tutorial.
+- Added an explicit "Where the LLM workflows fit" section to `developers-docs/guided-design-tutorial.md`, created `notebooks/guided_design_tutorial.ipynb` for cell-by-cell execution and artifact inspection, updated docs discovery links, and refreshed the deep-dive handoff links so the narrative points readers into the practical tutorial/notebook surface.
 - 00:11 EDT — Refreshed the long-form narrative in `developers-docs/podcast-deep-dive-source.md` for Phase 38.
 - Reframed the stale seven-stage and four-layer story around the shipped `v1.6` workflow families, added cross-links to the current runbooks and reference docs, softened or removed volatile repo-state counts, and made explicit that no new workflow capability was added.
 - 00:21 EDT — Added the Phase 39 guided tutorial and wired it into the docs index.
 - Documented the locked Sc-Zn Zomic-backed path from `export-zomic` through `report`, added artifact interpretation notes for the current screening, validation, and report snapshots, and made the `.zomic` -> raw export -> orbit-library -> candidate geometry authority chain explicit for vZome iteration.
+- 00:48 EDT — Re-rendered `developers-docs/podcast-deep-dive-source.md` to `developers-docs/podcast-deep-dive-source.pdf`.
+- Replaced the older PDF export with a fresh standalone copy of the refreshed deep-dive so the shareable document matches the current markdown source.
 
 ### 2026-04-07
 

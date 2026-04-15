@@ -1,19 +1,19 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.7
-milestone_name: Documentation Refresh and Guided Design Tutorial MVP
+milestone: v1.8
+milestone_name: LLM Narrative Enrichment and Notebook Tutorial MVP
 current_phase: null
-current_phase_name: no active phase
+current_phase_name: all phases complete
 current_plan: Complete
-status: archived
-stopped_at: v1.7 milestone archived; ready for next milestone
-last_updated: "2026-04-15T04:40:35Z"
+status: ready_for_audit
+stopped_at: Phase 40 complete; v1.8 ready for audit and archival
+last_updated: "2026-04-15T05:05:01Z"
 last_activity: 2026-04-15
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 3
-  completed_plans: 3
+  total_phases: 1
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
   percent: 100
 ---
 
@@ -26,21 +26,24 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 **Core value:** Build one reproducible system where trusted materials data,
 physically grounded no-DFT validation, and LLM-guided structure generation
 reinforce each other instead of living in separate prototypes.
-**Current focus:** Define the next milestone from the archived v1.7
-documentation baseline
+**Current focus:** Audit and archive `v1.8` now that Phase 40 has shipped the
+LLM-aware docs enrichment and notebook companion
 
 ## Current Position
 
-Current Milestone: none active
-Most Recent Milestone: v1.7
-Current Phase: none
-Current Phase Name: no active phase
-Total Phases in Most Recent Milestone: 3
+Current Milestone: v1.8
+Most Recent Shipped Milestone: v1.7
+Current Phase: none active
+Current Phase Name: all phases complete
+Total Phases: 1
 Current Plan: Complete
-Status: v1.7 shipped and archived; ready for next milestone definition
+Total Plans in Phase: 1
+Phase: 40 (llm narrative enrichment and notebook tutorial conversion) — COMPLETE
+Status: Phase 40 verified; v1.8 ready for `$gsd-audit-milestone`
 Last activity: 2026-04-15
-Last Activity Description: v1.7 milestone archived and planning reset for the
-next milestone
+Last Activity Description: Phase 40 completed the LLM-aware docs enrichment,
+notebook publication, and required Progress/PDF refresh with passing
+verification
 
 Progress: [##########] 100%
 
@@ -64,9 +67,11 @@ Progress: [##########] 100%
 | v1.5 | 31-33 | 9 | Shipped |
 | v1.6 | 34-36 | 9 | Shipped |
 | v1.7 | 37-39 | 3 | Shipped |
+| v1.8 | 40 | 1 | Ready for Audit |
 | Phase 37 P01 | 537 | 3 tasks | 2 files |
 | Phase 38 P01 | 289 | 3 tasks | 2 files |
 | Phase 39 P01 | 0b8 | 3 tasks | 3 files |
+| Phase 40 P01 | fd9 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -104,6 +109,11 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
 - [Phase 39]: Keep the geometry authority chain explicit: `.zomic` source first, then raw export, then orbit-library JSON, then downstream candidate artifacts.
 - [Phase 39]: Use the checked Sc-Zn snapshot to teach interpretation, even when the correct conclusion is "hold" rather than "promote".
 - [Milestone v1.7]: Archive the documentation refresh milestone now that the refreshed deep dive and guided tutorial are shipped and audited, and use them as the baseline for next-milestone scoping.
+- [Milestone v1.8]: Use the next docs milestone to make the shipped LLM surface legible in the docs stack and to convert the guided tutorial into a notebook before expanding the product surface again.
+- [Milestone v1.8]: Treat notebook conversion as a documentation deliverable, not as a new workflow engine or UI surface.
+- [Phase 40]: Keep the checked Sc-Zn deterministic path as the tutorial spine and explain the LLM surface as additive companion workflows instead of widening chemistry scope.
+- [Phase 40]: Publish the notebook as a detailed companion artifact, not as a replacement for the shorter Markdown walkthrough.
+- [Phase 40]: Cross-link the deep dive, docs index, Markdown tutorial, notebook, and LLM runbooks so readers can move between narrative, checked walkthrough, and operator references without ambiguity.
 
 ### Pending Todos
 
@@ -111,11 +121,10 @@ None yet.
 
 ### Blockers/Concerns
 
-No active blockers. No milestone is currently active; next work is to define
-the next milestone with `$gsd-new-milestone`.
+No active blockers. Next work is to audit and archive `v1.8`.
 
 ## Session Continuity
 
-Last session: 2026-04-15T04:40:35Z
-Stopped at: v1.7 milestone archived; ready for next milestone
-Resume file: .planning/PROJECT.md
+Last session: 2026-04-15T05:05:01Z
+Stopped at: Phase 40 complete; v1.8 ready for audit and archival
+Resume file: .planning/ROADMAP.md

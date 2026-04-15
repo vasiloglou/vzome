@@ -10,6 +10,12 @@ Use this page with the [Operator Runbook](../RUNBOOK.md),
 worked example so the commands, artifacts, and geometry authority chain do not
 drift.
 
+Use the Markdown page when you want the shortest checked walkthrough. Use the
+[Guided Design Tutorial Notebook](../notebooks/guided_design_tutorial.ipynb)
+when you want cell-by-cell execution helpers, inline artifact inspection, and a
+more detailed companion explanation of where the repo's additive LLM workflows
+fit.
+
 ## 1. Before You Start
 
 Run everything from the `materials-discovery/` workspace:
@@ -253,7 +259,60 @@ That is the right reading of the current example: the tooling is not telling you
 "ship this"; it is telling you why the batch is still a watchlist rather than a
 promotion candidate set.
 
-## 9. Visualize with vZome and Zomic
+## 9. Where the LLM Workflows Fit
+
+The checked Sc-Zn walkthrough above is the deterministic spine of the repo:
+geometry authority starts in `.zomic`, the standard pipeline writes the main
+candidate/report artifacts, and the current example teaches how to read that
+evidence honestly.
+
+The repo's shipped LLM workflows are additive around that spine rather than a
+replacement for it.
+
+### 9.1 Same-System Companion Lane
+
+If you want to stay in the Sc-Zn family while exploring the LLM component, use
+the companion configs:
+
+| Path | Role |
+|------|------|
+| `configs/systems/sc_zn_llm_mock.yaml` | Fixture-backed Sc-Zn LLM generation/evaluation lane for dry runs and tests |
+| `configs/systems/sc_zn_llm_local.yaml` | Local OpenAI-compatible Sc-Zn lane with general-purpose generation and specialized evaluation |
+
+Representative companion commands:
+
+```bash
+uv run mdisc llm-generate --config configs/systems/sc_zn_llm_mock.yaml --count 5 \
+  --out data/candidates/sc_zn_llm_candidates.jsonl
+
+uv run mdisc llm-evaluate --config configs/systems/sc_zn_llm_mock.yaml --batch all
+```
+
+What changes, and what does not:
+
+- `llm-generate` adds an alternate proposal lane that still compiles Zomic and
+  writes standard candidate/manifests artifacts.
+- `llm-evaluate` adds assessment artifacts on top of ranked candidates; it does
+  not replace the deterministic validation/report evidence already shown above.
+- The `.zomic` file remains the geometry authority for the checked design path.
+- The deterministic `export-zomic -> generate -> screen -> hifi-validate ->
+  hifi-rank -> report` sequence is still the cleanest first walkthrough.
+
+### 9.2 Other Shipped LLM Workflow Families
+
+| Workflow family | Commands | When it fits | Start here |
+|----------------|----------|--------------|------------|
+| Additive generation and assessment | `llm-generate`, `llm-evaluate` | When you want alternate Zomic proposals or additive assessment on top of the deterministic evidence | [LLM Integration](llm-integration.md) |
+| Campaign governance | `llm-suggest`, `llm-approve`, `llm-launch`, `llm-replay`, `llm-compare` | After you have acceptance-pack evidence and want an operator-governed campaign loop | [Operator Runbook](../RUNBOOK.md) |
+| Serving and checkpoint operations | `llm-serving-benchmark`, `llm-register-checkpoint`, `llm-list-checkpoints`, `llm-promote-checkpoint`, `llm-retire-checkpoint` | When you need to compare lanes or manage adapted checkpoints without changing the base workflow contract | [Operator Runbook](../RUNBOOK.md) |
+| Translation and external benchmarking | `llm-translate`, `llm-translate-inspect`, `llm-translated-benchmark-freeze`, `llm-translated-benchmark-inspect`, `llm-register-external-target`, `llm-inspect-external-target`, `llm-smoke-external-target`, `llm-external-benchmark`, `llm-inspect-external-benchmark` | When you want to export QC-native candidates for downstream materials-LLM comparison and benchmark them honestly | [LLM Translation Runbook](llm-translation-runbook.md), [Translated Benchmark Runbook](llm-translated-benchmark-runbook.md), [External Target Runbook](llm-external-target-runbook.md), [External Benchmark Runbook](llm-external-benchmark-runbook.md) |
+
+If you want all of that in one executable walkthrough format, open the
+[Guided Design Tutorial Notebook](../notebooks/guided_design_tutorial.ipynb).
+It keeps the same deterministic Sc-Zn path but adds more setup detail, helper
+cells, and explicit companion notes for the LLM surfaces.
+
+## 10. Visualize with vZome and Zomic
 
 Use the existing vZome/Zomic path for visualization and iteration:
 
@@ -285,7 +344,7 @@ If you need deeper reference while iterating, use:
 - [vZome Geometry Tutorial](vzome-geometry-tutorial.md)
 - [Zomic Language Reference](../../core/docs/ZomicReference.md)
 
-## 10. What a Good Next Iteration Looks Like
+## 11. What a Good Next Iteration Looks Like
 
 After you finish one pass through this tutorial:
 
