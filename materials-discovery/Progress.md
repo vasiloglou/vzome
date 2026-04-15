@@ -4,6 +4,8 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-15 | Guided tutorial notebook artifact glossary | Added a compact end-of-notebook artifact glossary to `notebooks/guided_design_tutorial.ipynb` covering raw exports, orbit libraries, manifests, translation inventories and freeze outputs, external-target registration artifacts, and benchmark summaries or scorecards so readers can decode the tutorial outputs without jumping into runbooks first |
+| 2026-04-15 | Guided tutorial notebook documentation pass | Expanded `notebooks/guided_design_tutorial.ipynb` with clearer helper/setup conventions, richer stage-by-stage artifact interpretation around the deterministic and same-system Sc-Zn lanes, and explicit step documentation for translation, translated benchmark freezing, external-target registration, and external benchmarking without changing the underlying workflow |
 | 2026-04-15 | Phase 43 notebook visualization and llm walkthrough integration | Rebuilt `notebooks/guided_design_tutorial.ipynb` into the richest runnable companion for the checked Sc-Zn walkthrough, added the repo-owned programmatic preview-vs-refresh path plus deeper same-system and translation/external benchmark guidance, aligned the docs map with the standalone visualization reference, and refreshed the notebook/visualization cross-links without reintroducing a desktop-only happy path |
 | 2026-04-15 | Phase 42 extensive guided tutorial expansion | Reframed `developers-docs/guided-design-tutorial.md` around the Sc-Zn deterministic spine, added the explicit branch map, moved the repo-owned preview path into the main walkthrough, replaced the old desktop-only visualization handoff with a clearer repo-preview versus desktop-vZome boundary, expanded the same-system plus translation/external benchmark branches into concrete artifact-backed operator guidance, and restored campaign plus serving/checkpoint workflow handoffs without collapsing the page into a command catalog |
 | 2026-04-15 | Phase 41 raw export viewer | Added `materials_discovery.visualization` for checked raw-export loading and standalone HTML rendering, shipped `mdisc preview-zomic` with browser and label-toggle options, documented the programmatic preview path, and replaced the happy-path desktop-only visualization handoff with a repo-owned viewer surface |
@@ -169,6 +171,12 @@
 
 ### 2026-04-15
 
+- 15:46 EDT — Added an artifact glossary near the end of `notebooks/guided_design_tutorial.ipynb`.
+- Documented the common JSON and JSONL artifact families in the tutorial itself, including raw exports, orbit libraries, manifests, translated-bundle inventories and freeze decisions, external-target registration or smoke files, and the benchmark summary or scorecard or run-result outputs that readers inspect next.
+- 15:41 EDT — Started a documentation pass on `notebooks/guided_design_tutorial.ipynb`.
+- Added notebook-only explanation for the helper/setup cell, clarified how preview-only execution and the `RUN_*` flags work, and expanded the deterministic-stage markdown so the path inventory, export artifacts, candidate/screen outputs, and validation/report split are easier to interpret without reading helper code.
+- 15:41 EDT — Documented the additive branches more explicitly in the notebook.
+- Added step-by-step markdown for translation bundles, translated benchmark freezing, external-target registration/smoke, and external benchmarking, plus clearer same-system lane notes about the mock versus local configs and the follow-on workflow boundary.
 - 13:37 EDT — Started the Phase 43 notebook walkthrough integration pass.
 - Rebuilt `notebooks/guided_design_tutorial.ipynb` around the Sc-Zn deterministic spine, added explicit execution flags plus a preview-vs-refresh path using the repo-owned visualization helper, and replaced the old notebook-ending desktop-only visualization handoff with clearer preview/refresh/desktop roles.
 - 13:37 EDT — Expanded the notebook's LLM branches and docs-map alignment.
