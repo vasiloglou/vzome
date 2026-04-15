@@ -79,6 +79,11 @@ story. Procedural details belong in cross-links to `RUNBOOK.md`,
 `pipeline-stages.md`, `backend-system.md`, the Zomic workflow, and the LLM
 runbooks.
 
+Forced refresh result: the framing remains sound. The refreshed pass updates
+the HEAD-based numeric snapshot, tightens stale-claim validation to use negative
+grep checks, and makes numeric snapshots explicitly optional so the executor can
+remove all volatile counts when they do not improve the narrative.
+
 **Primary recommendation:** Rewrite the deep dive as a high-level, source-linked
 narrative with dated or softened quantitative claims, explicit shipped/future
 labels, and a required same-change update to `materials-discovery/Progress.md`.
@@ -249,7 +254,7 @@ commands and written as time-bound snapshots.
 **Current snapshot commands run during research:**
 
 ```bash
-git rev-list --count HEAD                                      # 4641
+git rev-list --count HEAD                                      # 4644
 git rev-list --count 359cef57777479fb15652f1f4c702c43a25c4bc6  # 4278
 find materials-discovery/src/materials_discovery -type f -name '*.py' | wc -l  # 122
 find materials-discovery/src/materials_discovery -type f -name '*.py' -print0 | xargs -0 wc -l | tail -1  # 27857 total
@@ -258,7 +263,9 @@ rg -n '@(?:app|lake_app|llm_corpus_app)\.command' materials-discovery/src/materi
 ```
 
 **Planning instruction:** Regenerate these at implementation time if any are
-kept. Prefer "as of 2026-04-15" language; otherwise soften the claim.
+kept. Prefer "as of 2026-04-15" language; otherwise soften the claim. Do not
+make a dated numeric snapshot an acceptance requirement; D-08 allows removing
+all volatile counts if they do not help the reader.
 
 ### Anti-Patterns to Avoid
 
@@ -398,6 +405,9 @@ As of 2026-04-15, a local repository snapshot counted 122 Python modules under
 system contract.
 ```
 
+If the rewrite removes all volatile numbers, use no snapshot paragraph and
+validate only that stale count strings are absent.
+
 ### Future-Work Label Pattern
 
 ```markdown
@@ -492,15 +502,16 @@ instead of bare `python3` because the system interpreter is 3.9.6.
 |----------|-------|
 | Framework | `pytest` 9.0.2 through `uv run pytest`; docs grep checks for narrative requirements |
 | Config file | `materials-discovery/pyproject.toml` (`tool.pytest.ini_options`) |
-| Quick run command | `git diff --check && rg -n "4,238 commits|seven commands|60 modules|7,200|21 test files|Seven Pipeline Stages|four execution layers|targets three real alloy systems|full seven-stage pipeline" materials-discovery/developers-docs/podcast-deep-dive-source.md` should return no stale hits after implementation |
-| Full suite command | `cd materials-discovery && uv run pytest -q` |
+| Quick run command | `git diff --check && ! rg -n "4,238 commits|seven commands|60 modules|7,200|21 test files|Seven Pipeline Stages|four execution layers|targets three real alloy systems|full seven-stage pipeline" materials-discovery/developers-docs/podcast-deep-dive-source.md` |
+| Full suite command | `git diff --check && rg -n "export-zomic|llm-serving-benchmark|llm-list-checkpoints|llm-promote-checkpoint|llm-retire-checkpoint|llm-translate|llm-translated-benchmark-freeze|llm-register-external-target|llm-external-benchmark" materials-discovery/developers-docs/podcast-deep-dive-source.md && rg -n "RUNBOOK.md|pipeline-stages.md|backend-system.md|zomic-design-workflow.md|llm-translation-runbook.md|llm-external-benchmark-runbook.md" materials-discovery/developers-docs/podcast-deep-dive-source.md && rg -n "future work|not shipped|planned beyond|not yet|operator-governed" materials-discovery/developers-docs/podcast-deep-dive-source.md && ! rg -n "4,238 commits|seven commands|60 modules|7,200|21 test files|Seven Pipeline Stages|four execution layers|targets three real alloy systems|full seven-stage pipeline" materials-discovery/developers-docs/podcast-deep-dive-source.md && cd materials-discovery && uv run pytest tests/test_cli.py -q` |
 
 ### Phase Requirements -> Test Map
 
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|--------------|
 | DOC-02 | Deep dive mentions shipped design/evaluation, serving/checkpoint, translation, and external benchmark surfaces through `v1.6`. | docs audit | `rg -n "export-zomic|llm-serving-benchmark|llm-list-checkpoints|llm-promote-checkpoint|llm-retire-checkpoint|llm-translate|llm-translated-benchmark-freeze|llm-register-external-target|llm-external-benchmark" materials-discovery/developers-docs/podcast-deep-dive-source.md` | yes |
-| DOC-02 | Deep dive no longer preserves known stale source claims. | docs audit | `rg -n "4,238 commits|seven commands|60 modules|7,200|21 test files|Seven Pipeline Stages|four execution layers|targets three real alloy systems|full seven-stage pipeline" materials-discovery/developers-docs/podcast-deep-dive-source.md` should return no hits | yes |
+| DOC-02 | Deep dive no longer preserves known stale source claims. | docs audit | `! rg -n "4,238 commits|seven commands|60 modules|7,200|21 test files|Seven Pipeline Stages|four execution layers|targets three real alloy systems|full seven-stage pipeline" materials-discovery/developers-docs/podcast-deep-dive-source.md` | yes |
+| DOC-02 | Any retained exact numeric snapshot is regenerated and time-bound; no snapshot is required if volatile counts are removed. | docs audit | `if rg -n "As of 2026-04-15|orientation numbers, not part of the system contract" materials-discovery/developers-docs/podcast-deep-dive-source.md; then true; else ! rg -n "commits|modules|lines of code|test files|decorators" materials-discovery/developers-docs/podcast-deep-dive-source.md; fi` | yes |
 | DOC-03 | Deep dive links source-of-truth docs instead of duplicating procedures. | docs audit | `rg -n "RUNBOOK.md|pipeline-stages.md|backend-system.md|zomic-design-workflow.md|llm-translation-runbook.md|llm-external-benchmark-runbook.md" materials-discovery/developers-docs/podcast-deep-dive-source.md` | yes |
 | DOC-03 | Future/planned work is explicitly labeled. | docs audit | `rg -n "future work|not shipped|planned beyond|not yet|operator-governed" materials-discovery/developers-docs/podcast-deep-dive-source.md` | yes |
 | DOC-03 | Mandatory progress tracking is updated with the materials docs edit. | docs audit | `git diff --name-only -- materials-discovery | rg "Progress.md|podcast-deep-dive-source.md"` and inspect both Changelog and Diary entries | yes |
@@ -525,6 +536,8 @@ instead of bare `python3` because the system interpreter is 3.9.6.
 - `.planning/STATE.md` - current milestone state and Phase 37 handoff.
 - `.planning/PROJECT.md` - current state, shipped milestone summaries, active constraints.
 - `.planning/ROADMAP.md` - Phase 38 goal, dependencies, success criteria.
+- `.planning/phases/38-narrative-refresh-and-cross-linked-deep-dive/38-01-PLAN.md` - downstream plan checked during forced refresh for alignment with D-07 and D-08.
+- `.planning/phases/38-narrative-refresh-and-cross-linked-deep-dive/38-VALIDATION.md` - validation strategy checked during forced refresh; research now recommends negative grep checks for stale strings.
 - `.planning/phases/37-deep-dive-provenance-audit-and-tutorial-scope/37-PROVENANCE-AUDIT.md` - stale claim inventory, shipped-surface list, correction checklist.
 - `.planning/phases/37-deep-dive-provenance-audit-and-tutorial-scope/37-VERIFICATION.md` - verified evidence packet for Phase 37.
 - `materials-discovery/developers-docs/podcast-deep-dive-source.md` - current target document.
