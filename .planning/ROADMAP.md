@@ -23,7 +23,7 @@ the current ones more legible, evidence-backed, and teachable.
 - Integer phases continue from the previous milestone.
 - `v1.7` starts at Phase 37 because `v1.6` ended at Phase 36.
 
-- [ ] **Phase 37: Deep-Dive Provenance Audit and Tutorial Scope** - Trace the
+- [x] **Phase 37: Deep-Dive Provenance Audit and Tutorial Scope** - Trace the (completed 2026-04-15)
   podcast source doc, audit stale claims, and lock the worked-example scope for
   the tutorial.
 - [ ] **Phase 38: Narrative Refresh and Cross-Linked Deep Dive** - Refresh the
@@ -54,7 +54,7 @@ refresh.
 **Plans**: 1 plan
 
 Plans:
-- [ ] 37-01-PLAN.md - Create the planning-side provenance audit and Sc-Zn tutorial scope lock.
+- [x] 37-01-PLAN.md - Create the planning-side provenance audit and Sc-Zn tutorial scope lock.
 
 ### Phase 38: Narrative Refresh and Cross-Linked Deep Dive
 **Goal**: The long-form deep-dive source accurately describes the shipped
@@ -95,6 +95,6 @@ the geometry through the existing vZome/Zomic path.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 37. Deep-Dive Provenance Audit and Tutorial Scope | 0/TBD | Not started | - |
+| 37. Deep-Dive Provenance Audit and Tutorial Scope | 1/1 | Complete   | 2026-04-15 |
 | 38. Narrative Refresh and Cross-Linked Deep Dive | 0/TBD | Not started | - |
 | 39. Guided Design, Evaluation, and Visualization Tutorial | 0/TBD | Not started | - |

@@ -9,7 +9,7 @@ reinforce each other instead of living in separate prototypes.
 
 ### Documentation Provenance
 
-- [ ] **DOC-01**: Operator can see when
+- [x] **DOC-01**: Operator can see when
   `materials-discovery/developers-docs/podcast-deep-dive-source.md` was
   created, how it moved in the repo, and which shipped milestones and workflow
   capabilities landed after its first draft so refresh work has a concrete
@@ -68,7 +68,7 @@ reinforce each other instead of living in separate prototypes.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DOC-01 | Phase 37 | Pending |
+| DOC-01 | Phase 37 | Complete |
 | DOC-02 | Phase 38 | Pending |
 | DOC-03 | Phase 38 | Pending |
 | OPS-19 | Phase 39 | Pending |
