@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-15 | Phase 41 raw export viewer | Added `materials_discovery.visualization` for checked raw-export loading and standalone HTML rendering, shipped `mdisc preview-zomic` with browser and label-toggle options, documented the programmatic preview path, and replaced the happy-path desktop-only visualization handoff with a repo-owned viewer surface |
 | 2026-04-15 | Phase 40 LLM docs and notebook tutorial | Enriched `developers-docs/guided-design-tutorial.md` with explicit LLM workflow framing, added `notebooks/guided_design_tutorial.ipynb` as the detailed notebook companion, updated the docs index and deep-dive cross-links, and refreshed the podcast PDF alongside the new docs surface |
 | 2026-04-15 | Podcast deep-dive PDF export | Re-rendered `developers-docs/podcast-deep-dive-source.pdf` from the refreshed markdown so the updated long-form narrative can be shared as a standalone PDF artifact |
 | 2026-04-15 | Phase 39 guided tutorial | Added `developers-docs/guided-design-tutorial.md`, linked it from the docs index, and documented the Sc-Zn Zomic-backed design -> evaluate -> visualize path with concrete artifact interpretation and vZome handoff guidance |
@@ -166,6 +167,8 @@
 
 ### 2026-04-15
 
+- 12:09 EDT — Added the Phase 41 raw-export viewer, preview CLI wrapper, and programmatic-visualization reference doc.
+- Created `materials_discovery.visualization` for typed raw-export loading, normalized view-model generation, and standalone HTML rendering, added `mdisc preview-zomic` so the checked Sc-Zn geometry can be previewed without opening desktop vZome for the common read-only path, and documented the new repo-owned preview workflow in `developers-docs/programmatic-zomic-visualization.md` plus the existing Zomic workflow page.
 - 01:01 EDT — Extended the docs stack with Phase 40 LLM framing and a notebook companion for the guided tutorial.
 - Added an explicit "Where the LLM workflows fit" section to `developers-docs/guided-design-tutorial.md`, created `notebooks/guided_design_tutorial.ipynb` for cell-by-cell execution and artifact inspection, updated docs discovery links, and refreshed the deep-dive handoff links so the narrative points readers into the practical tutorial/notebook surface.
 - 00:11 EDT — Refreshed the long-form narrative in `developers-docs/podcast-deep-dive-source.md` for Phase 38.

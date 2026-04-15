@@ -34,6 +34,11 @@ uv run mdisc generate --config configs/systems/sc_zn_zomic.yaml --count 32
 `export-zomic` writes an orbit-library JSON file. `generate` can call the same bridge
 automatically when the system config sets `zomic_design`.
 
+For the repo-owned preview path over the checked raw export, see
+[Programmatic Zomic Visualization](programmatic-zomic-visualization.md). That
+surface adds `uv run mdisc preview-zomic --design designs/zomic/sc_zn_tsai_bridge.yaml`
+without changing the existing export contract.
+
 ## Design Contract
 
 ### 1. Labels define atomic sites
