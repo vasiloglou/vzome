@@ -6,8 +6,8 @@ current_phase: "41"
 current_phase_name: Programmatic Visualization Artifact and Library Surface
 current_plan: "01"
 status: phase planned
-stopped_at: phase 41 research, validation, and plan created; ready for execution
-last_updated: "2026-04-15T15:45:49Z"
+stopped_at: phase 41 replanned with review feedback; ready for execution
+last_updated: "2026-04-15T15:59:30Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 3
@@ -40,8 +40,8 @@ Total Phases in Current Milestone: 3
 Current Plan: 01
 Status: Phase 41 planned; ready for execution
 Last activity: 2026-04-15
-Last Activity Description: Phase 41 research, validation, and plan captured for
-the raw-export viewer and preview wrapper
+Last Activity Description: Phase 41 replanned with review feedback for the
+raw-export viewer and preview wrapper
 
 Progress: [----------] 0%
 
@@ -130,6 +130,9 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
 - [Phase 41]: Expose the viewer through one thin `preview-zomic` CLI wrapper
   over the Python library instead of building a service or a second render
   stack.
+- [Phase 41 review]: Replan execution so malformed segment coordinates raise
+  `ValueError`, simultaneous `--design` and `--raw` inputs are rejected, and
+  the checked Sc-Zn raw export gets a smoke-test expectation when present.
 
 ### Pending Todos
 
@@ -144,5 +147,5 @@ viewer or service project.
 ## Session Continuity
 
 Last session: 2026-04-15T15:06:49Z
-Stopped at: phase 41 research, validation, and plan created; ready for execution
+Stopped at: phase 41 replanned with review feedback; ready for execution
 Resume file: .planning/phases/41-programmatic-visualization-artifact-and-library-surface/41-01-PLAN.md

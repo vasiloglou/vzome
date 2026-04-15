@@ -48,8 +48,8 @@ created: 2026-04-15
 
 ## Wave 0 Requirements
 
-- [ ] `materials-discovery/tests/test_zomic_visualization.py` — focused coverage for VIS-02 raw export loading and HTML generation
-- [ ] `materials-discovery/tests/test_cli.py` — preview-zomic command cases for VIS-01 and VIS-02
+- [ ] `materials-discovery/tests/test_zomic_visualization.py` — focused coverage for VIS-02 raw export loading, malformed segment rejection, and a guarded smoke test against `sc_zn_tsai_bridge.raw.json`
+- [ ] `materials-discovery/tests/test_cli.py` — preview-zomic command cases for VIS-01 and VIS-02, including both-provided input rejection and patched browser opening
 - [ ] Existing pytest + Typer infrastructure covers the phase after those test additions
 
 ---
