@@ -96,3 +96,115 @@ Phase 38 should not turn the deep dive into a command manual, per D-01 and D-02.
 | Checkpoint training automation beyond registration/lifecycle/benchmark-backed promotion | The shipped surface manages adapted checkpoint registration, lifecycle, promotion, retirement, and benchmark evidence, not automatic training. | Label training/fine-tuning automation as future work and cite lifecycle docs for current capability. | D-01, D-03, D-05 |
 | Reverse import or new visualization exporters beyond the current Zomic/vZome path | Phase 37-39 should teach the current Zomic design/export artifacts, not imply new reverse import or visualization exporters. | Label reverse import and new exporters as future work; use existing Zomic/vZome authority artifacts for current claims. | D-02, D-04, D-05 |
 | Broad chemistry expansion beyond the checked Sc-Zn tutorial anchor | The tutorial scope is one reproducible Sc-Zn Zomic-backed path; broader chemistry examples would dilute the first tutorial and create unverified claims. | Label broad chemistry coverage as future work and keep current tutorial claims tied to checked Sc-Zn artifacts. | D-01, D-04, D-05, D-06 |
+
+## Tutorial Anchor Scope Lock
+
+Only worked tutorial system: Sc-Zn.
+
+Default tutorial anchor: reproducible Sc-Zn Zomic-backed path.
+
+Broader chemistry coverage is deferred by D-09.
+
+The tutorial must use checked config and design assets first, per D-07 and D-08.
+
+The tutorial must include commands, artifact locations, and interpretation checkpoints, per D-10 and D-11.
+
+The visualization section must identify the Zomic design and export artifacts as the geometry authority, per D-12.
+
+| Step | Locked command or checkpoint | Evidence basis |
+|------|------------------------------|----------------|
+| Workspace entry | `cd materials-discovery` | `materials-discovery/RUNBOOK.md` and current command docs assume execution from this directory. |
+| Zomic export | `uv run mdisc export-zomic --design designs/zomic/sc_zn_tsai_bridge.yaml` | `materials-discovery/developers-docs/zomic-design-workflow.md`; `materials-discovery/src/materials_discovery/generator/zomic_bridge.py`; `materials-discovery/designs/zomic/sc_zn_tsai_bridge.yaml`. |
+| Candidate generation | `uv run mdisc generate --config configs/systems/sc_zn_zomic.yaml --count 32` | `materials-discovery/developers-docs/zomic-design-workflow.md`; `materials-discovery/configs/systems/sc_zn_zomic.yaml`. |
+| Screening | `uv run mdisc screen --config configs/systems/sc_zn_zomic.yaml` | `materials-discovery/RUNBOOK.md`; `materials-discovery/developers-docs/pipeline-stages.md`. |
+| Validation | `uv run mdisc hifi-validate --config configs/systems/sc_zn_zomic.yaml --batch all` | `materials-discovery/RUNBOOK.md`; `materials-discovery/developers-docs/pipeline-stages.md`. |
+| Ranking | `uv run mdisc hifi-rank --config configs/systems/sc_zn_zomic.yaml` | `materials-discovery/RUNBOOK.md`; `materials-discovery/developers-docs/pipeline-stages.md`. |
+| Report | `uv run mdisc report --config configs/systems/sc_zn_zomic.yaml` | `materials-discovery/RUNBOOK.md`; `materials-discovery/developers-docs/pipeline-stages.md`. |
+
+## Tutorial Artifact Set
+
+Phase 39 should treat the following checked paths and stage outputs as the tutorial's artifact contract. Missing optional outputs should be called out as run-produced artifacts, not invented or silently replaced.
+
+| Artifact | Tutorial role |
+|----------|---------------|
+| `materials-discovery/configs/systems/sc_zn_zomic.yaml` | System config that activates the Sc-Zn Zomic generation lane. |
+| `materials-discovery/designs/zomic/sc_zn_tsai_bridge.yaml` | Zomic design metadata, anchor prototype linkage, and export target paths. |
+| `materials-discovery/designs/zomic/sc_zn_tsai_bridge.zomic` | Source Zomic geometry design. |
+| `materials-discovery/data/prototypes/generated/sc_zn_tsai_bridge.raw.json` | Raw vZome Zomic export artifact. |
+| `materials-discovery/data/prototypes/generated/sc_zn_tsai_bridge.json` | Orbit-library prototype consumed by generation after export. |
+| `materials-discovery/data/prototypes/sc_zn_tsai_sczn6.json` | Anchor prototype used to align the exported Zomic design. |
+| `materials-discovery/data/candidates/sc_zn_candidates.jsonl` | Generated candidate structures. |
+| `materials-discovery/data/manifests/sc_zn_generate_manifest.json` | Generate-stage provenance and output hashes. |
+| `materials-discovery/data/screened/sc_zn_screened.jsonl` | Fast-screened candidates. |
+| `materials-discovery/data/calibration/sc_zn_screen_calibration.json` | Screening calibration output. |
+| `materials-discovery/data/hifi_validated/sc_zn_all_validated.jsonl` | High-fidelity validation output for the full batch. |
+| `materials-discovery/data/ranked/sc_zn_ranked.jsonl` | Ranked candidates with benchmark context. |
+| `materials-discovery/data/reports/sc_zn_report.json` | Experiment report for tutorial interpretation. |
+| `materials-discovery/data/reports/sc_zn_xrd_patterns.jsonl` | XRD pattern output referenced by report interpretation. |
+| `materials-discovery/data/reports/sc_zn_benchmark_pack.json` | Benchmark-pack artifact when the run produces benchmark context. |
+
+## Phase 38 Correction Checklist
+
+- Replace the `seven commands` framing with the shipped through-v1.6 workflow surface: core design/generate/screen/validate/rank/report work plus Zomic export, LLM generation/evaluation/suggestion, campaign governance, serving benchmarks, checkpoint lifecycle, translation, and external benchmark commands.
+- Soften or date fast-moving quantitative claims such as commit count, command count, Python module count, line count, and test-file count. Keep exact numbers only when copied from a dated command run.
+- Describe backend modes as `mock` and `real` with fixture, exec, and native layers rather than preserving the stale `four execution layers` phrasing.
+- Cross-link current runbooks and references instead of duplicating every operator step: `materials-discovery/RUNBOOK.md`, `materials-discovery/developers-docs/index.md`, `materials-discovery/developers-docs/pipeline-stages.md`, `materials-discovery/developers-docs/backend-system.md`, and `materials-discovery/developers-docs/zomic-design-workflow.md`.
+- Label future work explicitly when discussing autonomous campaigns, checkpoint training automation, reverse import, new visualization exporters, or chemistry expansion beyond the checked tutorial anchor.
+
+## Phase 39 Tutorial Scope Lock
+
+- Stay on the Sc-Zn Zomic-backed path as the single worked example.
+- Teach design, generate, screen, validate, rank, report, and visualize as one reproducible flow.
+- Explain screening, validation, ranking, and report interpretation using the stage artifacts in `## Tutorial Artifact Set`.
+- Point to exact Zomic design/export artifacts as the geometry authority: `materials-discovery/designs/zomic/sc_zn_tsai_bridge.yaml`, `materials-discovery/designs/zomic/sc_zn_tsai_bridge.zomic`, `materials-discovery/data/prototypes/generated/sc_zn_tsai_bridge.raw.json`, and `materials-discovery/data/prototypes/generated/sc_zn_tsai_bridge.json`.
+- Phase 39 must avoid adding Al-Cu-Fe, external benchmark, or native MLIP as second worked examples.
+
+## Evidence Commands
+
+Git provenance:
+
+```bash
+git log --follow --date=iso-strict \
+  --format='%H%x09%ad%x09%an%x09%s' \
+  --name-status -- \
+  materials-discovery/developers-docs/podcast-deep-dive-source.md
+```
+
+Stale-claim scan:
+
+```bash
+rg -n "seven commands|60 modules|7,200|21 test files|4,238|future|planned|will" \
+  materials-discovery/developers-docs/podcast-deep-dive-source.md \
+  materials-discovery/developers-docs/index.md \
+  materials-discovery/RUNBOOK.md
+```
+
+Command-surface scan:
+
+```bash
+cd materials-discovery
+uv run mdisc --help
+rg -n '@(?:app|lake_app|llm_corpus_app)\.command' src/materials_discovery/cli.py
+```
+
+Quantitative refresh commands:
+
+```bash
+git rev-list --count HEAD
+git rev-list --count 359cef57777479fb15652f1f4c702c43a25c4bc6
+find materials-discovery/src/materials_discovery -type f -name '*.py' | wc -l
+find materials-discovery/src/materials_discovery -type f -name '*.py' -print0 | xargs -0 wc -l | tail -1
+find materials-discovery/tests -type f -name 'test_*.py' | wc -l
+```
+
+Tutorial artifact existence checks:
+
+```bash
+ls -l \
+  materials-discovery/configs/systems/sc_zn_zomic.yaml \
+  materials-discovery/designs/zomic/sc_zn_tsai_bridge.yaml \
+  materials-discovery/designs/zomic/sc_zn_tsai_bridge.zomic \
+  materials-discovery/data/prototypes/generated/sc_zn_tsai_bridge.raw.json \
+  materials-discovery/data/prototypes/generated/sc_zn_tsai_bridge.json \
+  materials-discovery/data/prototypes/sc_zn_tsai_sczn6.json
+```
