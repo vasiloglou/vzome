@@ -24,7 +24,7 @@ end.
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
 | 41 | Programmatic Visualization Artifact and Library Surface | 1/1 | Complete    | 2026-04-15 |
-| 42 | Extensive Guided Tutorial Expansion | Turn the Markdown tutorial into a deeper operator walkthrough of the deterministic spine and shipped LLM branches | `DOC-06`, `DOC-07` | 3 |
+| 42 | Extensive Guided Tutorial Expansion | Turn the Markdown tutorial into a deeper operator walkthrough of the deterministic spine and shipped LLM branches | Complete    | 2026-04-15 |
 | 43 | Notebook Visualization and LLM Walkthrough Integration | Make the notebook the most detailed executable walkthrough, including programmatic rendering and deeper LLM branch guidance | `OPS-25`, `OPS-26` | 3 |
 
 ## Phase Details

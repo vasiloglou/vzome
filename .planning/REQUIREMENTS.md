@@ -18,10 +18,10 @@ reinforce each other instead of living in separate prototypes.
 
 ### Extensive Tutorial
 
-- [ ] **DOC-06**: Reader can follow one extensive guided tutorial that keeps
+- [x] **DOC-06**: Reader can follow one extensive guided tutorial that keeps
   the deterministic Sc-Zn workflow spine visible while also explaining where
   each shipped LLM workflow family branches from that spine.
-- [ ] **DOC-07**: Reader can understand the programmatic visualization path,
+- [x] **DOC-07**: Reader can understand the programmatic visualization path,
   the geometry artifact chain, and what desktop vZome remains useful for
   without the docs implying full browser or service parity.
 
@@ -71,8 +71,8 @@ reinforce each other instead of living in separate prototypes.
 |-------------|-------|--------|
 | VIS-01 | Phase 41 | Complete |
 | VIS-02 | Phase 41 | Complete |
-| DOC-06 | Phase 42 | Pending |
-| DOC-07 | Phase 42 | Pending |
+| DOC-06 | Phase 42 | Complete |
+| DOC-07 | Phase 42 | Complete |
 | OPS-25 | Phase 43 | Pending |
 | OPS-26 | Phase 43 | Pending |
 
