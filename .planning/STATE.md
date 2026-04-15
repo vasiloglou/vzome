@@ -4,15 +4,15 @@ milestone: v1.81
 milestone_name: Extensive LLM Tutorial and Programmatic vZome Visualization MVP
 current_phase: "41"
 current_phase_name: Programmatic Visualization Artifact and Library Surface
-current_plan: Not started
-status: discussion complete
-stopped_at: phase 41 discussion captured; ready for phase planning
-last_updated: "2026-04-15T15:34:46Z"
+current_plan: "01"
+status: phase planned
+stopped_at: phase 41 research, validation, and plan created; ready for execution
+last_updated: "2026-04-15T15:45:49Z"
 last_activity: 2026-04-15
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
+  total_plans: 1
   completed_plans: 0
   percent: 0
 ---
@@ -37,11 +37,11 @@ Most Recent Milestone: v1.8
 Current Phase: 41
 Current Phase Name: Programmatic Visualization Artifact and Library Surface
 Total Phases in Current Milestone: 3
-Current Plan: Not started
-Status: Phase 41 discussion captured; ready for phase planning
+Current Plan: 01
+Status: Phase 41 planned; ready for execution
 Last activity: 2026-04-15
-Last Activity Description: Phase 41 discussion captured with tutorial-first raw
-export visualization decisions
+Last Activity Description: Phase 41 research, validation, and plan captured for
+the raw-export viewer and preview wrapper
 
 Progress: [----------] 0%
 
@@ -124,6 +124,12 @@ Decisions are logged in `PROJECT.md`. Recent decisions affecting future work:
   vZome visual parity.
 - [Phase 41]: Reuse `mdisc export-zomic` as the official artifact refresh path
   unless a paper-thin helper is needed solely for tutorial ergonomics.
+- [Phase 41]: Implement the first programmatic preview path inside
+  `materials_discovery.visualization` and keep `online/` as reference material
+  rather than a required runtime dependency for the tutorial MVP.
+- [Phase 41]: Expose the viewer through one thin `preview-zomic` CLI wrapper
+  over the Python library instead of building a service or a second render
+  stack.
 
 ### Pending Todos
 
@@ -138,5 +144,5 @@ viewer or service project.
 ## Session Continuity
 
 Last session: 2026-04-15T15:06:49Z
-Stopped at: phase 41 discussion captured; ready for phase planning
-Resume file: .planning/phases/41-programmatic-visualization-artifact-and-library-surface/41-CONTEXT.md
+Stopped at: phase 41 research, validation, and plan created; ready for execution
+Resume file: .planning/phases/41-programmatic-visualization-artifact-and-library-surface/41-01-PLAN.md
