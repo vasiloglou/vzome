@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-15 | Phase 38 narrative refresh | Refreshed `developers-docs/podcast-deep-dive-source.md` so it describes the shipped workflow through `v1.6`, links to the current runbooks and reference docs, and removes stale command-count, capability, and quantitative claims from the older deep-dive draft |
 | 2026-04-07 | Phase 36 Plan 03 comparative benchmark docs and example spec | Added a committed `al_cu_fe_external_benchmark.yaml`, shipped an operator runbook for benchmark execute or inspect plus artifact interpretation, and refreshed the configuration reference, pipeline stages guide, and docs index so the Phase 36 workflow is discoverable beside the Phase 34 and Phase 35 handoff docs |
 | 2026-04-07 | Phase 36 Plan 03 comparative benchmark CLI workflow | Added `mdisc llm-external-benchmark` and `mdisc llm-inspect-external-benchmark`, kept the repo-standard exit-code-2 failure posture for missing or invalid benchmark specs and summaries, and locked the new operator surface with focused CLI plus root-help coverage |
 | 2026-04-07 | Phase 36 Plan 02 fidelity-aware benchmark scorecards | Tightened `build_external_benchmark_summary(...)` so recommendation lines privilege the periodic-safe exact or anchored slice even when overall shared-slice deltas look better on lossy cases, and added typed benchmark-summary coverage that proves weak periodic-safe performance cannot hide behind diagnostic-only wins |
@@ -159,6 +160,11 @@
 | 2026-04-04 | Phase 10 Plan 03: llm-approve CLI governance boundary | Added the non-launching `mdisc llm-approve` command, refreshed LLM developer docs, updated shared CLI coverage, and closed the full `materials-discovery` suite at 332 passed, 3 skipped |
 
 ## Diary
+
+### 2026-04-15
+
+- 00:11 EDT — Refreshed the long-form narrative in `developers-docs/podcast-deep-dive-source.md` for Phase 38.
+- Reframed the stale seven-stage and four-layer story around the shipped `v1.6` workflow families, added cross-links to the current runbooks and reference docs, softened or removed volatile repo-state counts, and made explicit that no new workflow capability was added.
 
 ### 2026-04-07
 

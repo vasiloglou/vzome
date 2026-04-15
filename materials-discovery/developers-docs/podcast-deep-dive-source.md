@@ -75,7 +75,7 @@ Think of the connector ball as a three-dimensional compass that only points in 6
 
 ### Twenty Years of Exact Geometry
 
-vZome is an open-source application for creating virtual Zometool models and exploring constrained geometric realms. Started around 2001 by Scott Vorthmann, with significant contributions from David Hall, it has accumulated over 4,238 commits across more than two decades of continuous development.
+vZome is an open-source application for creating virtual Zometool models and exploring constrained geometric realms. Started around 2001 by Scott Vorthmann, with major contributions from David Hall and others, it has grown into a long-lived exact-geometry environment rather than a one-off visualization demo.
 
 vZome runs in two forms: a web application at vzome.com/app (built with SolidJS and Three.js) and a desktop Java application. The web version is the active focus of development and provides interactive 3D construction with trackball controls, multiple rendering modes, and real-time manipulation.
 
@@ -203,39 +203,38 @@ This is the Fibonacci recurrence. Scaling a quasicrystal structure by the golden
 
 This means the pipeline can inflate and deflate candidate structures through Fibonacci arithmetic on their integer coordinate pairs. It is algebraically exact at every step.
 
-### Template Families: Cookie Cutters for Atoms
+### From Templates to Workflow Families
 
-The pipeline does not search blindly over all possible Z[phi] positions. Instead, it uses template families — known approximant motif cells that define where atoms can sit. Three families are built in:
+The modern system is better understood as a file-backed workflow surface than as one frozen command count. The core discovery spine still starts from geometry, chemistry bounds, and reference phases, but it now branches into design import, operator-governed LLM workflows, serving comparisons, checkpoint lifecycle management, translation bundles, and comparative external benchmarking.
 
-**Icosahedral approximant 1/1:** 12 atomic sites positioned at the vertices of an icosahedron, within a cubic unit cell of approximately 14.2 angstroms. This template targets the Al-Cu-Fe system — the alloy family that includes Shechtman's Nobel Prize-winning quasicrystal. The pipeline loads a system-anchored Mackay-type orbit library for this system.
+At a high level, the shipped workflow families look like this:
 
-**Decagonal proxy 2/1:** 10 atomic sites arranged in two pentagonal rings (one rotated by 36 degrees relative to the other), with a non-cubic cell of approximately 11.8 x 11.8 x 16.0 angstroms. This targets the Al-Pd-Mn decagonal quasicrystal system, using a xi-prime pseudo-Mackay orbit library.
+- **Core discovery spine:** `mdisc ingest`, `mdisc export-zomic`, `mdisc generate`, `mdisc screen`, `mdisc hifi-validate`, `mdisc hifi-rank`, `mdisc active-learn`, `mdisc report`
+- **Additive LLM and campaign workflow:** `mdisc llm-generate`, `mdisc llm-evaluate`, `mdisc llm-suggest`, `mdisc llm-approve`, `mdisc llm-launch`, `mdisc llm-replay`, `mdisc llm-compare`
+- **Serving and checkpoint lifecycle:** `mdisc llm-serving-benchmark`, `mdisc llm-register-checkpoint`, `mdisc llm-list-checkpoints`, `mdisc llm-promote-checkpoint`, `mdisc llm-retire-checkpoint`
+- **Translation and comparative benchmarking:** `mdisc llm-translate`, `mdisc llm-translate-inspect`, `mdisc llm-translated-benchmark-freeze`, `mdisc llm-translated-benchmark-inspect`, `mdisc llm-register-external-target`, `mdisc llm-inspect-external-target`, `mdisc llm-smoke-external-target`, `mdisc llm-external-benchmark`, `mdisc llm-inspect-external-benchmark`
 
-**Cubic proxy 1/0:** 8 atomic sites at cube corner positions, in a 10.0 angstrom cubic cell. This targets the Sc-Zn system, specifically the Tsai-type ScZn6 cluster, with an orbit library exported from crystallographic data (COD CIF entry 4344182).
+The command-by-command contract lives in [Pipeline Stages](pipeline-stages.md); the operator sequence and artifact paths live in the [Operator Runbook](../RUNBOOK.md). The important point for this narrative is that the pipeline no longer ends at candidate generation and validation. It now has a broader evidence surface for design provenance, campaign governance, model comparison, and interoperability.
 
-Each template can be generic (built-in mathematical positions) or anchored to real experimental structures through orbit library JSON files. The system tries the anchored version first and falls back to generic if none exists.
+### Geometry Still Sets the Search Space
 
-### Seven Pipeline Stages
+The pipeline does not search blindly over all of continuous 3D space. It searches over template families and orbit libraries that keep candidate positions inside the same golden-field geometry the earlier sections described. Some of those templates are built in. Others are anchored to experimentally motivated orbit libraries. The most important recent bridge is the one back to vZome itself: [`mdisc export-zomic`](pipeline-stages.md#2-mdisc-export-zomic) lets a Zomic-authored construction become an orbit-library prototype that the generator can consume directly.
 
-The pipeline is implemented as a Python CLI tool called `mdisc` with seven commands, comprising approximately 60 modules and 7,200 lines of code.
+That matters because geometry is not just an illustration layer here. The current Sc-Zn bridge uses a checked Zomic design, compiles it through vZome core, and exports the resulting labeled sites into the same file-backed discovery workflow used by the rest of the system. For the details of that bridge, see [Zomic Design Workflow](zomic-design-workflow.md) and the broader [vZome Geometry Tutorial](vzome-geometry-tutorial.md).
 
-**1. Ingest** (`mdisc ingest`): Load known reference phases — materials that already exist. These form the baseline for computing how far above the convex hull (the thermodynamic stability boundary) each candidate sits.
+### The Shipped Workflow Is Broader Than the Core Loop
 
-**2. Generate** (`mdisc generate`): Create candidate structures from Z[phi] templates. Generation is fully deterministic from a seed — the same seed and index always produce the same candidate. The pipeline applies coordinate permutation (6 variants), phi-scaling (inflate/deflate), translation, and coefficient bounding to create diverse structures from each template. Each candidate's unit cell can also scale by 1/phi, 1, or phi — the golden ratio is built into the search grid.
+The deterministic discovery spine is still the backbone: reference ingestion, candidate generation, fast screening, higher-fidelity validation, ranking, optional active learning, and experiment-facing reporting. But the shipped surface through `v1.6` adds several important families on top of that backbone.
 
-**3. Screen** (`mdisc screen`): Fast filtering with a single ML interatomic potential. Relax the structure, check if the energy per atom is reasonable, verify minimum interatomic distances, and shortlist the top candidates. In real mode, screening thresholds adapt to the actual distribution (30th percentile for distance, 65th for energy) rather than using fixed cutoffs.
+One family is additive LLM generation and assessment. `mdisc llm-generate` and `mdisc llm-evaluate` do not replace the geometry-aware deterministic lane; they add alternate proposal and review artifacts that can be compared against it. Another family is campaign governance. `mdisc llm-suggest`, `mdisc llm-approve`, `mdisc llm-launch`, `mdisc llm-replay`, and `mdisc llm-compare` turn those suggestions into an operator-governed workflow with explicit approval, replay, and comparison boundaries rather than a vague promise of autonomous discovery.
 
-**4. High-Fidelity Validate** (`mdisc hifi-validate`): This is where the committee of three ML models comes in. MACE, CHGNet, and MatterSim each independently evaluate every surviving candidate. The pipeline computes committee disagreement (uncertainty), checks the energy against competing phases (distance to convex hull), runs phonon stability analysis (are there imaginary phonon modes?), performs short molecular dynamics simulations (does the structure remain stable at 600 K?), and checks XRD pattern confidence.
+Another family is model operations. `mdisc llm-serving-benchmark` compares hosted, local, and specialized serving lanes under shared conditions, while the checkpoint commands expose a file-backed lifecycle for adapted model artifacts: registration, listing, promotion, and retirement. These are operational surfaces, not just one-off experiments, and they are part of what the system ships today.
 
-A candidate passes validation only if ALL of the following hold: uncertainty per atom is at most 0.04 eV, energy above the convex hull is at most 0.08 eV/atom, the phonon check passes, the MD check passes, and the XRD check passes. Five gates, all must clear.
+The last major family is interoperability and comparison. `mdisc llm-translate` and `mdisc llm-translate-inspect` export deterministic translation bundles; `mdisc llm-translated-benchmark-freeze` and `mdisc llm-translated-benchmark-inspect` freeze the exact case slice to compare; `mdisc llm-register-external-target`, `mdisc llm-inspect-external-target`, and `mdisc llm-smoke-external-target` define one immutable external benchmark target at a time; and `mdisc llm-external-benchmark` plus `mdisc llm-inspect-external-benchmark` produce a fidelity-aware scorecard instead of a hand-wavy anecdote. The relevant operator references are the [LLM Translation Runbook](llm-translation-runbook.md), [Translated Benchmark Runbook](llm-translated-benchmark-runbook.md), [External Target Runbook](llm-external-target-runbook.md), [External Benchmark Runbook](llm-external-benchmark-runbook.md), and the deeper [LLM Translation Contract](llm-translation-contract.md).
 
-Think of the committee of three ML models as three independent peer reviewers. If all three agree a candidate is stable, confidence is high. If they disagree wildly, that candidate gets flagged as uncertain and probably rejected. Built-in peer review for materials.
+### What Is Shipped, and What Is Still Future Work
 
-**5. Rank** (`mdisc hifi-rank`): Uncertainty-aware ranking of validated candidates, producing calibrated stability probability, out-of-distribution score, novelty score, and overall decision score.
-
-**6. Active Learn** (`mdisc active-learn`): Train a surrogate model on the validated candidates — what structural and chemical features predict stability? Then use uncertainty-aware acquisition to propose the best next batch to validate. The system improves each cycle. Self-improving materials discovery.
-
-**7. Report** (`mdisc report`): Generate experiment-ready output with simulated powder X-ray diffraction patterns, recommendation tiers, risk flags, and release-gate calibration. This is what a materials scientist would use to decide what to synthesize in the lab.
+Several tempting extensions are still future work, and it matters to say so plainly. Fully autonomous campaigns beyond the current operator-governed suggest/approve/launch/replay/compare loop are future work. Checkpoint training automation beyond registration, listing, promotion, and retirement is future work. Reverse import from downstream text formats back into the Zomic or vZome geometry authority, or brand-new visualization exporters beyond the current Zomic or vZome path, are future work. Broader chemistry claims beyond the checked configs and the separate Sc-Zn tutorial track are future work.
 
 ### No DFT: The Speed Advantage
 
@@ -245,16 +244,11 @@ The vZome materials pipeline bypasses DFT entirely. Instead, it uses machine-lea
 
 This is the difference between calculating every raindrop in a thunderstorm from first principles versus using a weather forecast model trained on decades of meteorological data. The forecast is not as precise for any single raindrop, but it tells you whether it will rain — and it does so in minutes, not years.
 
-### Four Layers of Execution
+### Backend Modes, Not "Four Layers"
 
-The pipeline has an elegant backend architecture with four execution layers:
+The user-facing switch is between `mock` and `real` modes, and within `real` the adapter system can resolve fixture-backed, exec-cache, and native providers behind the same CLI surface.
 
-- **Mock mode:** Deterministic fixture data for fast testing and CI. Run the entire pipeline in seconds with reproducible results.
-- **Fixture mode:** Pinned snapshots from real calculations for reproducible benchmarking without external dependencies.
-- **Exec mode:** External command execution with on-disk caching. Run real ML models as subprocesses and cache results.
-- **Native mode:** Direct Python calls to MACE, CHGNet, pymatgen, and ASE. Full production execution.
-
-All four layers use the same code, the same data schemas, the same CLI commands. You switch between them by changing a single field in a YAML configuration file. This means a researcher can develop and test with mock data in minutes, validate with pinned benchmarks, and then run production calculations — all with the same pipeline.
+That wording matters because it reflects how the current software is actually organized. A researcher can stay in `mock` mode for deterministic tests and documentation examples, move into `real` mode with pinned fixtures for reproducible benchmark runs, and then use exec-backed or native providers when the environment supports them. The backend vocabulary and adapter contracts are documented in [Backend System](backend-system.md).
 
 ---
 
@@ -266,9 +260,9 @@ The journey from a geometric toy to a materials discovery pipeline spans over tw
 
 **Physical toy** (Zometool, 1990s): A construction kit whose connector ball encodes icosahedral symmetry in 62 precisely placed holes.
 
-**Virtual modeler** (vZome, 2001-present): An open-source application with exact arithmetic in the golden field, supporting 15+ strut colors, 11+ algebraic fields, 4D polytope projections, scripting, and export to dozens of formats. Over 20 years and 4,238 commits of continuous development.
+**Virtual modeler** (vZome, 2001-present): An open-source exact-geometry environment in the golden field, with scripting, multiple symmetry fields, and exports that make the same constructions usable for teaching, visualization, and design iteration.
 
-**Materials discovery engine** (2025-2026): A 60-module Python pipeline that uses Z[phi] geometry to generate, screen, validate, rank, and iteratively improve candidate quasicrystal-compatible materials — all without DFT.
+**Materials discovery engine** (2025-2026): A Python workflow that uses Z[phi] geometry to generate, screen, validate, rank, report, and now compare candidate materials through design, campaign, serving, translation, checkpoint, and benchmark surfaces — all without DFT.
 
 This is a line from recreational mathematics to cutting-edge materials science. The same algebraic identity — phi^2 = phi + 1 — that makes a toy work is now being used to search for materials that do not exist yet.
 
@@ -282,13 +276,13 @@ Quasicrystalline materials have unusual and potentially useful properties:
 - **Unusual electronic properties** — pseudogaps at the Fermi level that could enable photonic applications
 - **Hydrogen storage** — some quasicrystal alloys show promising hydrogen absorption characteristics
 
-The pipeline currently targets three real alloy systems: Al-Cu-Fe (the classic icosahedral quasicrystal family), Al-Pd-Mn (a well-studied decagonal system), and Sc-Zn (the Tsai cluster family, a more recent discovery). New systems can be added by creating a YAML configuration file and, optionally, registering element properties and orbit libraries.
+The checked configs now cover classic Al-Cu-Fe and Al-Pd-Mn references, a Ti-Zr-Ni lane, and several Sc-Zn variants including the Zomic-backed bridge and calibrated real/native tracks. A worked tutorial for the current toolchain belongs in separate documentation; this narrative is the map, not the operator walkthrough.
 
-### Open Source, Reproducible, Production-Ready
+### Open Source, Reproducible, and File-Backed
 
-The entire codebase lives in a single Git repository. It is written in Python 3.11+ with strict type checking (mypy in strict mode), linting (ruff), and 21 test files covering unit, integration, and end-to-end scenarios. Dependencies are managed with uv. Every candidate is deterministically generated from a seed. Every pipeline stage emits a manifest with content hashes for reproducibility. Every intermediate artifact is stored as JSONL.
+The entire codebase lives in a single Git repository. It is written in Python 3.11+ with strict type checking, linting, focused CLI and pipeline coverage, and file-backed manifests that keep provenance visible from stage to stage. Candidates are deterministically generated from seeds, intermediate artifacts are stored as JSONL, and reproducibility is treated as part of the product rather than as a post-hoc notebook habit.
 
-A researcher can install the pipeline, run `uv sync --extra dev`, execute `uv run pytest` to verify everything works, and then run the full seven-stage pipeline on mock data in under a minute. Switching to real ML models requires installing the optional MLIP dependencies and changing one YAML field.
+A researcher can install the pipeline, run `uv sync --extra dev`, execute `uv run pytest`, and then move from mock fixtures into real backends without changing the overall workflow shape. The [Operator Runbook](../RUNBOOK.md) is the source of truth for those commands; this document is meant to explain why the workflow exists and how its parts fit together.
 
 ### The Deeper Point
 
@@ -305,8 +299,17 @@ The connector ball has 62 holes. Each one encodes a symmetry axis. Each axis con
 - **Try vZome online:** https://vzome.com/app
 - **vZome website:** https://vzome.com
 - **Source code:** https://github.com/david-hall/vzome (vZome) and the `materials-discovery/` workspace within the repository
-- **vZome Geometry Tutorial:** `materials-discovery/developers-docs/vzome-geometry-tutorial.md` — comprehensive mathematical reference (Section 10.8 covers the materials optimization framework)
-- **Materials Discovery Documentation:** `materials-discovery/developers-docs/index.md` — full pipeline reference including architecture, backend system, configuration, and data schemas
+- **Materials Discovery docs map:** [Materials Discovery Documentation](index.md)
+- **Operator sequence:** [Operator Runbook](../RUNBOOK.md)
+- **Command reference:** [Pipeline Stages](pipeline-stages.md)
+- **Backend vocabulary:** [Backend System](backend-system.md)
+- **Zomic-authored design bridge:** [Zomic Design Workflow](zomic-design-workflow.md)
+- **Geometry background:** [vZome Geometry Tutorial](vzome-geometry-tutorial.md)
+- **Translation workflow:** [LLM Translation Runbook](llm-translation-runbook.md)
+- **Frozen translated benchmark packs:** [Translated Benchmark Runbook](llm-translated-benchmark-runbook.md)
+- **External target registration:** [External Target Runbook](llm-external-target-runbook.md)
+- **Comparative benchmark scorecards:** [External Benchmark Runbook](llm-external-benchmark-runbook.md)
+- **Serializer fidelity rules:** [LLM Translation Contract](llm-translation-contract.md)
 - **HYPOD-X datasets:** https://www.nature.com/articles/s41597-024-04043-z
 - **Matbench Discovery benchmark:** https://www.nature.com/articles/s42256-025-01055-1
 - **Quasicrystal ML discovery:** https://doi.org/10.1103/PhysRevMaterials.7.093805
