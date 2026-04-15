@@ -36,15 +36,15 @@ LLM operating surface:
 **Current Milestone:** `v1.81` — Extensive LLM Tutorial and Programmatic
 vZome Visualization MVP
 
-**Status:** active planning started on 2026-04-15.
+**Status:** active; Phase 41 completed on 2026-04-15.
 
 **Current focus:**
-- expand the guided tutorial and notebook into a genuinely extensive walkthrough
-  of the shipped LLM workflow families
-- replace the current desktop-only visualization handoff with a programmatic
-  vZome visualization path that readers can trigger from the repo workflow
-- automate or document viewer-ready artifact generation so the tutorial can stay
-  inside one reproducible path
+- expand the guided tutorial into a genuinely extensive walkthrough of the
+  shipped LLM workflow families now that the programmatic preview seam exists
+- thread the new repo-owned visualization path into the Markdown tutorial and
+  notebook so the checked Sc-Zn workflow stays inside one reproducible path
+- keep desktop vZome explicitly positioned as the authoring/deeper-inspection
+  tool while the repo-owned viewer handles the normal preview path
 
 **Most Recent Shipped Milestone:** `v1.8` — LLM Narrative Enrichment and
 Notebook Tutorial MVP
@@ -187,14 +187,16 @@ instead of living in separate prototypes.
   deterministic Sc-Zn workflow spine from the additive LLM workflow families,
   includes a detailed notebook companion, and cross-links the deep dive, docs
   hub, and operator runbooks for the shipped LLM surface.
+- Validated in Phase 41: the checked Sc-Zn raw export now has a repo-owned
+  programmatic preview surface via `materials_discovery.visualization` and
+  `mdisc preview-zomic`, removing the happy-path requirement to open desktop
+  vZome just to inspect the current checked geometry.
 
 ### Active
 
 - Readers can follow one extensive checked tutorial path that keeps the
   deterministic Sc-Zn workflow visible while also demonstrating the shipped
   additive LLM surfaces end to end.
-- Operators can visualize the checked Zomic/vZome design programmatically,
-  without being required to open the desktop app manually.
 - The visualization path reuses repo-owned artifacts or code where possible,
   so notebook or docs examples stay reproducible and file-backed.
 
