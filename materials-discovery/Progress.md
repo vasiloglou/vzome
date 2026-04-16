@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-16 | Phase 45 Plan 02 Task 1: notebook plotly 3D integration | Inserted 3 new cells (markdown intro, orbit scatter code, shell figure code) into Section 4 of guided_design_tutorial.ipynb after the existing preview_checked_design() cell. Cells use orbit_figure() and shell_figure() from plotly_3d.py with renderer="notebook_connected" and a graceful _PLOTLY_AVAILABLE fallback guard. |
 | 2026-04-16 | Phase 45 Plan 01 Task 2: test_plotly_3d.py with 16 unit tests | Created comprehensive unit tests covering orbit_figure (5 traces, colors, hover text, marker size, total points), shell_figure (ordering, mesh3d, legendgroup, opacity, wireframe), import error guard, matplotlib_pub/expansion importability, [viz] extra declaration, and load_orbit_library. All 16 tests pass; full suite 611 passed. |
 | 2026-04-16 | Phase 45 Plan 01 Task 1: plotly_3d.py and viz deps | Created plotly_3d.py with orbit_figure(), shell_figure(), load_orbit_library(); matplotlib_pub.py and expansion.py stubs; [viz] optional-dependencies group in pyproject.toml; conditional plotly_3d exports in __init__.py |
 | 2026-04-15 | Tutorial screening/validation/LLM prose | Added plain-language explanations for screening metrics, validation gates, and LLM commands in tutorial and notebook |
@@ -186,6 +187,7 @@
 - Phase 45 Plan 01 Task 2 — Created `tests/test_plotly_3d.py` with 16 unit tests covering all acceptance criteria from the plan: orbit_figure (5 traces, ORBIT_COLORS matching, hover text format, marker size=8, total 100 points), shell_figure (radial-distance ordering, Mesh3d cages, legendgroup consistency, opacity=0.15, edge wireframes in mode='lines'), import error guard (monkeypatching _VIZ_AVAILABLE=False), matplotlib_pub and expansion stub importability, [viz] extra pyproject.toml declaration, and load_orbit_library with real file and missing-file error.
 - All 16 tests pass in 0.22s. Full suite: 611 passed, 3 skipped, 1 warning (no regressions).
 - Open items: None — Plan 01 complete.
+- Phase 45 Plan 02 Task 1 — Inserted 3 new cells into Section 4 of `notebooks/guided_design_tutorial.ipynb` after the existing `preview_checked_design()` cell (id=4cbab4b3). New cells: (A) markdown introduction to the interactive figures with install instructions, (B) code cell for VIZ-01 orbit scatter (try/except ImportError guard, `load_orbit_library`, `orbit_figure`, `renderer="notebook_connected"`), (C) code cell for VIZ-02 shell figure (`shell_figure`, `renderer="notebook_connected"`). Automated verification script confirms all structure checks pass. Existing HTML canvas viewer cell remains unchanged. Section 5 still follows immediately after the 3 new cells.
 
 ### 2026-04-15
 
