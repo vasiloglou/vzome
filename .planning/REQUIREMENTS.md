@@ -22,9 +22,9 @@ milestone. Each maps to roadmap phases.
 
 - [x] **VIZ-01**: Notebook renders an interactive plotly 3D scatter with one trace per orbit, distinct colorblind-safe colors, hover labels showing site name and orbit
 - [x] **VIZ-02**: Notebook renders a shell-decomposed Tsai cluster figure showing each concentric polyhedral shell as separate labeled layers with polyhedral cage wireframes
-- [ ] **VIZ-03**: Notebook renders a 2D matplotlib scatter of energy_proxy vs min_distance_proxy with shortlisted candidates highlighted and threshold boundaries
-- [ ] **VIZ-04**: Notebook renders a radial distribution function plot with shell-peak annotations derived from raw.json labeled point distances
-- [ ] **VIZ-05**: Notebook renders a simulated powder XRD diffraction pattern using existing pipeline infrastructure
+- [x] **VIZ-03**: Notebook renders a 2D matplotlib scatter of energy_proxy vs min_distance_proxy with shortlisted candidates highlighted and threshold boundaries
+- [x] **VIZ-04**: Notebook renders a radial distribution function plot with shell-peak annotations derived from raw.json labeled point distances
+- [x] **VIZ-05**: Notebook renders a simulated powder XRD diffraction pattern using existing pipeline infrastructure
 
 ### Enrichment
 
@@ -64,9 +64,9 @@ milestone. Each maps to roadmap phases.
 | VIZ-01 | Phase 45 | Complete |
 | VIZ-02 | Phase 45 | Complete |
 | ENRICH-03 | Phase 45 | Complete |
-| VIZ-03 | Phase 46 | Pending |
-| VIZ-04 | Phase 46 | Pending |
-| VIZ-05 | Phase 46 | Pending |
+| VIZ-03 | Phase 46 | Complete |
+| VIZ-04 | Phase 46 | Complete |
+| VIZ-05 | Phase 46 | Complete |
 | ENRICH-02 | Phase 46 | Pending |
 
 **Coverage:**

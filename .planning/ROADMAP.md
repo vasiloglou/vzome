@@ -86,8 +86,8 @@ Plans:
   4. Running the notebook produces a crystal expansion view showing how the Sc-Zn motif tiles into a larger periodic approximant structure (2x2x2 default)
 **Plans**: 3 plans
 Plans:
-- [ ] 46-01-PLAN.md — matplotlib_pub.py with screening_scatter, rdf_plot, diffraction_plot and unit tests
-- [ ] 46-02-PLAN.md — expansion.py with expansion_figure for 2x2x2 crystal tiling and unit tests
+- [x] 46-01-PLAN.md — matplotlib_pub.py with screening_scatter, rdf_plot, diffraction_plot and unit tests
+- [x] 46-02-PLAN.md — expansion.py with expansion_figure for 2x2x2 crystal tiling and unit tests
 - [ ] 46-03-PLAN.md — __init__.py exports, notebook figure cell integration, and visual verification
 **UI hint**: yes
 
@@ -100,7 +100,7 @@ Phases execute in numeric order: 44 → 45 → 46
 |-------|-----------|----------------|--------|-----------|
 | 44. Prose Enrichment and Zomic Annotation | v1.82 | 3/3 | Complete    | 2026-04-16 |
 | 45. Interactive 3D Visualization with Plotly | v1.82 | 2/2 | Complete    | 2026-04-16 |
-| 46. Publication 2D Panels, Crystal Expansion, and Polish | v1.82 | 0/3 | Not started | - |
+| 46. Publication 2D Panels, Crystal Expansion, and Polish | v1.82 | 2/3 | In Progress|  |
 
 ## Archive Pointers
 

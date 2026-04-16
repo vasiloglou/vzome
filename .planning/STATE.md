@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.82
 milestone_name: Illustrated Tutorial and Publication-Quality Visualization
-status: verifying
-stopped_at: Completed 45-interactive-3d-visualization-with-plotly plan 02
-last_updated: "2026-04-16T03:29:33.311Z"
+status: executing
+stopped_at: Completed 46-publication-2d-panels-crystal-expansion-and-polish plan 02
+last_updated: "2026-04-16T14:30:46.197Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 8
+  completed_plans: 7
   percent: 0
 ---
 
@@ -23,13 +23,13 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 **Core value:** Build one reproducible system where trusted materials data,
 physically grounded no-DFT validation, and LLM-guided structure generation
 reinforce each other instead of living in separate prototypes.
-**Current focus:** Phase 45 — Interactive 3D Visualization with Plotly
+**Current focus:** Phase 46 — Publication 2D Panels, Crystal Expansion, and Polish
 
 ## Current Position
 
-Phase: 46
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 46 (Publication 2D Panels, Crystal Expansion, and Polish) — EXECUTING
+Plan: 3 of 3
+Status: Ready to execute
 Last activity: 2026-04-16
 
 Progress: [░░░░░░░░░░] 0% (v1.82 scope; phases 1-43 complete in prior milestones)
@@ -62,6 +62,8 @@ Progress: [░░░░░░░░░░] 0% (v1.82 scope; phases 1-43 complete
 | Phase 44-prose-enrichment-and-zomic-annotation P03 | 4 | 3 tasks | 3 files |
 | Phase 45-interactive-3d-visualization-with-plotly P01 | 3 | 2 tasks | 7 files |
 | Phase 45-interactive-3d-visualization-with-plotly P02 | 89s | 2 tasks | 2 files |
+| Phase 46 P01 | 10m | 2 tasks | 3 files |
+| Phase 46 P02 | 249 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -82,6 +84,11 @@ Decisions are logged in `PROJECT.md`. Decisions affecting current work:
 - [Phase 45-interactive-3d-visualization-with-plotly]: orbit_figure and shell_figure accept orbit_lib_data dict (from load_orbit_library) not RawExportViewModel — avoids design-orbit vs anchor-orbit namespace mismatch
 - [Phase 45-interactive-3d-visualization-with-plotly]: renderer=notebook_connected used (not renderer=notebook) to avoid 3.5MB plotly.js embed per cell
 - [Phase 45-interactive-3d-visualization-with-plotly]: Single _PLOTLY_AVAILABLE guard in notebook cell B covers both orbit and shell cells for sync fallback behavior
+- [Phase 46]: rdf_plot uses orbit library (100 unique sites) not raw.json (52 points with duplicates) to avoid zero-distance pairs
+- [Phase 46]: diffraction_plot accepts pre-computed peaks list so caller controls simulate_powder_xrd_patterns invocation
+- [Phase 46]: plt.rc_context(PUB_STYLE) used per-function rather than global rcParams mutation for test isolation
+- [Phase 46]: Per-point opacity encoded via RGBA color strings in Scatter3d because plotly 6.6 marker.opacity is scalar-only; numeric opacity stored in customdata for test verification
+- [Phase 46]: ONE Scatter3d trace per orbit (5 total) with all 8 cells concatenated, not 40 traces, to keep legend clean
 
 ### Pending Todos
 
@@ -96,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-16T03:25:57.867Z
-Stopped at: Completed 45-interactive-3d-visualization-with-plotly plan 02
+Last session: 2026-04-16T14:30:46.195Z
+Stopped at: Completed 46-publication-2d-panels-crystal-expansion-and-polish plan 02
 Resume file: None
