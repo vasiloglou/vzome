@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-16 | Phase 45 Plan 01 Task 2: test_plotly_3d.py with 16 unit tests | Created comprehensive unit tests covering orbit_figure (5 traces, colors, hover text, marker size, total points), shell_figure (ordering, mesh3d, legendgroup, opacity, wireframe), import error guard, matplotlib_pub/expansion importability, [viz] extra declaration, and load_orbit_library. All 16 tests pass; full suite 611 passed. |
 | 2026-04-16 | Phase 45 Plan 01 Task 1: plotly_3d.py and viz deps | Created plotly_3d.py with orbit_figure(), shell_figure(), load_orbit_library(); matplotlib_pub.py and expansion.py stubs; [viz] optional-dependencies group in pyproject.toml; conditional plotly_3d exports in __init__.py |
 | 2026-04-15 | Tutorial screening/validation/LLM prose | Added plain-language explanations for screening metrics, validation gates, and LLM commands in tutorial and notebook |
 | 2026-04-15 | Tutorial design narrative | Added design-origin narrative and annotated Zomic walkthrough to tutorial markdown and notebook |
@@ -182,7 +183,9 @@
 - Updated `visualization/__init__.py` to conditionally import and re-export `orbit_figure`, `shell_figure`, `load_orbit_library` from `plotly_3d.py` inside a try/except block so the package remains importable when plotly is not installed.
 - Added `[viz]` optional-dependencies group to `pyproject.toml` with `plotly>=6.0`, `matplotlib>=3.9`, `kaleido>=1.0`, `scipy>=1.13`, `nbformat>=4.2.0`. Ran `uv pip install -e ".[viz]"` and verified all imports succeed.
 - Shell ordering for `shell_figure()` is computed dynamically from mean radial distance, not hardcoded: expected order is tsai_zn6 (5.97A) < tsai_zn7 (6.13A) < tsai_zn5 (6.57A) < tsai_sc1 (6.73A) < tsai_zn4 (7.73A).
-- Open items: Task 2 (test_plotly_3d.py with 16 unit tests) to be committed next.
+- Phase 45 Plan 01 Task 2 — Created `tests/test_plotly_3d.py` with 16 unit tests covering all acceptance criteria from the plan: orbit_figure (5 traces, ORBIT_COLORS matching, hover text format, marker size=8, total 100 points), shell_figure (radial-distance ordering, Mesh3d cages, legendgroup consistency, opacity=0.15, edge wireframes in mode='lines'), import error guard (monkeypatching _VIZ_AVAILABLE=False), matplotlib_pub and expansion stub importability, [viz] extra pyproject.toml declaration, and load_orbit_library with real file and missing-file error.
+- All 16 tests pass in 0.22s. Full suite: 611 passed, 3 skipped, 1 warning (no regressions).
+- Open items: None — Plan 01 complete.
 
 ### 2026-04-15
 
