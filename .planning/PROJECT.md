@@ -232,6 +232,11 @@ instead of living in separate prototypes.
   layers via `plotly_3d.py`, backed by an installable `[viz]` optional
   dependency group. `matplotlib_pub.py` and `expansion.py` stubs are in place
   for Phase 46.
+- Validated in v1.82 Phase 46: the notebook now renders publication-quality 2D
+  matplotlib panels (screening scatter with calibration thresholds, RDF with
+  shell-peak annotations, simulated diffraction), a 2x2x2 crystal expansion
+  view labeled as "periodic approximant tiling", and all four figures are
+  wired into `__init__.py` exports via the `[viz]` optional dependency group.
 
 ### Active
 
@@ -371,4 +376,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-16 after Phase 45 completion*
+*Last updated: 2026-04-16 after Phase 46 completion*
