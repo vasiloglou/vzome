@@ -55,25 +55,25 @@ milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NARR-01 | Pending | Pending |
-| NARR-02 | Pending | Pending |
-| NARR-03 | Pending | Pending |
-| NARR-04 | Pending | Pending |
-| NARR-05 | Pending | Pending |
-| VIZ-01 | Pending | Pending |
-| VIZ-02 | Pending | Pending |
-| VIZ-03 | Pending | Pending |
-| VIZ-04 | Pending | Pending |
-| VIZ-05 | Pending | Pending |
-| ENRICH-01 | Pending | Pending |
-| ENRICH-02 | Pending | Pending |
-| ENRICH-03 | Pending | Pending |
+| NARR-01 | Phase 44 | Pending |
+| NARR-02 | Phase 44 | Pending |
+| NARR-03 | Phase 44 | Pending |
+| NARR-04 | Phase 44 | Pending |
+| NARR-05 | Phase 44 | Pending |
+| ENRICH-01 | Phase 44 | Pending |
+| VIZ-01 | Phase 45 | Pending |
+| VIZ-02 | Phase 45 | Pending |
+| ENRICH-03 | Phase 45 | Pending |
+| VIZ-03 | Phase 46 | Pending |
+| VIZ-04 | Phase 46 | Pending |
+| VIZ-05 | Phase 46 | Pending |
+| ENRICH-02 | Phase 46 | Pending |
 
 **Coverage:**
 - v1.82 requirements: 13 total
-- Mapped to phases: 0
-- Unmapped: 13 (roadmap pending)
+- Mapped to phases: 13
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-15*
-*Last updated: 2026-04-15 after initial definition*
+*Last updated: 2026-04-15 after roadmap creation — all 13 requirements mapped to phases 44-46*
