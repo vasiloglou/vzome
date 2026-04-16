@@ -1,20 +1,20 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.81
-milestone_name: Extensive LLM Tutorial and Programmatic vZome Visualization MVP
+milestone: v1.82
+milestone_name: Illustrated Tutorial and Publication-Quality Visualization
 current_phase: null
 current_phase_name: no active phase
-current_plan: Complete
-status: archived
-stopped_at: v1.81 milestone archived; ready for next milestone
-last_updated: "2026-04-15T17:44:49Z"
+current_plan: null
+status: defining requirements
+stopped_at: null
+last_updated: "2026-04-15T18:00:00Z"
 last_activity: 2026-04-15
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 3
-  completed_plans: 3
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -26,23 +26,15 @@ See: `.planning/PROJECT.md` (updated 2026-04-15)
 **Core value:** Build one reproducible system where trusted materials data,
 physically grounded no-DFT validation, and LLM-guided structure generation
 reinforce each other instead of living in separate prototypes.
-**Current focus:** Define the next milestone from the archived `v1.81`
-tutorial and programmatic visualization baseline
+**Current focus:** Illustrated tutorial enrichment and publication-quality
+visualization for v1.82
 
 ## Current Position
 
-Current Milestone: none active
-Most Recent Milestone: v1.81
-Current Phase: none active
-Current Phase Name: no active phase
-Total Phases in Most Recent Milestone: 3
-Current Plan: Complete
-Status: v1.81 shipped and archived; ready for next milestone definition
-Last activity: 2026-04-15
-Last Activity Description: v1.81 milestone archived and planning reset for the
-next milestone
-
-Progress: [##########] 100%
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-15 — Milestone v1.82 started
 
 ## Performance Metrics
 
