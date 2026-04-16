@@ -71,7 +71,7 @@ Plans:
   4. The core pipeline never imports plotly or matplotlib — the [viz] group remains strictly optional
 **Plans**: 2 plans
 Plans:
-- [ ] 45-01-PLAN.md — plotly_3d.py module with orbit_figure/shell_figure, matplotlib_pub.py stub, [viz] extra group, and unit tests
+- [x] 45-01-PLAN.md — plotly_3d.py module with orbit_figure/shell_figure, matplotlib_pub.py stub, [viz] extra group, and unit tests
 - [ ] 45-02-PLAN.md — Notebook integration with plotly figure cells in Section 4 and visual verification
 **UI hint**: yes
 
@@ -95,7 +95,7 @@ Phases execute in numeric order: 44 → 45 → 46
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 44. Prose Enrichment and Zomic Annotation | v1.82 | 3/3 | Complete    | 2026-04-16 |
-| 45. Interactive 3D Visualization with Plotly | v1.82 | 0/2 | Planning complete | - |
+| 45. Interactive 3D Visualization with Plotly | v1.82 | 1/2 | In Progress|  |
 | 46. Publication 2D Panels, Crystal Expansion, and Polish | v1.82 | 0/TBD | Not started | - |
 
 ## Archive Pointers
