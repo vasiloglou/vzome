@@ -495,6 +495,8 @@ proposal or assessment lane on top of the checked Zomic-backed workflow.
 | `configs/systems/sc_zn_llm_mock.yaml` | Fixture-backed Sc-Zn lane for dry runs and tests |
 | `configs/systems/sc_zn_llm_local.yaml` | Local OpenAI-compatible Sc-Zn lane with general-purpose generation plus specialized evaluation |
 
+**What `llm-generate` does.** This command uses a language model as an alternate proposal source for candidate structures. Instead of expanding the Zomic-backed geometry deterministically, the LLM proposes new site arrangements given the Sc-Zn design constraints. The resulting candidates feed into the same screening and validation stages shown in Sections 5-6 — the LLM replaces only the proposal step, not the evidence chain.
+
 Representative commands:
 
 ```bash
@@ -503,6 +505,8 @@ uv run mdisc llm-generate --config configs/systems/sc_zn_llm_mock.yaml --count 5
 
 uv run mdisc llm-evaluate --config configs/systems/sc_zn_llm_local.yaml --batch all
 ```
+
+**What `llm-evaluate` does.** This command adds an LLM assessment layer on top of ranked deterministic candidates. It does not replace the deterministic validation or report evidence; it provides additive signals about synthesis feasibility and precursor availability. The evaluated JSONL carries these signals alongside the original proxy and validation fields.
 
 Artifact families this branch writes:
 
@@ -553,6 +557,8 @@ Treat this as a fixture-availability context switch, not as a new authority
 chain. The lesson is still the same: move through explicit artifact handoffs and
 read the loss posture or benchmark evidence honestly.
 
+**What the chemistry switch means for reading the tutorial.** When you see Al-Cu-Fe artifacts in the next section, you are looking at a different chemical system with its own fixture-backed benchmark data. The commands and artifact handoffs work identically to the Sc-Zn lane — only the composition and the backing fixtures change. This is deliberate: the tutorial demonstrates that the pipeline's artifact contracts are chemistry-agnostic.
+
 ### 9.3 Translation and external benchmark branch
 
 This branch hands work across four artifact roots:
@@ -565,6 +571,8 @@ This branch hands work across four artifact roots:
   capture, and smoke artifacts
 - `data/benchmarks/llm_external/` — comparative benchmark summaries, scorecards,
   and per-target results
+
+**What `llm-translate` does.** This command converts internal candidate records from the pipeline's native JSONL format into external interoperability formats (CIF files, material-string bundles). The translation preserves as much structural fidelity as possible and flags any information loss. Downstream benchmark commands consume these translated artifacts, not the raw pipeline JSONL.
 
 #### Export and inspect translated bundles
 
@@ -596,6 +604,8 @@ What the signal means:
 See [LLM Translation Runbook](llm-translation-runbook.md) for the deeper export
 contract.
 
+**What `llm-translated-benchmark-freeze` does.** This command creates an immutable snapshot of a translated candidate set for benchmarking. The freeze contract guarantees that the benchmark inputs will not change even if the upstream translation is re-run later. The `included.jsonl` contains the cases the benchmark is allowed to score; `excluded.jsonl` keeps rejected or mismatched rows visible.
+
 #### Freeze and inspect one benchmark pack
 
 ```bash
@@ -621,6 +631,8 @@ What the signal means:
 
 See [Translated Benchmark Runbook](llm-translated-benchmark-runbook.md) for the
 freeze contract and exclusion vocabulary.
+
+**What `llm-register-external-target` does.** This command registers an external model (a downloaded checkpoint, a remote API endpoint, or a local inference server) as a named target that the benchmark can invoke. Registration captures the target identity and environment state. The smoke test verifies the target can process a single test case before committing to a full benchmark run.
 
 #### Register, inspect, and smoke-test the external target
 
@@ -651,6 +663,8 @@ What the signal means:
 
 See [External Target Runbook](llm-external-target-runbook.md) for the target
 registration boundary and failure posture.
+
+**What `llm-external-benchmark` does.** This command runs the frozen benchmark set against all registered external targets and the internal pipeline baseline, producing a comparative scorecard. The summary separates exact/anchored evidence from approximate/lossy diagnostics. Recommendation lines are advisory milestone evidence — they do not trigger automatic promotion.
 
 #### Run and inspect the comparative benchmark
 
