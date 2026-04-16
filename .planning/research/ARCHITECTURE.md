@@ -1,176 +1,150 @@
-# Architecture Research: v1.81 Extensive LLM Tutorial and Programmatic vZome Visualization MVP
+# Architecture Research: v1.82 Illustrated Tutorial and Publication-Quality Visualization
 
-**Milestone:** `v1.81`
+**Milestone:** `v1.82`
 **Researched:** 2026-04-15
-**Confidence:** HIGH for the tutorial-first raw-geometry viewer path, MEDIUM
-for a richer adapter that fully reuses the existing online viewer stack.
+**Confidence:** HIGH for plotly/matplotlib integration, MEDIUM for crystal
+expansion rendering approach.
 
 ## Executive Position
 
-v1.81 should be built as two linked additions:
+v1.82 adds two linked layers to the existing tutorial infrastructure:
 
-1. a small programmatic visualization surface for the checked exported Zomic
-   geometry
-2. a deeper tutorial and notebook pass that uses that surface instead of
-   requiring desktop vZome
+1. **Prose enrichment** — design narrative, annotated Zomic walkthrough,
+   plain-language screening/validation/LLM explanations
+2. **Publication-quality visualization** — plotly 3D interactive figures,
+   matplotlib 2D publication panels, intuitive labels, crystal expansion views
 
-The safest architecture is tutorial-first and artifact-first:
-
-- keep `.zomic` as the editable geometry authority
-- keep `mdisc export-zomic` as the compiler from design source to checked raw
-  geometry
-- make the raw geometry export the MVP viewer input
-- package one thin renderer or wrapper around that artifact
-- wire the docs and notebook to the new surface
-
-The richer `vzome-viewer` / `.shapes.json` path is valuable existing
-infrastructure, but it should be treated as optional leverage for v1.81 rather
-than a new hard dependency the milestone must solve before the tutorial can
-improve.
+The architecture reuses the existing `materials_discovery.visualization` module
+as the integration point and the checked raw export + orbit library as the data
+sources. New visualization functions consume the same artifacts the current
+HTML viewer already reads.
 
 ## Integration Points
 
-- `materials-discovery/developers-docs/guided-design-tutorial.md`
-- `materials-discovery/notebooks/guided_design_tutorial.ipynb`
-- `materials-discovery/developers-docs/index.md`
-- `materials-discovery/designs/zomic/sc_zn_tsai_bridge.zomic`
-- `materials-discovery/designs/zomic/sc_zn_tsai_bridge.yaml`
-- `materials-discovery/data/prototypes/generated/sc_zn_tsai_bridge.raw.json`
-- `materials-discovery/data/prototypes/generated/sc_zn_tsai_bridge.json`
-- `materials-discovery/src/materials_discovery/generator/zomic_bridge.py`
-- `core/src/main/java/com/vzome/core/apps/ExportZomicLabeledGeometry.java`
-- `core/src/main/java/com/vzome/core/exporters/ShapesJsonExporter.java`
-- `online/src/wc/vzome-viewer.js`
-- `online/src/viewer/context/viewer.jsx`
+### Existing artifacts consumed by new visualization
 
-## Recommended Architecture
+| Artifact | Path | New consumers |
+|----------|------|---------------|
+| Raw labeled geometry | `data/prototypes/generated/sc_zn_tsai_bridge.raw.json` | plotly 3D orbit figure, label redesign, expansion view |
+| Orbit-library JSON | `data/prototypes/generated/sc_zn_tsai_bridge.json` | plotly orbit coloring, shell decomposition, polyhedral cages |
+| Screened JSONL | `data/screened/sc_zn_screened.jsonl` | matplotlib screening scatter plot |
+| Screen calibration | `data/calibration/sc_zn_screen_calibration.json` | screening explanation annotations |
+| Validated JSONL | `data/hifi_validated/sc_zn_all_validated.jsonl` | matplotlib validation dashboard |
+| Report JSON | `data/reports/sc_zn_report.json` | release gate visualization |
+| Zomic source | `designs/zomic/sc_zn_tsai_bridge.zomic` | annotated code walkthrough (prose only) |
+| Design YAML | `designs/zomic/sc_zn_tsai_bridge.yaml` | design parameter explanation (prose only) |
+
+### Existing code modified
+
+| Component | Modification |
+|-----------|-------------|
+| `materials_discovery/visualization/__init__.py` | Add exports for new plotly/matplotlib functions |
+| `guided-design-tutorial.md` | Add narrative sections, Zomic annotations, figure references |
+| `guided_design_tutorial.ipynb` | Add visualization cells, prose cells, expansion cells |
+
+## New Components
+
+### New modules inside `materials_discovery.visualization`
+
+| Module | Purpose | Input | Output |
+|--------|---------|-------|--------|
+| `plotly_3d.py` | Interactive 3D atomic site and polyhedral cage rendering | `raw.json`, orbit-library `.json` | plotly `Figure` objects |
+| `matplotlib_pub.py` | Publication-quality 2D panels (RDF, screening scatter, validation dashboard, diffraction) | screened/validated JSONL, raw.json | matplotlib `Figure` objects |
+| `labels.py` | Intuitive label mapping from cryptic orbit labels to human-readable names | orbit-library `.json`, design YAML | label lookup dict |
+| `expansion.py` | Crystal motif expansion/tiling into larger structure | raw.json, orbit-library `.json`, design YAML | expanded site coordinates for plotly rendering |
+
+### Data flow
 
 ```text
-checked .zomic source
-  -> mdisc export-zomic
-  -> raw labeled geometry JSON + orbit-library JSON
-  -> viewer asset helper
-  -> standalone visualization library
-  -> tutorial markdown + notebook render path
+raw.json ──────────────┬──> plotly_3d.orbit_figure()        -> interactive 3D orbit view
+                       ├──> plotly_3d.shell_figure()         -> shell decomposition view
+orbit-library.json ────┤──> plotly_3d.cage_figure()          -> polyhedral cage view
+                       ├──> expansion.expand_motif()         -> expanded coordinates
+                       │      └──> plotly_3d.expansion_figure()
+                       └──> labels.intuitive_labels()        -> human-readable label map
 
-optional richer path:
-  existing vZome / .shapes.json preview infrastructure
-  -> compatible adapter or future enhancement
+screened.jsonl ────────┬──> matplotlib_pub.screening_scatter() -> energy vs distance scatter
+screen_calibration ────┘
+
+validated.jsonl ───────┬──> matplotlib_pub.validation_dashboard() -> multi-panel validation view
+report.json ───────────┘──> matplotlib_pub.release_gate_panel()   -> gate status visualization
+
+raw.json ──────────────┬──> matplotlib_pub.rdf_plot()        -> radial distribution function
+                       └──> matplotlib_pub.diffraction_plot() -> simulated diffraction pattern
 ```
 
-## New vs Modified Components
+## Suggested Build Order
 
-### New Components
+### Phase 1: Prose enrichment and Zomic annotation
 
-| Component | Why it should exist | Responsibility |
-|-----------|---------------------|----------------|
-| Standalone tutorial visualization library | The user explicitly asked for a programmatic function-call or library path | Load checked geometry artifacts and render them predictably outside desktop vZome |
-| Viewer asset helper | The tutorial needs one stable way to find or refresh the geometry artifact | Resolve or refresh the checked export and pass it to the library in a predictable form |
-| Notebook embed helper | Notebook users need a smooth render path | Inline or launch the viewer without manual desktop steps |
+**Dependencies:** None — works on existing artifacts
+**Delivers:**
+- Design-origin narrative (how the Sc-Zn Tsai bridge was conceived, why this design)
+- Annotated Zomic file walkthrough (each block explained)
+- Plain-language screening and validation explanations
+- LLM section enrichment
+- Intuitive label mapping (the `labels.py` module, needed before figures)
 
-### Modified Components
+**Rationale:** The Features research found the tutorial gap is structural —
+figures become uninterpretable without explanatory prose. This phase is low
+complexity and unblocks everything else.
 
-| Component | Modification | Why |
-|-----------|-------------|-----|
-| Guided tutorial Markdown | Expand narrative depth and replace the desktop-only visualization step | This is the main user-facing milestone outcome. |
-| Guided tutorial notebook | Add programmatic rendering cells and deeper LLM branch guidance | The notebook is where the extensive, executable version should live. |
-| Docs index or cross-links | Explain when to use the Markdown tutorial, notebook, and visualization library | Readers need one discoverable path into the new surface. |
-| Existing visualization docs | Clarify how the tutorial-first viewer relates to full vZome capabilities | Avoid overclaiming parity. |
+### Phase 2: Interactive 3D visualization with plotly
+
+**Dependencies:** Phase 1 (labels module, narrative context)
+**Delivers:**
+- `plotly_3d.py` with orbit-colored Scatter3d, shell decomposition, polyhedral cage Mesh3d
+- Notebook cells with inline plotly figures
+- Markdown tutorial figure references
+- `[viz]` optional dependency group in pyproject.toml
+
+**Rationale:** The orbit-colored 3D figure is the single highest-impact visual
+upgrade. Plotly renders inline in notebooks without extensions.
+
+### Phase 3: Publication 2D panels, crystal expansion, and polish
+
+**Dependencies:** Phase 2 (visualization module structure)
+**Delivers:**
+- `matplotlib_pub.py` with screening scatter, validation dashboard, RDF, diffraction
+- `expansion.py` with motif tiling logic
+- Crystal expansion plotly figure
+- Static figure export for markdown tutorial
+- Final label and color scheme polish
+
+**Rationale:** The 2D panels and expansion view are the publication-quality
+differentiators. They depend on the module structure from Phase 2 and the
+narrative context from Phase 1.
 
 ## Architectural Seams
 
-### 1. Keep visualization separate from authoring
+### 1. Keep plotly and matplotlib optional
 
-Do not make v1.81 responsible for browser-side `.zomic` authoring or full
-desktop parity.
+Add them under a `[viz]` extra in pyproject.toml. The core pipeline must not
+break if visualization dependencies are not installed. Guard imports with
+try/except in the notebook.
 
-Reason:
+### 2. Keep visualization read-only on checked artifacts
 
-- the milestone is about eliminating the tutorial handoff, not replacing the
-  authoring tool
-- the checked tutorial already has a trusted export artifact
-- full editing parity would turn a tutorial milestone into a product rewrite
+The new visualization functions must only read existing artifacts. They must not
+re-run pipeline stages, mutate data files, or require live pipeline execution
+to produce figures.
 
-Recommendation:
+### 3. One orbit color scheme shared across all figures
 
-- author in `.zomic`
-- export with `mdisc export-zomic`
-- render the resulting checked artifact programmatically
+Define the orbit-to-color mapping once in `labels.py` and reuse it in both
+plotly and matplotlib figures. Use a colorblind-safe palette (e.g., Wong 2011
+or Tol's qualitative scheme).
 
-### 2. Prefer a library surface over a service surface
+### 4. Shell assignment from radial distance
 
-The user allowed a service if it is easier, but the repo context points the
-other way.
+The 5 orbits in the orbit library map to concentric Tsai cluster shells. The
+shell assignment should be computed from mean radial distance of each orbit's
+sites relative to motif center, not hardcoded. This keeps it correct if the
+design changes.
 
-Reason:
+### 5. Expansion uses existing geometry math
 
-- the tutorial is file-backed and local-first
-- the browser viewer stack already exists
-- a server would add lifecycle, availability, and port-management complexity
-
-Recommendation:
-
-- publish a scriptable library surface first
-- allow a tiny local static host helper only when browser rendering needs URLs
-- defer any long-running service until there is real non-tutorial demand
-
-### 3. Keep the artifact chain explicit
-
-The tutorial already relies on a specific authority chain:
-
-`.zomic -> raw export -> orbit library -> downstream candidates`
-
-Do not hide that by rendering downstream candidate artifacts as if they were
-the geometry source, or by inventing a new "viewer model" that severs the link
-back to the checked design export.
-
-Recommendation:
-
-- the viewer should make it obvious which raw export it is rendering
-- the docs should say what the viewer is showing and what it is not showing
-
-### 4. Treat `vzome-viewer` as leverage, not as a forced dependency
-
-The repo's online viewer gives useful patterns:
-
-- component packaging
-- programmatic methods (`loadFromText()`, `captureImage()`, `exportText()`)
-- preview-first loading
-
-But the tutorial's checked design path does not currently hand us `.vZome`
-share files for free.
-
-Recommendation:
-
-- use the online viewer stack when it lowers implementation cost
-- do not block the milestone on deriving `.vZome` / `.shapes.json` from the
-  current tutorial inputs if the raw export contract is already enough
-
-## Recommended Build Shape
-
-Plan v1.81 as three phases:
-
-### Phase 41: Programmatic Visualization Artifact and Library Surface
-
-Freeze the tutorial-facing geometry contract and stand up the standalone viewer
-library around the checked export.
-
-### Phase 42: Extensive Guided Tutorial Expansion
-
-Rewrite the Markdown tutorial into a deeper operator walkthrough of the shipped
-LLM surfaces, using the new visualization path instead of a desktop-only step.
-
-### Phase 43: Notebook Visualization and LLM Walkthrough Integration
-
-Add executable or previewable notebook helpers for programmatic rendering and
-expand the notebook's LLM workflow coverage so it becomes the most detailed
-walkthrough surface in the repo.
-
-## Architecture Recommendation
-
-Build v1.81 on the checked raw export path first. Reuse the online viewer code
-where it meaningfully reduces work, but keep the milestone contract simple:
-one exported geometry artifact, one standalone programmatic viewer surface, and
-one extensive tutorial/notebook path that proves the workflow end to end.
-
-**File changed:** `/Users/nikolaosvasiloglou/github-repos/vzome/.planning/research/ARCHITECTURE.md`
+Crystal expansion replicates the motif at lattice translation vectors using the
+base_cell parameters from the design YAML. The `zphi_geometry.py` module
+already has relevant icosahedral math. Keep expansion modest (2x2x2 or 3x3x3)
+to avoid performance issues.

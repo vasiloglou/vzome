@@ -1,152 +1,181 @@
-# Domain Pitfalls
+# Domain Pitfalls: v1.82 Illustrated Tutorial and Publication-Quality Visualization
 
-**Domain:** `v1.81` Extensive LLM Tutorial and Programmatic vZome Visualization
-MVP
+**Milestone:** `v1.82`
 **Researched:** 2026-04-15
-**Confidence:** HIGH for repo-specific tutorial and scope risks, MEDIUM for the
-exact packaging edge cases of the standalone viewer.
-
-## Milestone Phase Assumptions
-
-To keep the warnings actionable, this file assumes `v1.81` is split into three
-phases:
-
-| Proposed Phase | Purpose |
-|---|---|
-| Phase 41: Programmatic Visualization Artifact and Library Surface | Freeze the checked geometry artifact and provide a standalone render path. |
-| Phase 42: Extensive Guided Tutorial Expansion | Deepen the Markdown tutorial and wire it to the new visualization path. |
-| Phase 43: Notebook Visualization and LLM Walkthrough Integration | Make the notebook executable or previewable for rendering and richer LLM branches. |
+**Confidence:** HIGH for notebook rendering and tutorial narrative risks,
+MEDIUM for quasicrystal-specific visualization edge cases.
 
 ## Critical Pitfalls
 
-### Pitfall 1: The new visualization path still hides a manual desktop step
+### Pitfall 1: Plotly 3D HTML blob size crashes notebooks
 
-**What goes wrong:**  
-The milestone claims "programmatic visualization," but the actual workflow
-still depends on a human opening desktop vZome to export a file, refresh a
-preview, or rescue a broken render.
+**What goes wrong:**
+Each plotly 3D figure embeds the full plotly.js bundle (~3.5 MB) in the
+notebook cell output. Multiple 3D figures in one notebook can balloon the
+`.ipynb` file to 30+ MB, making it slow to open, version, and render on
+GitHub.
 
-**Why it happens here:**  
-The current tutorial already uses desktop vZome for the final visualization
-handoff. It is easy to move that step around rather than remove it.
+**Why it happens here:**
+The milestone adds multiple interactive 3D figures (orbit view, shell
+decomposition, cage view, expansion view) to one notebook.
 
-**Consequences:**  
-The tutorial remains irreproducible in practice. Readers still leave the repo
-workflow at the last step, which means the main user pain is unsolved.
+**Prevention:**
+- Use `fig.show(renderer="notebook_connected")` which loads plotly.js from CDN
+  once instead of embedding per-cell.
+- Limit the number of inline 3D figures to 3-4 per notebook.
+- For the markdown tutorial, export static PNG/SVG via kaleido instead of
+  embedding interactive HTML.
+- Strip large cell outputs before committing with `nbstripout` or equivalent.
 
-**Prevention:**  
+**Address in phase:** Phase 2 (plotly integration).
 
-- Define one checked artifact that the programmatic viewer consumes directly.
-- Ensure that artifact can be refreshed from repo commands.
-- Refuse milestone "done" if the documented happy path still requires opening
-  desktop vZome by hand.
+### Pitfall 2: Misleading periodic approximant shown as true quasicrystal
 
-**Address in milestone:**  
-Phase 41 must solve this directly.
+**What goes wrong:**
+The Sc-Zn Tsai bridge is a cubic approximant (a=b=c=13.79 Å, all angles 90°),
+not a true icosahedral quasicrystal. The expansion view could mislead readers
+into thinking they are seeing aperiodic tiling when the structure is actually
+periodic.
 
-### Pitfall 2: Scope creep into a general-purpose visualization platform
+**Why it happens here:**
+The Features research flagged that a 2D Penrose tiling overlay would be
+incorrect for this 3D approximant. The same risk applies to any expansion view
+that does not clearly label the periodicity.
 
-**What goes wrong:**  
-The milestone grows from "show the checked design programmatically" into
-browser editing, scene authoring, multi-design management, persistent hosting,
-or a generic vZome web service.
+**Prevention:**
+- Label expansion views as "periodic approximant tiling" not "quasicrystal
+  expansion."
+- Add a prose note explaining the relationship between the Tsai cluster motif
+  and the periodic unit cell.
+- Do NOT overlay Penrose tilings on the 3D structure.
+- If showing diffraction, note that the approximant has Bragg peaks at rational
+  positions, not the irrational positions of a true QC.
 
-**Why it happens here:**  
-The repo already contains a substantial online vZome stack, so it is tempting
-to broaden the ambition once that code is in view.
+**Address in phase:** Phase 1 (narrative) and Phase 3 (expansion view).
 
-**Consequences:**  
-The tutorial does not improve quickly, and the milestone turns into a platform
-project that is much harder to verify.
+### Pitfall 3: Label overcrowding in 3D views
 
-**Prevention:**  
+**What goes wrong:**
+The current viewer shows all 52 labeled points simultaneously. With
+human-readable labels (longer than `pent.top.center`), the 3D view becomes an
+unreadable wall of overlapping text.
 
-- Keep the user-facing requirement on the checked tutorial path only.
-- Treat service hosting and editing parity as explicitly out of scope.
-- Prefer one thin library surface and one checked example over a general app.
+**Why it happens here:**
+The milestone specifically asks for more intuitive labels. Longer, clearer
+labels take more screen space.
 
-**Address in milestone:**  
-Phase 41 architecture and Phase 42 docs scope boundaries.
+**Prevention:**
+- Default to labels OFF in 3D plotly views; show on hover instead.
+- Provide a toggle or separate "labeled view" figure with only representative
+  sites labeled (one per orbit, not all 52).
+- Use color legend + hover text as the primary identification method.
+- Keep the full labeled view available as an explicit option, not the default.
 
-### Pitfall 3: Rendering the wrong artifact and confusing the authority chain
+**Address in phase:** Phase 2 (plotly 3D + label design).
 
-**What goes wrong:**  
-The viewer renders downstream candidate artifacts, orbit-library outputs, or
-ad hoc transformed geometry, and the docs blur that with the original Zomic
-design intent.
+### Pitfall 4: Shell assignment hardcoded instead of computed
 
-**Why it happens here:**  
-The repo has several related artifacts: raw labeled geometry, orbit-library
-JSON, candidate JSONL, and report outputs. They are connected, but not
-interchangeable.
+**What goes wrong:**
+The orbit-to-shell mapping is entered manually from a paper reference and
+becomes wrong when the design changes or a different system is used.
 
-**Consequences:**  
-Readers lose track of what the visualization proves. The tutorial becomes
-harder to trust and to extend.
+**Why it happens here:**
+The IUCrJ 2016 Sc-Zn paper shows specific shell assignments for the Tsai
+cluster. It is tempting to copy those directly.
 
-**Prevention:**  
+**Prevention:**
+- Compute shell assignment from mean radial distance of each orbit's sites
+  relative to `motif_center` in the design YAML.
+- Validate against the known Tsai shell sequence as a sanity check, but do not
+  hardcode it.
+- Log the computed shell ordering so users can verify it.
 
-- Name the rendered artifact explicitly in the viewer and docs.
-- Keep `.zomic -> raw export -> orbit library -> candidates` visible.
-- Only use downstream artifacts for the questions they actually answer.
+**Address in phase:** Phase 2 (orbit visualization).
 
-**Address in milestone:**  
-Phase 41 asset contract plus Phase 42 documentation.
+### Pitfall 5: Narrative drifts from checked artifacts
 
-### Pitfall 4: The extensive tutorial becomes a catalog instead of a story
+**What goes wrong:**
+The prose explains a workflow or result that does not match the actual checked
+artifacts in the repo. For example, claiming 4 shortlisted candidates when the
+checked snapshot has a different count, or describing validation results that
+do not match the committed data.
 
-**What goes wrong:**  
-The docs try to "cover everything" by listing commands, but they lose the
-single coherent operator narrative that made the original tutorial useful.
+**Why it happens here:**
+The milestone adds substantial narrative text. The more prose, the more surface
+area for claims that age badly when artifacts are refreshed.
 
-**Why it happens here:**  
-The user's ask is to demonstrate all the LLM functionality, which can easily
-turn into a disconnected checklist.
+**Prevention:**
+- Every quantitative claim in the narrative must reference a specific checked
+  artifact file and field.
+- Use notebook cells to pull values programmatically rather than hardcoding
+  numbers in prose.
+- In the markdown tutorial, use phrasing like "the current checked snapshot
+  shows..." rather than absolute claims.
+- Verify all narrative claims against actual artifact values before marking
+  phases complete.
 
-**Consequences:**  
-Readers see more words but understand less. The tutorial becomes longer without
-becoming more teachable.
+**Address in phase:** Phase 1 (narrative) — set the convention early.
 
-**Prevention:**  
+### Pitfall 6: Matplotlib figure sizing inconsistent between notebook and export
 
-- Keep one deterministic Sc-Zn spine.
-- Introduce each shipped LLM family at the moment it naturally branches from
-  that spine.
-- Keep command examples tied to artifact questions, not just coverage goals.
+**What goes wrong:**
+Figures look good inline in the notebook but are too small, too large, or have
+unreadable labels when exported as PNG/SVG for the markdown tutorial or PDF.
 
-**Address in milestone:**  
-Phase 42 first, then Phase 43 notebook depth.
+**Why it happens here:**
+Notebooks render at screen DPI (~72-96), but publication figures need 300 DPI.
+Font sizes that look right at screen DPI become tiny at publication DPI unless
+explicitly scaled.
 
-### Pitfall 5: Notebook rendering becomes brittle or environment-specific
+**Prevention:**
+- Define a shared figure style context in `matplotlib_pub.py` with explicit
+  `figsize`, `dpi`, and font size settings.
+- Use `matplotlib.style.context()` to isolate tutorial figure style from user's
+  global matplotlib config.
+- Test figure export at 300 DPI as part of verification.
+- Keep figure width at 6-8 inches max for readability.
 
-**What goes wrong:**  
-The notebook viewer only works in one browser, only from one working
-directory, or only when a hidden local server is already running.
+**Address in phase:** Phase 3 (matplotlib panels).
 
-**Why it happens here:**  
-Browser-based rendering surfaces often have asset-loading constraints, and the
-existing notebook currently assumes a mostly shell-and-artifact workflow.
+### Pitfall 7: Crystal expansion performance with large supercells
 
-**Consequences:**  
-The notebook becomes harder to trust than the Markdown tutorial. Users fall
-back to screenshots or skip the visualization cells entirely.
+**What goes wrong:**
+Expanding a 100-site motif into a 3x3x3 supercell produces 2,700 sites. With
+polyhedral cages and bonds, the plotly figure can have thousands of traces and
+become sluggish or crash the browser.
 
-**Prevention:**  
+**Why it happens here:**
+The user wants to "show how the crystal would look by expanding it." The
+natural instinct is to expand further than necessary.
 
-- Keep the integration surface small and explicit.
-- If a local host is needed, launch it with one documented helper rather than
-  an implied background prerequisite.
-- Provide preview-only and execute modes just as the current notebook does.
+**Prevention:**
+- Default to 2x2x2 expansion (800 sites) which is visually clear and
+  performant.
+- Use `Scatter3d` with `mode='markers'` (no lines) for the expansion view.
+- Offer the full cage/bond view only for the central unit cell.
+- Add a performance note in the notebook if expanding beyond 2x2x2.
 
-**Address in milestone:**  
-Phase 43.
+**Address in phase:** Phase 3 (expansion view).
+
+### Pitfall 8: Color scheme not accessible
+
+**What goes wrong:**
+Orbit colors that look distinct on a standard display are indistinguishable for
+colorblind users (~8% of male readers).
+
+**Prevention:**
+- Use a colorblind-safe palette: Wong (2011) 7-color or Tol's qualitative
+  scheme (both have 5+ distinguishable colors, matching the 5 orbits).
+- Add marker shape variation as a secondary channel (circle, square, diamond,
+  triangle, cross) so orbits are distinguishable even in grayscale.
+- Test with a CVD simulator before finalizing.
+
+**Address in phase:** Phase 2 (color scheme definition).
 
 ## Cross-Cutting Warning
 
-Do not quietly turn the tutorial expansion into a new LLM milestone. The work
-should demonstrate shipped generation/evaluation, campaign governance,
-serving/checkpoints, and translation/external benchmarking honestly, but it
-should not add new training, automation, or chemistry scope in order to make
-the tutorial look more ambitious.
-
-**File changed:** `/Users/nikolaosvasiloglou/github-repos/vzome/.planning/research/PITFALLS.md`
+Keep the markdown tutorial and notebook in sync. When narrative or figures
+change in one, update the other. The v1.81 convention — markdown is the short
+operator story, notebook is the rich runnable companion — should carry forward.
+Do not let the notebook grow new sections that have no markdown counterpart or
+vice versa.

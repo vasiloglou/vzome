@@ -1,146 +1,94 @@
-# Project Research Summary
+# Research Summary: v1.82 Illustrated Tutorial and Publication-Quality Visualization
 
-**Project:** Materials Design Program
-**Domain:** Extensive tutorial expansion plus programmatic visualization for the
-checked Zomic workflow
-**Milestone:** `v1.81`
-**Researched:** 2026-04-15
-**Confidence:** MEDIUM-HIGH
+**Synthesized:** 2026-04-15
+**Sources:** STACK.md, FEATURES.md, ARCHITECTURE.md, PITFALLS.md
 
 ## Executive Summary
 
-`v1.81` should stay tightly focused on one user-visible improvement: the guided
-tutorial and notebook need to become the extensive, practical entry point for
-the repo's shipped LLM workflow families, and they need to stop ejecting the
-reader into desktop vZome at the visualization step.
+v1.82 is an educational enrichment milestone. The core pipeline works; the
+problem is pedagogical — the tutorial shows commands and outputs but never
+explains what outputs mean, why commands exist, or what the geometry looks like.
+Academic quasicrystal tutorials follow: explain concept, show command, show
+output, annotate output. The current tutorial does steps 2 and 3 but omits 1
+and 4 almost entirely.
 
-The most credible path is not a new service and not a full browser rewrite of
-vZome authoring. It is a tutorial-first visualization surface built on the
-artifacts the checked workflow already produces. The key insight is that the
-current tutorial already trusts `mdisc export-zomic`, and that command already
-emits raw labeled geometry with segments and labeled points. That artifact is a
-clean MVP input for a standalone renderer.
+## Stack Additions
 
-The repo's existing online vZome code is still important. It proves that the
-repo already has browser rendering, packaging, and programmatic viewer patterns
-worth reusing. But the milestone should not depend on inventing a new
-`.zomic -> .vZome` share pipeline before the tutorial can improve. Start from
-the checked raw export path, package one small viewer around it, then wire the
-docs and notebook to that surface.
+New `[viz]` optional dependency group (does not touch core pipeline):
 
-## Key Findings
+| Library | Version | Purpose |
+|---------|---------|---------|
+| `plotly` | `>=6.0` | Interactive 3D orbit figures, polyhedral cages |
+| `matplotlib` | `>=3.9` | 2D publication panels (RDF, diffraction, scatter) |
+| `kaleido` | `>=1.0` | Static PNG/SVG/PDF export from plotly |
+| `scipy` | `>=1.13` | ConvexHull for cages, cKDTree for RDF |
+| `nbformat` | `>=4.2.0` | Required by plotly for notebook mime-type rendering |
 
-### Recommended Stack
+Ruled out: vtk/mayavi, nglview, ipyvolume, crystal-toolkit/Dash, PyQCstrc.
 
-The current stack is already sufficient:
+## Feature Table Stakes (P1)
 
-- keep `materials-discovery/` on the existing Python + `uv` workflow
-- keep `mdisc export-zomic` and `ExportZomicLabeledGeometry` as the checked
-  geometry compiler
-- use the raw labeled geometry JSON as the first tutorial visualization input
-- reuse the repo's browser-side patterns from `online/`
-- package one standalone library or thin wrapper rather than a new service
+- Design-origin narrative (prose, LOW complexity)
+- Annotated Zomic file walkthrough (prose + snippets, MEDIUM)
+- Plain-language screening explanation (prose, LOW)
+- Plain-language validation report explanation (prose, LOW)
+- LLM section explanatory depth (prose, MEDIUM)
+- Annotated screening proxy scatter (matplotlib, LOW)
+- Orbit-colored 3D scatter in notebook (plotly, MEDIUM)
 
-The richer `vzome-viewer` and `.shapes.json` preview path should be treated as
-valuable infrastructure and future compatibility, not as the first blocker for
-the milestone.
+## Feature Differentiators (P2)
 
-### Expected Features
+- Shell-decomposed Tsai cluster figure (plotly/matplotlib, HIGH)
+- RDF plot with annotated shell peaks (matplotlib, MEDIUM)
+- Simulated diffraction pattern (matplotlib, MEDIUM)
 
-The minimum credible feature set is:
+## Deferred (P3 / v1.83+)
 
-- one stable visualization artifact contract for the checked Sc-Zn design
-- one standalone programmatic viewer surface for that artifact
-- one extensive Markdown tutorial that explains the shipped LLM families in the
-  same operator story
-- one notebook that renders the checked design programmatically and deepens the
-  command and artifact coverage for the shipped LLM surfaces
+- Crystal expansion / tiling view (HIGH complexity, needs generator output)
+- Publication SVG/PDF export (stable figures first)
+- 2D Penrose overlay (actively incorrect for this 3D periodic approximant)
 
-### Architecture Approach
+## Architecture
 
-The architecture should stay artifact-first:
+Four new modules inside existing `materials_discovery.visualization`:
 
-`.zomic -> export-zomic raw geometry -> standalone viewer -> docs/notebook`
+1. `plotly_3d.py` — orbit-colored Scatter3d, shell decomposition, Mesh3d cages
+2. `matplotlib_pub.py` — screening scatter, validation dashboard, RDF, diffraction
+3. `labels.py` — orbit-to-human-readable names, shared colorblind-safe palette
+4. `expansion.py` — crystal motif tiling (2x2x2 default)
 
-Do not force the milestone to solve general `.vZome` authoring, general sharing
-infrastructure, or a persistent visualization service. Those are valid future
-extensions, but they are not necessary to meet the user's ask here.
+Key rules:
+- plotly/matplotlib stay optional; core pipeline never imports them
+- All visualization functions read-only on checked artifacts
+- One orbit color scheme in `labels.py`, shared by all figures
+- Shell assignment computed from mean radial distance, not hardcoded
 
-### Critical Pitfalls
+## Top Pitfalls
 
-The main risks are tutorial credibility risks, not rendering-performance risks:
+1. **Plotly notebook bloat** — use `notebook_connected` renderer, limit 3-4 inline 3D figures
+2. **Misleading approximant as QC** — label as "periodic approximant tiling," no Penrose overlay
+3. **Label overcrowding** — labels off by default, show on hover, one representative per orbit
+4. **Narrative drift** — derive claims programmatically from checked files
+5. **Hardcoded shell assignment** — compute from radial distances, not IUCrJ paper copy
 
-1. the "programmatic" path still hides a manual desktop step
-2. the milestone grows into a general visualization platform
-3. the docs blur raw geometry, orbit libraries, and downstream candidates
-4. the extensive tutorial becomes a long command catalog instead of a coherent
-   story
-5. the notebook rendering path becomes brittle or underdocumented
+## Suggested Phase Structure (3 phases)
 
-## Implications for Roadmap
+**Phase 1: Prose Enrichment and Zomic Annotation**
+- Design narrative, Zomic walkthrough, screening/validation/LLM explanations
+- `labels.py` module (only code)
+- No dependencies, unblocks everything
 
-Based on the combined research, the milestone should be planned as three
-phases. That order matches the real dependency chain: artifact and viewer
-surface first, narrative second, notebook integration third.
+**Phase 2: Interactive 3D Visualization with Plotly**
+- `plotly_3d.py`, `[viz]` dependency group, notebook plotly cells
+- Depends on Phase 1 (labels module)
 
-### Phase 41: Programmatic Visualization Artifact and Library Surface
+**Phase 3: Publication 2D Panels and Polish**
+- `matplotlib_pub.py`, `expansion.py`, static figure export
+- Depends on Phase 2 (module structure)
 
-**Rationale:** The tutorial cannot stop depending on desktop vZome until there
-is one checked artifact and one standalone viewer path that render
-programmatically.
-**Delivers:** tutorial-facing geometry contract, standalone viewer packaging,
-and one stable asset-refresh path for the checked Sc-Zn design.
-**Addresses:** `VIS-01`, `VIS-02`.
+## Watch Out For
 
-### Phase 42: Extensive Guided Tutorial Expansion
-
-**Rationale:** Once the programmatic visualization path exists, the Markdown
-tutorial can become the coherent long-form operator story the user requested.
-**Delivers:** deeper walkthrough of the deterministic spine plus shipped LLM
-workflow branches, explicit visualization artifact chain, and honest scope
-boundaries.
-**Addresses:** `DOC-06`, `DOC-07`.
-
-### Phase 43: Notebook Visualization and LLM Walkthrough Integration
-
-**Rationale:** The notebook should become the executable, most-detailed version
-of the same story after the viewer and narrative contracts are stable.
-**Delivers:** programmatic rendering cells or helpers, richer LLM command
-coverage, and clearer notebook-vs-Markdown guidance.
-**Addresses:** `OPS-25`, `OPS-26`.
-
-## Confidence Assessment
-
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | The repo already has almost everything needed; the main decision is packaging, not capability discovery. |
-| Features | HIGH | The user ask translates cleanly into one visualization track and one tutorial-depth track. |
-| Architecture | MEDIUM-HIGH | The tutorial-first raw export path is clear; richer integration with the existing online viewer can stay optional. |
-| Pitfalls | HIGH | The failure modes are concrete and strongly grounded in the current docs and codebase. |
-
-**Overall confidence:** MEDIUM-HIGH
-
-## Sources
-
-### Primary
-
-- local repo: `materials-discovery/developers-docs/guided-design-tutorial.md`
-- local repo: `materials-discovery/notebooks/guided_design_tutorial.ipynb`
-- local repo: `materials-discovery/src/materials_discovery/generator/zomic_bridge.py`
-- local repo: `core/src/main/java/com/vzome/core/apps/ExportZomicLabeledGeometry.java`
-- local repo: `core/src/main/java/com/vzome/core/exporters/ShapesJsonExporter.java`
-- local repo: `online/src/wc/vzome-viewer.js`
-- local repo: `online/src/viewer/context/viewer.jsx`
-- local repo: `online/README.md`
-- local repo: `online/developer-docs/architecture.md`
-- official vZome docs: https://www.vzome.com/docs/web-component/
-
-## Milestone Recommendation
-
-Plan `v1.81` as a three-phase tutorial-and-visualization milestone. Success is
-not a full vZome web product. Success is a checked Sc-Zn walkthrough that
-stays inside the repo workflow from `.zomic` authoring to programmatic
-visualization, and that finally gives the shipped LLM workflow families the
-extensive tutorial coverage the user asked for.
-
-**File changed:** `/Users/nikolaosvasiloglou/github-repos/vzome/.planning/research/SUMMARY.md`
+- kaleido Chrome dependency in CI environments
+- `simulate_powder_xrd.py` notebook API needs verification before Phase 3
+- Crystal expansion tiling vectors need `approximant_templates.py` read
+- Orbit-library JSON schema needs direct read before `plotly_3d.py`
