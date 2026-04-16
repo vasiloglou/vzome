@@ -12,8 +12,8 @@ milestone. Each maps to roadmap phases.
 
 ### Narrative
 
-- [ ] **NARR-01**: Tutorial explains what a Tsai-type icosahedral cluster is and why the Sc-Zn bridge design was chosen, with plain-language conceptual framing before any commands
-- [ ] **NARR-02**: Tutorial shows annotated Zomic file snippets with per-block explanations of geometry commands (size, symmetry, branch, from, label, short, color directions)
+- [x] **NARR-01**: Tutorial explains what a Tsai-type icosahedral cluster is and why the Sc-Zn bridge design was chosen, with plain-language conceptual framing before any commands
+- [x] **NARR-02**: Tutorial shows annotated Zomic file snippets with per-block explanations of geometry commands (size, symmetry, branch, from, label, short, color directions)
 - [ ] **NARR-03**: Tutorial explains what the screening stage does: what energy_proxy_ev_per_atom and min_distance_proxy measure, how the shortlist threshold works, and what passed_count vs shortlisted_count means
 - [ ] **NARR-04**: Tutorial explains each validation signal (geometry_prefilter, phonon_imaginary_modes, md_stability_score, xrd_confidence), the release gate logic, and how to read the recommendation field
 - [ ] **NARR-05**: Tutorial explains the same-system LLM lane and the translation/external benchmark branch with the same explanatory depth as the deterministic spine
@@ -55,8 +55,8 @@ milestone. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NARR-01 | Phase 44 | Pending |
-| NARR-02 | Phase 44 | Pending |
+| NARR-01 | Phase 44 | Complete |
+| NARR-02 | Phase 44 | Complete |
 | NARR-03 | Phase 44 | Pending |
 | NARR-04 | Phase 44 | Pending |
 | NARR-05 | Phase 44 | Pending |

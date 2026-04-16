@@ -56,7 +56,7 @@ educational resource with publication-quality graphics.
 **Plans**: 3 plans
 Plans:
 - [x] 44-01-PLAN.md — Shared orbit label module (labels.py) with colorblind-safe palette and unit tests
-- [ ] 44-02-PLAN.md — Design-origin narrative and annotated Zomic walkthrough in tutorial
+- [x] 44-02-PLAN.md — Design-origin narrative and annotated Zomic walkthrough in tutorial
 - [ ] 44-03-PLAN.md — Screening, validation, and LLM prose enrichment in tutorial
 **UI hint**: no
 
@@ -91,7 +91,7 @@ Phases execute in numeric order: 44 → 45 → 46
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 44. Prose Enrichment and Zomic Annotation | v1.82 | 1/3 | In Progress|  |
+| 44. Prose Enrichment and Zomic Annotation | v1.82 | 2/3 | In Progress|  |
 | 45. Interactive 3D Visualization with Plotly | v1.82 | 0/TBD | Not started | - |
 | 46. Publication 2D Panels, Crystal Expansion, and Polish | v1.82 | 0/TBD | Not started | - |
 
