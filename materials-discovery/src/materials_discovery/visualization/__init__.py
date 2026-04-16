@@ -5,6 +5,13 @@ from materials_discovery.visualization.viewer import (
     render_raw_export_html,
     write_raw_export_viewer,
 )
+from materials_discovery.visualization.labels import (
+    DEFAULT_ORBIT_COLOR,
+    ORBIT_COLORS,
+    ORBIT_LABELS,
+    PREFERRED_SPECIES,
+    SHELL_NAMES,
+)
 
 __all__ = [
     "build_view_model",
@@ -13,4 +20,9 @@ __all__ = [
     "preview_zomic_design",
     "render_raw_export_html",
     "write_raw_export_viewer",
+    "DEFAULT_ORBIT_COLOR",
+    "ORBIT_COLORS",
+    "ORBIT_LABELS",
+    "PREFERRED_SPECIES",
+    "SHELL_NAMES",
 ]

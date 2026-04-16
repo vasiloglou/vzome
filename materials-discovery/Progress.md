@@ -4,6 +4,8 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-15 | labels.py orbit label module | Created shared colorblind-safe orbit palette and label mappings in visualization/labels.py |
+| 2026-04-15 | Guided tutorial notebook output refresh | Re-executed `notebooks/guided_design_tutorial.ipynb` in a clean Python 3.11 virtual environment built from `requirements.txt`, wrote the fresh outputs back into the notebook, and confirmed that all code cells now carry stored execution results for the shipped preview-safe walkthrough |
 | 2026-04-15 | Notebook venv requirements and execution check | Added `requirements.txt` for the shipped `guided_design_tutorial.ipynb` preview-safe path and notebook tooling, then validated it by creating a fresh virtual environment and executing the notebook end to end without depending on the project’s existing uv-managed environment |
 | 2026-04-15 | Guided tutorial notebook artifact glossary | Added a compact end-of-notebook artifact glossary to `notebooks/guided_design_tutorial.ipynb` covering raw exports, orbit libraries, manifests, translation inventories and freeze outputs, external-target registration artifacts, and benchmark summaries or scorecards so readers can decode the tutorial outputs without jumping into runbooks first |
 | 2026-04-15 | Guided tutorial notebook documentation pass | Expanded `notebooks/guided_design_tutorial.ipynb` with clearer helper/setup conventions, richer stage-by-stage artifact interpretation around the deterministic and same-system Sc-Zn lanes, and explicit step documentation for translation, translated benchmark freezing, external-target registration, and external benchmarking without changing the underlying workflow |
@@ -172,6 +174,10 @@
 
 ### 2026-04-15
 
+- 17:33 EDT — Started an in-place output refresh for `notebooks/guided_design_tutorial.ipynb`.
+- Reused the committed notebook requirements with a clean Python 3.11 throwaway environment so the saved notebook outputs would reflect a reproducible execution path rather than whatever happened to be installed in the repo shell.
+- 17:34 EDT — Completed the in-place notebook output refresh.
+- Executed the full notebook successfully with `NOTEBOOK_REFRESH_OK`, wrote the outputs back into the notebook file, and confirmed that all 12 code cells now have stored outputs with sequential execution counts.
 - 16:48 EDT — Added `materials-discovery/requirements.txt` for the guided tutorial notebook.
 - Captured the external package set needed for the shipped preview-safe notebook path plus notebook execution tooling, while leaving optional MLIP and heavier workflow extras out of this first-pass venv file.
 - 16:48 EDT — Started a clean-venv execution check for `notebooks/guided_design_tutorial.ipynb`.
@@ -194,6 +200,7 @@
 - Replaced the old brief catalog with a same-system Sc-Zn companion lane plus a fuller translation/external benchmark branch, explicitly framed the Al-Cu-Fe context switch as fixture-driven rather than conceptual drift, and made the four benchmark artifact roots part of the tutorial narrative.
 - 13:16 EDT — Closed the Phase 42 tutorial pass with lighter workflow handoffs and notebook framing.
 - Added a concise follow-on section for campaign governance and serving/checkpoint commands, kept the Markdown tutorial positioned as the extensive operator story, and left the `Guided Design Tutorial Notebook` as the more executable companion surface for the next phase.
+- Phase 44 Plan 01 — Created `materials_discovery/visualization/labels.py` as a leaf module (no intra-package imports) with ORBIT_LABELS (design-time orbit names mapped to human-readable descriptions), SHELL_NAMES (anchor-library orbit names mapped to physical shell descriptions), ORBIT_COLORS (Wong 2011 colorblind-safe palette keyed by anchor-library orbit names, black excluded), PREFERRED_SPECIES (mirroring sc_zn_tsai_bridge.yaml preferred_species_by_orbit), and DEFAULT_ORBIT_COLOR fallback. Updated `visualization/__init__.py` to export all 5 symbols. Added 10 unit tests in `tests/test_labels.py` covering key sets, hex validity, no-black constraint, preferred species consistency, init exports, and leaf-module enforcement. This module is the canonical shared palette source for Phase 45 (plotly_3d.py) and Phase 46 (matplotlib_pub.py).
 - 12:09 EDT — Added the Phase 41 raw-export viewer, preview CLI wrapper, and programmatic-visualization reference doc.
 - Created `materials_discovery.visualization` for typed raw-export loading, normalized view-model generation, and standalone HTML rendering, added `mdisc preview-zomic` so the checked Sc-Zn geometry can be previewed without opening desktop vZome for the common read-only path, and documented the new repo-owned preview workflow in `developers-docs/programmatic-zomic-visualization.md` plus the existing Zomic workflow page.
 - 01:01 EDT — Extended the docs stack with Phase 40 LLM framing and a notebook companion for the guided tutorial.
