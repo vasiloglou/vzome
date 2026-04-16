@@ -29,7 +29,7 @@ milestone. Each maps to roadmap phases.
 ### Enrichment
 
 - [x] **ENRICH-01**: Orbit labels are mapped from cryptic names to intuitive human-readable names with a shared colorblind-safe palette used across all figures
-- [ ] **ENRICH-02**: Notebook shows a crystal expansion view demonstrating how the Sc-Zn motif tiles into a larger periodic approximant structure
+- [x] **ENRICH-02**: Notebook shows a crystal expansion view demonstrating how the Sc-Zn motif tiles into a larger periodic approximant structure
 - [x] **ENRICH-03**: New visualization modules (plotly_3d.py, matplotlib_pub.py, labels.py, expansion.py) live inside materials_discovery.visualization and are installable via a [viz] optional dependency group
 
 ## Future Requirements
@@ -67,7 +67,7 @@ milestone. Each maps to roadmap phases.
 | VIZ-03 | Phase 46 | Complete |
 | VIZ-04 | Phase 46 | Complete |
 | VIZ-05 | Phase 46 | Complete |
-| ENRICH-02 | Phase 46 | Pending |
+| ENRICH-02 | Phase 46 | Complete |
 
 **Coverage:**
 - v1.82 requirements: 13 total
