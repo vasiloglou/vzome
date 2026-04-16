@@ -53,7 +53,11 @@ educational resource with publication-quality graphics.
   3. The screening section explains what energy_proxy_ev_per_atom and min_distance_proxy measure, how the shortlist threshold selects candidates, and what passed_count vs shortlisted_count means
   4. The validation section explains each signal (geometry_prefilter, phonon_imaginary_modes, md_stability_score, xrd_confidence), the release gate logic, and how to read the recommendation field
   5. The LLM lane and translation/external benchmark branch sections carry the same explain-then-command-then-annotate depth as the deterministic spine, and a shared colorblind-safe orbit palette is defined in labels.py
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 44-01-PLAN.md — Shared orbit label module (labels.py) with colorblind-safe palette and unit tests
+- [ ] 44-02-PLAN.md — Design-origin narrative and annotated Zomic walkthrough in tutorial
+- [ ] 44-03-PLAN.md — Screening, validation, and LLM prose enrichment in tutorial
 **UI hint**: no
 
 ### Phase 45: Interactive 3D Visualization with Plotly
@@ -87,7 +91,7 @@ Phases execute in numeric order: 44 → 45 → 46
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 44. Prose Enrichment and Zomic Annotation | v1.82 | 0/TBD | Not started | - |
+| 44. Prose Enrichment and Zomic Annotation | v1.82 | 0/3 | Planned | - |
 | 45. Interactive 3D Visualization with Plotly | v1.82 | 0/TBD | Not started | - |
 | 46. Publication 2D Panels, Crystal Expansion, and Polish | v1.82 | 0/TBD | Not started | - |
 
