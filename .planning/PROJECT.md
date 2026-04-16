@@ -227,6 +227,11 @@ instead of living in separate prototypes.
   screening and validation explanations, and covers the LLM lane with matching
   depth. A shared `labels.py` module defines the colorblind-safe orbit palette
   for all downstream visualization.
+- Validated in v1.82 Phase 45: the notebook now renders interactive plotly 3D
+  figures with orbit-colored atomic sites and shell-decomposed Tsai cluster
+  layers via `plotly_3d.py`, backed by an installable `[viz]` optional
+  dependency group. `matplotlib_pub.py` and `expansion.py` stubs are in place
+  for Phase 46.
 
 ### Active
 
@@ -366,4 +371,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-16 after Phase 44 completion*
+*Last updated: 2026-04-16 after Phase 45 completion*
