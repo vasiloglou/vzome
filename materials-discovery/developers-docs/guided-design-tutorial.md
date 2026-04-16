@@ -33,6 +33,41 @@ extra environment setup in the [Operator Runbook](../RUNBOOK.md).
 The Sc-Zn Zomic lane also needs a local Java runtime for `mdisc export-zomic`
 and for `mdisc generate` when the system config points at a Zomic design.
 
+## About This Design
+
+A Tsai-type icosahedral quasicrystal approximant is built from a recurring
+structural motif composed of concentric polyhedral shells: an inner icosahedron
+of atoms, surrounded by a pentagonal dodecahedron layer, surrounded in turn by
+an icosidodecahedral outer cage. These nested shells tile three-dimensional
+space with quasiperiodic long-range order — no repeating unit cell, but
+deterministic diffraction symmetry. The approximant variant used in this
+tutorial is the simplest periodic relative that inherits those concentric-shell
+motifs, making it a tractable entry point for candidate generation without
+abandoning the physics of the quasicrystal.
+
+The Sc-Zn system is the worked example throughout this tutorial because it is
+the best-characterized Tsai-type icosahedral quasicrystal in the literature.
+The single-crystal structure determination by [Takakura et al., IUCrJ 2016
+(PMC4937780)](https://pmc.ncbi.nlm.nih.gov/articles/PMC4937780/) resolved the
+atomic positions with unprecedented precision, providing a trusted reference for
+the concentric-shell geometry and the preferred site occupancies of Sc and Zn
+across each shell. That benchmark study is what makes Sc-Zn the right choice
+for a reproducible design walkthrough: the shell structure is not hypothetical,
+and the orbit occupancies can be checked against published crystallographic
+evidence.
+
+The `.zomic` file in this tutorial encodes a manually designed bridge motif —
+a hand-crafted set of strut directions and labeled sites that captures the key
+Sc-Zn Tsai cluster geometry in the vZome icosahedral geometry system. That
+design source is what the pipeline then expands into a full orbit-library
+prototype, feeding candidate generation as machine-readable site sets. The
+"bridge" is from human geometric intuition — editing strut lengths and
+directions interactively in the vZome Zomic editor — to the structured
+`CandidateRecord` objects that the screening, validation, ranking, and report
+stages consume. The operator never writes candidate coordinates directly; the
+design, export, and orbit-library steps produce those coordinates from the
+motif geometry.
+
 ## 2. Know the Worked Example
 
 The tutorial uses these checked inputs:
@@ -68,6 +103,93 @@ Sc-Zn deterministic spine
     `-- translation/external benchmark branch
           llm-translate -> llm-translated-benchmark-freeze -> llm-register-external-target -> llm-external-benchmark
 ```
+
+### 2.1 Reading the Zomic Design Source
+
+The `sc_zn_tsai_bridge.zomic` file contains all the labeled sites that the
+export step compiles into the orbit library. Before reading any pipeline output,
+it helps to understand what the labels mean and what each block of Zomic
+geometry commands is building.
+
+#### Label glossary
+
+| Zomic label prefix | Physical part | Preferred species | Sites in design |
+|-------------------|---------------|-------------------|-----------------|
+| `pent` | Pentagonal ring sites | Sc, Zn | 5 per ring |
+| `frustum` | Frustum connector sites | Zn, Sc | 4 |
+| `joint` | Outer joint sites | Zn | 4 |
+
+#### Annotated Zomic blocks
+
+**Frame declaration**
+
+```zomic
+size 7 purple +0            # <- set the base strut length to scale 7, purple direction
+symmetry around blue +13    # <- apply icosahedral symmetry around this axis direction
+symmetry through +13        # <- close the symmetry group through the axis
+branch{                     # <- open the outer symmetry branch
+```
+
+Physical result: establishes the icosahedral symmetry frame for the entire motif. Every site placed inside the outer branch inherits this symmetry, so one manually placed site expands into all its symmetry-equivalent copies during export.
+
+**Pentagonal ring**
+
+```zomic
+branch {
+  size 7 purple -0
+  from { yellow +0 red +0 }   # <- start position using golden-ratio strut combination
+  label pent.top.center        # <- tag this site as the "pent" orbit, top-center position
+  short blue -12               # <- short strut in blue direction, building one ring edge
+  label pent.top.left
+  short blue -10
+  label pent.bottom.left
+  short blue +13
+  label pent.bottom.right
+  short blue +11
+  label pent.top.right         # <- five labels close the pentagonal loop
+```
+
+Physical result: builds the pentagonal ring of sites that forms the `pent` orbit. Each `short blue` step places the cursor one edge-length along the blue icosahedral direction; the five labels together close the ring.
+
+**Frustum connectors**
+
+```zomic
+  green +3
+  label frustum.top.right      # <- first frustum site, connecting pent ring to outer shell
+  branch { repeat 2 short orange -2 short blue -6 }  # <- repeat pattern for connector arms
+  short blue -13
+  label frustum.top.left
+  blue -5
+  label frustum.bottom.left
+  short blue +13
+  label frustum.bottom.right   # <- four frustum sites complete the connectors
+  branch green -33
+  blue -2
+```
+
+Physical result: adds frustum connector sites between the pentagonal ring and the outer joint layer. The `green +3` step moves radially outward from the `pent` ring; the four `frustum.*` labels mark the sites that link adjacent cluster copies.
+
+**Joint sites**
+
+```zomic
+from short red +1
+branch purple -0
+label joint.top.right           # <- joint site at top-right of the outer layer
+from short blue -13
+branch purple -0
+label joint.top.left
+from blue -5
+branch purple -0
+label joint.bottom.left
+from short blue +13
+branch purple -0
+label joint.bottom.right        # <- four joint sites anchor the outermost shell
+```
+
+Physical result: places the `joint` orbit sites that link adjacent cluster copies. Each `from ... branch purple -0` block forks a new path from an absolute position and steps outward in the purple direction to deposit one joint site.
+
+These three orbit names — `pent`, `frustum`, and `joint` — appear throughout
+the pipeline outputs. The glossary above is your decoder ring.
 
 ## 3. Export the Zomic Design
 
