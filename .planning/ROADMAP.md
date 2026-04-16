@@ -37,7 +37,7 @@ See archive pointers below for details on phases 1-43.
 from a command-reference walkthrough into a richly illustrated, self-explanatory
 educational resource with publication-quality graphics.
 
-- [ ] **Phase 44: Prose Enrichment and Zomic Annotation** - Conceptual framing, annotated Zomic walkthrough, plain-language screening and validation explanations, and the shared orbit label module
+- [x] **Phase 44: Prose Enrichment and Zomic Annotation** - Conceptual framing, annotated Zomic walkthrough, plain-language screening and validation explanations, and the shared orbit label module (completed 2026-04-16)
 - [ ] **Phase 45: Interactive 3D Visualization with Plotly** - Orbit-colored 3D scatter, shell-decomposed Tsai cluster figure, and the [viz] optional dependency group
 - [ ] **Phase 46: Publication 2D Panels, Crystal Expansion, and Polish** - Screening proxy scatter, RDF plot, simulated diffraction pattern, and crystal expansion tiling view
 
@@ -57,7 +57,7 @@ educational resource with publication-quality graphics.
 Plans:
 - [x] 44-01-PLAN.md — Shared orbit label module (labels.py) with colorblind-safe palette and unit tests
 - [x] 44-02-PLAN.md — Design-origin narrative and annotated Zomic walkthrough in tutorial
-- [ ] 44-03-PLAN.md — Screening, validation, and LLM prose enrichment in tutorial
+- [x] 44-03-PLAN.md — Screening, validation, and LLM prose enrichment in tutorial
 **UI hint**: no
 
 ### Phase 45: Interactive 3D Visualization with Plotly
@@ -91,7 +91,7 @@ Phases execute in numeric order: 44 → 45 → 46
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 44. Prose Enrichment and Zomic Annotation | v1.82 | 2/3 | In Progress|  |
+| 44. Prose Enrichment and Zomic Annotation | v1.82 | 3/3 | Complete   | 2026-04-16 |
 | 45. Interactive 3D Visualization with Plotly | v1.82 | 0/TBD | Not started | - |
 | 46. Publication 2D Panels, Crystal Expansion, and Polish | v1.82 | 0/TBD | Not started | - |
 
