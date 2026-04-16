@@ -36,13 +36,21 @@ created: 2026-04-16
 
 ## Per-Task Verification Map
 
+The phase has 4 tasks across 2 plans (not 5 across 3, as originally drafted).
+
+> **Deliberate non-TDD ordering in Plan 01 Task 1:** Task 1 (implementation) runs before
+> Task 2 (tests) because the test suite imports `plotly_3d` at module level — tests cannot
+> be written as failing stubs without the module itself existing. The direct import checks
+> in Task 1's `<verify>` serve as the Wave 0 signal. This is the same pattern used for
+> matplotlib_pub.py and expansion.py stubs elsewhere in the phase. `nyquist_compliant`
+> remains `false` to acknowledge this deliberate choice; it does not indicate a gap.
+
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 45-01-01 | 01 | 1 | ENRICH-03 | unit | `uv run pytest tests/test_plotly_3d.py -x -q` | ❌ W0 | ⬜ pending |
-| 45-01-02 | 01 | 1 | ENRICH-03 | unit | `uv run pytest tests/ -x -q` | ✅ | ⬜ pending |
-| 45-02-01 | 02 | 2 | VIZ-01 | unit | `uv run pytest tests/test_plotly_3d.py -x -q` | ❌ W0 | ⬜ pending |
-| 45-02-02 | 02 | 2 | VIZ-02 | unit | `uv run pytest tests/test_plotly_3d.py -x -q` | ❌ W0 | ⬜ pending |
-| 45-03-01 | 03 | 3 | VIZ-01,VIZ-02 | manual | python3 notebook cell check | ✅ | ⬜ pending |
+| 45-01-T1 | 01 | 1 | ENRICH-03 | import check | `uv run python -c "from materials_discovery.visualization.plotly_3d import orbit_figure"` | ❌ created by task | ⬜ pending |
+| 45-01-T2 | 01 | 1 | VIZ-01,VIZ-02,ENRICH-03 | unit | `uv run pytest tests/test_plotly_3d.py -x -q` | ❌ created by task | ⬜ pending |
+| 45-02-T1 | 02 | 2 | VIZ-01,VIZ-02 | structural | python3 notebook cell check script | ✅ exists | ⬜ pending |
+| 45-02-T2 | 02 | 2 | VIZ-01,VIZ-02 | manual | jupyter notebook visual inspection | ✅ exists | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
