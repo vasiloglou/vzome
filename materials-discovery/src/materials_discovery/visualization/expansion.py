@@ -6,6 +6,10 @@ quasicrystal approximant motif tiles into a larger periodic structure.
 Central cell sites (offset 0,0,0) have marker opacity 1.0; surrounding 7 cells
 have opacity 0.3.  Each orbit is rendered as a single trace (5 total traces)
 using orbit-colored markers from ORBIT_COLORS.
+
+Per-point opacity is encoded via RGBA color strings (e.g. 'rgba(R,G,B,0.3)')
+because plotly's Scatter3d marker.opacity only accepts a scalar value.
+The per-point opacity value is also stored in customdata for test verification.
 """
 
 from __future__ import annotations
@@ -36,6 +40,17 @@ from materials_discovery.visualization.labels import (
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
+
+def _hex_to_rgba(hex_color: str, alpha: float) -> str:
+    """Convert a '#RRGGBB' hex color to an 'rgba(R,G,B,A)' string.
+
+    plotly Scatter3d does not accept a list for marker.opacity — only scalars.
+    Per-point opacity must be encoded via per-point RGBA color strings.
+    """
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r},{g},{b},{alpha})"
 
 
 def _require_expansion() -> None:
@@ -95,12 +110,18 @@ def expansion_figure(
         xs: list[float] = []
         ys: list[float] = []
         zs: list[float] = []
-        opacities: list[float] = []
+        # Per-point RGBA colors encode opacity (plotly Scatter3d marker.opacity
+        # is a scalar-only property; per-point opacity requires per-point color).
+        colors: list[str] = []
+        # customdata stores the numeric opacity value (1.0 or 0.3) per point
+        # so that tests can verify correct opacity encoding without parsing RGBA.
+        opacity_data: list[float] = []
         texts: list[str] = []
 
         for n1, n2, n3 in offsets:
             is_central = (n1, n2, n3) == (0, 0, 0)
             opacity_val = 1.0 if is_central else 0.3
+            rgba = _hex_to_rgba(color, opacity_val)
             cell_label = "central" if is_central else f"cell ({n1},{n2},{n3})"
 
             for site in orb["sites"]:
@@ -111,7 +132,8 @@ def expansion_figure(
                 xs.append(x)
                 ys.append(y)
                 zs.append(z)
-                opacities.append(opacity_val)
+                colors.append(rgba)
+                opacity_data.append(opacity_val)
                 texts.append(
                     f"{site['label']} -- {shell_name} -- {cell_label}"
                 )
@@ -122,9 +144,10 @@ def expansion_figure(
                 y=ys,
                 z=zs,
                 mode="markers",
-                marker=dict(size=5, color=color, opacity=opacities),
+                marker=dict(size=5, color=colors),
                 name=shell_name,
                 text=texts,
+                customdata=opacity_data,
                 hovertemplate="%{text}<extra></extra>",
             )
         )
