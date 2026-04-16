@@ -39,3 +39,25 @@ except ImportError:
     pass
 else:
     __all__ += ["load_orbit_library", "orbit_figure", "shell_figure"]
+
+# Conditionally export matplotlib_pub functions when [viz] extra is installed.
+try:
+    from materials_discovery.visualization.matplotlib_pub import (
+        screening_scatter,
+        rdf_plot,
+        diffraction_plot,
+    )
+except ImportError:
+    pass
+else:
+    __all__ += ["screening_scatter", "rdf_plot", "diffraction_plot"]
+
+# Conditionally export expansion functions when [viz] extra is installed.
+try:
+    from materials_discovery.visualization.expansion import (
+        expansion_figure,
+    )
+except ImportError:
+    pass
+else:
+    __all__ += ["expansion_figure"]
