@@ -336,6 +336,21 @@ How to interpret the screening artifacts:
 - `energy_proxy_ev_per_atom` and `min_distance_proxy` are fast filters, not the
   final high-fidelity verdict.
 
+**What `energy_proxy_ev_per_atom` measures.** This is the estimated cohesive energy per atom from a fast empirical potential, not a full DFT calculation. A more negative value means stronger atomic binding and greater thermodynamic plausibility. For Sc-Zn intermetallics, values below roughly -2.0 eV/atom are energetically plausible. The checked first candidate shows -2.78 eV/atom, which passes the threshold comfortably.
+
+**What `min_distance_proxy` measures.** This is the minimum normalized intersite distance across all atom pairs in the candidate structure. Values below 0.7 indicate atoms that are unphysically close — a geometry error rather than a chemistry signal. The checked first candidate shows 0.75, clearing the crowding threshold.
+
+**How the shortlist works.** Candidates that clear both the energy proxy and distance proxy thresholds enter the `passed` pool. From that pool, the pipeline ranks by a composite score and forwards the top slice to expensive validation. `passed_count` (20 out of 30 in this batch) tells you how much of the generated batch is geometrically and energetically plausible. `shortlisted_count` (4) tells you how many enter the validation queue — a deliberate bottleneck that controls validation compute cost.
+
+> **What the numbers mean**
+>
+> - `energy_proxy_ev_per_atom: -2.78` — below the threshold, so this candidate
+>   is energetically plausible for a Sc-Zn intermetallic.
+> - `min_distance_proxy: 0.75` — above the crowding threshold; atoms are not
+>   unphysically close.
+> - `shortlist_rank: 1` — this candidate is first in the queue for expensive
+>   validation.
+
 As of 2026-04-15, the checked `sc_zn_screen_calibration.json` snapshot records
 30 input candidates, 20 passing thresholds, and 4 shortlisted candidates.
 
@@ -370,6 +385,24 @@ How to interpret the validation fields:
 - `xrd_confidence`: how strongly the simulated pattern matches the reference.
 - `passed_checks`: the all-gates result across uncertainty, proxy hull, phonon,
   MD, and XRD.
+
+**Why all gates are False in this batch.** An early-stage candidate batch run against a mock backend is expected to fail every gate. The geometry prefilter catches crowded structures before phonon work begins. The phonon, MD, and XRD signals come from the mock backend which returns sentinel values (99 imaginary modes, 0.0 stability, 0.0 confidence) rather than real physics. The pipeline is not broken — it is showing you the unfiltered result of a first-pass generation run.
+
+> **Release gate checklist for this batch**
+>
+> - [ ] `geometry_prefilter_pass` — atom-crowding check (False = too crowded
+>   for phonon work)
+> - [ ] `phonon_imaginary_modes == 0` — no imaginary frequencies (99 = mock
+>   sentinel, not a real count)
+> - [ ] `md_stability_score > 0.8` — short-MD structural stability (0.0 = mock
+>   placeholder)
+> - [ ] `xrd_confidence > 0.7` — pattern match to reference (0.0 = mock
+>   placeholder)
+>
+> All gates are False. This is the correct result for a mock-backend run on an
+> early-stage candidate batch. The pipeline is not broken; it is showing you the
+> unfiltered signal before any candidate has accumulated enough evidence to be
+> promoted.
 
 As of 2026-04-15, the first checked validated row is `md_000006`, and it fails
 with `geometry_prefilter_pass=false`, `phonon_imaginary_modes=99`,
