@@ -1,5 +1,22 @@
 # Milestones
 
+## v1.82 Illustrated Tutorial and Publication-Quality Visualization (Shipped: 2026-04-16)
+
+**Phases completed:** 3 phases, 8 plans, 5 tasks
+
+**Key accomplishments:**
+
+- One-liner:
+- Design-origin narrative (Tsai cluster + IUCrJ 2016 Sc-Zn citation) and four annotated Zomic blocks with label glossary added to guided-design-tutorial.md and condensed into notebook cells
+- Plain-language screening/validation/LLM explanations added to guided-design-tutorial.md Sections 5, 6, and 9.1-9.3, with four condensed explanation cells mirrored into the notebook
+- One-liner:
+- One-liner:
+- One-liner:
+- One-liner:
+- One-liner:
+
+---
+
 ## v1.81 — Extensive LLM Tutorial and Programmatic vZome Visualization MVP
 
 **Status:** Shipped on 2026-04-15

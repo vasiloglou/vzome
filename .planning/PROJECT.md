@@ -2,8 +2,8 @@
 
 ## Current State
 
-`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, `v1.6`, `v1.7`, `v1.8`, and
-`v1.81` are shipped.
+`v1.0`, `v1.1`, `v1.2`, `v1.3`, `v1.4`, `v1.5`, `v1.6`, `v1.7`, `v1.8`,
+`v1.81`, and `v1.82` are shipped.
 
 The documentation refresh milestone is now archived. It delivered a git-backed
 provenance audit for `podcast-deep-dive-source.md`, a refreshed long-form
@@ -37,32 +37,33 @@ LLM operating surface:
   walkthrough to repo-owned preview, same-system LLM generation, translation
   and external benchmarking, campaigns, serving, and checkpoints without
   overstating future automation
+- publication-quality illustrated tutorial with interactive plotly 3D figures,
+  matplotlib 2D panels, crystal expansion views, and colorblind-safe orbit
+  visualization backed by a `[viz]` optional dependency group
 
-## Current Milestone: v1.82 Illustrated Tutorial and Publication-Quality Visualization
+The `v1.82` illustrated-tutorial milestone is now archived. It transformed the
+guided tutorial from a command reference into a richly illustrated educational
+resource with design-origin narrative, annotated Zomic walkthrough,
+plain-language screening/validation/LLM explanations, interactive 3D orbit and
+shell figures, publication-quality 2D panels (screening scatter, RDF, simulated
+diffraction), and a 2x2x2 crystal expansion view.
 
-**Goal:** Transform the guided design tutorial (notebook + markdown) from a
-command-reference walkthrough into a richly illustrated, self-explanatory
-educational resource with publication-quality graphics.
+## Current Milestone Status
 
-**Target features:**
-- Explain how the Sc-Zn Tsai bridge design was created, how the algorithm
-  works, and why this design was picked
-- Show zomic file snippets with inline annotations explaining geometry
-  commands, symmetry operations, labels, and what each block builds
-- Explain what the screening stage does, how it selects candidates, and what
-  the proxy metrics mean in plain language
-- Explain the validation pipeline and how to read the validation report and
-  release gates
-- Apply the same explanatory depth to the LLM sections
-- Replace primitive visualization with publication-quality plotly/matplotlib
-  graphics: intuitive labels, color-coded orbits, shell decomposition,
-  polyhedral cage rendering
-- Show how the quasicrystal motif expands into a larger structure
-- Research and adopt best practices from academic papers and tutorials for
-  quasicrystal visualization
+**Current Milestone:** None active
 
-**Most Recent Shipped Milestone:** `v1.81` — Extensive LLM Tutorial and
-Programmatic vZome Visualization MVP
+**Status:** `v1.82` — Illustrated Tutorial and Publication-Quality
+Visualization — shipped and archived on 2026-04-16.
+
+**Current focus:**
+- define the next milestone from the archived `v1.82` illustrated tutorial
+  and publication-quality visualization baseline
+- decide whether the next expansion should emphasize checkpoint training,
+  campaign automation, source QA, or broader chemistry coverage
+- keep future scope honest about what is already shipped versus still planned
+
+**Most Recent Shipped Milestone:** `v1.82` — Illustrated Tutorial and
+Publication-Quality Visualization
 
 **Delivered in `v1.81`:**
 - repo-owned programmatic preview for the checked Sc-Zn design through
@@ -240,12 +241,8 @@ instead of living in separate prototypes.
 
 ### Active
 
-- [ ] Illustrated design-origin narrative in tutorial and notebook
-- [ ] Annotated Zomic file walkthrough with inline explanations
-- [ ] Plain-language screening and validation explanations
-- [ ] Publication-quality plotly/matplotlib visualizations with intuitive labels
-- [ ] Crystal expansion view showing motif tiling into larger structure
-- [ ] LLM section enrichment with the same explanatory depth
+- No active milestone requirements. Run `$gsd-new-milestone` to define the
+  next milestone-specific requirements.
 
 ### Out of Scope
 
@@ -356,7 +353,8 @@ instead of living in separate prototypes.
 | Start Project 3 `v1.81` with extensive LLM tutorial coverage and programmatic vZome visualization | The docs stack is now coherent enough to deepen the tutorial and remove the last manual desktop visualization handoff before broader automation work resumes | ✓ Good |
 | Prefer reusing the repo-owned online viewer and preview/export contracts before building a bespoke visualization service | The repo already contains `vzome-viewer`, `.shapes.json` preview handling, and export machinery, so the lowest-risk milestone path is reuse plus packaging | ✓ Good |
 | Archive `v1.81` after the preview surface, extensive tutorial, and notebook companion ship | The tutorial-and-visualization baseline is now strong enough to support the next milestone without keeping documentation-only scope open | ✓ Good |
-| Start `v1.82` with illustrated tutorial enrichment and publication-quality visualization | The tutorial reads as a command reference; newcomers cannot understand the design rationale, zomic syntax, or screening logic without external help, and the visualization is primitive compared to what plotly/matplotlib and the repo's geometry data can deliver | — Pending |
+| Start `v1.82` with illustrated tutorial enrichment and publication-quality visualization | The tutorial reads as a command reference; newcomers cannot understand the design rationale, zomic syntax, or screening logic without external help, and the visualization is primitive compared to what plotly/matplotlib and the repo's geometry data can deliver | ✓ Good |
+| Archive `v1.82` after the illustrated tutorial, plotly 3D figures, matplotlib 2D panels, and crystal expansion view ship | The tutorial baseline is now richly illustrated with publication-quality visualization backed by a tested `[viz]` dependency group | ✓ Good |
 
 ## Evolution
 
@@ -376,4 +374,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-16 after Phase 46 completion*
+*Last updated: 2026-04-16 after v1.82 archival*
