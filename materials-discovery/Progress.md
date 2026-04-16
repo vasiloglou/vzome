@@ -4,6 +4,7 @@
 
 | Date | Change | Details |
 |------|--------|---------|
+| 2026-04-16 | Phase 45 Plan 01 Task 1: plotly_3d.py and viz deps | Created plotly_3d.py with orbit_figure(), shell_figure(), load_orbit_library(); matplotlib_pub.py and expansion.py stubs; [viz] optional-dependencies group in pyproject.toml; conditional plotly_3d exports in __init__.py |
 | 2026-04-15 | Tutorial screening/validation/LLM prose | Added plain-language explanations for screening metrics, validation gates, and LLM commands in tutorial and notebook |
 | 2026-04-15 | Tutorial design narrative | Added design-origin narrative and annotated Zomic walkthrough to tutorial markdown and notebook |
 | 2026-04-15 | labels.py orbit label module | Created shared colorblind-safe orbit palette and label mappings in visualization/labels.py |
@@ -173,6 +174,15 @@
 | 2026-04-04 | Phase 10 Plan 03: llm-approve CLI governance boundary | Added the non-launching `mdisc llm-approve` command, refreshed LLM developer docs, updated shared CLI coverage, and closed the full `materials-discovery` suite at 332 passed, 3 skipped |
 
 ## Diary
+
+### 2026-04-16
+
+- Phase 45 Plan 01 Task 1 — Created `visualization/plotly_3d.py` implementing `orbit_figure()`, `shell_figure()`, and `load_orbit_library()` with a try/except ImportError guard at module top. The guard raises a clear error message pointing to `uv pip install 'materials-discovery[viz]'` when plotly or scipy are absent.
+- Created `visualization/matplotlib_pub.py` and `visualization/expansion.py` as empty stubs for Phase 46 publication-quality matplotlib figures and crystal expansion view, respectively. Neither is exported from `__init__.py` until Phase 46 populates them.
+- Updated `visualization/__init__.py` to conditionally import and re-export `orbit_figure`, `shell_figure`, `load_orbit_library` from `plotly_3d.py` inside a try/except block so the package remains importable when plotly is not installed.
+- Added `[viz]` optional-dependencies group to `pyproject.toml` with `plotly>=6.0`, `matplotlib>=3.9`, `kaleido>=1.0`, `scipy>=1.13`, `nbformat>=4.2.0`. Ran `uv pip install -e ".[viz]"` and verified all imports succeed.
+- Shell ordering for `shell_figure()` is computed dynamically from mean radial distance, not hardcoded: expected order is tsai_zn6 (5.97A) < tsai_zn7 (6.13A) < tsai_zn5 (6.57A) < tsai_sc1 (6.73A) < tsai_zn4 (7.73A).
+- Open items: Task 2 (test_plotly_3d.py with 16 unit tests) to be committed next.
 
 ### 2026-04-15
 
