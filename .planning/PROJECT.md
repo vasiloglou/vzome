@@ -222,6 +222,11 @@ instead of living in separate prototypes.
   teaches the full translated and external benchmark inspect chain, and sits
   clearly alongside the Markdown tutorial and standalone visualization
   reference.
+- Validated in v1.82 Phase 44: the tutorial now explains the Tsai cluster
+  design origin, annotates the Zomic DSL blocks, provides plain-language
+  screening and validation explanations, and covers the LLM lane with matching
+  depth. A shared `labels.py` module defines the colorblind-safe orbit palette
+  for all downstream visualization.
 
 ### Active
 
@@ -361,4 +366,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-15 after v1.82 milestone start*
+*Last updated: 2026-04-16 after Phase 44 completion*
